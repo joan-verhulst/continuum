@@ -83,6 +83,7 @@
     --color-segment: var(--pds-segment);
     --color-segment-fg: var(--pds-segment-fg);
     --color-segment-border: var(--pds-segment-border);
+    --color-segment-track: var(--pds-segment-track);
     --color-focus: var(--pds-focus);
     --color-chart-1: var(--pds-chart-1);
     --color-chart-2: var(--pds-chart-2);

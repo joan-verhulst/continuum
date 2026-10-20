@@ -1,8 +1,8 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.4.0/schema.json",
     "extends": ["biome-config-pixel"],
     "files": {
-        "includes": ["**", "!dist", "!playground/dist", "!reference"]
+        "includes": ["!dist", "!playground/dist", "!reference"]
     },
     "linter": {
         "rules": {

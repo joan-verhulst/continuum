@@ -9,10 +9,13 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const from = resolve(root, 'src/styles/pds.css');
 const to = resolve(root, 'dist/styles.css');
 
-const result = await postcss([tailwind({ optimize: { minify: false } }), scope()]).process(await readFile(from, 'utf8'), {
-    from,
-    to,
-});
+const result = await postcss([tailwind({ optimize: { minify: false } }), scope()]).process(
+    await readFile(from, 'utf8'),
+    {
+        from,
+        to,
+    },
+);
 
 await mkdir(dirname(to), { recursive: true });
 await writeFile(to, result.css);

@@ -11,7 +11,7 @@
 const SCOPE = '.pds';
 const ROOTS = new Set([':root', ':host', 'html', 'body']);
 
-const scopeSelector = (selector) => {
+const scopeSelector = selector => {
     const trimmed = selector.trim();
 
     if (trimmed.startsWith(SCOPE)) {
@@ -33,7 +33,7 @@ const scopeSelector = (selector) => {
     return [`${SCOPE} ${trimmed}`];
 };
 
-const insideKeyframes = (rule) => {
+const insideKeyframes = rule => {
     for (let parent = rule.parent; parent; parent = parent.parent) {
         if (parent.type === 'atrule' && /keyframes$/.test(parent.name)) {
             return true;
@@ -47,7 +47,7 @@ const insideKeyframes = (rule) => {
 const scope = () => ({
     postcssPlugin: 'pds-scope',
     OnceExit(root) {
-        root.walkAtRules('layer', (atRule) => {
+        root.walkAtRules('layer', atRule => {
             if (atRule.nodes) {
                 atRule.replaceWith(atRule.nodes);
             } else {
@@ -55,7 +55,7 @@ const scope = () => ({
             }
         });
 
-        root.walkRules((rule) => {
+        root.walkRules(rule => {
             if (insideKeyframes(rule) || rule.parent?.type === 'rule') {
                 return;
             }

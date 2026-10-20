@@ -4,14 +4,19 @@
     "description": "A design system distilled from product screens designed over the years, built on Radix primitives and Tailwind v4.",
     "license": "MIT",
     "type": "module",
-    "sideEffects": ["*.css"],
+    "sideEffects": [
+        "*.css"
+    ],
     "exports": {
         ".": "./src/index.ts",
         "./styles.css": "./dist/styles.css",
         "./theme.css": "./src/styles/theme.css",
         "./tokens.css": "./src/styles/tokens.css"
     },
-    "files": ["src", "dist"],
+    "files": [
+        "src",
+        "dist"
+    ],
     "scripts": {
         "dev": "pnpm --filter playground dev",
         "build": "node scripts/build-css.mjs && pnpm --filter playground build",
@@ -32,7 +37,7 @@
         "tailwind-merge": "^3.4.0"
     },
     "devDependencies": {
-        "@biomejs/biome": "2.3.13",
+        "@biomejs/biome": "2.4.0",
         "@tailwindcss/postcss": "^4.3.3",
         "@types/react": "^19.2.10",
         "@types/react-dom": "^19.2.3",
