@@ -1,0 +1,419 @@
+/*
+ * Raw design tokens. Everything lives under `.pds` so the system can sit inside
+ * another site without touching its variables. A theme only swaps raw ramps and
+ * a handful of semantic values; components never name a theme.
+ *
+ * Ramps are semantic by index, the way the Figma screens use them: 50 is the
+ * surface, 950 the strongest text. Dark mode reads every ramp back to front.
+ */
+
+.pds {
+    /* Eyes: warm, slightly green neutrals */
+    --pds-n-50: #f7f8f7;
+    --pds-n-100: #eaebea;
+    --pds-n-200: #d1d2d0;
+    --pds-n-300: #b2b4b1;
+    --pds-n-400: #989b97;
+    --pds-n-500: #7f827d;
+    --pds-n-600: #656864;
+    --pds-n-700: #474946;
+    --pds-n-800: #292a28;
+    --pds-n-900: #181818;
+    --pds-n-950: #0d0d0c;
+
+    --pds-p-50: #e6eafa;
+    --pds-p-100: #c9d1f8;
+    --pds-p-200: #a5aff3;
+    --pds-p-300: #818bee;
+    --pds-p-400: #5d63ea;
+    --pds-p-500: #3939e5;
+    --pds-p-600: #2923cb;
+    --pds-p-700: #20149a;
+    --pds-p-800: #190e68;
+    --pds-p-900: #0f0736;
+    --pds-p-950: #09041e;
+
+    --pds-s-50: #effbe7;
+    --pds-s-100: #e3f7d4;
+    --pds-s-200: #c9efae;
+    --pds-s-300: #b0e887;
+    --pds-s-400: #96e160;
+    --pds-s-500: #7cd93a;
+    --pds-s-600: #61b823;
+    --pds-s-700: #48891a;
+    --pds-s-800: #2f5a11;
+    --pds-s-900: #172b08;
+    --pds-s-950: #0a1304;
+
+    --pds-w-50: #fff4e6;
+    --pds-w-100: #feead2;
+    --pds-w-200: #fed8aa;
+    --pds-w-300: #fdc681;
+    --pds-w-400: #fdb359;
+    --pds-w-500: #fca131;
+    --pds-w-600: #e78103;
+    --pds-w-700: #b0540e;
+    --pds-w-800: #803009;
+    --pds-w-900: #330e05;
+    --pds-w-950: #030100;
+
+    --pds-e-50: #ffedee;
+    --pds-e-100: #ffdbdd;
+    --pds-e-200: #fec8c8;
+    --pds-e-300: #ff8a85;
+    --pds-e-400: #f75c4d;
+    --pds-e-500: #f53e20;
+    --pds-e-600: #d32700;
+    --pds-e-700: #9b2400;
+    --pds-e-800: #620000;
+    --pds-e-900: #260909;
+    --pds-e-950: #0e0404;
+
+    /* Ramps as components see them (light: as written) */
+    --pds-neutral-50: var(--pds-n-50);
+    --pds-neutral-100: var(--pds-n-100);
+    --pds-neutral-200: var(--pds-n-200);
+    --pds-neutral-300: var(--pds-n-300);
+    --pds-neutral-400: var(--pds-n-400);
+    --pds-neutral-500: var(--pds-n-500);
+    --pds-neutral-600: var(--pds-n-600);
+    --pds-neutral-700: var(--pds-n-700);
+    --pds-neutral-800: var(--pds-n-800);
+    --pds-neutral-900: var(--pds-n-900);
+    --pds-neutral-950: var(--pds-n-950);
+
+    --pds-primary-50: var(--pds-p-50);
+    --pds-primary-100: var(--pds-p-100);
+    --pds-primary-200: var(--pds-p-200);
+    --pds-primary-300: var(--pds-p-300);
+    --pds-primary-400: var(--pds-p-400);
+    --pds-primary-500: var(--pds-p-500);
+    --pds-primary-600: var(--pds-p-600);
+    --pds-primary-700: var(--pds-p-700);
+    --pds-primary-800: var(--pds-p-800);
+    --pds-primary-900: var(--pds-p-900);
+    --pds-primary-950: var(--pds-p-950);
+
+    --pds-success-50: var(--pds-s-50);
+    --pds-success-100: var(--pds-s-100);
+    --pds-success-200: var(--pds-s-200);
+    --pds-success-300: var(--pds-s-300);
+    --pds-success-400: var(--pds-s-400);
+    --pds-success-500: var(--pds-s-500);
+    --pds-success-600: var(--pds-s-600);
+    --pds-success-700: var(--pds-s-700);
+    --pds-success-800: var(--pds-s-800);
+    --pds-success-900: var(--pds-s-900);
+    --pds-success-950: var(--pds-s-950);
+
+    --pds-warning-50: var(--pds-w-50);
+    --pds-warning-100: var(--pds-w-100);
+    --pds-warning-200: var(--pds-w-200);
+    --pds-warning-300: var(--pds-w-300);
+    --pds-warning-400: var(--pds-w-400);
+    --pds-warning-500: var(--pds-w-500);
+    --pds-warning-600: var(--pds-w-600);
+    --pds-warning-700: var(--pds-w-700);
+    --pds-warning-800: var(--pds-w-800);
+    --pds-warning-900: var(--pds-w-900);
+    --pds-warning-950: var(--pds-w-950);
+
+    --pds-error-50: var(--pds-e-50);
+    --pds-error-100: var(--pds-e-100);
+    --pds-error-200: var(--pds-e-200);
+    --pds-error-300: var(--pds-e-300);
+    --pds-error-400: var(--pds-e-400);
+    --pds-error-500: var(--pds-e-500);
+    --pds-error-600: var(--pds-e-600);
+    --pds-error-700: var(--pds-e-700);
+    --pds-error-800: var(--pds-e-800);
+    --pds-error-900: var(--pds-e-900);
+    --pds-error-950: var(--pds-e-950);
+
+    /* The action colour: buttons, checked controls, the active rail item */
+    --pds-action: var(--pds-neutral-950);
+    --pds-action-hover: var(--pds-neutral-900);
+    --pds-on-action: var(--pds-neutral-50);
+    --pds-action-gradient: none;
+    --pds-action-highlight: transparent;
+    --pds-action-ring: transparent;
+    --pds-action-shadow: inset 0 1px 0 0 var(--pds-action-highlight), 0 0 0 1px var(--pds-action-ring);
+
+    /* A selected wash: active pill tab, AI chip, a cell being edited */
+    --pds-tint: var(--pds-neutral-100);
+    --pds-tint-fg: var(--pds-neutral-950);
+
+    /* Active segment: Eyes fills it with the action colour, older themes raise a chip */
+    --pds-segment: var(--pds-action);
+    --pds-segment-fg: var(--pds-on-action);
+    --pds-segment-border: transparent;
+    --pds-segment-shadow: none;
+
+    --pds-focus: var(--pds-neutral-400);
+
+    /* Data colours from the analytics screens: forest, lime, mustard, orange, and the teal line */
+    --pds-chart-1: #00553e;
+    --pds-chart-2: #89e25f;
+    --pds-chart-3: #e2c35f;
+    --pds-chart-4: #e2a15f;
+    --pds-chart-5: #1a896b;
+
+    --pds-font: var(--font-geist, "Geist Variable"), "Geist", ui-sans-serif, system-ui, sans-serif;
+
+    /* Radii nest: a panel holds cards, a card holds items, an item holds chips */
+    --pds-radius-chip: 6px;
+    --pds-radius-item: 10px;
+    --pds-radius-control: 12px;
+    --pds-radius-control-lg: 14px;
+    --pds-radius-card: 16px;
+    --pds-radius-panel: 12px;
+
+    --pds-shadow-float: 1px 1px 4px 0 rgb(20 22 23 / 0.1);
+    --pds-shadow-sheet: 0 2px 4px 0 rgb(20 22 23 / 0.1);
+
+    font-family: var(--pds-font);
+    font-size: 13px;
+    line-height: 1.25;
+    letter-spacing: 0.32px;
+    color: var(--pds-neutral-950);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.pds[data-mode="dark"] {
+    color-scheme: dark;
+
+    --pds-neutral-50: var(--pds-n-950);
+    --pds-neutral-100: var(--pds-n-900);
+    --pds-neutral-200: var(--pds-n-800);
+    --pds-neutral-300: var(--pds-n-700);
+    --pds-neutral-400: var(--pds-n-600);
+    --pds-neutral-500: var(--pds-n-500);
+    --pds-neutral-600: var(--pds-n-400);
+    --pds-neutral-700: var(--pds-n-300);
+    --pds-neutral-800: var(--pds-n-200);
+    --pds-neutral-900: var(--pds-n-100);
+    --pds-neutral-950: var(--pds-n-50);
+
+    --pds-primary-50: var(--pds-p-950);
+    --pds-primary-100: var(--pds-p-900);
+    --pds-primary-200: var(--pds-p-800);
+    --pds-primary-300: var(--pds-p-700);
+    --pds-primary-400: var(--pds-p-600);
+    --pds-primary-500: var(--pds-p-500);
+    --pds-primary-600: var(--pds-p-400);
+    --pds-primary-700: var(--pds-p-300);
+    --pds-primary-800: var(--pds-p-200);
+    --pds-primary-900: var(--pds-p-100);
+    --pds-primary-950: var(--pds-p-50);
+
+    --pds-success-50: var(--pds-s-950);
+    --pds-success-100: var(--pds-s-900);
+    --pds-success-200: var(--pds-s-800);
+    --pds-success-300: var(--pds-s-700);
+    --pds-success-400: var(--pds-s-600);
+    --pds-success-500: var(--pds-s-500);
+    --pds-success-600: var(--pds-s-400);
+    --pds-success-700: var(--pds-s-300);
+    --pds-success-800: var(--pds-s-200);
+    --pds-success-900: var(--pds-s-100);
+    --pds-success-950: var(--pds-s-50);
+
+    --pds-warning-50: var(--pds-w-950);
+    --pds-warning-100: var(--pds-w-900);
+    --pds-warning-200: var(--pds-w-800);
+    --pds-warning-300: var(--pds-w-700);
+    --pds-warning-400: var(--pds-w-600);
+    --pds-warning-500: var(--pds-w-500);
+    --pds-warning-600: var(--pds-w-400);
+    --pds-warning-700: var(--pds-w-300);
+    --pds-warning-800: var(--pds-w-200);
+    --pds-warning-900: var(--pds-w-100);
+    --pds-warning-950: var(--pds-w-50);
+
+    --pds-error-50: var(--pds-e-950);
+    --pds-error-100: var(--pds-e-900);
+    --pds-error-200: var(--pds-e-800);
+    --pds-error-300: var(--pds-e-700);
+    --pds-error-400: var(--pds-e-600);
+    --pds-error-500: var(--pds-e-500);
+    --pds-error-600: var(--pds-e-400);
+    --pds-error-700: var(--pds-e-300);
+    --pds-error-800: var(--pds-e-200);
+    --pds-error-900: var(--pds-e-100);
+    --pds-error-950: var(--pds-e-50);
+
+    --pds-focus: var(--pds-neutral-500);
+}
+
+/* Indigo, 2024: the email sequencing editor. Eyes neutrals, Inter, smaller radii. */
+.pds[data-theme="indigo"] {
+    --pds-action: var(--pds-primary-500);
+    --pds-action-hover: var(--pds-primary-600);
+    --pds-on-action: #f7f8f7;
+    --pds-tint: var(--pds-primary-50);
+    --pds-tint-fg: var(--pds-primary-500);
+    --pds-segment: var(--pds-neutral-50);
+    --pds-segment-fg: var(--pds-neutral-950);
+    --pds-segment-border: var(--pds-neutral-200);
+    --pds-segment-shadow: var(--pds-shadow-float);
+    --pds-focus: var(--pds-primary-300);
+    --pds-font: var(--font-inter, "Inter Variable"), "Inter", ui-sans-serif, system-ui, sans-serif;
+    --pds-radius-control: 8px;
+    --pds-radius-control-lg: 10px;
+    --pds-radius-card: 12px;
+}
+
+/* Cool greys with white surfaces: shared by the electric and lime products. */
+.pds:is([data-theme="electric"], [data-theme="lime"]) {
+    --pds-n-50: #ffffff;
+    --pds-n-100: #f7f8f8;
+    --pds-n-200: #dfe0e2;
+    --pds-n-300: #c2c3c5;
+    --pds-n-400: #a5a6a8;
+    --pds-n-500: #88898b;
+    --pds-n-600: #6b6c6e;
+    --pds-n-700: #4e4f51;
+    --pds-n-800: #313234;
+    --pds-n-900: #141617;
+    --pds-n-950: #070808;
+
+    --pds-action: var(--pds-primary-500);
+    --pds-action-hover: var(--pds-primary-600);
+    --pds-on-action: #ffffff;
+    --pds-segment: var(--pds-neutral-50);
+    --pds-segment-fg: var(--pds-neutral-950);
+    --pds-segment-border: var(--pds-neutral-200);
+    --pds-segment-shadow: var(--pds-shadow-float);
+    --pds-focus: var(--pds-primary-300);
+    --pds-font: var(--font-inter, "Inter Variable"), "Inter", ui-sans-serif, system-ui, sans-serif;
+    --pds-radius-control: 8px;
+    --pds-radius-control-lg: 12px;
+}
+
+/* Electric, 2025: the risk-assessment report editor. One pure blue and a blue wash. */
+.pds[data-theme="electric"] {
+    --pds-p-50: #e8eaff;
+    --pds-p-100: #d1d5ff;
+    --pds-p-200: #b3b8ff;
+    --pds-p-300: #949aff;
+    --pds-p-400: #4f57f5;
+    --pds-p-500: #0000eb;
+    --pds-p-600: #0000c4;
+    --pds-p-700: #00009c;
+    --pds-p-800: #000073;
+    --pds-p-900: #00004a;
+    --pds-p-950: #000029;
+
+    --pds-tint: var(--pds-primary-50);
+    --pds-tint-fg: var(--pds-primary-500);
+    --pds-radius-item: 8px;
+    --pds-radius-card: 8px;
+    --pds-radius-panel: 8px;
+}
+
+/* Lime, 2025: the social report generator. A lit button with a top highlight and ring. */
+.pds[data-theme="lime"] {
+    --pds-p-50: #f6fce6;
+    --pds-p-100: #eaf8c4;
+    --pds-p-200: #d6f191;
+    --pds-p-300: #c0ec55;
+    --pds-p-400: #aae811;
+    --pds-p-500: #80af0d;
+    --pds-p-600: #678c0b;
+    --pds-p-700: #4f6b09;
+    --pds-p-800: #384c07;
+    --pds-p-900: #222e05;
+    --pds-p-950: #111702;
+
+    --pds-action-highlight: var(--pds-p-400);
+    --pds-action-ring: var(--pds-p-500);
+    --pds-tint: var(--pds-primary-50);
+    --pds-tint-fg: var(--pds-primary-700);
+    --pds-radius-card: 12px;
+    --pds-radius-panel: 8px;
+}
+
+/* Stone, 2025: the dark invoicing app. Warm stone greys and a glossy blue button. */
+.pds[data-theme="stone"] {
+    --pds-n-50: #ffffff;
+    --pds-n-100: #f5f5f4;
+    --pds-n-200: #ebebe9;
+    --pds-n-300: #adadaa;
+    --pds-n-400: #94948e;
+    --pds-n-500: #7a7a73;
+    --pds-n-600: #6c6c65;
+    --pds-n-700: #4a4a46;
+    --pds-n-800: #30302f;
+    --pds-n-900: #1c1c1b;
+    --pds-n-950: #10100f;
+
+    --pds-p-50: #eef1fd;
+    --pds-p-100: #dce3fb;
+    --pds-p-200: #bccaf8;
+    --pds-p-300: #7f96f1;
+    --pds-p-400: #5574ed;
+    --pds-p-500: #2c52e8;
+    --pds-p-600: #1f3fc4;
+    --pds-p-700: #18319a;
+    --pds-p-800: #122470;
+    --pds-p-900: #0b1747;
+    --pds-p-950: #060c26;
+
+    --pds-action: var(--pds-p-500);
+    --pds-action-hover: var(--pds-p-600);
+    --pds-on-action: #f5f5f4;
+    --pds-action-gradient: linear-gradient(180deg, var(--pds-p-400), var(--pds-p-500));
+    --pds-action-highlight: var(--pds-p-300);
+    --pds-action-ring: var(--pds-p-500);
+    --pds-tint: var(--pds-neutral-100);
+    --pds-tint-fg: var(--pds-neutral-950);
+    --pds-segment: var(--pds-neutral-50);
+    --pds-segment-fg: var(--pds-neutral-950);
+    --pds-segment-border: var(--pds-neutral-200);
+    --pds-segment-shadow: var(--pds-shadow-float);
+    --pds-focus: var(--pds-p-300);
+    --pds-font: var(--font-inter, "Inter Variable"), "Inter", ui-sans-serif, system-ui, sans-serif;
+    --pds-radius-item: 8px;
+    --pds-radius-control: 8px;
+    --pds-radius-control-lg: 10px;
+    --pds-radius-card: 12px;
+}
+
+/* Violet, 2024: the dark sign-in flow. Pure greys and one purple. */
+.pds[data-theme="violet"] {
+    --pds-n-50: #fdfdfd;
+    --pds-n-100: #f1f1f1;
+    --pds-n-200: #dcdcdc;
+    --pds-n-300: #bdbdbd;
+    --pds-n-400: #9e9e9e;
+    --pds-n-500: #808080;
+    --pds-n-600: #636363;
+    --pds-n-700: #464646;
+    --pds-n-800: #2a2a2a;
+    --pds-n-900: #161616;
+    --pds-n-950: #030303;
+
+    --pds-p-50: #f4effc;
+    --pds-p-100: #e7dcf8;
+    --pds-p-200: #cfb9f1;
+    --pds-p-300: #b597e9;
+    --pds-p-400: #9f7ae2;
+    --pds-p-500: #885ddb;
+    --pds-p-600: #6d44c2;
+    --pds-p-700: #55349a;
+    --pds-p-800: #3d2570;
+    --pds-p-900: #261747;
+    --pds-p-950: #140c26;
+
+    --pds-action: var(--pds-primary-500);
+    --pds-action-hover: var(--pds-primary-600);
+    --pds-on-action: #ffffff;
+    --pds-tint: var(--pds-primary-50);
+    --pds-tint-fg: var(--pds-primary-700);
+    --pds-focus: var(--pds-primary-300);
+    --pds-font: var(--font-inter, "Inter Variable"), "Inter", ui-sans-serif, system-ui, sans-serif;
+    --pds-radius-control: 8px;
+    --pds-radius-control-lg: 12px;
+    --pds-radius-card: 12px;
+}

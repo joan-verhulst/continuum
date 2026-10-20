@@ -1,0 +1,6 @@
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/inter";
+@import "tailwindcss" source(none);
+@import "../../src/styles/theme.css";
+
+@source "./";

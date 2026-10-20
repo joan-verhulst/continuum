@@ -1,0 +1,5 @@
+node_modules
+playground/dist
+reference
+*.tsbuildinfo
+.DS_Store

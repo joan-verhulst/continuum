@@ -1,0 +1,47 @@
+{
+    "name": "personal-design-system",
+    "version": "0.1.0",
+    "description": "A design system distilled from product screens designed over the years, built on Radix primitives and Tailwind v4.",
+    "license": "MIT",
+    "type": "module",
+    "sideEffects": ["*.css"],
+    "exports": {
+        ".": "./src/index.ts",
+        "./styles.css": "./dist/styles.css",
+        "./theme.css": "./src/styles/theme.css",
+        "./tokens.css": "./src/styles/tokens.css"
+    },
+    "files": ["src", "dist"],
+    "scripts": {
+        "dev": "pnpm --filter playground dev",
+        "build": "node scripts/build-css.mjs && pnpm --filter playground build",
+        "build:css": "node scripts/build-css.mjs",
+        "type-check": "tsc --noEmit && pnpm --filter playground type-check",
+        "lint": "biome check",
+        "lint:fix": "biome check --write"
+    },
+    "peerDependencies": {
+        "react": ">=19",
+        "react-dom": ">=19"
+    },
+    "dependencies": {
+        "class-variance-authority": "^0.7.1",
+        "clsx": "^2.1.1",
+        "lucide-react": "^1.60.0",
+        "radix-ui": "^1.8.1",
+        "tailwind-merge": "^3.4.0"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "2.3.13",
+        "@tailwindcss/postcss": "^4.3.3",
+        "@types/react": "^19.2.10",
+        "@types/react-dom": "^19.2.3",
+        "biome-config-pixel": "2.1.7",
+        "postcss": "^8.5.31",
+        "react": "^19.3.1",
+        "react-dom": "^19.3.1",
+        "tailwindcss": "^4.3.3",
+        "typescript": "^5.9.3"
+    },
+    "packageManager": "pnpm@10.8.0"
+}

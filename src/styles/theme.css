@@ -1,0 +1,144 @@
+/*
+ * Tailwind v4 entry for the system. Utilities resolve to the --pds-* variables
+ * set in tokens.css, so a theme or mode switch on a .pds element restyles
+ * everything inside it at runtime.
+ */
+@import "./tokens.css";
+
+@source "../components";
+
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+@theme inline {
+    --color-*: initial;
+    --color-transparent: transparent;
+    --color-current: currentColor;
+    --color-white: #ffffff;
+    --color-black: #000000;
+
+    --color-neutral-50: var(--pds-neutral-50);
+    --color-neutral-100: var(--pds-neutral-100);
+    --color-neutral-200: var(--pds-neutral-200);
+    --color-neutral-300: var(--pds-neutral-300);
+    --color-neutral-400: var(--pds-neutral-400);
+    --color-neutral-500: var(--pds-neutral-500);
+    --color-neutral-600: var(--pds-neutral-600);
+    --color-neutral-700: var(--pds-neutral-700);
+    --color-neutral-800: var(--pds-neutral-800);
+    --color-neutral-900: var(--pds-neutral-900);
+    --color-neutral-950: var(--pds-neutral-950);
+
+    --color-primary-50: var(--pds-primary-50);
+    --color-primary-100: var(--pds-primary-100);
+    --color-primary-200: var(--pds-primary-200);
+    --color-primary-300: var(--pds-primary-300);
+    --color-primary-400: var(--pds-primary-400);
+    --color-primary-500: var(--pds-primary-500);
+    --color-primary-600: var(--pds-primary-600);
+    --color-primary-700: var(--pds-primary-700);
+    --color-primary-800: var(--pds-primary-800);
+    --color-primary-900: var(--pds-primary-900);
+    --color-primary-950: var(--pds-primary-950);
+
+    --color-success-50: var(--pds-success-50);
+    --color-success-100: var(--pds-success-100);
+    --color-success-200: var(--pds-success-200);
+    --color-success-300: var(--pds-success-300);
+    --color-success-400: var(--pds-success-400);
+    --color-success-500: var(--pds-success-500);
+    --color-success-600: var(--pds-success-600);
+    --color-success-700: var(--pds-success-700);
+    --color-success-800: var(--pds-success-800);
+    --color-success-900: var(--pds-success-900);
+    --color-success-950: var(--pds-success-950);
+
+    --color-warning-50: var(--pds-warning-50);
+    --color-warning-100: var(--pds-warning-100);
+    --color-warning-200: var(--pds-warning-200);
+    --color-warning-300: var(--pds-warning-300);
+    --color-warning-400: var(--pds-warning-400);
+    --color-warning-500: var(--pds-warning-500);
+    --color-warning-600: var(--pds-warning-600);
+    --color-warning-700: var(--pds-warning-700);
+    --color-warning-800: var(--pds-warning-800);
+    --color-warning-900: var(--pds-warning-900);
+    --color-warning-950: var(--pds-warning-950);
+
+    --color-error-50: var(--pds-error-50);
+    --color-error-100: var(--pds-error-100);
+    --color-error-200: var(--pds-error-200);
+    --color-error-300: var(--pds-error-300);
+    --color-error-400: var(--pds-error-400);
+    --color-error-500: var(--pds-error-500);
+    --color-error-600: var(--pds-error-600);
+    --color-error-700: var(--pds-error-700);
+    --color-error-800: var(--pds-error-800);
+    --color-error-900: var(--pds-error-900);
+    --color-error-950: var(--pds-error-950);
+    --color-action: var(--pds-action);
+    --color-action-hover: var(--pds-action-hover);
+    --color-on-action: var(--pds-on-action);
+    --color-tint: var(--pds-tint);
+    --color-tint-fg: var(--pds-tint-fg);
+    --color-segment: var(--pds-segment);
+    --color-segment-fg: var(--pds-segment-fg);
+    --color-segment-border: var(--pds-segment-border);
+    --color-focus: var(--pds-focus);
+    --color-chart-1: var(--pds-chart-1);
+    --color-chart-2: var(--pds-chart-2);
+    --color-chart-3: var(--pds-chart-3);
+    --color-chart-4: var(--pds-chart-4);
+    --color-chart-5: var(--pds-chart-5);
+
+    --font-*: initial;
+    --font-sans: var(--pds-font);
+    --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+    --text-*: initial;
+    --text-xxs: 11px;
+    --text-xxs--line-height: 13.75px;
+    --text-xs: 13px;
+    --text-xs--line-height: 16.25px;
+    --text-sm: 14px;
+    --text-sm--line-height: 17.5px;
+    --text-base: 16px;
+    --text-base--line-height: 20px;
+    --text-lg: 18px;
+    --text-lg--line-height: 22.5px;
+    --text-xl: 20px;
+    --text-xl--line-height: 25px;
+    --text-2xl: 24px;
+    --text-2xl--line-height: 30px;
+    --text-3xl: 31px;
+    --text-3xl--line-height: 38.75px;
+    --text-4xl: 39px;
+    --text-4xl--line-height: 48.75px;
+    --text-5xl: 48px;
+    --text-5xl--line-height: 60px;
+    --text-6xl: 61px;
+    --text-6xl--line-height: 76.25px;
+
+    --font-weight-*: initial;
+    --font-weight-normal: 400;
+    --font-weight-medium: 500;
+
+    --tracking-*: initial;
+    --tracking-normal: 0.32px;
+
+    --radius-*: initial;
+    --radius-xs: 4px;
+    --radius-chip: var(--pds-radius-chip);
+    --radius-item: var(--pds-radius-item);
+    --radius-control: var(--pds-radius-control);
+    --radius-control-lg: var(--pds-radius-control-lg);
+    --radius-card: var(--pds-radius-card);
+    --radius-panel: var(--pds-radius-panel);
+    --radius-full: 9999px;
+
+    --shadow-*: initial;
+    --shadow-float: var(--pds-shadow-float);
+    --shadow-sheet: var(--pds-shadow-sheet);
+    --shadow-action: var(--pds-action-shadow);
+
+    --ease-out-strong: cubic-bezier(0.22, 1, 0.36, 1);
+}
