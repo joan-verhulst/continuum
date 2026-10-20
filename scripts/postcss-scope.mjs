@@ -5,8 +5,9 @@
  * - `:root`, `:host`, `html` and `body` become `.pds`.
  * - Every other selector only matches inside a `.pds` element, or on it when
  *   the selector starts with a class, attribute or pseudo-class.
- * - Cascade layers are unwrapped, so the system's rules are not outranked by
- *   the host's unlayered styles.
+ * - Tailwind's layer names are kept, so in a host that also uses Tailwind the
+ *   system's reset lands in the host's `base` layer and never outranks the
+ *   host's own utilities.
  */
 const SCOPE = '.pds';
 const ROOTS = new Set([':root', ':host', 'html', 'body']);
@@ -47,14 +48,6 @@ const insideKeyframes = rule => {
 const scope = () => ({
     postcssPlugin: 'pds-scope',
     OnceExit(root) {
-        root.walkAtRules('layer', atRule => {
-            if (atRule.nodes) {
-                atRule.replaceWith(atRule.nodes);
-            } else {
-                atRule.remove();
-            }
-        });
-
         root.walkRules(rule => {
             if (insideKeyframes(rule) || rule.parent?.type === 'rule') {
                 return;
