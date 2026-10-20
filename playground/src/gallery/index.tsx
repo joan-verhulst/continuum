@@ -3,7 +3,6 @@ import {
     BadgeSection,
     ButtonSection,
     ChipSection,
-    DockSection,
     SegmentedSection,
     ToolbarSection,
 } from './actions';
@@ -16,7 +15,12 @@ import {
     TableSection,
 } from './data';
 import { InputSection, OptionSection, SelectionSection, SelectSection } from './forms';
-import { BreadcrumbSection, PaginationSection, SidebarSection } from './navigation';
+import {
+    BottomBarSection,
+    BreadcrumbSection,
+    PaginationSection,
+    SidebarSection,
+} from './navigation';
 import { DialogSection, MenuSection, RailSection } from './overlays';
 
 const sections: SectionEntry[] = [
@@ -92,12 +96,6 @@ const sections: SectionEntry[] = [
         render: () => <RailSection />,
     },
     {
-        id: 'c-dock',
-        title: 'Dock',
-        description: 'A floating pill nav at the bottom of the page, with an action beside it.',
-        render: () => <DockSection />,
-    },
-    {
         id: 'c-toolbar',
         title: 'Toolbar',
         description: 'The report editor’s inline AI toolbar and floating action bar.',
@@ -107,8 +105,15 @@ const sections: SectionEntry[] = [
         id: 'c-sidebar',
         title: 'Sidebar and app shell',
         description:
-            'The canvas-and-panel shell: the sidebar sits on the canvas, the page on an inset panel with a header bar.',
+            'The email sequencing sidebar: logo row, a divided block with the call to action, projects that fold open to their pages, and the account footer.',
         render: () => <SidebarSection />,
+    },
+    {
+        id: 'c-bottom-bar',
+        title: 'Bottom bar',
+        description:
+            'The bar that floats at the bottom of a page: a dock of sections and the page’s main action beside it, a labelled action, a filter with its count or a lone +.',
+        render: () => <BottomBarSection />,
     },
     {
         id: 'c-breadcrumb',

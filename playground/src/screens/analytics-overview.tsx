@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import {
     AreaChart,
+    BottomBar,
     Card,
     CardTitle,
     cn,
@@ -173,8 +174,8 @@ export const AnalyticsOverview = () => {
 
     return (
         <AnalyticsPage
-            dock={
-                <div className="flex items-center gap-2">
+            bottomBar={
+                <BottomBar floating>
                     <Dock aria-label="Sections" onValueChange={setSection} value={section}>
                         <DockItem value="overview">
                             <LayoutGrid strokeWidth={1.5} />
@@ -226,7 +227,7 @@ export const AnalyticsOverview = () => {
                             ))}
                         </DropdownMenuContent>
                     </DropdownMenu>
-                </div>
+                </BottomBar>
             }
             rail="analytics"
         >

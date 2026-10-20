@@ -1,6 +1,7 @@
-import { ListFilter } from 'lucide-react';
+import { ListFilter, UserCheck, UserPlus, Users } from 'lucide-react';
 import {
     AreaChart,
+    BottomBar,
     Card,
     Dock,
     DockAction,
@@ -44,16 +45,19 @@ export const CheckoutFunnel = () => {
 
     return (
         <AnalyticsPage
-            dock={
-                <div className="flex items-center gap-2">
+            bottomBar={
+                <BottomBar floating>
                     <Dock aria-label="Visitor segment" onValueChange={setSegment} value={segment}>
-                        <DockItem className="pl-3" value="all">
+                        <DockItem value="all">
+                            <Users strokeWidth={1.5} />
                             All visitors
                         </DockItem>
-                        <DockItem className="pl-3" value="new">
+                        <DockItem value="new">
+                            <UserPlus strokeWidth={1.5} />
                             New
                         </DockItem>
-                        <DockItem className="pl-3" value="returning">
+                        <DockItem value="returning">
+                            <UserCheck strokeWidth={1.5} />
                             Returning
                         </DockItem>
                     </Dock>
@@ -61,7 +65,7 @@ export const CheckoutFunnel = () => {
                         <ListFilter strokeWidth={1.5} />
                         (2)
                     </DockAction>
-                </div>
+                </BottomBar>
             }
             rail="dashboards"
         >

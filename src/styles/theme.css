@@ -134,6 +134,7 @@
     --radius-control-lg: var(--pds-radius-control-lg);
     --radius-card: var(--pds-radius-card);
     --radius-panel: var(--pds-radius-panel);
+    --radius-dock: var(--pds-radius-dock);
     --radius-full: 9999px;
 
     --shadow-*: initial;

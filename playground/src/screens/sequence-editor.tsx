@@ -1,7 +1,5 @@
 import {
-    Bell,
     ChartLine,
-    ChevronDown,
     Copy,
     EllipsisVertical,
     FileClock,
@@ -11,16 +9,15 @@ import {
     ListTree,
     Mail,
     Megaphone,
-    PanelLeft,
     Pencil,
     Plus,
     Rocket,
     Settings,
-    ShieldCheck,
     Star,
     Timer,
     ToggleLeft,
     Trash2,
+    UserRoundCog,
     Users,
     Workflow,
 } from 'lucide-react';
@@ -30,6 +27,7 @@ import {
     Avatar,
     AvatarStack,
     Badge,
+    BottomBar,
     Breadcrumb,
     BreadcrumbHome,
     BreadcrumbItem,
@@ -38,19 +36,23 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
     Button,
+    Dock,
+    DockAction,
+    DockItem,
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
     HeaderBar,
+    NavGroup,
     NavItem,
-    NavSection,
     Separator,
     Sidebar,
-    SidebarFooter,
+    SidebarGroup,
     SidebarHeader,
-    SidebarNav,
+    SidebarLogo,
+    SidebarToggle,
     Table,
     TableBody,
     TableCell,
@@ -58,12 +60,9 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-    Toolbar,
-    ToolbarButton,
-    WorkspaceSwitcher,
 } from 'personal-design-system';
 import { Fragment, useState } from 'react';
-import { SectionTitle } from './shared';
+import { AccountFooter, SectionTitle, WorkspaceMark } from './shared';
 
 type Email = { id: number; name: string; delay?: string };
 type Phase = { id: string; title: string; interval?: string; emails: Email[] };
@@ -92,85 +91,72 @@ const initialPhases: Phase[] = [
 ];
 
 const projects = [
-    { id: 'mobile', label: 'Mobile app launch' },
-    { id: 'retention', label: 'Customer retention program' },
-    { id: 'refresh', label: 'Brand refresh initiative' },
+    { id: 'mobile', icon: '📱', label: 'Mobile app launch' },
+    { id: 'retention', icon: '👯', label: 'Customer retention program' },
+    { id: 'refresh', icon: '🌿', label: 'Brand refresh initiative' },
 ];
 
-const SequenceSidebar = () => {
-    const [expanded, setExpanded] = useState(true);
-
-    return (
-        <Sidebar>
-            <SidebarHeader>
-                <div className="flex items-center justify-between py-1 pl-1">
-                    {/* The product mark; the system has no logo slot of its own. */}
-                    <span className="grid size-[26px] place-items-center rounded-chip bg-action text-on-action">
-                        <Mail className="size-4" strokeWidth={1.5} />
-                    </span>
-                    <Button aria-label="Collapse sidebar" size="icon-sm" variant="ghost">
-                        <PanelLeft strokeWidth={1.5} />
-                    </Button>
-                </div>
-                <Button className="w-full justify-start">
-                    <Plus strokeWidth={1.5} />
-                    New sequence
-                </Button>
-            </SidebarHeader>
-            <SidebarNav aria-label="Sequences">
-                <NavItem icon={<ListTree strokeWidth={1.5} />}>All sequences</NavItem>
-                <NavItem icon={<Timer strokeWidth={1.5} />}>Active campaigns</NavItem>
-                <NavItem icon={<FileClock strokeWidth={1.5} />}>Drafts</NavItem>
-                <NavItem icon={<Star strokeWidth={1.5} />}>Templates</NavItem>
-            </SidebarNav>
-            <Separator />
-            <NavSection title="Projects">
-                <NavItem
-                    active
-                    aria-expanded={expanded}
-                    icon={<Rocket strokeWidth={1.5} />}
-                    onClick={() => setExpanded(open => !open)}
-                    trailing={
-                        <ChevronDown
-                            className={expanded ? 'size-4' : 'size-4 -rotate-90'}
-                            strokeWidth={1.5}
-                        />
-                    }
-                >
-                    Q1 growth campaign
+const SequenceSidebar = () => (
+    <Sidebar>
+        <SidebarHeader>
+            <SidebarLogo>
+                <Mail strokeWidth={2} />
+            </SidebarLogo>
+            <SidebarToggle />
+        </SidebarHeader>
+        <SidebarGroup aria-label="Sequences" divided>
+            {/* The call to action sits a step apart from the list below it. */}
+            <NavItem icon={<Plus strokeWidth={1.5} />} variant="primary">
+                New sequence
+            </NavItem>
+            <NavItem icon={<ListTree strokeWidth={1.5} />}>All sequences</NavItem>
+            <NavItem active icon={<Timer strokeWidth={1.5} />}>
+                Active campaigns
+            </NavItem>
+            <NavItem icon={<FileClock strokeWidth={1.5} />}>Drafts</NavItem>
+            <NavItem icon={<Star strokeWidth={1.5} />}>Templates</NavItem>
+        </SidebarGroup>
+        <SidebarGroup aria-label="Projects" label="Projects">
+            <NavGroup defaultOpen icon="🚀" label="Q1 growth campaign">
+                <NavItem icon={<Megaphone strokeWidth={1.5} />} variant="inset">
+                    Campaigns
                 </NavItem>
-                {expanded && (
-                    <div className="flex flex-col gap-0.5 pl-5">
-                        <NavItem icon={<Megaphone strokeWidth={1.5} />}>Campaigns</NavItem>
-                        <NavItem icon={<Workflow strokeWidth={1.5} />}>Automations</NavItem>
-                        <NavItem icon={<ChartLine strokeWidth={1.5} />}>Analytics</NavItem>
-                        <NavItem icon={<ShieldCheck strokeWidth={1.5} />}>Permissions</NavItem>
-                    </div>
-                )}
-                {projects.map(project => (
-                    <NavItem icon={<Folder strokeWidth={1.5} />} key={project.id}>
-                        {project.label}
+                <NavItem icon={<Workflow strokeWidth={1.5} />} variant="inset">
+                    Automations
+                </NavItem>
+                <NavItem icon={<ChartLine strokeWidth={1.5} />} variant="inset">
+                    Analytics
+                </NavItem>
+                <NavItem icon={<UserRoundCog strokeWidth={1.5} />} variant="inset">
+                    Permissions
+                </NavItem>
+            </NavGroup>
+            {projects.map(project => (
+                <NavGroup icon={project.icon} key={project.id} label={project.label}>
+                    <NavItem icon={<Megaphone strokeWidth={1.5} />} variant="inset">
+                        Campaigns
                     </NavItem>
-                ))}
-                <NavItem icon={<Folder strokeWidth={1.5} />}>All projects</NavItem>
-            </NavSection>
-            <SidebarFooter>
-                <Separator />
-                <div className="flex items-center gap-1">
-                    <WorkspaceSwitcher
-                        avatar={<Avatar alt="" fallback="N" />}
-                        className="min-w-0 flex-1"
-                        name="Northwind"
-                        plan="Startup"
-                    />
-                    <Button aria-label="Notifications" size="icon" variant="ghost">
-                        <Bell strokeWidth={1.5} />
-                    </Button>
-                </div>
-            </SidebarFooter>
-        </Sidebar>
-    );
-};
+                    <NavItem icon={<ChartLine strokeWidth={1.5} />} variant="inset">
+                        Analytics
+                    </NavItem>
+                </NavGroup>
+            ))}
+            {/* Set at the project rows' size, as drawn. */}
+            <NavItem variant="project" icon={<Folder strokeWidth={1.5} />}>
+                All projects
+            </NavItem>
+        </SidebarGroup>
+        <AccountFooter
+            avatar={
+                <WorkspaceMark>
+                    <Mail strokeWidth={2} />
+                </WorkspaceMark>
+            }
+            name="Northwind Agency"
+            plan="Startup"
+        />
+    </Sidebar>
+);
 
 const EmailActions = ({ name, onDelete }: { name: string; onDelete: () => void }) => (
     <DropdownMenu>
@@ -231,7 +217,7 @@ export const SequenceEditor = () => {
     return (
         <AppShell className="h-full min-h-0 min-w-[1280px]">
             <SequenceSidebar />
-            <AppPanel className="relative">
+            <AppPanel>
                 <HeaderBar>
                     <Breadcrumb>
                         <BreadcrumbList className="text-sm">
@@ -365,28 +351,26 @@ export const SequenceEditor = () => {
                     </div>
                 </div>
 
-                <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center">
-                    <div className="pointer-events-auto flex items-center gap-2">
-                        <Toolbar aria-label="Campaign" variant="floating">
-                            <ToolbarButton>
-                                <ToggleLeft strokeWidth={1.5} />
-                                Eligibility
-                            </ToolbarButton>
-                            <ToolbarButton>
-                                <Users strokeWidth={1.5} />
-                                Audience
-                            </ToolbarButton>
-                            <ToolbarButton>
-                                <Settings strokeWidth={1.5} />
-                                Settings
-                            </ToolbarButton>
-                        </Toolbar>
-                        <Button size="lg">
-                            Start campaign
-                            <Rocket strokeWidth={1.5} />
-                        </Button>
-                    </div>
-                </div>
+                <BottomBar floating>
+                    <Dock aria-label="Campaign">
+                        <DockItem value="eligibility">
+                            <ToggleLeft strokeWidth={1.5} />
+                            Eligibility
+                        </DockItem>
+                        <DockItem value="audience">
+                            <Users strokeWidth={1.5} />
+                            Audience
+                        </DockItem>
+                        <DockItem value="settings">
+                            <Settings strokeWidth={1.5} />
+                            Settings
+                        </DockItem>
+                    </Dock>
+                    <DockAction>
+                        Start campaign
+                        <Rocket strokeWidth={1.5} />
+                    </DockAction>
+                </BottomBar>
             </AppPanel>
         </AppShell>
     );

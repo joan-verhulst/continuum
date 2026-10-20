@@ -1,12 +1,10 @@
 import {
     ArrowRight,
-    BarChart3,
     Calendar,
     Check,
     CircleCheck,
     Filter,
     Globe,
-    LayoutDashboard,
     ListFilter,
     Minimize2,
     Plus,
@@ -21,9 +19,6 @@ import {
 import {
     Badge,
     Button,
-    Dock,
-    DockAction,
-    DockItem,
     FilterChip,
     SegmentedControl,
     SegmentedControlItem,
@@ -272,31 +267,6 @@ export const SegmentedSection = () => (
             </Tabs>
         </Specimen>
     </>
-);
-
-export const DockSection = () => (
-    <Specimen
-        note="The floating bottom nav of the analytics screens"
-        stageClassName="justify-center bg-neutral-100 py-10"
-        title="Dock"
-    >
-        <div className="flex flex-wrap items-center justify-center gap-2">
-            <Dock defaultValue="overview">
-                <DockItem value="overview">
-                    <LayoutDashboard {...icon} /> Overview
-                </DockItem>
-                <DockItem value="funnels">
-                    <BarChart3 {...icon} /> Funnels
-                </DockItem>
-                <DockItem value="audience">
-                    <Users {...icon} /> Audience
-                </DockItem>
-            </Dock>
-            <DockAction aria-label="Filters, 6 applied">
-                <ListFilter {...icon} /> (6)
-            </DockAction>
-        </div>
-    </Specimen>
 );
 
 export const ToolbarSection = () => {

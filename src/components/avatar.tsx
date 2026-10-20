@@ -17,6 +17,7 @@ export const avatarVariants = cva(
             size: {
                 24: 'size-6 text-xxs [&_svg]:size-3.5',
                 32: 'size-8 text-xs [&_svg]:size-4',
+                36: 'size-9 text-xs [&_svg]:size-4',
             },
         },
         defaultVariants: {

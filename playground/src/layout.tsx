@@ -1,4 +1,4 @@
-import { cn, NavItem, SidebarNav } from 'personal-design-system';
+import { cn, NavItem } from 'personal-design-system';
 import { type ComponentProps, type ReactNode, useEffect, useState } from 'react';
 
 export type SectionEntry = {
@@ -146,7 +146,10 @@ export const DocsPage = ({ sections, ids }: DocsPageProps) => {
     return (
         <div className="grid lg:grid-cols-[224px_minmax(0,1fr)]">
             <aside className="hidden border-neutral-200 border-r lg:block">
-                <SidebarNav aria-label="On this page" className="sticky top-[72px] p-3">
+                <nav
+                    aria-label="On this page"
+                    className="sticky top-[72px] flex flex-col gap-0.5 p-3"
+                >
                     {sections.map(section => (
                         <NavItem
                             active={section.id === active}
@@ -161,7 +164,7 @@ export const DocsPage = ({ sections, ids }: DocsPageProps) => {
                             {section.title}
                         </NavItem>
                     ))}
-                </SidebarNav>
+                </nav>
             </aside>
             <div className="flex min-w-0 flex-col gap-10 p-6 lg:p-10">
                 {sections.map(section => (

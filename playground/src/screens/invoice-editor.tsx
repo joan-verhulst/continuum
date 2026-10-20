@@ -1,11 +1,11 @@
 import {
     ArrowLeft,
     ArrowRight,
-    Bell,
     CircleX,
     Eye,
     FilePlus,
     FileText,
+    Folder,
     GripHorizontal,
     History,
     House,
@@ -41,8 +41,8 @@ import {
     HeaderBar,
     Kbd,
     MetaRow,
+    NavGroup,
     NavItem,
-    NavSection,
     Separator,
     Sheet,
     SheetBody,
@@ -50,9 +50,10 @@ import {
     SheetHeader,
     SheetTitle,
     Sidebar,
-    SidebarFooter,
+    SidebarGroup,
     SidebarHeader,
-    SidebarNav,
+    SidebarLogo,
+    SidebarToggle,
     Table,
     TableBody,
     TableCell,
@@ -60,10 +61,9 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-    WorkspaceSwitcher,
 } from 'personal-design-system';
 import { type CSSProperties, useLayoutEffect, useRef, useState } from 'react';
-import { SectionTitle } from './shared';
+import { AccountFooter, SectionTitle } from './shared';
 
 const HEADER_BAR = 54;
 const SHEET_GAP = 12;
@@ -183,50 +183,67 @@ const history = [
     },
 ] as const;
 
+const clients = [
+    { id: 'orchard', icon: '🍏', label: 'Orchard & Co' },
+    { id: 'lumen', icon: '💡', label: 'Lumen Labs' },
+    { id: 'tide', icon: '🌊', label: 'Tideline Travel' },
+];
+
 const InvoiceSidebar = () => (
     <Sidebar>
         <SidebarHeader>
-            <WorkspaceSwitcher
-                avatar={<Avatar alt="" fallback="N" />}
-                name="Northwind Studio"
-                plan="Startup"
-            />
+            <SidebarLogo>
+                <Wallet strokeWidth={2} />
+            </SidebarLogo>
+            <SidebarToggle />
         </SidebarHeader>
-        <SidebarNav aria-label="Main">
+        <SidebarGroup aria-label="Payments" divided>
+            <NavItem icon={<Plus strokeWidth={1.5} />} variant="primary">
+                New invoice
+            </NavItem>
             <NavItem icon={<House strokeWidth={1.5} />} trailing={<Kbd>H</Kbd>}>
                 Home
             </NavItem>
-            <NavItem
-                icon={<Bell strokeWidth={1.5} />}
-                trailing={
-                    <Badge tone="success" variant="count">
-                        2
-                    </Badge>
-                }
-            >
-                Notifications
-            </NavItem>
-        </SidebarNav>
-        <NavSection title="Payments">
-            <NavItem icon={<Users strokeWidth={1.5} />}>Payees</NavItem>
             <NavItem active icon={<FileText strokeWidth={1.5} />}>
                 Invoices
             </NavItem>
+            <NavItem icon={<Users strokeWidth={1.5} />}>Payees</NavItem>
             <NavItem icon={<History strokeWidth={1.5} />}>Payment history</NavItem>
-            <NavItem icon={<Wallet strokeWidth={1.5} />}>Start new payment</NavItem>
-        </NavSection>
-        <NavSection title="Account">
             <NavItem icon={<Settings strokeWidth={1.5} />} trailing={<Kbd>S</Kbd>}>
                 Settings
             </NavItem>
-        </NavSection>
-        <SidebarFooter>
-            <WorkspaceSwitcher
-                avatar={<Avatar alt="" fallback="JC" shape="round" />}
-                name="Jane Cooper"
-                plan="jane@northwind.studio"
-            />
-        </SidebarFooter>
+        </SidebarGroup>
+        <SidebarGroup aria-label="Clients" label="Clients">
+            <NavGroup defaultOpen icon="🏛️" label="Harbour Street Studio">
+                <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                    Invoices
+                </NavItem>
+                <NavItem icon={<FilePlus strokeWidth={1.5} />} variant="inset">
+                    Quotes
+                </NavItem>
+                <NavItem icon={<History strokeWidth={1.5} />} variant="inset">
+                    Payments
+                </NavItem>
+            </NavGroup>
+            {clients.map(client => (
+                <NavGroup icon={client.icon} key={client.id} label={client.label}>
+                    <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                        Invoices
+                    </NavItem>
+                    <NavItem icon={<History strokeWidth={1.5} />} variant="inset">
+                        Payments
+                    </NavItem>
+                </NavGroup>
+            ))}
+            <NavItem variant="project" icon={<Folder strokeWidth={1.5} />}>
+                All clients
+            </NavItem>
+        </SidebarGroup>
+        <AccountFooter
+            avatar={<Avatar alt="" size={36} fallback="JC" />}
+            name="Jane Cooper"
+            plan="jane@northwind.studio"
+        />
     </Sidebar>
 );
 

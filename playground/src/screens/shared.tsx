@@ -25,6 +25,8 @@ import {
     Rail,
     RailItem,
     RailSeparator,
+    SidebarAccount,
+    SidebarFooter,
 } from 'personal-design-system';
 import { Fragment, type ReactNode, useState } from 'react';
 
@@ -101,24 +103,33 @@ export const AnalyticsTopBar = ({ trail }: { trail: string[] }) => (
 
 /**
  * Page frame of the analytics screens: an 896px column centred on the canvas,
- * the rail floating over its left edge and the dock pinned to the bottom. The
- * column scrolls on its own so the rail stays centred in whatever frame holds it.
+ * the rail floating over its left edge and a floating BottomBar pinned to the
+ * bottom of the frame. The column scrolls on its own so the rail and the bar
+ * stay put in whatever frame holds it.
  */
 export const AnalyticsPage = ({
     rail,
     children,
-    dock,
+    bottomBar,
 }: {
     rail: string;
     children: ReactNode;
-    dock?: ReactNode;
+    /** A `<BottomBar floating>`; this frame is its positioned parent. */
+    bottomBar?: ReactNode;
 }) => (
     <div className="relative h-full min-w-[1200px] bg-neutral-50">
         <AnalyticsRail initial={rail} />
         <div className="h-full overflow-y-auto">
-            <div className="mx-auto flex w-[896px] flex-col pt-5 pb-12">{children}</div>
-            {dock && <div className="sticky bottom-6 z-10 flex justify-center pb-6">{dock}</div>}
+            <div
+                className={cn(
+                    'mx-auto flex w-[896px] flex-col pt-5',
+                    bottomBar ? 'pb-28' : 'pb-12',
+                )}
+            >
+                {children}
+            </div>
         </div>
+        {bottomBar}
     </div>
 );
 
@@ -143,6 +154,31 @@ export const ChartCardHeader = ({
             <CardDelta trend={trend}>{delta}</CardDelta>
         </div>
     </CardHeader>
+);
+
+/** A dark square with a white 16px glyph: the workspace logo in a sidebar footer. */
+export const WorkspaceMark = ({ children }: { children: ReactNode }) => (
+    <span className="grid size-full place-items-center bg-neutral-950 text-neutral-50 [&_svg]:size-4">
+        {children}
+    </span>
+);
+
+/** The sidebar footer every app screen shares: who is signed in, and a bell. */
+export const AccountFooter = ({
+    avatar,
+    name,
+    plan,
+}: {
+    avatar: ReactNode;
+    name: ReactNode;
+    plan?: ReactNode;
+}) => (
+    <SidebarFooter>
+        <SidebarAccount avatar={avatar} name={name} plan={plan} />
+        <Button aria-label="Notifications" size="icon" variant="ghost">
+            <Bell className="size-[18px]" strokeWidth={1.5} />
+        </Button>
+    </SidebarFooter>
 );
 
 /** Page and section headings as drawn; the system has no Heading component. */

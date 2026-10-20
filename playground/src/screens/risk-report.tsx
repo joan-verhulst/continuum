@@ -16,6 +16,7 @@ import {
     Search,
     Sparkles,
     SquarePen,
+    Users,
     Wand,
 } from 'lucide-react';
 import {
@@ -37,8 +38,8 @@ import {
     DropdownMenuTrigger,
     HeaderBar,
     Kbd,
+    NavGroup,
     NavItem,
-    NavSection,
     SegmentedControl,
     SegmentedControlItem,
     Select,
@@ -47,8 +48,10 @@ import {
     SelectTrigger,
     SelectValue,
     Sidebar,
+    SidebarGroup,
     SidebarHeader,
-    SidebarNav,
+    SidebarLogo,
+    SidebarToggle,
     Switch,
     Table,
     TableBody,
@@ -68,6 +71,7 @@ import {
     TooltipTrigger,
 } from 'personal-design-system';
 import { type ReactNode, useId, useState } from 'react';
+import { AccountFooter, WorkspaceMark } from './shared';
 
 const topics = [
     'Occupational health policy',
@@ -121,37 +125,68 @@ const scores = [
     ['E', '1'],
 ];
 
+const projects = [
+    { id: 'depot', icon: '🚚', label: 'Fleet depot' },
+    { id: 'lab', icon: '🧪', label: 'Research lab' },
+    { id: 'office', icon: '🏢', label: 'Head office' },
+];
+
 const ReportSidebar = () => (
     <Sidebar>
         <SidebarHeader>
-            <div className="flex items-center gap-2 p-2">
-                {/* The product mark; the system has no logo slot of its own. */}
-                <span className="grid size-[23px] place-items-center rounded-xs bg-action text-on-action">
-                    <Sparkles className="size-4" strokeWidth={1.5} />
-                </span>
-                <span className="font-medium text-action text-base">Northwind</span>
-            </div>
+            <SidebarLogo>
+                <Sparkles strokeWidth={2} />
+            </SidebarLogo>
+            <SidebarToggle />
         </SidebarHeader>
-        <SidebarNav aria-label="Main">
+        <SidebarGroup aria-label="Reports" divided>
+            <NavItem icon={<Plus strokeWidth={1.5} />} variant="primary">
+                New report
+            </NavItem>
             <NavItem icon={<House strokeWidth={1.5} />} trailing={<Kbd>H</Kbd>}>
                 Home
             </NavItem>
             <NavItem icon={<BellRing strokeWidth={1.5} />}>Needs action</NavItem>
-        </SidebarNav>
-        <NavSection title="Reports">
             <NavItem active icon={<FileText strokeWidth={1.5} />}>
                 Reports
             </NavItem>
             <NavItem icon={<FilePen strokeWidth={1.5} />}>Open reports</NavItem>
-            <NavItem icon={<Folder strokeWidth={1.5} />}>Archive</NavItem>
-            <NavItem icon={<Plus strokeWidth={1.5} />}>New report</NavItem>
-        </NavSection>
-        <NavSection title="Management">
-            <NavItem icon={<Folder strokeWidth={1.5} />}>Projects</NavItem>
-            <NavItem icon={<Folder strokeWidth={1.5} />}>Clients</NavItem>
-            <NavItem icon={<Folder strokeWidth={1.5} />}>Audit logs</NavItem>
-            <NavItem icon={<Folder strokeWidth={1.5} />}>Users</NavItem>
-        </NavSection>
+        </SidebarGroup>
+        <SidebarGroup aria-label="Projects" label="Projects">
+            <NavGroup defaultOpen icon="🏭" label="Riverside warehouse">
+                <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                    Reports
+                </NavItem>
+                <NavItem icon={<Users strokeWidth={1.5} />} variant="inset">
+                    Users
+                </NavItem>
+                <NavItem icon={<History strokeWidth={1.5} />} variant="inset">
+                    Audit logs
+                </NavItem>
+            </NavGroup>
+            {projects.map(project => (
+                <NavGroup icon={project.icon} key={project.id} label={project.label}>
+                    <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                        Reports
+                    </NavItem>
+                    <NavItem icon={<Users strokeWidth={1.5} />} variant="inset">
+                        Users
+                    </NavItem>
+                </NavGroup>
+            ))}
+            <NavItem variant="project" icon={<Folder strokeWidth={1.5} />}>
+                All projects
+            </NavItem>
+        </SidebarGroup>
+        <AccountFooter
+            avatar={
+                <WorkspaceMark>
+                    <Sparkles strokeWidth={2} />
+                </WorkspaceMark>
+            }
+            name="Northwind Safety"
+            plan="Business"
+        />
     </Sidebar>
 );
 

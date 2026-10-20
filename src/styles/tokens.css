@@ -169,6 +169,7 @@
     --pds-radius-control-lg: 14px;
     --pds-radius-card: 16px;
     --pds-radius-panel: 12px;
+    --pds-radius-dock: 9999px;
 
     --pds-shadow-float: 1px 1px 4px 0 rgb(20 22 23 / 0.1);
     --pds-shadow-sheet: 0 2px 4px 0 rgb(20 22 23 / 0.1);
@@ -250,6 +251,7 @@
 
 /* Indigo, 2024: the email sequencing editor. Eyes neutrals, Inter, smaller radii. */
 .pds[data-theme="indigo"] {
+    --pds-radius-dock: 10px;
     --pds-action: var(--pds-primary-500);
     --pds-action-hover: var(--pds-primary-600);
     --pds-on-action: #f7f8f7;
@@ -269,6 +271,7 @@
 
 /* Cool greys with white surfaces: shared by the electric and lime products. */
 .pds:is([data-theme="electric"], [data-theme="lime"]) {
+    --pds-radius-dock: 10px;
     --pds-n-50: #ffffff;
     --pds-n-100: #f7f8f8;
     --pds-n-200: #dfe0e2;
@@ -340,6 +343,7 @@
 
 /* Stone, 2025: the dark invoicing app. Warm stone greys and a glossy blue button. */
 .pds[data-theme="stone"] {
+    --pds-radius-dock: 10px;
     --pds-n-50: #ffffff;
     --pds-n-100: #f5f5f4;
     --pds-n-200: #ebebe9;
@@ -387,6 +391,7 @@
 
 /* Violet, 2024: the dark sign-in flow. Pure greys and one purple. */
 .pds[data-theme="violet"] {
+    --pds-radius-dock: 10px;
     --pds-n-50: #fdfdfd;
     --pds-n-100: #f1f1f1;
     --pds-n-200: #dcdcdc;

@@ -4,12 +4,14 @@ import {
     ChartColumn,
     Clock,
     Eye,
+    FileText,
     Folder,
     Gauge,
     Heart,
     Layers,
     LifeBuoy,
     MousePointerClick,
+    Plus,
     Share2,
     Sparkles,
     TrendingUp,
@@ -35,8 +37,8 @@ import {
     HeaderBar,
     Input,
     Kbd,
+    NavGroup,
     NavItem,
-    NavSection,
     OptionList,
     OptionRow,
     RadioGroup,
@@ -45,14 +47,14 @@ import {
     SegmentedControlItem,
     Separator,
     Sidebar,
-    SidebarFooter,
+    SidebarGroup,
     SidebarHeader,
-    SidebarNav,
+    SidebarLogo,
+    SidebarToggle,
     SuggestionChip,
-    WorkspaceSwitcher,
 } from 'personal-design-system';
 import { type ReactNode, useState } from 'react';
-import { SectionTitle } from './shared';
+import { AccountFooter, SectionTitle } from './shared';
 
 type Stat = { id: string; label: string; icon: ReactNode };
 
@@ -93,23 +95,30 @@ const suggestions = {
     'Last 90 days': 'July 23, 2025 – October 20, 2025',
 };
 
+const clients = [
+    { id: 'fern', icon: '🪴', label: 'Fern & Field' },
+    { id: 'velo', icon: '🚲', label: 'Velo Works' },
+    { id: 'dune', icon: '🏜️', label: 'Dune Outfitters' },
+];
+
 const ReportSidebar = () => (
     <Sidebar>
         <SidebarHeader>
-            <WorkspaceSwitcher avatar={<Avatar alt="" fallback="N" />} name="Northwind Online" />
+            <SidebarLogo>
+                <ChartColumn strokeWidth={2} />
+            </SidebarLogo>
+            <SidebarToggle />
         </SidebarHeader>
-        <SidebarNav aria-label="Main">
+        <SidebarGroup aria-label="Main" divided>
+            <NavItem icon={<Plus strokeWidth={1.5} />} variant="primary">
+                New report
+            </NavItem>
             <NavItem icon={<Gauge strokeWidth={1.5} />} trailing={<Kbd>H</Kbd>}>
                 Home
             </NavItem>
-        </SidebarNav>
-        <NavSection title="Clients">
             <NavItem active icon={<Users strokeWidth={1.5} />} trailing={<Kbd>C</Kbd>}>
                 Clients
             </NavItem>
-            <NavItem icon={<Folder strokeWidth={1.5} />}>Archive</NavItem>
-        </NavSection>
-        <NavSection title="Settings">
             <NavItem icon={<Layers strokeWidth={1.5} />} trailing={<Kbd>L</Kbd>}>
                 Logs
             </NavItem>
@@ -123,14 +132,38 @@ const ReportSidebar = () => (
             >
                 Support
             </NavItem>
-        </NavSection>
-        <SidebarFooter>
-            <WorkspaceSwitcher
-                avatar={<Avatar alt="" fallback="JC" />}
-                name="Jane Cooper"
-                plan="Startup"
-            />
-        </SidebarFooter>
+        </SidebarGroup>
+        <SidebarGroup aria-label="Clients" label="Clients">
+            <NavGroup defaultOpen icon="☕" label="Copper Kettle Café">
+                <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                    Reports
+                </NavItem>
+                <NavItem icon={<Share2 strokeWidth={1.5} />} variant="inset">
+                    Channels
+                </NavItem>
+                <NavItem icon={<Calendar strokeWidth={1.5} />} variant="inset">
+                    Schedule
+                </NavItem>
+            </NavGroup>
+            {clients.map(client => (
+                <NavGroup icon={client.icon} key={client.id} label={client.label}>
+                    <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                        Reports
+                    </NavItem>
+                    <NavItem icon={<Share2 strokeWidth={1.5} />} variant="inset">
+                        Channels
+                    </NavItem>
+                </NavGroup>
+            ))}
+            <NavItem variant="project" icon={<Folder strokeWidth={1.5} />}>
+                Archive
+            </NavItem>
+        </SidebarGroup>
+        <AccountFooter
+            avatar={<Avatar alt="" size={36} fallback="JC" />}
+            name="Jane Cooper"
+            plan="Startup"
+        />
     </Sidebar>
 );
 
