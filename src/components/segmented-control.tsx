@@ -31,7 +31,7 @@ export const SegmentedControl = ({
     return (
         <ToggleGroup.Root
             className={cn(
-                'inline-flex h-[34px] items-center rounded-item border border-neutral-200 bg-segment-track p-0.5 pl-[3px]',
+                'inline-flex h-[34px] items-center rounded-item border border-neutral-200 bg-segment-track p-0.5',
                 className,
             )}
             data-slot="segmented-control"

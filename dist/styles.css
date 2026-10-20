@@ -1294,10 +1294,6 @@
     padding-left: calc(var(--spacing) * 8);
   }
 
-  .pds .pl-\[3px\], .pds.pl-\[3px\] {
-    padding-left: 3px;
-  }
-
   .pds .text-center, .pds.text-center {
     text-align: center;
   }
@@ -1678,6 +1674,10 @@
     border-bottom-left-radius: var(--pds-radius-panel);
   }
 
+  .pds .first\:pl-\[min\(12px\,calc\(8px\+var\(--pds-radius-dock\)\/5\)\)\]:first-child,.pds.first\:pl-\[min\(12px\,calc\(8px\+var\(--pds-radius-dock\)\/5\)\)\]:first-child {
+    padding-left: min(12px, calc(8px + var(--pds-radius-dock) / 5));
+  }
+
   .pds .first\:text-neutral-800:first-child, .pds.first\:text-neutral-800:first-child {
     color: var(--pds-neutral-800);
   }
@@ -1695,6 +1695,10 @@
   .pds .last\:border-b-0:last-child, .pds.last\:border-b-0:last-child {
     border-bottom-style: var(--tw-border-style);
     border-bottom-width: 0;
+  }
+
+  .pds .last\:pr-\[min\(12px\,calc\(8px\+var\(--pds-radius-dock\)\/5\)\)\]:last-child,.pds.last\:pr-\[min\(12px\,calc\(8px\+var\(--pds-radius-dock\)\/5\)\)\]:last-child {
+    padding-right: min(12px, calc(8px + var(--pds-radius-dock) / 5));
   }
 
   @media (hover: hover) {

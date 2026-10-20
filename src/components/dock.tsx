@@ -74,6 +74,8 @@ export const DockItem = ({ className, ...props }: ComponentProps<typeof ToggleGr
         className={cn(
             // The bar's radius minus its 3px inset, so the curves stay concentric.
             'inline-flex h-8 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-[calc(var(--pds-radius-dock)-3px)] px-3 font-medium text-neutral-600 text-xs transition-[background-color,color,box-shadow] duration-150',
+            // The outer sides ease from 12px at a pill to 8px at square corners, as the curve stops eating into them.
+            'first:pl-[min(12px,calc(8px+var(--pds-radius-dock)/5))] last:pr-[min(12px,calc(8px+var(--pds-radius-dock)/5))]',
             'hover:text-neutral-950',
             'data-[state=on]:bg-segment data-[state=on]:text-segment-fg data-[state=on]:[box-shadow:inset_0_0_0_1px_var(--pds-segment-border),var(--pds-segment-shadow)]',
             'disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
