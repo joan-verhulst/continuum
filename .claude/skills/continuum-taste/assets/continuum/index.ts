@@ -17,6 +17,7 @@ export * from './components/funnel-chart';
 export * from './components/icon-tile';
 export * from './components/input';
 export * from './components/kbd';
+export * from './components/logo';
 export * from './components/option-row';
 export * from './components/pagination';
 export * from './components/radio-group';

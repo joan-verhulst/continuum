@@ -1,3 +1,8 @@
+<picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/continuum-mark-dark.svg">
+    <img alt="" height="48" src="assets/continuum-mark.svg" width="48">
+</picture>
+
 # Continuum
 
 A React design system distilled from my product screens of 2024–2026: one set of components and tokens that
