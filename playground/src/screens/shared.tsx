@@ -1,13 +1,4 @@
 import {
-    Bell,
-    ChartColumn,
-    Globe,
-    LayoutGrid,
-    MessagesSquare,
-    PanelLeft,
-    Plus,
-} from 'lucide-react';
-import {
     Avatar,
     Breadcrumb,
     BreadcrumbHome,
@@ -28,6 +19,15 @@ import {
     SidebarAccount,
     SidebarFooter,
 } from 'continuum';
+import {
+    Bell,
+    ChartColumn,
+    Globe,
+    LayoutGrid,
+    MessagesSquare,
+    PanelLeft,
+    Plus,
+} from 'lucide-react';
 import { Fragment, type ReactNode, useState } from 'react';
 
 const railItems = [

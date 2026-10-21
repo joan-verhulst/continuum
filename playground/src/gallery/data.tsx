@@ -1,17 +1,4 @@
 import {
-    CircleAlert,
-    CircleCheck,
-    Clock,
-    Ellipsis,
-    FileText,
-    Mail,
-    Rocket,
-    Send,
-    ShieldCheck,
-    Sparkles,
-    TriangleAlert,
-} from 'lucide-react';
-import {
     ActivityItem,
     ActivityList,
     AreaChart,
@@ -21,6 +8,7 @@ import {
     Button,
     Card,
     CardDelta,
+    CardFigure,
     CardHeader,
     CardTitle,
     CardValue,
@@ -43,6 +31,19 @@ import {
     TableHeader,
     TableRow,
 } from 'continuum';
+import {
+    CircleAlert,
+    CircleCheck,
+    Clock,
+    Ellipsis,
+    FileText,
+    Mail,
+    Rocket,
+    Send,
+    ShieldCheck,
+    Sparkles,
+    TriangleAlert,
+} from 'lucide-react';
 import { useState } from 'react';
 import { ComponentSet, Specimen, Variant } from '../layout';
 
@@ -104,10 +105,10 @@ export const CardSection = () => (
             <Card>
                 <CardHeader>
                     <CardTitle>Sessions this week</CardTitle>
-                    <div className="flex items-baseline gap-2">
+                    <CardFigure>
                         <CardValue size="lg">13,980</CardValue>
                         <CardDelta>+12.4% vs last week</CardDelta>
-                    </div>
+                    </CardFigure>
                 </CardHeader>
                 <AreaChart
                     annotation={{ index: 3, icon: <Rocket {...icon} /> }}
@@ -120,10 +121,10 @@ export const CardSection = () => (
                 <Card>
                     <CardHeader>
                         <CardTitle>Returning visitors</CardTitle>
-                        <div className="flex items-baseline gap-2">
+                        <CardFigure>
                             <CardValue size="xl">38%</CardValue>
                             <CardDelta trend="down">−2.4%</CardDelta>
-                        </div>
+                        </CardFigure>
                     </CardHeader>
                 </Card>
                 <MetaRow label="Invoice date" value="12 Oct 2025" />

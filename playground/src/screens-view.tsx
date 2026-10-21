@@ -1,8 +1,16 @@
 import {
     Badge,
+    Card,
+    CardTitle,
+    Field,
+    FieldLabel,
     SegmentedControl,
     SegmentedControlItem,
+    Switch,
     Theme,
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
     useTheme,
 } from 'continuum';
 import { useState } from 'react';
@@ -17,12 +25,13 @@ type ScreensViewProps = {
 
 export const ScreensView = ({ screenId, onScreenChange }: ScreensViewProps) => {
     const picked = useTheme();
-    const [source, setSource] = useState<'own' | 'picked'>('own');
+    const [usePicked, setUsePicked] = useState(false);
     const current = screens.find(screen => screen.id === screenId) ?? screens[0];
     const own = current ? themeMeta[current.theme] : undefined;
-    const theme = source === 'own' && current ? current.theme : picked.theme;
-    const mode = source === 'own' && current ? current.mode : picked.mode;
+    const theme = !usePicked && current ? current.theme : picked.theme;
+    const mode = !usePicked && current ? current.mode : picked.mode;
     const shown = themeMeta[theme];
+    const pickedName = themeMeta[picked.theme].name;
 
     return (
         <>
@@ -47,41 +56,43 @@ export const ScreensView = ({ screenId, onScreenChange }: ScreensViewProps) => {
                                 ))}
                             </SegmentedControl>
                         </div>
-                        <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-4">
                             <Badge variant="dot">
                                 {shown.name} · {shown.year} · {mode}
                             </Badge>
-                            <SegmentedControl
-                                aria-label="Theme for the screen"
-                                onValueChange={value =>
-                                    setSource(value === 'picked' ? 'picked' : 'own')
-                                }
-                                value={source}
-                            >
-                                <SegmentedControlItem value="own">
-                                    Its own ({own?.name})
-                                </SegmentedControlItem>
-                                <SegmentedControlItem value="picked">
-                                    Picked ({themeMeta[picked.theme].name})
-                                </SegmentedControlItem>
-                            </SegmentedControl>
+                            <Field className="flex-row items-center gap-2.5">
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Switch
+                                            checked={usePicked}
+                                            onCheckedChange={setUsePicked}
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        Off, it shows in {own?.name}, the theme it was drawn in
+                                    </TooltipContent>
+                                </Tooltip>
+                                <FieldLabel>Show in {pickedName}</FieldLabel>
+                            </Field>
                         </div>
                     </div>
-                    <div
-                        className="h-[calc(100dvh-148px)] min-h-[560px] overflow-auto rounded-card border border-neutral-200"
+                    <Card
+                        className="h-[calc(100dvh-168px)] min-h-[560px] gap-0 overflow-auto p-0"
                         data-screen-frame
                     >
                         <Theme className="h-full" key={current.id} mode={mode} theme={theme}>
                             {current.render()}
                         </Theme>
-                    </div>
+                    </Card>
                 </div>
             ) : (
-                <div className="flex flex-col items-center gap-2 px-6 py-24 text-center">
-                    <span className="font-medium text-neutral-950 text-sm">No screens yet</span>
-                    <span className="max-w-sm text-neutral-600 text-xs">
-                        Screens rebuilt from the Figma files will show up here.
-                    </span>
+                <div className="p-4 lg:p-6">
+                    <Card className="items-center gap-1 px-6 py-24 text-center">
+                        <p className="font-medium text-neutral-950 text-sm">No screens yet</p>
+                        <CardTitle className="max-w-sm">
+                            Screens rebuilt from the Figma files will show up here.
+                        </CardTitle>
+                    </Card>
                 </div>
             )}
         </>

@@ -58,30 +58,42 @@ export const computeRaster = (width: number, params: RasterParams): Raster => {
 /** A run of columns: where it starts (1-based) and how many it spans. */
 export type Span = [start: number, span: number];
 
+/** The outer grid's share for navigation: a sixth of the viewport's columns. */
+export const navColumnsFor = (columns: ColumnCount) => {
+    if (columns >= 12) return columns / 6;
+    if (columns === 8) return 2;
+    return 0;
+};
+
+/** Container widths the page steps down through before it goes fluid. */
+export const containerSteps = [1440, 1280, 1024, 768] as const;
+
+/**
+ * The inner container: the widest step that fits the space beside the
+ * navigation, never wider than the chosen maximum; below the last step it
+ * takes whatever is there.
+ */
+export const containerFor = (available: number, max: number) =>
+    containerSteps.find(step => step <= max && step <= available) ?? available;
+
 export type Areas = {
-    /** The navigation column; absent when there is no room for it. */
-    nav?: Span;
     /** The column labels hang in; absent when they stack above their content. */
     head?: Span;
     main: Span;
 };
 
 /**
- * The page in three columns of columns: navigation, hanging labels, content.
- * Each gives way in turn as the raster loses columns.
+ * The container in two columns of columns: hanging labels and content. The
+ * labels give way and stack once the raster has too few columns to spare.
  */
 export const areasFor = (columns: ColumnCount): Areas => {
     if (columns >= 12) {
-        const sixth = columns / 6;
-        return {
-            nav: [1, sixth],
-            head: [1 + sixth, sixth],
-            main: [1 + sixth * 2, columns - sixth * 2],
-        };
+        const quarter = columns / 4;
+        return { head: [1, quarter], main: [1 + quarter, columns - quarter] };
     }
 
     if (columns === 8) {
-        return { nav: [1, 2], main: [3, 6] };
+        return { head: [1, 2], main: [3, 6] };
     }
 
     return { main: [1, columns] };
@@ -89,18 +101,42 @@ export const areasFor = (columns: ColumnCount): Areas => {
 
 export const gridColumn = ([start, span]: Span) => `${start} / span ${span}`;
 
-/** How the sequence table divides the content columns, per content width. */
-export const tableSpans = (main: number): Record<TableColumn, number> => {
-    switch (main) {
-        case 16:
-            return { delay: 2, name: 6, template: 4, click: 2, open: 2 };
-        case 8:
-            return { delay: 1, name: 3, template: 2, click: 1, open: 1 };
-        case 6:
-            return { delay: 1, name: 2, template: 1, click: 1, open: 1 };
-        default:
-            return { delay: 1, name: 2, template: 0, click: 0, open: 1 };
-    }
+export type ColumnSpec<Key extends string = string> = {
+    key: Key;
+    label: string;
+    /** Grid columns it takes at least. */
+    span: number;
+    /** Higher stays longer; the lowest go first when the columns run out. */
+    priority: number;
+    /** Takes whatever columns are left over. */
+    flexible?: boolean;
 };
 
-export type TableColumn = 'delay' | 'name' | 'template' | 'click' | 'open';
+/**
+ * Lays table columns onto the content's grid columns: every column takes whole
+ * grid columns, the least important drop out until the rest fit, and the
+ * flexible one takes up the slack.
+ */
+export const allocateColumns = <Key extends string>(
+    available: number,
+    specs: ColumnSpec<Key>[],
+) => {
+    const kept = [...specs];
+    const total = () => kept.reduce((sum, spec) => sum + spec.span, 0);
+
+    while (total() > available && kept.length > 1) {
+        const droppable = kept.filter(spec => !spec.flexible);
+        const lowest = droppable.reduce((low, spec) => (spec.priority < low.priority ? spec : low));
+        kept.splice(kept.indexOf(lowest), 1);
+    }
+
+    const slack = Math.max(0, available - total());
+    let start = 1;
+
+    return kept.map(spec => {
+        const span = spec.span + (spec.flexible ? slack : 0);
+        const within: Span = [start, span];
+        start += span;
+        return { ...spec, within };
+    });
+};

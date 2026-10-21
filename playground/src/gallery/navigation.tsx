@@ -1,23 +1,4 @@
 import {
-    Bell,
-    ChartColumn,
-    Folder,
-    ListFilter,
-    ListTree,
-    Megaphone,
-    NotebookPen,
-    Plus,
-    Rocket,
-    Settings,
-    Star,
-    Timer,
-    ToggleLeft,
-    Users,
-    UsersRound,
-    Workflow,
-    Zap,
-} from 'lucide-react';
-import {
     AppPanel,
     AppShell,
     Avatar,
@@ -51,6 +32,25 @@ import {
     SidebarLogo,
     SidebarToggle,
 } from 'continuum';
+import {
+    Bell,
+    ChartColumn,
+    Folder,
+    ListFilter,
+    ListTree,
+    Megaphone,
+    NotebookPen,
+    Plus,
+    Rocket,
+    Settings,
+    Star,
+    Timer,
+    ToggleLeft,
+    Users,
+    UsersRound,
+    Workflow,
+    Zap,
+} from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { ComponentSet, Specimen, Variant } from '../layout';
 
@@ -376,25 +376,19 @@ export const BottomBarSection = () => (
 
         <Specimen
             note="Corners follow the theme unless shape says otherwise"
-            stageClassName="block bg-neutral-100 p-0"
+            stageClassName="grid gap-8 bg-neutral-100 py-10 xl:grid-cols-3"
             title="Shapes"
         >
-            <div className="grid gap-px bg-neutral-200 xl:grid-cols-3">
-                {shapes.map(item => (
-                    <div
-                        className="flex flex-col items-center gap-4 bg-neutral-100 px-4 py-8"
-                        key={item.id}
-                    >
-                        {actions.map(action => (
-                            <BottomBar key={action.id}>
-                                <SectionDock defaultValue="audience" shape={item.shape} />
-                                {action.render(item.shape)}
-                            </BottomBar>
-                        ))}
-                        <span className="text-neutral-500 text-xxs">{item.label}</span>
-                    </div>
-                ))}
-            </div>
+            {shapes.map(item => (
+                <Variant className="items-center gap-4" key={item.id} label={item.label}>
+                    {actions.map(action => (
+                        <BottomBar key={action.id}>
+                            <SectionDock defaultValue="audience" shape={item.shape} />
+                            {action.render(item.shape)}
+                        </BottomBar>
+                    ))}
+                </Variant>
+            ))}
         </Specimen>
 
         <Specimen

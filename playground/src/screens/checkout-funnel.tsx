@@ -1,4 +1,3 @@
-import { ListFilter, UserCheck, UserPlus, Users } from 'lucide-react';
 import {
     AreaChart,
     BottomBar,
@@ -12,6 +11,7 @@ import {
     SegmentedControlItem,
     StatCard,
 } from 'continuum';
+import { ListFilter, UserCheck, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
 import { AnalyticsPage, AnalyticsTopBar, ChartCardHeader, PageTitle } from './shared';
 

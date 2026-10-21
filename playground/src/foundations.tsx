@@ -1,16 +1,29 @@
 import {
     Badge,
     Button,
+    Card,
+    CardHeader,
+    CardTitle,
+    CardValue,
     cn,
+    DescriptionItem,
+    DescriptionList,
     SegmentedControl,
     SegmentedControlItem,
+    Separator,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
     Tabs,
     TabsList,
     TabsTrigger,
     useTheme,
 } from 'continuum';
-import type { ReactNode } from 'react';
-import { DocsPage, Note, PageHeader, type SectionEntry } from './layout';
+import { Fragment, type ReactNode } from 'react';
+import { DocsPage, PageHeader, type SectionEntry } from './layout';
 import { themeMeta } from './meta';
 import { readBackground, readFont, readFontFamily, readRadius, useResolved } from './resolve';
 
@@ -103,20 +116,22 @@ const Swatch = ({ className, step, role }: { className: string; step: string; ro
                 className={cn('h-14 rounded-chip ring-1 ring-neutral-950/5 ring-inset', className)}
                 ref={ref}
             />
-            <div className="flex flex-col gap-0.5">
-                <span className="font-medium text-neutral-950 text-xxs">{step}</span>
-                <span className="text-neutral-600 text-xxs tabular-nums">{hex}</span>
-                {role && <span className="text-neutral-500 text-xxs">{role}</span>}
+            <div className="flex flex-col gap-0.5 text-xxs">
+                <span className="font-medium text-neutral-950">{step}</span>
+                <span className="text-neutral-600 tabular-nums">{hex}</span>
+                {role && <span className="text-neutral-500">{role}</span>}
             </div>
         </div>
     );
 };
 
 const ColourRamps = () => (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-4">
         {Object.entries(ramps).map(([name, classes]) => (
-            <div className="flex flex-col gap-3" key={name}>
-                <span className="font-medium text-neutral-950 text-xs capitalize">{name}</span>
+            <Card key={name}>
+                <CardHeader>
+                    <CardTitle className="capitalize">{name}</CardTitle>
+                </CardHeader>
                 <div className="overflow-x-auto pb-1">
                     <div className="grid min-w-[720px] grid-cols-11 gap-2">
                         {classes.map((className, i) => {
@@ -136,27 +151,25 @@ const ColourRamps = () => (
                         })}
                     </div>
                 </div>
-            </div>
+            </Card>
         ))}
     </div>
 );
 
 type TokenRowProps = { name: string; className: string; read?: typeof readBackground };
 
+/** A row of a semantic card's list: the role, a chip in its colour and the value read off it. */
 const TokenRow = ({ name, className, read = readBackground }: TokenRowProps) => {
-    const [ref, value] = useResolved(read);
+    const [ref, value] = useResolved<HTMLSpanElement>(read);
 
     return (
-        <div className="flex items-center gap-3">
-            <div
-                className={cn('size-7 shrink-0 rounded-chip ring-1 ring-neutral-950/10', className)}
+        <DescriptionItem term={name}>
+            <span
+                className={cn('size-4 shrink-0 rounded-xs ring-1 ring-neutral-950/10', className)}
                 ref={ref}
             />
-            <div className="flex min-w-0 flex-col">
-                <span className="truncate font-medium text-neutral-950 text-xs">{name}</span>
-                <span className="text-neutral-600 text-xxs tabular-nums">{value}</span>
-            </div>
-        </div>
+            <span className="font-normal text-neutral-600 tabular-nums">{value}</span>
+        </DescriptionItem>
     );
 };
 
@@ -171,23 +184,20 @@ const SemanticCard = ({
     tokens: TokenRowProps[];
     sample: ReactNode;
 }) => (
-    <div className="flex flex-col overflow-hidden rounded-card border border-neutral-200">
+    <Card>
         {/* On the surface, not the canvas: Eyes' tint is the canvas colour and would vanish. */}
-        <div className="flex min-h-28 items-center justify-center border-neutral-200 border-b p-6">
-            {sample}
-        </div>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-            <div className="flex flex-col gap-1">
-                <span className="font-medium text-neutral-950 text-sm">{title}</span>
-                <span className="text-neutral-600 text-xs leading-5">{description}</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-                {tokens.map(token => (
-                    <TokenRow key={token.name} {...token} />
-                ))}
-            </div>
-        </div>
-    </div>
+        <div className="flex min-h-24 items-center justify-center">{sample}</div>
+        <Separator />
+        <CardHeader className="gap-1">
+            <CardValue className="text-sm">{title}</CardValue>
+            <CardTitle className="leading-5">{description}</CardTitle>
+        </CardHeader>
+        <DescriptionList className="mt-auto">
+            {tokens.map(token => (
+                <TokenRow key={token.name} {...token} />
+            ))}
+        </DescriptionList>
+    </Card>
 );
 
 const SemanticColours = () => (
@@ -306,11 +316,11 @@ const TypeRow = ({ name, className, use }: (typeof typeScale)[number]) => {
     const [ref, metrics] = useResolved(readFont);
 
     return (
-        <div className="grid items-baseline gap-x-6 gap-y-2 border-neutral-200 border-b py-5 last:border-b-0 md:grid-cols-[160px_minmax(0,1fr)]">
-            <div className="flex flex-col gap-0.5">
-                <span className="font-medium text-neutral-950 text-xs">text-{name}</span>
-                <span className="text-neutral-600 text-xxs tabular-nums">{metrics} px</span>
-                <span className="text-neutral-500 text-xxs">{use}</span>
+        <div className="grid items-baseline gap-x-6 gap-y-2 md:grid-cols-[160px_minmax(0,1fr)]">
+            <div className="flex flex-col items-start gap-1.5">
+                <Badge>text-{name}</Badge>
+                <CardTitle className="tabular-nums">{metrics} px</CardTitle>
+                <CardTitle className="text-neutral-500">{use}</CardTitle>
             </div>
             <div
                 className={cn('flex min-w-0 flex-col gap-1 text-neutral-950', className)}
@@ -323,38 +333,38 @@ const TypeRow = ({ name, className, use }: (typeof typeScale)[number]) => {
     );
 };
 
+const TypeFact = ({ label, children }: { label: string; children: ReactNode }) => (
+    <Card>
+        <CardHeader className="gap-1">
+            <CardTitle>{label}</CardTitle>
+            <CardValue className="text-sm">{children}</CardValue>
+        </CardHeader>
+    </Card>
+);
+
 const TypeScale = () => {
     const [ref, family] = useResolved(readFontFamily);
 
     return (
-        <div className="flex flex-col gap-6">
-            <div className="flex flex-wrap gap-3" ref={ref}>
-                <div className="flex flex-col gap-1 rounded-card border border-neutral-200 px-4 py-3">
-                    <span className="text-neutral-600 text-xxs">Family</span>
-                    <span className="font-medium text-neutral-950 text-sm">{family}</span>
-                </div>
-                <div className="flex flex-col gap-1 rounded-card border border-neutral-200 px-4 py-3">
-                    <span className="text-neutral-600 text-xxs">Weights</span>
-                    <span className="text-neutral-950 text-sm">
-                        <span className="font-normal">Normal 400</span>
-                        <span className="text-neutral-400"> · </span>
-                        <span className="font-medium">Medium 500</span>
-                    </span>
-                </div>
-                <div className="flex flex-col gap-1 rounded-card border border-neutral-200 px-4 py-3">
-                    <span className="text-neutral-600 text-xxs">Tracking</span>
-                    <span className="font-medium text-neutral-950 text-sm">0.32px, everywhere</span>
-                </div>
-                <div className="flex flex-col gap-1 rounded-card border border-neutral-200 px-4 py-3">
-                    <span className="text-neutral-600 text-xxs">Line height</span>
-                    <span className="font-medium text-neutral-950 text-sm">1.25 × size</span>
-                </div>
+        <div className="flex flex-col gap-4">
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4" ref={ref}>
+                <TypeFact label="Family">{family}</TypeFact>
+                <TypeFact label="Weights">
+                    <span className="font-normal">Normal 400</span>
+                    <span className="font-normal text-neutral-400"> · </span>
+                    <span>Medium 500</span>
+                </TypeFact>
+                <TypeFact label="Tracking">0.32px, everywhere</TypeFact>
+                <TypeFact label="Line height">1.25 × size</TypeFact>
             </div>
-            <div className="rounded-card border border-neutral-200 px-4">
-                {typeScale.map(row => (
-                    <TypeRow key={row.name} {...row} />
+            <Card className="gap-5" layout="list">
+                {typeScale.map((row, i) => (
+                    <Fragment key={row.name}>
+                        {i > 0 && <Separator />}
+                        <TypeRow {...row} />
+                    </Fragment>
                 ))}
-            </div>
+            </Card>
         </div>
     );
 };
@@ -372,7 +382,7 @@ const RadiusTile = ({ name, className, use }: (typeof radii)[number]) => {
     const [ref, value] = useResolved(readRadius);
 
     return (
-        <div className="flex flex-col gap-3">
+        <Card>
             <div
                 className={cn(
                     'flex h-24 items-end justify-end border border-neutral-300 bg-neutral-100 p-2',
@@ -380,39 +390,41 @@ const RadiusTile = ({ name, className, use }: (typeof radii)[number]) => {
                 )}
                 ref={ref}
             >
-                <span className="font-medium text-lg text-neutral-950 tabular-nums">{value}</span>
+                <CardValue>{value}</CardValue>
             </div>
-            <div className="flex flex-col gap-0.5">
-                <span className="font-medium text-neutral-950 text-xs">rounded-{name}</span>
-                <span className="text-neutral-500 text-xxs">{use}</span>
-            </div>
-        </div>
+            <CardHeader className="items-start gap-1.5">
+                <Badge>rounded-{name}</Badge>
+                <CardTitle className="text-neutral-500">{use}</CardTitle>
+            </CardHeader>
+        </Card>
     );
 };
 
 const Radii = () => (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
             {radii.map(radius => (
                 <RadiusTile key={radius.name} {...radius} />
             ))}
         </div>
-        <div className="flex flex-col gap-3">
-            <span className="font-medium text-neutral-950 text-xs">How they nest</span>
-            <div className="rounded-panel border border-neutral-200 bg-neutral-100 p-3">
-                <span className="mb-2 block text-neutral-600 text-xxs">panel</span>
-                <div className="rounded-card border border-neutral-200 bg-neutral-50 p-3">
-                    <span className="mb-2 block text-neutral-600 text-xxs">card</span>
+        <Card>
+            <CardHeader>
+                <CardValue className="text-sm">How they nest</CardValue>
+            </CardHeader>
+            <div className="flex flex-col items-start gap-2 rounded-panel border border-neutral-200 bg-neutral-100 p-3">
+                <Badge>panel</Badge>
+                <Card className="w-full gap-2 p-3">
+                    <Badge className="self-start">card</Badge>
                     <div className="flex flex-wrap items-center gap-3">
                         <div className="flex h-9 flex-1 items-center gap-2 rounded-item bg-neutral-100 px-2">
                             <Badge className="bg-neutral-50">chip</Badge>
-                            <span className="text-neutral-600 text-xxs">item</span>
+                            <CardTitle>item</CardTitle>
                         </div>
                         <Button tabIndex={-1}>control</Button>
                     </div>
-                </div>
+                </Card>
             </div>
-        </div>
+        </Card>
     </div>
 );
 
@@ -432,54 +444,67 @@ const spacing = [
 ] as const;
 
 const Spacing = () => (
-    <div className="rounded-card border border-neutral-200 px-4 py-2">
-        {spacing.map(step => (
-            <div
-                className="grid grid-cols-[48px_56px_minmax(0,1fr)] items-center gap-4 border-neutral-200 border-b py-2.5 last:border-b-0"
-                key={step.name}
-            >
-                <span className="font-medium text-neutral-950 text-xs">{step.name}</span>
-                <span className="text-neutral-600 text-xxs tabular-nums">
-                    {Number(step.name) * 4}px
-                </span>
-                <span className={cn('h-4 rounded-xs bg-action', step.className)} />
-            </div>
-        ))}
-    </div>
+    <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHead className="w-24">Step</TableHead>
+                <TableHead className="w-24" numeric>
+                    Size
+                </TableHead>
+                <TableHead>Sample</TableHead>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            {spacing.map(step => (
+                <TableRow key={step.name}>
+                    <TableCell>{step.name}</TableCell>
+                    <TableCell className="font-normal text-neutral-600" numeric>
+                        {Number(step.name) * 4}px
+                    </TableCell>
+                    <TableCell>
+                        <span className={cn('block h-4 rounded-xs bg-action', step.className)} />
+                    </TableCell>
+                </TableRow>
+            ))}
+        </TableBody>
+    </Table>
 );
+
+const elevations = [
+    {
+        name: 'Hairline',
+        className: '',
+        note: 'border-neutral-200, 1px: how cards, tables and panels are told apart',
+    },
+    {
+        name: 'shadow-float',
+        className: 'shadow-float',
+        note: 'The one soft shadow: floating bars, the selected nav item, secondary buttons, menus',
+    },
+    {
+        name: 'shadow-sheet',
+        className: 'shadow-sheet',
+        note: 'Side sheets and dialogs, the only layers that sit over the page',
+    },
+] as const;
 
 const Elevation = () => (
     <div className="grid gap-4 sm:grid-cols-3">
-        <div className="flex flex-col gap-3">
-            <div className="flex h-32 items-center justify-center rounded-card border border-neutral-200 bg-neutral-100">
-                <span className="rounded-item border border-neutral-200 bg-neutral-50 px-4 py-3 text-xs">
-                    Hairline
-                </span>
-            </div>
-            <span className="text-neutral-600 text-xxs">
-                border-neutral-200, 1px: how cards, tables and panels are told apart
-            </span>
-        </div>
-        <div className="flex flex-col gap-3">
-            <div className="flex h-32 items-center justify-center rounded-card border border-neutral-200 bg-neutral-100">
-                <span className="rounded-item border border-neutral-200 bg-neutral-50 px-4 py-3 text-xs shadow-float">
-                    shadow-float
-                </span>
-            </div>
-            <span className="text-neutral-600 text-xxs">
-                The one soft shadow: floating bars, the selected nav item, secondary buttons, menus
-            </span>
-        </div>
-        <div className="flex flex-col gap-3">
-            <div className="flex h-32 items-center justify-center rounded-card border border-neutral-200 bg-neutral-100">
-                <span className="rounded-item border border-neutral-200 bg-neutral-50 px-4 py-3 text-xs shadow-sheet">
-                    shadow-sheet
-                </span>
-            </div>
-            <span className="text-neutral-600 text-xxs">
-                Side sheets and dialogs, the only layers that sit over the page
-            </span>
-        </div>
+        {elevations.map(level => (
+            <Card key={level.name}>
+                <div className="flex h-32 items-center justify-center rounded-item bg-neutral-100">
+                    <span
+                        className={cn(
+                            'rounded-item border border-neutral-200 bg-neutral-50 px-4 py-3 text-neutral-950 text-xs',
+                            level.className,
+                        )}
+                    >
+                        {level.name}
+                    </span>
+                </div>
+                <CardTitle className="leading-5">{level.note}</CardTitle>
+            </Card>
+        ))}
     </div>
 );
 
@@ -537,10 +562,15 @@ export const Foundations = () => {
         <>
             <PageHeader
                 aside={
-                    <Note className="max-w-xs">
-                        Showing {meta.name} ({meta.year}, {meta.product.toLowerCase()}) in {mode}{' '}
-                        mode. Switch either at the top and every value below is read again.
-                    </Note>
+                    <Card className="max-w-xs gap-1">
+                        <CardTitle>
+                            {meta.name} · {meta.year} · {mode}
+                        </CardTitle>
+                        <p className="text-neutral-950 text-xs leading-5">
+                            Showing the {meta.product.toLowerCase()} theme in {mode} mode. Switch
+                            either at the top and every value below is read again.
+                        </p>
+                    </Card>
                 }
                 description="The tokens every component is built from: ramps used by index, a few semantic roles, a two-weight type scale, nested radii and a single soft shadow."
                 eyebrow="Foundations"

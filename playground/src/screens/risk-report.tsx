@@ -1,25 +1,4 @@
 import {
-    ArrowRight,
-    BellRing,
-    CircleAlert,
-    CircleCheck,
-    CircleHelp,
-    EllipsisVertical,
-    FilePen,
-    FileText,
-    Folder,
-    History,
-    House,
-    MessageCircleQuestion,
-    PanelLeftClose,
-    Plus,
-    Search,
-    Sparkles,
-    SquarePen,
-    Users,
-    Wand,
-} from 'lucide-react';
-import {
     AppPanel,
     AppShell,
     Badge,
@@ -70,6 +49,27 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from 'continuum';
+import {
+    ArrowRight,
+    BellRing,
+    CircleAlert,
+    CircleCheck,
+    CircleHelp,
+    EllipsisVertical,
+    FilePen,
+    FileText,
+    Folder,
+    History,
+    House,
+    MessageCircleQuestion,
+    PanelLeftClose,
+    Plus,
+    Search,
+    Sparkles,
+    SquarePen,
+    Users,
+    Wand,
+} from 'lucide-react';
 import { type ReactNode, useId, useState } from 'react';
 import { AccountFooter, WorkspaceMark } from './shared';
 

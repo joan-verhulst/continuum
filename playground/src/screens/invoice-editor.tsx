@@ -1,25 +1,4 @@
 import {
-    ArrowLeft,
-    ArrowRight,
-    CircleX,
-    Eye,
-    FilePlus,
-    FileText,
-    Folder,
-    GripHorizontal,
-    History,
-    House,
-    List,
-    PenLine,
-    Plus,
-    Send,
-    Settings,
-    SquarePen,
-    Trash2,
-    Users,
-    Wallet,
-} from 'lucide-react';
-import {
     ActivityItem,
     ActivityList,
     AppPanel,
@@ -62,6 +41,27 @@ import {
     TableHeader,
     TableRow,
 } from 'continuum';
+import {
+    ArrowLeft,
+    ArrowRight,
+    CircleX,
+    Eye,
+    FilePlus,
+    FileText,
+    Folder,
+    GripHorizontal,
+    History,
+    House,
+    List,
+    PenLine,
+    Plus,
+    Send,
+    Settings,
+    SquarePen,
+    Trash2,
+    Users,
+    Wallet,
+} from 'lucide-react';
 import { type CSSProperties, useLayoutEffect, useRef, useState } from 'react';
 import { AccountFooter, SectionTitle } from './shared';
 

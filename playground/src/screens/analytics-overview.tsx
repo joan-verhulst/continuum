@@ -1,19 +1,4 @@
 import {
-    Calendar,
-    ChartLine,
-    CloudUpload,
-    Files,
-    Funnel,
-    Gauge,
-    LayoutGrid,
-    Link,
-    ListFilter,
-    MapPin,
-    Monitor,
-    Smartphone,
-    Users,
-} from 'lucide-react';
-import {
     AreaChart,
     BottomBar,
     Card,
@@ -44,6 +29,21 @@ import {
     TableHeader,
     TableRow,
 } from 'continuum';
+import {
+    Calendar,
+    ChartLine,
+    CloudUpload,
+    Files,
+    Funnel,
+    Gauge,
+    LayoutGrid,
+    Link,
+    ListFilter,
+    MapPin,
+    Monitor,
+    Smartphone,
+    Users,
+} from 'lucide-react';
 import { useState } from 'react';
 import { AnalyticsPage, AnalyticsTopBar, ChartCardHeader, PageTitle } from './shared';
 

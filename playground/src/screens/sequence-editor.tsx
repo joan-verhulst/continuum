@@ -1,27 +1,4 @@
 import {
-    ChartLine,
-    Copy,
-    EllipsisVertical,
-    FileClock,
-    Folder,
-    GripHorizontal,
-    Info,
-    ListTree,
-    Mail,
-    Megaphone,
-    Pencil,
-    Plus,
-    Rocket,
-    Settings,
-    Star,
-    Timer,
-    ToggleLeft,
-    Trash2,
-    UserRoundCog,
-    Users,
-    Workflow,
-} from 'lucide-react';
-import {
     AppPanel,
     AppShell,
     Avatar,
@@ -61,6 +38,29 @@ import {
     TableHeader,
     TableRow,
 } from 'continuum';
+import {
+    ChartLine,
+    Copy,
+    EllipsisVertical,
+    FileClock,
+    Folder,
+    GripHorizontal,
+    Info,
+    ListTree,
+    Mail,
+    Megaphone,
+    Pencil,
+    Plus,
+    Rocket,
+    Settings,
+    Star,
+    Timer,
+    ToggleLeft,
+    Trash2,
+    UserRoundCog,
+    Users,
+    Workflow,
+} from 'lucide-react';
 import { Fragment, useState } from 'react';
 import { AccountFooter, SectionTitle, WorkspaceMark } from './shared';
 

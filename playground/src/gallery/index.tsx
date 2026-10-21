@@ -14,7 +14,13 @@ import {
     SmallSection,
     TableSection,
 } from './data';
-import { InputSection, OptionSection, SelectionSection, SelectSection } from './forms';
+import {
+    InputSection,
+    OptionSection,
+    SelectionSection,
+    SelectSection,
+    SliderSection,
+} from './forms';
 import {
     BottomBarSection,
     BreadcrumbSection,
@@ -62,6 +68,13 @@ const sections: SectionEntry[] = [
         title: 'Checkbox, radio and switch',
         description: 'Checked controls fill with the action colour, so each theme recolours them.',
         render: () => <SelectionSection />,
+    },
+    {
+        id: 'c-slider',
+        title: 'Slider',
+        description:
+            'A hairline track filled with the action colour up to a knob on the surface colour.',
+        render: () => <SliderSection />,
     },
     {
         id: 'c-option',

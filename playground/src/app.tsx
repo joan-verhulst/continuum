@@ -21,8 +21,8 @@ const useHashState = () => {
         if (window.location.hash !== hash) window.history.replaceState(null, '', hash);
     }, [state]);
 
+    // The shell scrolls a new view back to its top.
     const update = useCallback((patch: Partial<AppState>) => {
-        if (patch.view) window.scrollTo({ top: 0 });
         setState(current => ({ ...current, ...patch }));
     }, []);
 
@@ -42,7 +42,7 @@ export const App = () => {
 
     return (
         <Theme
-            className="min-h-screen bg-neutral-100 text-neutral-950"
+            className="bg-neutral-100 text-neutral-950"
             mode={state.mode}
             // The demo links point at "#", which would wipe the state kept in the hash.
             onClickCapture={event => {

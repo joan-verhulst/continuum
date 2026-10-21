@@ -1,23 +1,4 @@
 import {
-    BarChart3,
-    ChevronDown,
-    CircleCheck,
-    Clock,
-    Copy,
-    Download,
-    Ellipsis,
-    FileText,
-    History,
-    Home,
-    Inbox,
-    Pencil,
-    Send,
-    Settings,
-    Share2,
-    Trash2,
-    Users,
-} from 'lucide-react';
-import {
     ActivityItem,
     ActivityList,
     Avatar,
@@ -64,6 +45,25 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from 'continuum';
+import {
+    BarChart3,
+    ChevronDown,
+    CircleCheck,
+    Clock,
+    Copy,
+    Download,
+    Ellipsis,
+    FileText,
+    History,
+    Home,
+    Inbox,
+    Pencil,
+    Send,
+    Settings,
+    Share2,
+    Trash2,
+    Users,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Specimen, Variant } from '../layout';
 

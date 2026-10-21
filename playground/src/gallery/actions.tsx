@@ -1,4 +1,19 @@
 import {
+    Badge,
+    Button,
+    FilterChip,
+    SegmentedControl,
+    SegmentedControlItem,
+    SuggestionChip,
+    Tabs,
+    TabsContent,
+    TabsList,
+    TabsTrigger,
+    Toolbar,
+    ToolbarButton,
+    ToolbarChip,
+} from 'continuum';
+import {
     ArrowRight,
     Calendar,
     Check,
@@ -16,21 +31,6 @@ import {
     Users,
     WandSparkles,
 } from 'lucide-react';
-import {
-    Badge,
-    Button,
-    FilterChip,
-    SegmentedControl,
-    SegmentedControlItem,
-    SuggestionChip,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-    Toolbar,
-    ToolbarButton,
-    ToolbarChip,
-} from 'continuum';
 import { useState } from 'react';
 import { ComponentSet, Specimen, Variant } from '../layout';
 

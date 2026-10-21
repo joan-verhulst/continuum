@@ -1,23 +1,4 @@
 import {
-    ArrowRight,
-    Calendar,
-    ChartColumn,
-    Clock,
-    Eye,
-    FileText,
-    Folder,
-    Gauge,
-    Heart,
-    Layers,
-    LifeBuoy,
-    MousePointerClick,
-    Plus,
-    Share2,
-    Sparkles,
-    TrendingUp,
-    Users,
-} from 'lucide-react';
-import {
     AppPanel,
     AppShell,
     Avatar,
@@ -53,6 +34,25 @@ import {
     SidebarToggle,
     SuggestionChip,
 } from 'continuum';
+import {
+    ArrowRight,
+    Calendar,
+    ChartColumn,
+    Clock,
+    Eye,
+    FileText,
+    Folder,
+    Gauge,
+    Heart,
+    Layers,
+    LifeBuoy,
+    MousePointerClick,
+    Plus,
+    Share2,
+    Sparkles,
+    TrendingUp,
+    Users,
+} from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { AccountFooter, SectionTitle } from './shared';
 

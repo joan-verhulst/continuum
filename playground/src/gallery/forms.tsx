@@ -1,16 +1,4 @@
 import {
-    AtSign,
-    Building2,
-    CalendarDays,
-    FileText,
-    Globe,
-    Languages,
-    Mail,
-    PieChart,
-    Search,
-    Table2,
-} from 'lucide-react';
-import {
     Checkbox,
     Field,
     FieldHelper,
@@ -29,9 +17,22 @@ import {
     SelectSeparator,
     SelectTrigger,
     SelectValue,
+    Slider,
     Switch,
     Textarea,
 } from 'continuum';
+import {
+    AtSign,
+    Building2,
+    CalendarDays,
+    FileText,
+    Globe,
+    Languages,
+    Mail,
+    PieChart,
+    Search,
+    Table2,
+} from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { ComponentSet, Specimen, Variant } from '../layout';
 
@@ -168,12 +169,12 @@ export const SelectSection = () => {
     );
 };
 
+/** A control with its label beside it; the Field hands the control the label's target id. */
 const Labelled = ({ children, label }: { children: ReactNode; label: string }) => (
-    // biome-ignore lint/a11y/noLabelWithoutControl: the control is the child
-    <label className="flex cursor-pointer items-center gap-2.5 text-neutral-950 text-xs">
+    <Field className="flex-row items-center gap-2.5">
         {children}
-        {label}
-    </label>
+        <FieldLabel className="cursor-pointer">{label}</FieldLabel>
+    </Field>
 );
 
 export const SelectionSection = () => {
@@ -344,6 +345,41 @@ export const OptionSection = () => {
                         label="Public"
                     />
                 </RadioGroup>
+            </Variant>
+        </Specimen>
+    );
+};
+
+export const SliderSection = () => {
+    const [value, setValue] = useState([64]);
+
+    return (
+        <Specimen stageClassName="gap-10" title="Slider">
+            <ComponentSet>
+                <Variant label="default">
+                    <div className="w-64">
+                        <Slider aria-label="Default" defaultValue={[40]} />
+                    </div>
+                </Variant>
+                <Variant label="range">
+                    <div className="w-64">
+                        <Slider aria-label="Range" defaultValue={[20, 70]} />
+                    </div>
+                </Variant>
+                <Variant label="disabled">
+                    <div className="w-64">
+                        <Slider aria-label="Disabled" defaultValue={[50]} disabled />
+                    </div>
+                </Variant>
+            </ComponentSet>
+            <Variant label="in a field, with its value">
+                <Field className="w-64">
+                    <div className="flex justify-between">
+                        <FieldLabel>Narrowest column</FieldLabel>
+                        <span className="text-neutral-950 text-xs tabular-nums">{value[0]}px</span>
+                    </div>
+                    <Slider max={120} min={32} onValueChange={setValue} value={value} />
+                </Field>
             </Variant>
         </Specimen>
     );
