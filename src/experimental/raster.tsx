@@ -1,4 +1,5 @@
-import { cn } from 'continuum';
+'use client';
+
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
     type ComponentProps,
@@ -10,6 +11,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { cn } from '../lib/cn';
 import {
     areasFor,
     BODY_CAP_ON_GRID,

@@ -2,12 +2,3 @@
 @import "../../src/styles/theme.css";
 
 @source "./";
-
-/*
- * Raster lab: text trimmed to its cap height and baseline, then pushed down
- * so the cap tops out under a grid line and the baseline lands on one.
- */
-.rx {
-    text-box: trim-both cap alphabetic;
-    padding-top: calc(round(up, 1cap, 4px) - 1cap);
-}

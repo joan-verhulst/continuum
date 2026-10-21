@@ -7,6 +7,7 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
+    ContinuumMark,
     cn,
     HeaderBar,
     NavGroup,
@@ -25,7 +26,7 @@ import {
     Switch,
     themes,
 } from 'continuum';
-import { AppWindow, Blocks, Grid3x3, Moon, Palette, Shapes, Sun } from 'lucide-react';
+import { AppWindow, Blocks, Grid3x3, Moon, Palette, Sun } from 'lucide-react';
 import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react';
 import { PageIndexProvider, scrollToSection, usePageIndex } from './layout';
 import { type AppState, themeMeta, toHash, type View, views } from './meta';
@@ -148,7 +149,7 @@ const PlaygroundSidebar = ({
             <SidebarHeader>
                 <div className="flex min-w-0 items-center gap-1">
                     <SidebarLogo>
-                        <Shapes {...icon} />
+                        <ContinuumMark shape="round" size={18} />
                     </SidebarLogo>
                     <span className="truncate font-medium text-neutral-950 text-sm">Continuum</span>
                 </div>

@@ -1,7 +1,4 @@
-<picture>
-    <source media="(prefers-color-scheme: dark)" srcset="assets/continuum-mark-dark.svg">
-    <img alt="" height="48" src="assets/continuum-mark.svg" width="48">
-</picture>
+<img alt="Continuum" height="48" src="assets/continuum-mark-square.svg" width="48">
 
 # Continuum
 

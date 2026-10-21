@@ -21,6 +21,7 @@ await mkdir(screens, { recursive: true });
 
 await cp(join(root, 'src/components'), join(assets, 'components'), { recursive: true });
 await cp(join(root, 'src/lib'), join(assets, 'lib'), { recursive: true });
+await cp(join(root, 'src/experimental'), join(assets, 'experimental'), { recursive: true });
 await cp(join(root, 'src/index.ts'), join(assets, 'index.ts'));
 await cp(join(root, 'src/styles/tokens.css'), join(assets, 'styles/tokens.css'));
 await cp(join(root, 'src/styles/theme.css'), join(assets, 'styles/theme.css'));

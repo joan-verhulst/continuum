@@ -1,14 +1,16 @@
+'use client';
+
+import { Copy, EllipsisVertical, Pencil, Plus, Rocket, Search, Trash2 } from 'lucide-react';
+import { Fragment, useMemo, useState } from 'react';
+import { focusRing } from '../components/button';
 import {
-    cn,
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
     DropdownMenuTrigger,
-    focusRing,
-} from 'continuum';
-import { Copy, EllipsisVertical, Pencil, Plus, Rocket, Search, Trash2 } from 'lucide-react';
-import { Fragment, useMemo, useState } from 'react';
+} from '../components/dropdown-menu';
+import { cn } from '../lib/cn';
 import { allocateColumns, type ColumnSpec, type RasterParams } from './engine';
 import {
     Area,
@@ -144,11 +146,14 @@ export const lotsOfPhases = (): Phase[] =>
         }),
     }));
 
+// Every place with every kind, once: each project is listed, and keyed, by its name
 export const lotsOfProjects = (): Project[] =>
-    Array.from({ length: 120 }, (_, index) => ({
-        label: `${pick(PLACES, index)} ${pick(KINDS, index * 7 + (index >> 3))}`,
-        pages: index === 0 ? ['Campaigns', 'Automations', 'Analytics', 'Permissions'] : undefined,
-    })).sort((a, b) => a.label.localeCompare(b.label));
+    PLACES.flatMap(place => KINDS.map(kind => `${place} ${kind}`))
+        .map((label, index) => ({
+            label,
+            pages: index === 0 ? ['Campaigns', 'Automations', 'Analytics', 'Permissions'] : undefined,
+        }))
+        .sort((a, b) => a.label.localeCompare(b.label));
 
 /** Long lists open on a first step and reveal the rest on request. */
 export const PROJECT_STEP = 12;

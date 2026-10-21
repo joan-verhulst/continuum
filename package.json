@@ -9,6 +9,7 @@
     ],
     "exports": {
         ".": "./src/index.ts",
+        "./experimental": "./src/experimental/index.ts",
         "./styles.css": "./dist/styles.css",
         "./theme.css": "./src/styles/theme.css",
         "./tokens.css": "./src/styles/tokens.css"

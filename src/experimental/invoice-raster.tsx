@@ -1,6 +1,9 @@
-import { cn, focusRing } from 'continuum';
+'use client';
+
 import { Plus, Search, Send, Trash2 } from 'lucide-react';
 import { type CSSProperties, type ReactNode, useMemo, useState } from 'react';
+import { focusRing } from '../components/button';
+import { cn } from '../lib/cn';
 import {
     allocateColumns,
     BODY_CAP_ON_GRID,
