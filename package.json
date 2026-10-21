@@ -23,7 +23,9 @@
         "build:css": "node scripts/build-css.mjs",
         "type-check": "tsc --noEmit && pnpm --filter playground type-check",
         "lint": "biome check",
-        "lint:fix": "biome check --write"
+        "lint:fix": "biome check --write",
+        "build:skill": "node scripts/build-css.mjs && node scripts/build-skill.mjs",
+        "install:skill": "pnpm build:skill && node scripts/build-skill.mjs --install"
     },
     "peerDependencies": {
         "react": ">=19",

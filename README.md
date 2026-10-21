@@ -98,14 +98,16 @@ pnpm dev
 
 ## Scripts
 
-| Script            | Does                                                           |
-| ----------------- | -------------------------------------------------------------- |
-| `pnpm dev`        | Starts the playground (Vite).                                  |
-| `pnpm build`      | Builds `dist/styles.css`, then the playground.                 |
-| `pnpm build:css`  | Builds the scoped `dist/styles.css` (`scripts/build-css.mjs`). |
-| `pnpm type-check` | Type-checks the package and the playground.                    |
-| `pnpm lint`       | Runs Biome.                                                    |
-| `pnpm lint:fix`   | Runs Biome and applies fixes.                                  |
+| Script               | Does                                                           |
+| -------------------- | -------------------------------------------------------------- |
+| `pnpm dev`           | Starts the playground (Vite).                                  |
+| `pnpm build`         | Builds `dist/styles.css`, then the playground.                 |
+| `pnpm build:css`     | Builds the scoped `dist/styles.css` (`scripts/build-css.mjs`). |
+| `pnpm build:skill`   | Bundles the system into the `continuum-taste` Claude skill.    |
+| `pnpm install:skill` | Bundles the skill and installs it to `~/.claude/skills`.       |
+| `pnpm type-check`    | Type-checks the package and the playground.                    |
+| `pnpm lint`          | Runs Biome.                                                    |
+| `pnpm lint:fix`      | Runs Biome and applies fixes.                                  |
 
 ## License
 

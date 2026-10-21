@@ -2,7 +2,13 @@
     "$schema": "https://biomejs.dev/schemas/2.4.0/schema.json",
     "extends": ["biome-config-pixel"],
     "files": {
-        "includes": ["!dist", "!playground/dist", "!reference"]
+        "includes": [
+            "!dist",
+            "!playground/dist",
+            "!reference",
+            "!.claude/skills/*/assets",
+            "!.claude/skills/*/references"
+        ]
     },
     "linter": {
         "rules": {
