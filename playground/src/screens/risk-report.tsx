@@ -69,7 +69,7 @@ import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from 'personal-design-system';
+} from 'continuum';
 import { type ReactNode, useId, useState } from 'react';
 import { AccountFooter, WorkspaceMark } from './shared';
 

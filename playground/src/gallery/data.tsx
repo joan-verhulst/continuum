@@ -42,7 +42,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'personal-design-system';
+} from 'continuum';
 import { useState } from 'react';
 import { ComponentSet, Specimen, Variant } from '../layout';
 

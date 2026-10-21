@@ -1,4 +1,4 @@
-import type { ThemeMode, ThemeName } from 'personal-design-system';
+import type { ThemeMode, ThemeName } from 'continuum';
 import type { ReactNode } from 'react';
 import { AnalyticsOverview } from './analytics-overview';
 import { CheckoutFunnel } from './checkout-funnel';

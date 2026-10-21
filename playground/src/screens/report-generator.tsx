@@ -52,7 +52,7 @@ import {
     SidebarLogo,
     SidebarToggle,
     SuggestionChip,
-} from 'personal-design-system';
+} from 'continuum';
 import { type ReactNode, useState } from 'react';
 import { AccountFooter, SectionTitle } from './shared';
 

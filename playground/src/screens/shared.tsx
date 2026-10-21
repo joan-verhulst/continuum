@@ -27,7 +27,7 @@ import {
     RailSeparator,
     SidebarAccount,
     SidebarFooter,
-} from 'personal-design-system';
+} from 'continuum';
 import { Fragment, type ReactNode, useState } from 'react';
 
 const railItems = [

@@ -1,4 +1,4 @@
-import { cn, NavItem } from 'personal-design-system';
+import { cn, NavItem } from 'continuum';
 import { type ComponentProps, type ReactNode, useEffect, useState } from 'react';
 
 export type SectionEntry = {

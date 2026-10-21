@@ -1,4 +1,4 @@
-import { type ThemeMode, type ThemeName, themes } from 'personal-design-system';
+import { type ThemeMode, type ThemeName, themes } from 'continuum';
 
 type ThemeMeta = {
     name: string;
@@ -17,7 +17,7 @@ export const themeMeta: Record<ThemeName, ThemeMeta> = {
     violet: { name: 'Violet', year: 2024, product: 'Sign-in', mode: 'dark' },
 };
 
-export const views = ['foundations', 'components', 'screens'] as const;
+export const views = ['foundations', 'components', 'screens', 'raster'] as const;
 
 export type View = (typeof views)[number];
 

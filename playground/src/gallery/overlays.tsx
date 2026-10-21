@@ -63,7 +63,7 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from 'personal-design-system';
+} from 'continuum';
 import { useState } from 'react';
 import { Specimen, Variant } from '../layout';
 

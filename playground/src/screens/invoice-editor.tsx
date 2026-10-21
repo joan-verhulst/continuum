@@ -61,7 +61,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'personal-design-system';
+} from 'continuum';
 import { type CSSProperties, useLayoutEffect, useRef, useState } from 'react';
 import { AccountFooter, SectionTitle } from './shared';
 

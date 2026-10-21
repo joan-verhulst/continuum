@@ -1,10 +1,8 @@
-# personal-design-system
+# Continuum
 
 A React design system distilled from my product screens of 2024–2026: one set of components and tokens that
 reproduces the look of several products I designed in Figma. Built on [Radix](https://www.radix-ui.com/)
 primitives (the unified `radix-ui` package), Tailwind CSS v4, class-variance-authority and lucide-react.
-
-The package name is a working title.
 
 ## The idea
 
@@ -38,9 +36,9 @@ components use:
 
 ```css
 @import "tailwindcss";
-@import "personal-design-system/theme.css";
+@import "continuum/theme.css";
 
-@source "../node_modules/personal-design-system/src";
+@source "../node_modules/continuum/src";
 ```
 
 `theme.css` resets Tailwind's default colour, font and weight scales to the system's tokens, so inside this
@@ -52,8 +50,8 @@ stylesheet only the system's palette exists.
 Tailwind setup is needed:
 
 ```tsx
-import 'personal-design-system/styles.css';
-import { Button, Theme } from 'personal-design-system';
+import 'continuum/styles.css';
+import { Button, Theme } from 'continuum';
 
 export const App = () => (
     <Theme theme="eyes" mode="light">

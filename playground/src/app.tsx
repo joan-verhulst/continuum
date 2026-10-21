@@ -1,8 +1,9 @@
-import { Theme } from 'personal-design-system';
+import { Theme } from 'continuum';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Foundations } from './foundations';
 import { Gallery } from './gallery';
 import { type AppState, parseHash, toHash } from './meta';
+import { RasterLab } from './raster/lab';
 import { ScreensView } from './screens-view';
 import { Shell } from './shell';
 
@@ -55,6 +56,7 @@ export const App = () => {
             <Shell onChange={update} state={state}>
                 {state.view === 'foundations' && <Foundations />}
                 {state.view === 'components' && <Gallery />}
+                {state.view === 'raster' && <RasterLab />}
                 {state.view === 'screens' && (
                     <ScreensView
                         onScreenChange={screen => update({ screen })}

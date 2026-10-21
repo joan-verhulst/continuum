@@ -8,7 +8,7 @@ import {
     TabsList,
     TabsTrigger,
     useTheme,
-} from 'personal-design-system';
+} from 'continuum';
 import type { ReactNode } from 'react';
 import { DocsPage, Note, PageHeader, type SectionEntry } from './layout';
 import { themeMeta } from './meta';

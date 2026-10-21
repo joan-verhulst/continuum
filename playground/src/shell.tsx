@@ -1,4 +1,4 @@
-import { AppWindow, Blocks, Moon, Palette, Shapes, Sun } from 'lucide-react';
+import { AppWindow, Blocks, Grid3x3, Moon, Palette, Shapes, Sun } from 'lucide-react';
 import {
     SegmentedControl,
     SegmentedControlItem,
@@ -9,7 +9,7 @@ import {
     SelectValue,
     Switch,
     themes,
-} from 'personal-design-system';
+} from 'continuum';
 import type { ReactNode } from 'react';
 import { type AppState, themeMeta, type View, views } from './meta';
 
@@ -19,6 +19,7 @@ const viewTabs: Record<View, { label: string; icon: ReactNode }> = {
     foundations: { label: 'Foundations', icon: <Palette {...icon} /> },
     components: { label: 'Components', icon: <Blocks {...icon} /> },
     screens: { label: 'Screens', icon: <AppWindow {...icon} /> },
+    raster: { label: 'Raster', icon: <Grid3x3 {...icon} /> },
 };
 
 type ShellProps = {
@@ -37,7 +38,7 @@ export const Shell = ({ state, onChange, children }: ShellProps) => (
                 </span>
                 <div className="flex min-w-0 flex-col">
                     <span className="truncate font-medium text-neutral-950 text-sm">
-                        Personal Design System
+                        Continuum
                     </span>
                     <span className="truncate text-neutral-600 text-xxs">
                         Six products, one set of components

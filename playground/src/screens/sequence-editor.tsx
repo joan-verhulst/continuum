@@ -60,7 +60,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'personal-design-system';
+} from 'continuum';
 import { Fragment, useState } from 'react';
 import { AccountFooter, SectionTitle, WorkspaceMark } from './shared';
 

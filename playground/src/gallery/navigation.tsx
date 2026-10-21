@@ -50,7 +50,7 @@ import {
     SidebarHeader,
     SidebarLogo,
     SidebarToggle,
-} from 'personal-design-system';
+} from 'continuum';
 import { type ReactNode, useState } from 'react';
 import { ComponentSet, Specimen, Variant } from '../layout';
 

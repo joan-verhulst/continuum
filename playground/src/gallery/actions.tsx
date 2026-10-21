@@ -30,7 +30,7 @@ import {
     Toolbar,
     ToolbarButton,
     ToolbarChip,
-} from 'personal-design-system';
+} from 'continuum';
 import { useState } from 'react';
 import { ComponentSet, Specimen, Variant } from '../layout';
 

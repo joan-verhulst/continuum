@@ -11,7 +11,7 @@ import {
     SegmentedControl,
     SegmentedControlItem,
     StatCard,
-} from 'personal-design-system';
+} from 'continuum';
 import { useState } from 'react';
 import { AnalyticsPage, AnalyticsTopBar, ChartCardHeader, PageTitle } from './shared';
 

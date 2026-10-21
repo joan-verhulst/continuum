@@ -4,7 +4,7 @@ import {
     SegmentedControlItem,
     Theme,
     useTheme,
-} from 'personal-design-system';
+} from 'continuum';
 import { useState } from 'react';
 import { PageHeader } from './layout';
 import { themeMeta } from './meta';
