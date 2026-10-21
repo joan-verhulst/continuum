@@ -32,8 +32,8 @@ export const selectTriggerVariants = cva(
     {
         variants: {
             size: {
-                sm: 'h-[34px] px-3',
-                md: 'h-[38px] px-3',
+                sm: 'h-[34px] px-curve [--curve-base:9px] [--curve-radius:var(--pds-radius-control)] [--curve-height:34px]',
+                md: 'h-[38px] px-curve [--curve-base:9px] [--curve-radius:var(--pds-radius-control)] [--curve-height:38px]',
             },
             invalid: {
                 true: 'border-error-500',
@@ -136,7 +136,7 @@ export const SelectItem = ({
 }: ComponentProps<typeof SelectPrimitive.Item>) => (
     <SelectPrimitive.Item
         className={cn(
-            'relative flex h-8 cursor-pointer select-none items-center gap-1.5 rounded-item px-2 font-medium text-neutral-700 text-xs outline-none [&_svg]:text-neutral-600',
+            'relative flex h-8 cursor-pointer select-none items-center gap-1.5 rounded-item px-curve font-medium text-neutral-700 text-xs outline-none [--curve-base:5.5px] [--curve-height:32px] [--curve-radius:var(--pds-radius-item)] [&_svg]:text-neutral-600',
             'data-highlighted:bg-neutral-950/5 data-highlighted:text-neutral-800',
             'data-[state=checked]:bg-neutral-100 data-[state=checked]:text-neutral-950',
             'data-disabled:pointer-events-none data-disabled:opacity-50',

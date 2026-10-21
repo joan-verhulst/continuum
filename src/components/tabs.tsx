@@ -29,7 +29,7 @@ export const TabsTrigger = ({
     <TabsPrimitive.Trigger
         className={cn(
             // Drawn at 8px: the item radius less 2px, the same shape as a segment.
-            'inline-flex h-[29px] cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-[calc(var(--pds-radius-item)-2px)] px-2 font-medium text-neutral-900 text-xs transition-[background-color,color] duration-150',
+            'inline-flex h-[29px] cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-[calc(var(--pds-radius-item)-2px)] px-curve font-medium text-neutral-900 text-xs transition-[background-color,color] duration-150 [--curve-base:6px] [--curve-height:29px] [--curve-radius:calc(var(--pds-radius-item)_-_2px)]',
             'hover:bg-neutral-950/5 hover:text-neutral-950 data-[state=active]:bg-tint data-[state=active]:text-tint-fg',
             'disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
             focusRing,

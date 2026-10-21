@@ -40,7 +40,7 @@ const shapeVariants = {
 };
 
 export const dockVariants = cva(
-    'inline-flex h-10 items-center gap-0.5 rounded-dock border border-neutral-200 bg-neutral-50 p-[3px] shadow-float',
+    'flex h-10 w-fit max-w-full items-center gap-0.5 rounded-dock border border-neutral-200 bg-neutral-50 p-[3px] shadow-float',
     { variants: { shape: shapeVariants }, defaultVariants: { shape: 'theme' } },
 );
 
@@ -98,7 +98,8 @@ export const dockActionVariants = cva(
         variants: {
             shape: shapeVariants,
             size: {
-                default: 'px-4',
+                default:
+                    'px-curve [--curve-base:11px] [--curve-radius:var(--pds-radius-dock)] [--curve-height:40px]',
                 icon: 'w-10',
             },
         },

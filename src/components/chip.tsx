@@ -25,7 +25,7 @@ export const FilterChip = ({
 }: FilterChipProps) => (
     <span
         className={cn(
-            'inline-flex h-[25px] shrink-0 items-center gap-3 whitespace-nowrap rounded-full bg-neutral-100 px-2 font-normal text-neutral-600 text-xs [&_svg:not([class*=size-])]:size-3 [&_svg]:shrink-0',
+            'inline-flex h-[25px] shrink-0 items-center gap-3 whitespace-nowrap rounded-full bg-neutral-100 px-curve font-normal text-neutral-600 text-xs [--curve-base:4.875px] [--curve-height:25px] [--curve-radius:9999px] [&_svg:not([class*=size-])]:size-3 [&_svg]:shrink-0',
             className,
         )}
         data-slot="filter-chip"
@@ -69,7 +69,7 @@ export const SuggestionChip = ({
 }: SuggestionChipProps) => (
     <button
         className={cn(
-            'inline-flex h-[29px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-control border border-neutral-200 px-2 font-normal text-neutral-950 text-xs transition-colors duration-150 hover:border-neutral-300',
+            'inline-flex h-[29px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-control border border-neutral-200 px-curve font-normal text-neutral-950 text-xs transition-colors duration-150 [--curve-base:5px] [--curve-height:29px] [--curve-radius:var(--pds-radius-control)] hover:border-neutral-300',
             'disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
             focusRing,
             className,

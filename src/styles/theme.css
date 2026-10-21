@@ -7,6 +7,18 @@
 
 @source "../components";
 
+/*
+ * Side padding that follows the corner. A rounder corner eats into the space
+ * beside a label, so the padding grows by a quarter of the radius, the radius
+ * capped at half the control's height (where it becomes a pill). Components set
+ * the base, the radius they use and their height; the bases are chosen so the
+ * default theme keeps its measured values and other themes shift with their
+ * corners.
+ */
+@utility px-curve {
+    padding-inline: calc(var(--curve-base) + min(var(--curve-radius), var(--curve-height) / 2) / 4);
+}
+
 @custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
 
 @theme inline {

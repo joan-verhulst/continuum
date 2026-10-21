@@ -7,10 +7,10 @@ export const badgeVariants = cva(
     {
         variants: {
             variant: {
-                soft: 'h-[22px] rounded-chip border px-1.5 text-xxs',
-                pill: 'h-[22px] rounded-full px-2 text-xxs',
-                dot: 'h-[25px] gap-2 rounded-item border border-neutral-200 bg-neutral-50 px-2 text-neutral-950 text-xs',
-                count: 'h-[21px] min-w-8 justify-center rounded-chip px-1.5 text-xxs',
+                soft: 'h-[22px] rounded-chip border px-curve [--curve-base:4.5px] [--curve-radius:var(--pds-radius-chip)] [--curve-height:22px] text-xxs',
+                pill: 'h-[22px] rounded-full px-curve [--curve-base:5.25px] [--curve-radius:9999px] [--curve-height:22px] text-xxs',
+                dot: 'h-[25px] gap-2 rounded-item border border-neutral-200 bg-neutral-50 px-curve [--curve-base:5.5px] [--curve-radius:var(--pds-radius-item)] [--curve-height:25px] text-neutral-950 text-xs',
+                count: 'h-[21px] min-w-8 justify-center rounded-chip px-curve [--curve-base:4.5px] [--curve-radius:var(--pds-radius-chip)] [--curve-height:21px] text-xxs',
             },
             tone: {
                 neutral: '',

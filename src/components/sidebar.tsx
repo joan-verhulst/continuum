@@ -133,7 +133,7 @@ export const SidebarGroup = ({
 );
 
 export const navItemClasses = [
-    'flex w-full cursor-pointer select-none items-center gap-2 rounded-item px-2.5 py-2 text-left font-normal transition-[background-color,color] duration-150',
+    'flex w-full cursor-pointer select-none items-center gap-2 rounded-item px-curve [--curve-base:7.5px] [--curve-radius:var(--pds-radius-item)] [--curve-height:33px] py-2 text-left font-normal transition-[background-color,color] duration-150',
     'hover:bg-neutral-950/5 aria-[current=page]:bg-neutral-950/5',
     '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
     focusRing,

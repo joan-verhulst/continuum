@@ -13,6 +13,8 @@ export type SegmentedControlProps = Omit<
     value?: string;
     defaultValue?: string;
     onValueChange?: (value: string) => void;
+    /** Shares the full width out evenly between the items, instead of hugging them. */
+    fill?: boolean;
 };
 
 /**
@@ -20,6 +22,7 @@ export type SegmentedControlProps = Omit<
  * Always holds one value: clicking the active segment keeps it selected.
  */
 export const SegmentedControl = ({
+    fill,
     value,
     defaultValue,
     onValueChange,
@@ -31,7 +34,9 @@ export const SegmentedControl = ({
     return (
         <ToggleGroup.Root
             className={cn(
-                'inline-flex h-[34px] items-center rounded-item border border-neutral-200 bg-segment-track p-0.5',
+                // Hugs its items even in a stretching flex column, and never outgrows its parent.
+                'flex h-[34px] max-w-full items-center rounded-item border border-neutral-200 bg-segment-track p-0.5',
+                fill ? 'w-full [&>*]:flex-1' : 'w-fit',
                 className,
             )}
             data-slot="segmented-control"
@@ -49,7 +54,7 @@ export const SegmentedControlItem = ({ className, ...props }: SegmentedControlIt
     <ToggleGroup.Item
         className={cn(
             // The track's radius minus its 2px inset, so the curves stay concentric in every theme.
-            'inline-flex h-[29px] cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-[calc(var(--pds-radius-item)-2px)] px-2.5 font-medium text-neutral-600 text-xs transition-[background-color,color,box-shadow] duration-150',
+            'inline-flex h-[29px] min-w-0 cursor-pointer select-none items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-[calc(var(--pds-radius-item)-2px)] px-curve font-medium text-neutral-600 text-xs transition-[background-color,color,box-shadow] duration-150 [--curve-base:8px] [--curve-height:29px] [--curve-radius:calc(var(--pds-radius-item)_-_2px)]',
             'hover:bg-neutral-950/5 hover:text-neutral-800',
             // An inset ring, not a border, so the raised themes' outline adds no width.
             'data-[state=on]:bg-segment data-[state=on]:text-segment-fg data-[state=on]:[box-shadow:inset_0_0_0_1px_var(--pds-segment-border),var(--pds-segment-shadow)]',

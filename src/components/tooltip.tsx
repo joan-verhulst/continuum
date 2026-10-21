@@ -33,7 +33,7 @@ export const TooltipContent = ({
         <ThemeScope>
             <TooltipPrimitive.Content
                 className={cn(
-                    'z-50 max-w-64 select-none text-balance rounded-chip bg-neutral-950 px-2 py-1 font-medium text-neutral-50 text-xxs',
+                    'z-50 max-w-64 select-none text-balance rounded-chip bg-neutral-950 px-curve py-1 font-medium text-neutral-50 text-xxs [--curve-base:6.5px] [--curve-height:22px] [--curve-radius:var(--pds-radius-chip)]',
                     'starting:opacity-0 transition-opacity duration-200 ease-out-strong motion-reduce:transition-none',
                     className,
                 )}

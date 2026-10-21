@@ -34,8 +34,10 @@ const seriesColors = ['chart-5', 'chart-1', 'chart-2', 'chart-3', 'chart-4'];
 
 export { resolveChartColor };
 
-const Y_LABEL_WIDTH = 40;
-const PLOT_LEFT = Y_LABEL_WIDTH + 8;
+// Width of one 13px tabular figure: the tick labels' column is sized to the
+// longest label, so short labels start at the chart's edge instead of floating.
+const FIGURE_WIDTH = 7.5;
+const LABEL_GAP = 8;
 const PLOT_TOP = 8;
 const X_AXIS_HEIGHT = 32;
 
@@ -108,8 +110,8 @@ export const monotonePath = (points: Point[]) => {
 
 /**
  * The analytics overview's sessions chart: hairline gridlines with labels in a
- * 40px gutter, day labels centred under equal columns, and each series a 1px
- * curve over a fill that fades from 33% to nothing.
+ * column as wide as the longest one, each day label under its own point, and
+ * each series a 1px curve over a fill that fades from 33% to nothing.
  */
 export const AreaChart = ({
     data,
@@ -150,12 +152,16 @@ export const AreaChart = ({
     const domainMax = Math.max(...ticks);
     const span = domainMax - domainMin || 1;
 
+    const labelWidth = Math.ceil(
+        Math.max(...ticks.map(tick => formatY(tick).length)) * FIGURE_WIDTH,
+    );
+    const plotLeft = labelWidth + LABEL_GAP;
     const plotBottom = height - X_AXIS_HEIGHT;
-    const plotWidth = Math.max(0, width - PLOT_LEFT);
+    const plotWidth = Math.max(0, width - plotLeft);
     const yOf = (value: number) =>
         plotBottom - ((value - domainMin) / span) * (plotBottom - PLOT_TOP);
     const xOf = (index: number) =>
-        PLOT_LEFT + (count === 1 ? plotWidth / 2 : (index / (count - 1)) * plotWidth);
+        plotLeft + (count === 1 ? plotWidth / 2 : (index / (count - 1)) * plotWidth);
     const baseline = yOf(Math.min(Math.max(0, domainMin), domainMax));
     const annotationX = annotation ? xOf(annotation.index) : 0;
     const colorOf = (line: AreaChartSeries, i: number) =>
@@ -212,7 +218,7 @@ export const AreaChart = ({
                             <g key={tick}>
                                 <line
                                     className="stroke-neutral-200"
-                                    x1={PLOT_LEFT}
+                                    x1={plotLeft}
                                     x2={width}
                                     y1={y}
                                     y2={y}
@@ -221,7 +227,7 @@ export const AreaChart = ({
                                     className="fill-neutral-600 text-xs"
                                     dominantBaseline="central"
                                     textAnchor="end"
-                                    x={Y_LABEL_WIDTH}
+                                    x={labelWidth}
                                     y={y}
                                 >
                                     {formatY(tick)}
@@ -231,13 +237,21 @@ export const AreaChart = ({
                     })}
 
                     {xLabels.map((label, i) => {
-                        const x = PLOT_LEFT + ((i + 0.5) * plotWidth) / count;
+                        // Each label under its own point: the first starts there,
+                        // the last ends there, the rest are centred on theirs.
+                        const x = xOf(i);
+                        const anchor =
+                            count > 1 && i === 0
+                                ? 'start'
+                                : count > 1 && i === count - 1
+                                  ? 'end'
+                                  : 'middle';
                         return (
                             <text
                                 className="fill-neutral-600 text-xs"
                                 dominantBaseline="central"
                                 key={x}
-                                textAnchor="middle"
+                                textAnchor={anchor}
                                 x={x}
                                 y={plotBottom + 24}
                             >

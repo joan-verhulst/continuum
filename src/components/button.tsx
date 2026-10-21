@@ -24,14 +24,14 @@ export const buttonVariants = cva(
                 ghost: 'text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-800',
             },
             size: {
-                md: 'h-[33px] rounded-control px-3',
-                lg: 'h-[41px] rounded-control-lg px-4',
+                md: 'h-[33px] rounded-control px-curve [--curve-base:9px] [--curve-radius:var(--pds-radius-control)] [--curve-height:33px]',
+                lg: 'h-[41px] rounded-control-lg px-curve [--curve-base:12.5px] [--curve-radius:var(--pds-radius-control-lg)] [--curve-height:41px]',
                 icon: 'size-[33px] rounded-control',
                 'icon-sm': 'size-7 rounded-chip',
             },
             shape: {
                 default: '',
-                pill: 'rounded-full',
+                pill: 'rounded-full [--curve-radius:9999px]',
             },
         },
         defaultVariants: {

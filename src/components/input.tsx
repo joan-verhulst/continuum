@@ -18,8 +18,8 @@ export const inputVariants = cva(
     {
         variants: {
             size: {
-                sm: 'h-[34px] rounded-item px-2.5',
-                md: 'h-[38px] rounded-control px-3',
+                sm: 'h-[34px] rounded-item px-curve [--curve-base:7.5px] [--curve-radius:var(--pds-radius-item)] [--curve-height:34px]',
+                md: 'h-[38px] rounded-control px-curve [--curve-base:9px] [--curve-radius:var(--pds-radius-control)] [--curve-height:38px]',
             },
             invalid: {
                 true: 'border-error-500 [&_svg]:text-error-500',

@@ -542,8 +542,16 @@
     height: 100%;
   }
 
+  .pds .h-1, .pds.h-1 {
+    height: var(--spacing);
+  }
+
   .pds .h-3, .pds.h-3 {
     height: calc(var(--spacing) * 3);
+  }
+
+  .pds .h-5, .pds.h-5 {
+    height: calc(var(--spacing) * 5);
   }
 
   .pds .h-8, .pds.h-8 {
@@ -682,6 +690,10 @@
     max-width: calc(var(--spacing) * 64);
   }
 
+  .pds .max-w-full, .pds.max-w-full {
+    max-width: 100%;
+  }
+
   .pds .min-w-\(--radix-select-trigger-width\), .pds.min-w-\(--radix-select-trigger-width\) {
     min-width: var(--radix-select-trigger-width);
   }
@@ -708,6 +720,10 @@
 
   .pds .shrink-0, .pds.shrink-0 {
     flex-shrink: 0;
+  }
+
+  .pds .grow, .pds.grow {
+    flex-grow: 1;
   }
 
   .pds .caption-bottom, .pds.caption-bottom {
@@ -749,12 +765,20 @@
     rotate: -90deg;
   }
 
+  .pds .cursor-grab, .pds.cursor-grab {
+    cursor: grab;
+  }
+
   .pds .cursor-not-allowed, .pds.cursor-not-allowed {
     cursor: not-allowed;
   }
 
   .pds .cursor-pointer, .pds.cursor-pointer {
     cursor: pointer;
+  }
+
+  .pds .touch-none, .pds.touch-none {
+    touch-action: none;
   }
 
   .pds .resize-y, .pds.resize-y {
@@ -1178,16 +1202,8 @@
     padding-inline: var(--spacing);
   }
 
-  .pds .px-1\.5, .pds.px-1\.5 {
-    padding-inline: calc(var(--spacing) * 1.5);
-  }
-
   .pds .px-2, .pds.px-2 {
     padding-inline: calc(var(--spacing) * 2);
-  }
-
-  .pds .px-2\.5, .pds.px-2\.5 {
-    padding-inline: calc(var(--spacing) * 2.5);
   }
 
   .pds .px-3, .pds.px-3 {
@@ -1196,6 +1212,10 @@
 
   .pds .px-4, .pds.px-4 {
     padding-inline: calc(var(--spacing) * 4);
+  }
+
+  .pds .px-curve, .pds.px-curve {
+    padding-inline: calc(var(--curve-base) + min(var(--curve-radius), var(--curve-height) / 2) / 4);
   }
 
   .pds .py-0\.5, .pds.py-0\.5 {
@@ -1607,6 +1627,134 @@
     user-select: none;
   }
 
+  .pds .\[--curve-base\:4\.5px\], .pds.\[--curve-base\:4\.5px\] {
+    --curve-base: 4.5px;
+  }
+
+  .pds .\[--curve-base\:4\.875px\], .pds.\[--curve-base\:4\.875px\] {
+    --curve-base: 4.875px;
+  }
+
+  .pds .\[--curve-base\:5\.5px\], .pds.\[--curve-base\:5\.5px\] {
+    --curve-base: 5.5px;
+  }
+
+  .pds .\[--curve-base\:5\.25px\], .pds.\[--curve-base\:5\.25px\] {
+    --curve-base: 5.25px;
+  }
+
+  .pds .\[--curve-base\:5\.75px\], .pds.\[--curve-base\:5\.75px\] {
+    --curve-base: 5.75px;
+  }
+
+  .pds .\[--curve-base\:5px\], .pds.\[--curve-base\:5px\] {
+    --curve-base: 5px;
+  }
+
+  .pds .\[--curve-base\:6\.5px\], .pds.\[--curve-base\:6\.5px\] {
+    --curve-base: 6.5px;
+  }
+
+  .pds .\[--curve-base\:6px\], .pds.\[--curve-base\:6px\] {
+    --curve-base: 6px;
+  }
+
+  .pds .\[--curve-base\:7\.5px\], .pds.\[--curve-base\:7\.5px\] {
+    --curve-base: 7.5px;
+  }
+
+  .pds .\[--curve-base\:8px\], .pds.\[--curve-base\:8px\] {
+    --curve-base: 8px;
+  }
+
+  .pds .\[--curve-base\:9px\], .pds.\[--curve-base\:9px\] {
+    --curve-base: 9px;
+  }
+
+  .pds .\[--curve-base\:10px\], .pds.\[--curve-base\:10px\] {
+    --curve-base: 10px;
+  }
+
+  .pds .\[--curve-base\:11px\], .pds.\[--curve-base\:11px\] {
+    --curve-base: 11px;
+  }
+
+  .pds .\[--curve-base\:12\.5px\], .pds.\[--curve-base\:12\.5px\] {
+    --curve-base: 12.5px;
+  }
+
+  .pds .\[--curve-height\:21px\], .pds.\[--curve-height\:21px\] {
+    --curve-height: 21px;
+  }
+
+  .pds .\[--curve-height\:22px\], .pds.\[--curve-height\:22px\] {
+    --curve-height: 22px;
+  }
+
+  .pds .\[--curve-height\:25px\], .pds.\[--curve-height\:25px\] {
+    --curve-height: 25px;
+  }
+
+  .pds .\[--curve-height\:29px\], .pds.\[--curve-height\:29px\] {
+    --curve-height: 29px;
+  }
+
+  .pds .\[--curve-height\:32px\], .pds.\[--curve-height\:32px\] {
+    --curve-height: 32px;
+  }
+
+  .pds .\[--curve-height\:33px\], .pds.\[--curve-height\:33px\] {
+    --curve-height: 33px;
+  }
+
+  .pds .\[--curve-height\:34px\], .pds.\[--curve-height\:34px\] {
+    --curve-height: 34px;
+  }
+
+  .pds .\[--curve-height\:38px\], .pds.\[--curve-height\:38px\] {
+    --curve-height: 38px;
+  }
+
+  .pds .\[--curve-height\:40px\], .pds.\[--curve-height\:40px\] {
+    --curve-height: 40px;
+  }
+
+  .pds .\[--curve-height\:41px\], .pds.\[--curve-height\:41px\] {
+    --curve-height: 41px;
+  }
+
+  .pds .\[--curve-radius\:9999px\], .pds.\[--curve-radius\:9999px\] {
+    --curve-radius: 9999px;
+  }
+
+  .pds .\[--curve-radius\:calc\(var\(--pds-radius-control\)_-_3px\)\], .pds.\[--curve-radius\:calc\(var\(--pds-radius-control\)_-_3px\)\] {
+    --curve-radius: calc(var(--pds-radius-control) - 3px);
+  }
+
+  .pds .\[--curve-radius\:calc\(var\(--pds-radius-item\)_-_2px\)\], .pds.\[--curve-radius\:calc\(var\(--pds-radius-item\)_-_2px\)\] {
+    --curve-radius: calc(var(--pds-radius-item) - 2px);
+  }
+
+  .pds .\[--curve-radius\:var\(--pds-radius-chip\)\], .pds.\[--curve-radius\:var\(--pds-radius-chip\)\] {
+    --curve-radius: var(--pds-radius-chip);
+  }
+
+  .pds .\[--curve-radius\:var\(--pds-radius-control\)\], .pds.\[--curve-radius\:var\(--pds-radius-control\)\] {
+    --curve-radius: var(--pds-radius-control);
+  }
+
+  .pds .\[--curve-radius\:var\(--pds-radius-control-lg\)\], .pds.\[--curve-radius\:var\(--pds-radius-control-lg\)\] {
+    --curve-radius: var(--pds-radius-control-lg);
+  }
+
+  .pds .\[--curve-radius\:var\(--pds-radius-dock\)\], .pds.\[--curve-radius\:var\(--pds-radius-dock\)\] {
+    --curve-radius: var(--pds-radius-dock);
+  }
+
+  .pds .\[--curve-radius\:var\(--pds-radius-item\)\], .pds.\[--curve-radius\:var\(--pds-radius-item\)\] {
+    --curve-radius: var(--pds-radius-item);
+  }
+
   .pds .\[--pds-radius-dock\:10px\], .pds.\[--pds-radius-dock\:10px\] {
     --pds-radius-dock: 10px;
   }
@@ -1770,6 +1918,10 @@
     outline-color: var(--pds-focus);
   }
 
+  .pds .active\:cursor-grabbing:active, .pds.active\:cursor-grabbing:active {
+    cursor: grabbing;
+  }
+
   .pds .disabled\:pointer-events-none:disabled, .pds.disabled\:pointer-events-none:disabled {
     pointer-events: none;
   }
@@ -1902,6 +2054,14 @@
     .pds .data-placeholder\:hover\:text-neutral-700[data-placeholder]:hover, .pds.data-placeholder\:hover\:text-neutral-700[data-placeholder]:hover {
       color: var(--pds-neutral-700);
     }
+  }
+
+  .pds .data-\[disabled\]\:cursor-not-allowed[data-disabled], .pds.data-\[disabled\]\:cursor-not-allowed[data-disabled] {
+    cursor: not-allowed;
+  }
+
+  .pds .data-\[disabled\]\:opacity-50[data-disabled], .pds.data-\[disabled\]\:opacity-50[data-disabled] {
+    opacity: .5;
   }
 
   .pds .data-\[orientation\=horizontal\]\:h-px[data-orientation="horizontal"], .pds.data-\[orientation\=horizontal\]\:h-px[data-orientation="horizontal"] {
@@ -2075,6 +2235,10 @@
 
   .pds .\[\&_td\]\:bg-neutral-100 td, .pds.\[\&_td\]\:bg-neutral-100 td, .pds .\[\&_th\]\:bg-neutral-100 th, .pds.\[\&_th\]\:bg-neutral-100 th {
     background-color: var(--pds-neutral-100);
+  }
+
+  .pds .\[\&\>\*\]\:flex-1 > *, .pds.\[\&\>\*\]\:flex-1 > * {
+    flex: 1;
   }
 
   .pds .\[\&\>\:last-child\>tr\:last-child\>\*\]\:border-b-0 > :last-child > tr:last-child > *, .pds.\[\&\>\:last-child\>tr\:last-child\>\*\]\:border-b-0 > :last-child > tr:last-child > * {

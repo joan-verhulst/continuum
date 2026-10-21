@@ -14,7 +14,7 @@ const contentClass = [
 
 const itemVariants = cva(
     [
-        'relative flex h-8 shrink-0 cursor-pointer select-none items-center gap-1.5 rounded-item px-2 font-medium text-xs outline-none',
+        'relative flex h-8 shrink-0 cursor-pointer select-none items-center gap-1.5 rounded-item px-curve [--curve-base:5.5px] [--curve-radius:var(--pds-radius-item)] [--curve-height:32px] font-medium text-xs outline-none',
         'data-disabled:pointer-events-none data-disabled:opacity-50',
         '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
     ],

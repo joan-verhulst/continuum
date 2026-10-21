@@ -8,7 +8,7 @@ import { cn } from '../lib/cn';
 import { focusRing } from './button';
 
 const toolbarVariants = cva(
-    'inline-flex items-stretch border border-neutral-200 bg-neutral-50 shadow-float',
+    'flex w-fit max-w-full items-stretch border border-neutral-200 bg-neutral-50 shadow-float',
     {
         variants: {
             variant: {
@@ -32,7 +32,8 @@ const toolbarButtonVariants = cva(
             variant: {
                 // The bar clips overflow, so the ring has to sit inside the button.
                 inline: 'gap-1.5 border-neutral-200 not-last:border-r px-3 focus-visible:-outline-offset-2',
-                floating: 'h-[33px] gap-2 rounded-[calc(var(--pds-radius-item)-2px)] px-3',
+                floating:
+                    'h-[33px] gap-2 rounded-[calc(var(--pds-radius-item)-2px)] px-curve [--curve-base:10px] [--curve-radius:calc(var(--pds-radius-item)_-_2px)] [--curve-height:33px]',
             },
         },
         defaultVariants: { variant: 'inline' },
@@ -88,7 +89,7 @@ export const ToolbarChip = ({ icon, className, children, ...props }: ToolbarChip
     <span
         className={cn(
             // Inset 2px inside a 1px border, so the bar's radius minus 3px keeps it concentric.
-            'm-0.5 inline-flex select-none items-center gap-1.5 whitespace-nowrap rounded-[calc(var(--pds-radius-control)-3px)] bg-tint px-2 font-medium text-tint-fg text-xxs [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+            'm-0.5 inline-flex select-none items-center gap-1.5 whitespace-nowrap rounded-[calc(var(--pds-radius-control)-3px)] bg-tint px-curve font-medium text-tint-fg text-xxs [--curve-base:5.75px] [--curve-height:29px] [--curve-radius:calc(var(--pds-radius-control)_-_3px)] [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
             className,
         )}
         data-slot="toolbar-chip"
