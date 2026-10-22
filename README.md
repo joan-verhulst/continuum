@@ -113,4 +113,4 @@ pnpm dev
 
 ## License
 
-MIT
+Copyright © 2026 Joan Verhulst. All rights reserved. The code is public to read, not licensed for use, copying or redistribution. See [LICENSE](LICENSE).

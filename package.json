@@ -2,7 +2,7 @@
     "name": "continuum",
     "version": "0.1.0",
     "description": "A design system distilled from product screens designed over the years, built on Radix primitives and Tailwind v4.",
-    "license": "MIT",
+    "license": "UNLICENSED",
     "type": "module",
     "sideEffects": [
         "*.css"
