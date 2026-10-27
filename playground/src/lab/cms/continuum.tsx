@@ -13,6 +13,7 @@ import {
     BreadcrumbSeparator,
     Button,
     cn,
+    countFilters,
     Dock,
     DockAction,
     DockItem,
@@ -25,6 +26,15 @@ import {
     Field,
     FieldHelper,
     FieldLabel,
+    FilterBar,
+    FilterChip,
+    FilterMenu,
+    FilterMenuClear,
+    FilterMenuContent,
+    FilterMenuGroup,
+    FilterMenuItem,
+    FilterMenuTrigger,
+    type FilterValues,
     focusRing,
     HeaderBar,
     HeaderBarActions,
@@ -39,7 +49,6 @@ import {
     Select,
     SelectContent,
     SelectItem,
-    SelectSeparator,
     SelectTrigger,
     SelectValue,
     Sidebar,
@@ -58,6 +67,7 @@ import {
     TableHeader,
     TableRow,
     Textarea,
+    toggleFilter,
     useHeaderNotice,
     ValueField,
 } from 'continuum';
@@ -160,9 +170,6 @@ const NOW = new Date(NOW_ISO);
 const DAY = 86_400_000;
 
 const SITE = 'fernhill.co';
-
-/** Stands in for "no filter" in a select, which holds strings only. */
-const ANY = 'any';
 
 const AUTHORS: Record<AuthorId, Author> = {
     maya: { id: 'maya', name: 'Maya Chen', initials: 'MC', role: 'Editor-in-chief' },
@@ -391,9 +398,6 @@ const isStatus = (value: string): value is Status => STATUS_ORDER.some(status =>
 const isStatusTab = (value: string): value is StatusTab => TABS.some(tab => tab.value === value);
 const isVisibility = (value: string): value is Visibility =>
     VISIBILITY.some(option => option.value === value);
-const isAuthorId = (value: string): value is AuthorId => Object.hasOwn(AUTHORS, value);
-const isCategory = (value: string): value is Category =>
-    CATEGORIES.some(category => category === value);
 
 /** "Just now", "18 min ago", "4h ago", "Yesterday" or a short date. */
 const formatEdited = (iso: string) => {
@@ -626,70 +630,6 @@ interface FilterOption<T extends string> {
     count: number;
     leading?: ReactNode;
 }
-
-/** A value in a filter's list: what it is, then how many posts it matches, in a column. */
-const OptionLabel = ({
-    leading,
-    count,
-    children,
-}: {
-    leading?: ReactNode;
-    count: number;
-    children: ReactNode;
-}) => (
-    <span className="flex w-40 items-center gap-2">
-        {leading}
-        <span className="min-w-0 flex-1 truncate">{children}</span>
-        <span className="font-normal text-neutral-500 text-xxs tabular-nums">{count}</span>
-    </span>
-);
-
-/** One filter as a select, as the customers list filters its plan: any value, or one. */
-const FilterSelect = <T extends string>({
-    label,
-    anyLabel,
-    icon: leadingIcon,
-    options,
-    value,
-    isValue,
-    onChange,
-}: {
-    label: string;
-    anyLabel: string;
-    icon: ReactNode;
-    options: FilterOption<T>[];
-    value: T | null;
-    isValue: (value: string) => value is T;
-    onChange: (value: T | null) => void;
-}) => {
-    const current = options.find(option => option.value === value);
-    const total = options.reduce((sum, option) => sum + option.count, 0);
-
-    return (
-        <Select onValueChange={next => onChange(isValue(next) ? next : null)} value={value ?? ANY}>
-            <SelectTrigger
-                aria-label={label}
-                leadingIcon={current?.leading ?? leadingIcon}
-                size="sm"
-            >
-                <SelectValue>{() => current?.label ?? label}</SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-                <SelectItem value={ANY}>
-                    <OptionLabel count={total}>{anyLabel}</OptionLabel>
-                </SelectItem>
-                <SelectSeparator />
-                {options.map(option => (
-                    <SelectItem key={option.value} value={option.value}>
-                        <OptionLabel count={option.count} leading={option.leading}>
-                            {option.label}
-                        </OptionLabel>
-                    </SelectItem>
-                ))}
-            </SelectContent>
-        </Select>
-    );
-};
 
 const PostRow = ({
     post,
@@ -1034,8 +974,8 @@ export const ContinuumCms = () => {
     const [posts, setPosts] = useState<Post[]>(INITIAL_POSTS);
     const [tab, setTab] = useState<StatusTab>('all');
     const [query, setQuery] = useState('');
-    const [authorId, setAuthorId] = useState<AuthorId | null>(null);
-    const [category, setCategory] = useState<Category | null>(null);
+    // Picked authors and categories, by group; none picked in a group lets every value through.
+    const [filters, setFilters] = useState<FilterValues>({});
     const [newestFirst, setNewestFirst] = useState(true);
     // No row is current until the keyboard picks one: rows open pages, so a wash on load reads as a stale selection.
     const [currentId, setCurrentId] = useState<string | null>(null);
@@ -1048,14 +988,16 @@ export const ContinuumCms = () => {
     /** Posts matching the search and the author and category filters, any status. */
     const matching = useMemo(() => {
         const needle = query.trim().toLowerCase();
+        const authors = filters.author ?? [];
+        const categories = filters.category ?? [];
         return posts.filter(
             post =>
-                (authorId === null || post.authorId === authorId) &&
-                (category === null || post.category === category) &&
+                (authors.length === 0 || authors.includes(post.authorId)) &&
+                (categories.length === 0 || categories.includes(post.category)) &&
                 (needle === '' ||
                     `${post.title} ${post.slug} ${post.excerpt}`.toLowerCase().includes(needle)),
         );
-    }, [posts, query, authorId, category]);
+    }, [posts, query, filters]);
 
     const counts = useMemo(() => {
         const result: Record<StatusTab, number> = {
@@ -1079,7 +1021,8 @@ export const ContinuumCms = () => {
     const page = Math.min(pageNumber, pageCount);
     const rows = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
     const open = place === INDEX ? undefined : posts.find(post => post.id === place);
-    const hasFilters = query !== '' || authorId !== null || category !== null;
+    const filterCount = countFilters(filters);
+    const hasFilters = query !== '' || filterCount > 0;
     const tabbableId = rows.some(post => post.id === currentId) ? currentId : rows[0]?.id;
 
     const authorOptions: FilterOption<AuthorId>[] = Object.values(AUTHORS).map(author => ({
@@ -1103,10 +1046,23 @@ export const ContinuumCms = () => {
             setPageNumber(1);
         };
 
+    const setFilterValues = filter(setFilters);
+
+    // One menu holds both dimensions, as the library's filter menu does: a checkbox per value, its count
+    // at the edge. What is picked shows beside it as a chip per group.
+    const filterGroups: {
+        id: string;
+        label: string;
+        icon: ReactNode;
+        options: FilterOption<string>[];
+    }[] = [
+        { id: 'author', label: 'Author', icon: <UserRound {...icon} />, options: authorOptions },
+        { id: 'category', label: 'Category', icon: <Tag {...icon} />, options: categoryOptions },
+    ];
+
     const clearFilters = () => {
         setQuery('');
-        setAuthorId(null);
-        setCategory(null);
+        setFilters({});
         setPageNumber(1);
     };
 
@@ -1316,29 +1272,69 @@ export const ContinuumCms = () => {
                             {/* The statuses and New post float in the dock; the head keeps search and filters. */}
                             <div className="mt-6 flex items-center gap-2">
                                 <SearchField onChange={filter(setQuery)} value={query} />
-                                <FilterSelect
-                                    anyLabel="Any author"
-                                    icon={<UserRound {...icon} />}
-                                    isValue={isAuthorId}
-                                    label="Author"
-                                    onChange={filter(setAuthorId)}
-                                    options={authorOptions}
-                                    value={authorId}
-                                />
-                                <FilterSelect
-                                    anyLabel="Any category"
-                                    icon={<Tag {...icon} />}
-                                    isValue={isCategory}
-                                    label="Category"
-                                    onChange={filter(setCategory)}
-                                    options={categoryOptions}
-                                    value={category}
-                                />
-                                {hasFilters && (
-                                    <Button onClick={clearFilters} variant="ghost">
-                                        Clear
-                                    </Button>
-                                )}
+                                <FilterBar onClear={hasFilters ? clearFilters : undefined}>
+                                    <FilterMenu>
+                                        <FilterMenuTrigger count={filterCount} />
+                                        <FilterMenuContent>
+                                            {filterGroups.map(group => (
+                                                <FilterMenuGroup key={group.id} label={group.label}>
+                                                    {group.options.map(option => (
+                                                        <FilterMenuItem
+                                                            checked={
+                                                                filters[group.id]?.includes(
+                                                                    option.value,
+                                                                ) ?? false
+                                                            }
+                                                            count={option.count}
+                                                            icon={option.leading}
+                                                            key={option.value}
+                                                            onCheckedChange={() =>
+                                                                setFilterValues(
+                                                                    toggleFilter(
+                                                                        filters,
+                                                                        group.id,
+                                                                        option.value,
+                                                                    ),
+                                                                )
+                                                            }
+                                                        >
+                                                            {option.label}
+                                                        </FilterMenuItem>
+                                                    ))}
+                                                </FilterMenuGroup>
+                                            ))}
+                                            <FilterMenuClear
+                                                disabled={filterCount === 0}
+                                                onClick={() => setFilterValues({})}
+                                            />
+                                        </FilterMenuContent>
+                                    </FilterMenu>
+                                    {filterGroups.map(group => {
+                                        const picked = group.options.filter(option =>
+                                            filters[group.id]?.includes(option.value),
+                                        );
+                                        return (
+                                            picked.length > 0 && (
+                                                <FilterChip
+                                                    icon={group.icon}
+                                                    key={group.id}
+                                                    onRemove={() =>
+                                                        setFilterValues(
+                                                            Object.fromEntries(
+                                                                Object.entries(filters).filter(
+                                                                    ([key]) => key !== group.id,
+                                                                ),
+                                                            ),
+                                                        )
+                                                    }
+                                                >
+                                                    {group.label}:{' '}
+                                                    {picked.map(option => option.label).join(', ')}
+                                                </FilterChip>
+                                            )
+                                        );
+                                    })}
+                                </FilterBar>
                             </div>
 
                             {visible.length > 0 ? (
