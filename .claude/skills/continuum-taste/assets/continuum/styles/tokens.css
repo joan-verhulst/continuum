@@ -1,429 +1,395 @@
 /*
- * Raw design tokens. Everything lives under `.pds` so the system can sit inside
- * another site without touching its variables. A theme only swaps raw ramps and
- * a handful of semantic values; components never name a theme.
+ * Design tokens. Everything lives under `.continuum`, so the system can sit
+ * inside another site without touching its variables.
  *
- * Ramps are semantic by index, the way the Figma screens use them: 50 is the
- * surface, 950 the strongest text. Dark mode reads every ramp back to front.
+ * The values here are the default theme. A custom theme is a
+ * `.continuum[data-theme="name"]` block that overrides the raw ramps and the
+ * semantic values below; the playground's theme builder and `createThemeCss`
+ * write one. Components never name a theme: they read the semantic tokens.
+ *
+ * Ramps are semantic by index: 50 is the surface, 950 the strongest text.
+ * Dark mode reads every ramp back to front.
  */
 
-.pds {
-    /* Eyes: warm, slightly green neutrals */
-    --pds-n-50: #f7f8f7;
-    --pds-n-100: #eaebea;
-    --pds-n-200: #d1d2d0;
-    --pds-n-300: #b2b4b1;
-    --pds-n-400: #989b97;
-    --pds-n-500: #7f827d;
-    --pds-n-600: #656864;
-    --pds-n-700: #474946;
-    --pds-n-800: #292a28;
-    --pds-n-900: #181818;
-    --pds-n-950: #0d0d0c;
+.continuum {
+    /* Neutral: achromatic; a theme tints the greys towards a hue */
+    --continuum-n-50: #f8f8f8;
+    --continuum-n-100: #ededed;
+    --continuum-n-200: #d2d2d2;
+    --continuum-n-300: #b3b3b3;
+    --continuum-n-400: #9a9a9a;
+    --continuum-n-500: #818181;
+    --continuum-n-600: #676767;
+    --continuum-n-700: #484848;
+    --continuum-n-800: #2a2a2a;
+    --continuum-n-900: #181818;
+    --continuum-n-950: #0d0d0d;
 
-    --pds-p-50: #e6eafa;
-    --pds-p-100: #c9d1f8;
-    --pds-p-200: #a5aff3;
-    --pds-p-300: #818bee;
-    --pds-p-400: #5d63ea;
-    --pds-p-500: #3939e5;
-    --pds-p-600: #2923cb;
-    --pds-p-700: #20149a;
-    --pds-p-800: #190e68;
-    --pds-p-900: #0f0736;
-    --pds-p-950: #09041e;
+    /*
+     * The chromatic ramps are built on Tailwind's curve from their 500s
+     * (src/lib/color.ts): one lightness curve for all, chroma on a bell that
+     * peaks at 600, one hue each. So they step alike, and a theme's accent
+     * ramp, built the same way, sits beside them without a seam.
+     */
 
-    --pds-s-50: #effbe7;
-    --pds-s-100: #e3f7d4;
-    --pds-s-200: #c9efae;
-    --pds-s-300: #b0e887;
-    --pds-s-400: #96e160;
-    --pds-s-500: #7cd93a;
-    --pds-s-600: #61b823;
-    --pds-s-700: #48891a;
-    --pds-s-800: #2f5a11;
-    --pds-s-900: #172b08;
-    --pds-s-950: #0a1304;
+    /* Accent: the primary ramp, for informational tones and, in a theme that asks for it, the action */
+    --continuum-p-50: #f2f5ff;
+    --continuum-p-100: #dee6ff;
+    --continuum-p-200: #bdccfe;
+    --continuum-p-300: #91a7fe;
+    --continuum-p-400: #596ff4;
+    --continuum-p-500: #3939e5;
+    --continuum-p-600: #3218e0;
+    --continuum-p-700: #2a16c4;
+    --continuum-p-800: #23219f;
+    --continuum-p-900: #20267f;
+    --continuum-p-950: #171e52;
 
-    --pds-w-50: #fff4e6;
-    --pds-w-100: #feead2;
-    --pds-w-200: #fed8aa;
-    --pds-w-300: #fdc681;
-    --pds-w-400: #fdb359;
-    --pds-w-500: #fca131;
-    --pds-w-600: #e78103;
-    --pds-w-700: #b0540e;
-    --pds-w-800: #803009;
-    --pds-w-900: #330e05;
-    --pds-w-950: #030100;
+    --continuum-s-50: #f1f7ee;
+    --continuum-s-100: #e7f5e0;
+    --continuum-s-200: #d6f1c9;
+    --continuum-s-300: #bceca4;
+    --continuum-s-400: #98e26d;
+    --continuum-s-500: #7cd93a;
+    --continuum-s-600: #5db500;
+    --continuum-s-700: #4a9300;
+    --continuum-s-800: #397400;
+    --continuum-s-900: #2e5d04;
+    --continuum-s-950: #122d00;
 
-    --pds-e-50: #ffedee;
-    --pds-e-100: #ffdbdd;
-    --pds-e-200: #fec8c8;
-    --pds-e-300: #ff8a85;
-    --pds-e-400: #f75c4d;
-    --pds-e-500: #f53e20;
-    --pds-e-600: #d32700;
-    --pds-e-700: #9b2400;
-    --pds-e-800: #620000;
-    --pds-e-900: #260909;
-    --pds-e-950: #0e0404;
+    --continuum-w-50: #faf4ee;
+    --continuum-w-100: #fbeddf;
+    --continuum-w-200: #fce1c6;
+    --continuum-w-300: #ffcfa0;
+    --continuum-w-400: #ffb567;
+    --continuum-w-500: #fca131;
+    --continuum-w-600: #d68200;
+    --continuum-w-700: #ae6900;
+    --continuum-w-800: #8a5200;
+    --continuum-w-900: #704201;
+    --continuum-w-950: #381e00;
+
+    --continuum-e-50: #fff2ef;
+    --continuum-e-100: #ffe4de;
+    --continuum-e-200: #ffcdc3;
+    --continuum-e-300: #ffab9a;
+    --continuum-e-400: #ff7259;
+    --continuum-e-500: #f53e20;
+    --continuum-e-600: #d62400;
+    --continuum-e-700: #b41c00;
+    --continuum-e-800: #941600;
+    --continuum-e-900: #791a0b;
+    --continuum-e-950: #461007;
 
     /* Ramps as components see them (light: as written) */
-    --pds-neutral-50: var(--pds-n-50);
-    --pds-neutral-100: var(--pds-n-100);
-    --pds-neutral-200: var(--pds-n-200);
-    --pds-neutral-300: var(--pds-n-300);
-    --pds-neutral-400: var(--pds-n-400);
-    --pds-neutral-500: var(--pds-n-500);
-    --pds-neutral-600: var(--pds-n-600);
-    --pds-neutral-700: var(--pds-n-700);
-    --pds-neutral-800: var(--pds-n-800);
-    --pds-neutral-900: var(--pds-n-900);
-    --pds-neutral-950: var(--pds-n-950);
+    --color-neutral-50: var(--continuum-n-50);
+    --color-neutral-100: var(--continuum-n-100);
+    --color-neutral-200: var(--continuum-n-200);
+    --color-neutral-300: var(--continuum-n-300);
+    --color-neutral-400: var(--continuum-n-400);
+    --color-neutral-500: var(--continuum-n-500);
+    --color-neutral-600: var(--continuum-n-600);
+    --color-neutral-700: var(--continuum-n-700);
+    --color-neutral-800: var(--continuum-n-800);
+    --color-neutral-900: var(--continuum-n-900);
+    --color-neutral-950: var(--continuum-n-950);
 
-    --pds-primary-50: var(--pds-p-50);
-    --pds-primary-100: var(--pds-p-100);
-    --pds-primary-200: var(--pds-p-200);
-    --pds-primary-300: var(--pds-p-300);
-    --pds-primary-400: var(--pds-p-400);
-    --pds-primary-500: var(--pds-p-500);
-    --pds-primary-600: var(--pds-p-600);
-    --pds-primary-700: var(--pds-p-700);
-    --pds-primary-800: var(--pds-p-800);
-    --pds-primary-900: var(--pds-p-900);
-    --pds-primary-950: var(--pds-p-950);
+    --color-primary-50: var(--continuum-p-50);
+    --color-primary-100: var(--continuum-p-100);
+    --color-primary-200: var(--continuum-p-200);
+    --color-primary-300: var(--continuum-p-300);
+    --color-primary-400: var(--continuum-p-400);
+    --color-primary-500: var(--continuum-p-500);
+    --color-primary-600: var(--continuum-p-600);
+    --color-primary-700: var(--continuum-p-700);
+    --color-primary-800: var(--continuum-p-800);
+    --color-primary-900: var(--continuum-p-900);
+    --color-primary-950: var(--continuum-p-950);
 
-    --pds-success-50: var(--pds-s-50);
-    --pds-success-100: var(--pds-s-100);
-    --pds-success-200: var(--pds-s-200);
-    --pds-success-300: var(--pds-s-300);
-    --pds-success-400: var(--pds-s-400);
-    --pds-success-500: var(--pds-s-500);
-    --pds-success-600: var(--pds-s-600);
-    --pds-success-700: var(--pds-s-700);
-    --pds-success-800: var(--pds-s-800);
-    --pds-success-900: var(--pds-s-900);
-    --pds-success-950: var(--pds-s-950);
+    --color-success-50: var(--continuum-s-50);
+    --color-success-100: var(--continuum-s-100);
+    --color-success-200: var(--continuum-s-200);
+    --color-success-300: var(--continuum-s-300);
+    --color-success-400: var(--continuum-s-400);
+    --color-success-500: var(--continuum-s-500);
+    --color-success-600: var(--continuum-s-600);
+    --color-success-700: var(--continuum-s-700);
+    --color-success-800: var(--continuum-s-800);
+    --color-success-900: var(--continuum-s-900);
+    --color-success-950: var(--continuum-s-950);
 
-    --pds-warning-50: var(--pds-w-50);
-    --pds-warning-100: var(--pds-w-100);
-    --pds-warning-200: var(--pds-w-200);
-    --pds-warning-300: var(--pds-w-300);
-    --pds-warning-400: var(--pds-w-400);
-    --pds-warning-500: var(--pds-w-500);
-    --pds-warning-600: var(--pds-w-600);
-    --pds-warning-700: var(--pds-w-700);
-    --pds-warning-800: var(--pds-w-800);
-    --pds-warning-900: var(--pds-w-900);
-    --pds-warning-950: var(--pds-w-950);
+    --color-warning-50: var(--continuum-w-50);
+    --color-warning-100: var(--continuum-w-100);
+    --color-warning-200: var(--continuum-w-200);
+    --color-warning-300: var(--continuum-w-300);
+    --color-warning-400: var(--continuum-w-400);
+    --color-warning-500: var(--continuum-w-500);
+    --color-warning-600: var(--continuum-w-600);
+    --color-warning-700: var(--continuum-w-700);
+    --color-warning-800: var(--continuum-w-800);
+    --color-warning-900: var(--continuum-w-900);
+    --color-warning-950: var(--continuum-w-950);
 
-    --pds-error-50: var(--pds-e-50);
-    --pds-error-100: var(--pds-e-100);
-    --pds-error-200: var(--pds-e-200);
-    --pds-error-300: var(--pds-e-300);
-    --pds-error-400: var(--pds-e-400);
-    --pds-error-500: var(--pds-e-500);
-    --pds-error-600: var(--pds-e-600);
-    --pds-error-700: var(--pds-e-700);
-    --pds-error-800: var(--pds-e-800);
-    --pds-error-900: var(--pds-e-900);
-    --pds-error-950: var(--pds-e-950);
+    --color-error-50: var(--continuum-e-50);
+    --color-error-100: var(--continuum-e-100);
+    --color-error-200: var(--continuum-e-200);
+    --color-error-300: var(--continuum-e-300);
+    --color-error-400: var(--continuum-e-400);
+    --color-error-500: var(--continuum-e-500);
+    --color-error-600: var(--continuum-e-600);
+    --color-error-700: var(--continuum-e-700);
+    --color-error-800: var(--continuum-e-800);
+    --color-error-900: var(--continuum-e-900);
+    --color-error-950: var(--continuum-e-950);
 
     /* The action colour: buttons, checked controls, the active rail item */
-    --pds-action: var(--pds-neutral-950);
-    --pds-action-hover: var(--pds-neutral-900);
-    --pds-on-action: var(--pds-neutral-50);
-    --pds-action-gradient: none;
-    --pds-action-highlight: transparent;
-    --pds-action-ring: transparent;
-    --pds-action-shadow:
-        inset 0 1px 0 0 var(--pds-action-highlight), 0 0 0 1px var(--pds-action-ring);
+    --color-action: var(--color-neutral-950);
+    --color-action-hover: var(--color-neutral-900);
+    --color-on-action: var(--color-neutral-50);
+    /* A lit or glossy button sets these; flat leaves them empty */
+    --action-gradient: none;
+    --color-action-highlight: transparent;
+    --color-action-ring: transparent;
+    --shadow-action:
+        inset 0 1px 0 0 var(--color-action-highlight), 0 0 0 1px var(--color-action-ring);
 
-    /* A selected wash: active pill tab, AI chip, a cell being edited */
-    --pds-tint: var(--pds-neutral-100);
-    --pds-tint-fg: var(--pds-neutral-950);
+    /*
+     * A selected wash: the active pill tab, an own chat message, a cell being
+     * edited. Translucent, so it reads on the surface and on the canvas alike.
+     */
+    --color-tint: color-mix(in oklab, var(--color-neutral-950) 7%, transparent);
+    --color-tint-fg: var(--color-neutral-950);
 
-    /* Active segment: Eyes fills it with the action colour, older themes raise a chip */
-    --pds-segment: var(--pds-action);
-    --pds-segment-fg: var(--pds-on-action);
-    --pds-segment-border: transparent;
-    --pds-segment-shadow: none;
-    --pds-segment-track: var(--pds-neutral-50);
+    /*
+     * What is current, selected or open: the page in the nav, a chosen row or option, a menu
+     * whose trigger is open. One step over the hover wash, so the two never read alike.
+     */
+    --color-selected: color-mix(in oklab, var(--color-neutral-950) 7%, transparent);
 
-    --pds-focus: var(--pds-neutral-400);
+    /* The active segment: filled with the action colour, or raised as a chip on the track */
+    --color-segment: var(--color-action);
+    --color-segment-fg: var(--color-on-action);
+    --color-segment-border: transparent;
+    --shadow-segment: none;
+    --color-segment-track: var(--color-neutral-50);
 
-    /* Data colours from the analytics screens: forest, lime, mustard, orange, and the teal line */
-    --pds-chart-1: #00553e;
-    --pds-chart-2: #89e25f;
-    --pds-chart-3: #e2c35f;
-    --pds-chart-4: #e2a15f;
-    --pds-chart-5: #1a896b;
+    --color-focus: var(--color-neutral-400);
 
-    --pds-font: var(--font-geist, "Geist Variable"), "Geist", ui-sans-serif, system-ui, sans-serif;
+    /*
+     * Avatar tones: six hues at one lightness and chroma, a pale fill with a
+     * deep ink of the same hue, so no person stands out louder than another.
+     * Each tone is a hue; fill, ink and line are oklch lightness and chroma
+     * pairs that dark mode swaps.
+     */
+    --avatar-blue: 250;
+    --avatar-violet: 295;
+    --avatar-rose: 10;
+    --avatar-amber: 75;
+    --avatar-teal: 190;
+    --avatar-green: 145;
+    --avatar-fill: 0.95 0.025;
+    --avatar-ink: 0.47 0.09;
+    --avatar-line: 0.89 0.04;
 
-    /* Radii nest: a panel holds cards, a card holds items, an item holds chips */
-    --pds-radius-chip: 6px;
-    --pds-radius-item: 10px;
-    --pds-radius-control: 12px;
-    --pds-radius-control-lg: 14px;
-    --pds-radius-card: 16px;
-    --pds-radius-panel: 12px;
-    --pds-radius-dock: 9999px;
+    /*
+     * Data colours. Steps in order (a funnel, shades of one measure) walk
+     * chart-1 to chart-5: the primary leads, as an accent leads a theme's, then
+     * orange, aqua and yellow, in an order that keeps neighbours apart for
+     * colour-blind readers, and a deeper primary. Independent series take the
+     * same hues, then the grey.
+     */
+    --color-chart-1: var(--continuum-p-500);
+    --color-chart-2: #eb6834;
+    --color-chart-3: #1baf7a;
+    --color-chart-4: #d4a800;
+    --color-chart-5: var(--continuum-p-600);
 
-    --pds-shadow-float: 1px 1px 4px 0 rgb(20 22 23 / 0.1);
-    --pds-shadow-sheet: 0 2px 4px 0 rgb(20 22 23 / 0.1);
+    --color-chart-series-1: var(--color-chart-1);
+    --color-chart-series-2: var(--color-chart-2);
+    --color-chart-series-3: var(--color-chart-3);
+    --color-chart-series-4: var(--color-chart-4);
+    --color-chart-series-5: var(--color-neutral-400);
 
-    font-family: var(--pds-font);
+    /*
+     * Chart chrome for continuum/charts, built from the ramps so it flips with
+     * the mode and theme on its own. The grid is the hairline, labels are
+     * quiet, and the lines take the first two series colours.
+     */
+    --color-chart-background: var(--color-neutral-50);
+    --color-chart-foreground: var(--color-neutral-950);
+    --color-chart-foreground-muted: var(--color-neutral-600);
+    --color-chart-label: var(--color-neutral-600);
+    --color-chart-grid: var(--color-neutral-200);
+    --color-chart-band: var(--color-neutral-100);
+    --color-chart-crosshair: var(--color-neutral-300);
+    --color-chart-brush-border: var(--color-neutral-200);
+    --color-chart-line-primary: var(--color-chart-series-1);
+    --color-chart-line-secondary: var(--color-chart-series-2);
+    --color-chart-tooltip-background: var(--color-neutral-50);
+    --color-chart-tooltip-foreground: var(--color-neutral-950);
+    --color-chart-tooltip-muted: var(--color-neutral-600);
+    --color-chart-marker-background: var(--color-neutral-50);
+    --color-chart-marker-border: var(--color-neutral-200);
+    --color-chart-marker-foreground: var(--color-neutral-700);
+    --color-chart-marker-badge-background: var(--color-neutral-950);
+    --color-chart-marker-badge-foreground: var(--color-neutral-50);
+    /* A highlighted range is the selection wash, not a colour */
+    --color-chart-segment-background: color-mix(in oklab, var(--color-neutral-950) 5%, transparent);
+    --color-chart-segment-line: var(--color-neutral-300);
+    --color-chart-indicator-color: var(--color-neutral-300);
+    --color-chart-indicator-secondary-color: var(--color-neutral-200);
+
+    --font-sans: var(--font-geist, "Geist Variable"), "Geist", ui-sans-serif, system-ui, sans-serif;
+
+    /*
+     * Radii nest: a panel holds cards, a card holds items, an item holds chips.
+     * These are the raw values; the --radius-* tokens below scale them.
+     */
+    --continuum-r-chip: 6px;
+    --continuum-r-item: 10px;
+    --continuum-r-control: 12px;
+    --continuum-r-card: 16px;
+    --continuum-r-panel: 20px;
+    /* Half the rail's 52px: a full pill on the rail and the 38px dock, and still scalable */
+    --continuum-r-dock: 26px;
+    /* Small rounded things (filter chips, delta pills): a pill at 25px, a tighter corner once scaled down */
+    --continuum-r-pill: 12.5px;
+
+    --shadow-float: 1px 1px 4px 0 rgb(20 22 23 / 0.1);
+    --shadow-sheet: 0 2px 4px 0 rgb(20 22 23 / 0.1);
+
+    /*
+     * Content widths grow with density and stop short of the panel's edge:
+     * inputs and light overviews, content that needs the width, a very dense
+     * table. A page of several dense tables may span the panel, but keeps this
+     * much space at each side.
+     */
+    --container-content-narrow: 640px;
+    --container-content: 896px;
+    --container-content-wide: 1080px;
+    --container-content-dense: 1280px;
+    --spacing-content-inset: 128px;
+
+    font-family: var(--font-sans);
     font-size: 13px;
     line-height: 1.25;
     letter-spacing: 0.32px;
-    color: var(--pds-neutral-950);
+    color: var(--color-neutral-950);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
 }
 
-.pds[data-mode="dark"] {
+.continuum[data-mode="dark"] {
     color-scheme: dark;
 
-    --pds-neutral-50: var(--pds-n-950);
-    --pds-neutral-100: var(--pds-n-900);
-    --pds-neutral-200: var(--pds-n-800);
-    --pds-neutral-300: var(--pds-n-700);
-    --pds-neutral-400: var(--pds-n-600);
-    --pds-neutral-500: var(--pds-n-500);
-    --pds-neutral-600: var(--pds-n-400);
-    --pds-neutral-700: var(--pds-n-300);
-    --pds-neutral-800: var(--pds-n-200);
-    --pds-neutral-900: var(--pds-n-100);
-    --pds-neutral-950: var(--pds-n-50);
+    --color-neutral-50: var(--continuum-n-950);
+    --color-neutral-100: var(--continuum-n-900);
+    --color-neutral-200: var(--continuum-n-800);
+    --color-neutral-300: var(--continuum-n-700);
+    --color-neutral-400: var(--continuum-n-600);
+    --color-neutral-500: var(--continuum-n-500);
+    --color-neutral-600: var(--continuum-n-400);
+    --color-neutral-700: var(--continuum-n-300);
+    --color-neutral-800: var(--continuum-n-200);
+    --color-neutral-900: var(--continuum-n-100);
+    --color-neutral-950: var(--continuum-n-50);
 
-    --pds-primary-50: var(--pds-p-950);
-    --pds-primary-100: var(--pds-p-900);
-    --pds-primary-200: var(--pds-p-800);
-    --pds-primary-300: var(--pds-p-700);
-    --pds-primary-400: var(--pds-p-600);
-    --pds-primary-500: var(--pds-p-500);
-    --pds-primary-600: var(--pds-p-400);
-    --pds-primary-700: var(--pds-p-300);
-    --pds-primary-800: var(--pds-p-200);
-    --pds-primary-900: var(--pds-p-100);
-    --pds-primary-950: var(--pds-p-50);
+    --color-primary-50: var(--continuum-p-950);
+    --color-primary-100: var(--continuum-p-900);
+    --color-primary-200: var(--continuum-p-800);
+    --color-primary-300: var(--continuum-p-700);
+    --color-primary-400: var(--continuum-p-600);
+    --color-primary-500: var(--continuum-p-500);
+    --color-primary-600: var(--continuum-p-400);
+    --color-primary-700: var(--continuum-p-300);
+    --color-primary-800: var(--continuum-p-200);
+    --color-primary-900: var(--continuum-p-100);
+    --color-primary-950: var(--continuum-p-50);
 
-    --pds-success-50: var(--pds-s-950);
-    --pds-success-100: var(--pds-s-900);
-    --pds-success-200: var(--pds-s-800);
-    --pds-success-300: var(--pds-s-700);
-    --pds-success-400: var(--pds-s-600);
-    --pds-success-500: var(--pds-s-500);
-    --pds-success-600: var(--pds-s-400);
-    --pds-success-700: var(--pds-s-300);
-    --pds-success-800: var(--pds-s-200);
-    --pds-success-900: var(--pds-s-100);
-    --pds-success-950: var(--pds-s-50);
+    --color-success-50: var(--continuum-s-950);
+    --color-success-100: var(--continuum-s-900);
+    --color-success-200: var(--continuum-s-800);
+    --color-success-300: var(--continuum-s-700);
+    --color-success-400: var(--continuum-s-600);
+    --color-success-500: var(--continuum-s-500);
+    --color-success-600: var(--continuum-s-400);
+    --color-success-700: var(--continuum-s-300);
+    --color-success-800: var(--continuum-s-200);
+    --color-success-900: var(--continuum-s-100);
+    --color-success-950: var(--continuum-s-50);
 
-    --pds-warning-50: var(--pds-w-950);
-    --pds-warning-100: var(--pds-w-900);
-    --pds-warning-200: var(--pds-w-800);
-    --pds-warning-300: var(--pds-w-700);
-    --pds-warning-400: var(--pds-w-600);
-    --pds-warning-500: var(--pds-w-500);
-    --pds-warning-600: var(--pds-w-400);
-    --pds-warning-700: var(--pds-w-300);
-    --pds-warning-800: var(--pds-w-200);
-    --pds-warning-900: var(--pds-w-100);
-    --pds-warning-950: var(--pds-w-50);
+    --color-warning-50: var(--continuum-w-950);
+    --color-warning-100: var(--continuum-w-900);
+    --color-warning-200: var(--continuum-w-800);
+    --color-warning-300: var(--continuum-w-700);
+    --color-warning-400: var(--continuum-w-600);
+    --color-warning-500: var(--continuum-w-500);
+    --color-warning-600: var(--continuum-w-400);
+    --color-warning-700: var(--continuum-w-300);
+    --color-warning-800: var(--continuum-w-200);
+    --color-warning-900: var(--continuum-w-100);
+    --color-warning-950: var(--continuum-w-50);
 
-    --pds-error-50: var(--pds-e-950);
-    --pds-error-100: var(--pds-e-900);
-    --pds-error-200: var(--pds-e-800);
-    --pds-error-300: var(--pds-e-700);
-    --pds-error-400: var(--pds-e-600);
-    --pds-error-500: var(--pds-e-500);
-    --pds-error-600: var(--pds-e-400);
-    --pds-error-700: var(--pds-e-300);
-    --pds-error-800: var(--pds-e-200);
-    --pds-error-900: var(--pds-e-100);
-    --pds-error-950: var(--pds-e-50);
+    --color-error-50: var(--continuum-e-950);
+    --color-error-100: var(--continuum-e-900);
+    --color-error-200: var(--continuum-e-800);
+    --color-error-300: var(--continuum-e-700);
+    --color-error-400: var(--continuum-e-600);
+    --color-error-500: var(--continuum-e-500);
+    --color-error-600: var(--continuum-e-400);
+    --color-error-700: var(--continuum-e-300);
+    --color-error-800: var(--continuum-e-200);
+    --color-error-900: var(--continuum-e-100);
+    --color-error-950: var(--continuum-e-50);
 
-    --pds-focus: var(--pds-neutral-500);
+    --color-focus: var(--color-neutral-500);
+
+    /* The pale fill and the deep ink trade places */
+    --avatar-fill: 0.31 0.04;
+    --avatar-ink: 0.86 0.06;
+    --avatar-line: 0.38 0.045;
+
+    /* Deeper, so a float still lifts off a near-black surface */
+    --shadow-float: 1px 1px 4px 0 rgb(0 0 0 / 0.4);
+    --shadow-sheet: 0 2px 8px 0 rgb(0 0 0 / 0.5);
+    /* Each data colour a step darker or lighter, into the band that reads on a dark surface */
+    --color-chart-1: var(--continuum-p-400);
+    --color-chart-2: #d95926;
+    --color-chart-3: #199e70;
+    --color-chart-4: #c98500;
+    --color-chart-5: var(--continuum-p-300);
 }
 
-/* Indigo, 2024: the email sequencing editor. Eyes neutrals, Inter, smaller radii. */
-.pds[data-theme="indigo"] {
-    --pds-radius-dock: 10px;
-    --pds-action: var(--pds-primary-500);
-    --pds-action-hover: var(--pds-primary-600);
-    --pds-on-action: #f7f8f7;
-    --pds-tint: var(--pds-primary-50);
-    --pds-tint-fg: var(--pds-primary-500);
-    --pds-segment: var(--pds-neutral-50);
-    --pds-segment-fg: var(--pds-neutral-950);
-    --pds-segment-border: var(--pds-neutral-200);
-    --pds-segment-shadow: var(--pds-shadow-float);
-    --pds-segment-track: var(--pds-neutral-100);
-    --pds-focus: var(--pds-primary-300);
-    --pds-font: var(--font-inter, "Inter Variable"), "Inter", ui-sans-serif, system-ui, sans-serif;
-    --pds-radius-control: 8px;
-    --pds-radius-control-lg: 10px;
-    --pds-radius-card: 12px;
-}
-
-/* Cool greys with white surfaces: shared by the electric and lime products. */
-.pds:is([data-theme="electric"], [data-theme="lime"]) {
-    --pds-radius-dock: 10px;
-    --pds-n-50: #ffffff;
-    --pds-n-100: #f7f8f8;
-    --pds-n-200: #dfe0e2;
-    --pds-n-300: #c2c3c5;
-    --pds-n-400: #a5a6a8;
-    --pds-n-500: #88898b;
-    --pds-n-600: #6b6c6e;
-    --pds-n-700: #4e4f51;
-    --pds-n-800: #313234;
-    --pds-n-900: #141617;
-    --pds-n-950: #070808;
-
-    --pds-action: var(--pds-primary-500);
-    --pds-action-hover: var(--pds-primary-600);
-    --pds-on-action: #ffffff;
-    --pds-segment: var(--pds-neutral-50);
-    --pds-segment-fg: var(--pds-neutral-950);
-    --pds-segment-border: var(--pds-neutral-200);
-    --pds-segment-shadow: var(--pds-shadow-float);
-    --pds-segment-track: var(--pds-neutral-100);
-    --pds-focus: var(--pds-primary-300);
-    --pds-font: var(--font-inter, "Inter Variable"), "Inter", ui-sans-serif, system-ui, sans-serif;
-    --pds-radius-control: 8px;
-    --pds-radius-control-lg: 12px;
-}
-
-/* Electric, 2025: the risk-assessment report editor. One pure blue and a blue wash. */
-.pds[data-theme="electric"] {
-    --pds-p-50: #e8eaff;
-    --pds-p-100: #d1d5ff;
-    --pds-p-200: #b3b8ff;
-    --pds-p-300: #949aff;
-    --pds-p-400: #4f57f5;
-    --pds-p-500: #0000eb;
-    --pds-p-600: #0000c4;
-    --pds-p-700: #00009c;
-    --pds-p-800: #000073;
-    --pds-p-900: #00004a;
-    --pds-p-950: #000029;
-
-    --pds-tint: var(--pds-primary-50);
-    --pds-tint-fg: var(--pds-primary-500);
-    --pds-radius-item: 8px;
-    --pds-radius-card: 8px;
-    --pds-radius-panel: 8px;
-}
-
-/* Lime, 2025: the social report generator. A lit button with a top highlight and ring. */
-.pds[data-theme="lime"] {
-    --pds-p-50: #f6fce6;
-    --pds-p-100: #eaf8c4;
-    --pds-p-200: #d6f191;
-    --pds-p-300: #c0ec55;
-    --pds-p-400: #aae811;
-    --pds-p-500: #80af0d;
-    --pds-p-600: #678c0b;
-    --pds-p-700: #4f6b09;
-    --pds-p-800: #384c07;
-    --pds-p-900: #222e05;
-    --pds-p-950: #111702;
-
-    --pds-action-highlight: var(--pds-p-400);
-    --pds-action-ring: var(--pds-p-500);
-    --pds-tint: var(--pds-primary-50);
-    --pds-tint-fg: var(--pds-primary-700);
-    --pds-radius-card: 12px;
-    --pds-radius-panel: 8px;
-}
-
-/* Stone, 2025: the dark invoicing app. Warm stone greys and a glossy blue button. */
-.pds[data-theme="stone"] {
-    --pds-radius-dock: 10px;
-    --pds-n-50: #ffffff;
-    --pds-n-100: #f5f5f4;
-    --pds-n-200: #ebebe9;
-    --pds-n-300: #adadaa;
-    --pds-n-400: #94948e;
-    --pds-n-500: #7a7a73;
-    --pds-n-600: #6c6c65;
-    --pds-n-700: #4a4a46;
-    --pds-n-800: #30302f;
-    --pds-n-900: #1c1c1b;
-    --pds-n-950: #10100f;
-
-    --pds-p-50: #eef1fd;
-    --pds-p-100: #dce3fb;
-    --pds-p-200: #bccaf8;
-    --pds-p-300: #7f96f1;
-    --pds-p-400: #5574ed;
-    --pds-p-500: #2c52e8;
-    --pds-p-600: #1f3fc4;
-    --pds-p-700: #18319a;
-    --pds-p-800: #122470;
-    --pds-p-900: #0b1747;
-    --pds-p-950: #060c26;
-
-    --pds-action: var(--pds-p-500);
-    --pds-action-hover: var(--pds-p-600);
-    --pds-on-action: #f5f5f4;
-    --pds-action-gradient: linear-gradient(180deg, var(--pds-p-400), var(--pds-p-500));
-    --pds-action-highlight: var(--pds-p-300);
-    --pds-action-ring: var(--pds-p-500);
-    --pds-tint: var(--pds-neutral-100);
-    --pds-tint-fg: var(--pds-neutral-950);
-    --pds-segment: var(--pds-neutral-50);
-    --pds-segment-fg: var(--pds-neutral-950);
-    --pds-segment-border: var(--pds-neutral-200);
-    --pds-segment-shadow: var(--pds-shadow-float);
-    --pds-segment-track: var(--pds-neutral-100);
-    --pds-focus: var(--pds-p-300);
-    --pds-font: var(--font-inter, "Inter Variable"), "Inter", ui-sans-serif, system-ui, sans-serif;
-    --pds-radius-item: 8px;
-    --pds-radius-control: 8px;
-    --pds-radius-control-lg: 10px;
-    --pds-radius-card: 12px;
-}
-
-/* Violet, 2024: the dark sign-in flow. Pure greys and one purple. */
-.pds[data-theme="violet"] {
-    --pds-radius-dock: 10px;
-    --pds-n-50: #fdfdfd;
-    --pds-n-100: #f1f1f1;
-    --pds-n-200: #dcdcdc;
-    --pds-n-300: #bdbdbd;
-    --pds-n-400: #9e9e9e;
-    --pds-n-500: #808080;
-    --pds-n-600: #636363;
-    --pds-n-700: #464646;
-    --pds-n-800: #2a2a2a;
-    --pds-n-900: #161616;
-    --pds-n-950: #030303;
-
-    --pds-p-50: #f4effc;
-    --pds-p-100: #e7dcf8;
-    --pds-p-200: #cfb9f1;
-    --pds-p-300: #b597e9;
-    --pds-p-400: #9f7ae2;
-    --pds-p-500: #885ddb;
-    --pds-p-600: #6d44c2;
-    --pds-p-700: #55349a;
-    --pds-p-800: #3d2570;
-    --pds-p-900: #261747;
-    --pds-p-950: #140c26;
-
-    --pds-action: var(--pds-primary-500);
-    --pds-action-hover: var(--pds-primary-600);
-    --pds-on-action: #ffffff;
-    --pds-tint: var(--pds-primary-50);
-    --pds-tint-fg: var(--pds-primary-700);
-    --pds-focus: var(--pds-primary-300);
-    --pds-font: var(--font-inter, "Inter Variable"), "Inter", ui-sans-serif, system-ui, sans-serif;
-    --pds-radius-control: 8px;
-    --pds-radius-control-lg: 12px;
-    --pds-radius-card: 12px;
+/*
+ * Every radius is the raw value times the corner scale, which Theme's radius
+ * prop (or a theme's --continuum-radius-scale) sets: 0 squares everything off,
+ * 2 doubles it. Growing, a corner stops 8px past its own size: doubled, a 20px
+ * panel would draw 40px and read as a pill, so the larger the corner, the sooner
+ * it stops, and the nesting order holds at every scale. The dock and the pill
+ * are round by design and scale freely; a radius past half the height draws the
+ * same pill.
+ */
+.continuum {
+    --radius-chip: min(
+        calc(var(--continuum-r-chip) * var(--continuum-radius-scale, 1)),
+        calc(var(--continuum-r-chip) + 8px)
+    );
+    --radius-item: min(
+        calc(var(--continuum-r-item) * var(--continuum-radius-scale, 1)),
+        calc(var(--continuum-r-item) + 8px)
+    );
+    --radius-control: min(
+        calc(var(--continuum-r-control) * var(--continuum-radius-scale, 1)),
+        calc(var(--continuum-r-control) + 8px)
+    );
+    --radius-card: min(
+        calc(var(--continuum-r-card) * var(--continuum-radius-scale, 1)),
+        calc(var(--continuum-r-card) + 8px)
+    );
+    --radius-panel: min(
+        calc(var(--continuum-r-panel) * var(--continuum-radius-scale, 1)),
+        calc(var(--continuum-r-panel) + 8px)
+    );
+    --radius-dock: calc(var(--continuum-r-dock) * var(--continuum-radius-scale, 1));
+    --radius-pill: calc(var(--continuum-r-pill) * var(--continuum-radius-scale, 1));
 }

@@ -18,8 +18,9 @@ export const inputVariants = cva(
     {
         variants: {
             size: {
-                sm: 'h-[34px] rounded-item px-curve [--curve-base:7.5px] [--curve-radius:var(--pds-radius-item)] [--curve-height:34px]',
-                md: 'h-[38px] rounded-control px-curve [--curve-base:9px] [--curve-radius:var(--pds-radius-control)] [--curve-height:38px]',
+                // The control row (level with a button) and the field row (level with a large one).
+                sm: 'h-[34px] rounded-control px-3',
+                md: 'h-[38px] rounded-control px-3',
             },
             invalid: {
                 true: 'border-error-500 [&_svg]:text-error-500',
@@ -50,10 +51,10 @@ export const inputVariants = cva(
 /*
  * Value and placeholder colours shared with Textarea. The library's "selected"
  * state is the value in neutral-900; disabled placeholders stay a step above the
- * spec's neutral-200, which disappears on the white surfaces of the cool themes.
+ * spec's neutral-200, which disappears on a theme with white surfaces.
  */
 export const inputTextClass = [
-    'font-medium text-neutral-900 text-sm placeholder:text-neutral-500',
+    'font-medium text-neutral-900 text-xs placeholder:text-neutral-500',
     'aria-invalid:placeholder:text-error-300',
     'disabled:cursor-not-allowed disabled:text-neutral-400 disabled:placeholder:text-neutral-300',
 ];

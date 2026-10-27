@@ -1,42 +1,71 @@
 import {
-    AreaChart,
     BottomBar,
     Card,
     Dock,
     DockAction,
     DockItem,
-    FunnelChart,
-    type FunnelStep,
     SegmentedControl,
     SegmentedControlItem,
     StatCard,
 } from 'continuum';
+import {
+    Area,
+    AreaChart,
+    ChartTooltip,
+    FunnelChart,
+    type FunnelStage,
+    Grid,
+    XAxis,
+    YAxis,
+} from 'continuum/charts';
 import { ListFilter, UserCheck, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
-import { AnalyticsPage, AnalyticsTopBar, ChartCardHeader, PageTitle } from './shared';
+import {
+    AnalyticsPage,
+    AnalyticsTopBar,
+    ChartCardHeader,
+    chartMargin,
+    PageTitle,
+    seriesRows,
+} from './shared';
 
-const segments: Record<string, FunnelStep[]> = {
+const segments: Record<string, FunnelStage[]> = {
     all: [
         { label: '/pricing', value: 1840 },
-        { label: '/checkout', value: 1426, delta: -22.5 },
-        { label: '/checkout/step-2', value: 557, delta: -38.4 },
-        { label: '/checkout/complete', value: 483, delta: -13.3 },
+        { label: '/checkout', value: 1426 },
+        { label: '/checkout/step-2', value: 557 },
+        { label: '/checkout/complete', value: 483 },
     ],
     new: [
         { label: '/pricing', value: 1212 },
-        { label: '/checkout', value: 874, delta: -27.9 },
-        { label: '/checkout/step-2', value: 301, delta: -44.1 },
-        { label: '/checkout/complete', value: 254, delta: -15.6 },
+        { label: '/checkout', value: 874 },
+        { label: '/checkout/step-2', value: 301 },
+        { label: '/checkout/complete', value: 254 },
     ],
     returning: [
         { label: '/pricing', value: 628 },
-        { label: '/checkout', value: 552, delta: -12.1 },
-        { label: '/checkout/step-2', value: 256, delta: -29.8 },
-        { label: '/checkout/complete', value: 229, delta: 4.2 },
+        { label: '/checkout', value: 552 },
+        { label: '/checkout/step-2', value: 256 },
+        { label: '/checkout/complete', value: 229 },
     ],
 };
 
-const weeks = ['W1', 'W2', 'W3', 'W4', 'W5', 'W6', 'W7', 'W8'];
+// Eight weeks starting Monday 31 August 2026; the axis names them W1 to W8.
+const firstWeek = new Date(2026, 7, 31);
+const WEEK = 7 * 24 * 60 * 60 * 1000;
+const entered = [310, 342, 298, 365, 380, 352, 401, 388];
+const completed = [118, 136, 121, 150, 162, 149, 171, 159];
+const weeks = entered.map((value, i) => ({
+    date: new Date(firstWeek.getTime() + i * WEEK),
+    entered: value,
+    completed: completed[i] ?? 0,
+}));
+const formatWeek = (date: Date) =>
+    `W${Math.round((date.getTime() - firstWeek.getTime()) / WEEK) + 1}`;
+const weekSeries = [
+    { key: 'entered', label: 'Entered', color: 'var(--color-chart-5)' },
+    { key: 'completed', label: 'Completed', color: 'var(--color-chart-2)' },
+];
 
 /** Checkout funnel (Eyes, 2026): KPI cards, the funnel, and completion over time. */
 export const CheckoutFunnel = () => {
@@ -49,20 +78,20 @@ export const CheckoutFunnel = () => {
                 <BottomBar floating>
                     <Dock aria-label="Visitor segment" onValueChange={setSegment} value={segment}>
                         <DockItem value="all">
-                            <Users strokeWidth={1.5} />
+                            <Users strokeWidth={2} />
                             All visitors
                         </DockItem>
                         <DockItem value="new">
-                            <UserPlus strokeWidth={1.5} />
+                            <UserPlus strokeWidth={2} />
                             New
                         </DockItem>
                         <DockItem value="returning">
-                            <UserCheck strokeWidth={1.5} />
+                            <UserCheck strokeWidth={2} />
                             Returning
                         </DockItem>
                     </Dock>
                     <DockAction aria-label="Filters, 2 applied">
-                        <ListFilter strokeWidth={1.5} />
+                        <ListFilter strokeWidth={2} />
                         (2)
                     </DockAction>
                 </BottomBar>
@@ -103,7 +132,7 @@ export const CheckoutFunnel = () => {
                 </div>
             </div>
 
-            <FunnelChart className="mt-8" steps={segments[segment] ?? []} />
+            <FunnelChart className="mt-8" data={segments[segment] ?? []} style={{ height: 384 }} />
 
             <Card className="mt-8 gap-8 p-5 pb-8">
                 <div className="flex items-start justify-between gap-4">
@@ -119,24 +148,22 @@ export const CheckoutFunnel = () => {
                         <SegmentedControlItem value="12m">12 months</SegmentedControlItem>
                     </SegmentedControl>
                 </div>
-                <AreaChart
-                    aria-label="Funnel entries and completions per week"
-                    height={260}
-                    labels={weeks}
-                    series={[
-                        {
-                            key: 'entered',
-                            values: [310, 342, 298, 365, 380, 352, 401, 388],
-                            color: 'chart-5',
-                        },
-                        {
-                            key: 'completed',
-                            values: [118, 136, 121, 150, 162, 149, 171, 159],
-                            color: 'chart-2',
-                        },
-                    ]}
-                    yTicks={[0, 100, 200, 300, 400]}
-                />
+                <div aria-label="Funnel entries and completions per week" role="img">
+                    <AreaChart
+                        data={weeks}
+                        formatXLabel={formatWeek}
+                        margin={chartMargin}
+                        style={{ height: 260 }}
+                    >
+                        <Grid />
+                        {weekSeries.map(series => (
+                            <Area dataKey={series.key} fill={series.color} key={series.key} />
+                        ))}
+                        <XAxis numTicks={weeks.length} />
+                        <YAxis />
+                        <ChartTooltip rows={seriesRows(weekSeries)} />
+                    </AreaChart>
+                </div>
             </Card>
         </AnalyticsPage>
     );

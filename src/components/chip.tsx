@@ -3,6 +3,14 @@ import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { focusRing } from './button';
 
+/** The 25px pill a filter or a picked value sits in; the combobox draws its chips with it too. */
+export const chipClass =
+    'inline-flex h-[25px] shrink-0 items-center gap-3 whitespace-nowrap rounded-pill bg-neutral-100 px-2 font-normal text-neutral-600 text-xs [&_svg:not([class*=size-])]:size-3 [&_svg]:shrink-0';
+
+/** The × at the end of a chip: a 20px target drawn round a 12px icon. */
+export const chipRemoveClass =
+    '-m-1 inline-flex cursor-pointer items-center justify-center rounded-full p-1 transition-colors duration-150 hover:text-neutral-950';
+
 export type FilterChipProps = ComponentProps<'span'> & {
     /** Leading 12px icon. */
     icon?: ReactNode;
@@ -11,10 +19,7 @@ export type FilterChipProps = ComponentProps<'span'> & {
     removeLabel?: string;
 };
 
-/**
- * Removable filter tag from the analytics top bar. Without `onRemove` it renders
- * as a static tag.
- */
+/** A removable filter tag in a top bar. Without `onRemove` it renders as a static tag. */
 export const FilterChip = ({
     icon,
     onRemove,
@@ -23,14 +28,7 @@ export const FilterChip = ({
     children,
     ...props
 }: FilterChipProps) => (
-    <span
-        className={cn(
-            'inline-flex h-[25px] shrink-0 items-center gap-3 whitespace-nowrap rounded-full bg-neutral-100 px-curve font-normal text-neutral-600 text-xs [--curve-base:4.875px] [--curve-height:25px] [--curve-radius:9999px] [&_svg:not([class*=size-])]:size-3 [&_svg]:shrink-0',
-            className,
-        )}
-        data-slot="filter-chip"
-        {...props}
-    >
+    <span className={cn(chipClass, className)} data-slot="filter-chip" {...props}>
         <span className="inline-flex items-center gap-1.5">
             {icon}
             {children}
@@ -40,15 +38,12 @@ export const FilterChip = ({
                 aria-label={
                     removeLabel ?? (typeof children === 'string' ? `Remove ${children}` : 'Remove')
                 }
-                className={cn(
-                    '-m-1 inline-flex cursor-pointer items-center justify-center rounded-full p-1 transition-colors duration-150 hover:text-neutral-950',
-                    focusRing,
-                )}
+                className={cn(chipRemoveClass, focusRing)}
                 data-slot="filter-chip-remove"
                 onClick={onRemove}
                 type="button"
             >
-                <X aria-hidden strokeWidth={1.5} />
+                <X aria-hidden strokeWidth={2} />
             </button>
         )}
     </span>
@@ -59,7 +54,7 @@ export type SuggestionChipProps = ComponentProps<'button'> & {
     icon?: ReactNode;
 };
 
-/** Prompt suggestion from the report generator, set in a row after a "Suggestions:" label. */
+/** A prompt offered to the user, set in a row after a "Suggestions:" label. */
 export const SuggestionChip = ({
     icon,
     className,
@@ -69,7 +64,7 @@ export const SuggestionChip = ({
 }: SuggestionChipProps) => (
     <button
         className={cn(
-            'inline-flex h-[29px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-control border border-neutral-200 px-curve font-normal text-neutral-950 text-xs transition-colors duration-150 [--curve-base:5px] [--curve-height:29px] [--curve-radius:var(--pds-radius-control)] hover:border-neutral-300',
+            'inline-flex h-[29px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-control border border-neutral-200 px-2 font-normal text-neutral-950 text-xs transition-colors duration-150 hover:border-neutral-300',
             'disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
             focusRing,
             className,

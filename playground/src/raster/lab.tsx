@@ -14,10 +14,10 @@ import {
     Switch,
     Theme,
     type ThemeMode,
-    type ThemeName,
-    themes,
     useTheme,
 } from 'continuum';
+import { ExternalLink, Grid3x3, Ruler, SlidersHorizontal, X } from 'lucide-react';
+import { type ComponentType, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import {
     AnalyticsRaster,
     computeRaster,
@@ -26,11 +26,8 @@ import {
     InvoiceRaster,
     navColumnsFor,
     SequenceRaster,
-} from 'continuum/experimental';
-import { ExternalLink, Grid3x3, Ruler, SlidersHorizontal, X } from 'lucide-react';
-import { type ComponentType, type ReactNode, useEffect, useId, useRef, useState } from 'react';
-import { PageHeader } from '../layout';
-import { themeMeta } from '../meta';
+} from '../../../labs/raster';
+import { Page, PageHeader } from '../layout';
 import { AnalyticsOverview } from '../screens/analytics-overview';
 import { InvoiceEditor } from '../screens/invoice-editor';
 import { SequenceEditor } from '../screens/sequence-editor';
@@ -99,8 +96,8 @@ const defaults: LabSettings = {
     overlay: true,
 };
 
-/** The settings, the theme and the mode as a query string for the standalone tab. */
-const toSearch = (settings: LabSettings, theme: ThemeName, mode: ThemeMode) =>
+/** The settings and the mode as a query string for the standalone tab. */
+const toSearch = (settings: LabSettings, mode: ThemeMode) =>
     `?${new URLSearchParams({
         raster: settings.screen,
         version: settings.version,
@@ -109,14 +106,12 @@ const toSearch = (settings: LabSettings, theme: ThemeName, mode: ThemeMode) =>
         container: String(settings.containerMax),
         column: String(settings.minColumn),
         grid: settings.overlay ? '1' : '0',
-        theme,
         mode,
     })}`;
 
 const fromSearch = (search: string) => {
     const params = new URLSearchParams(search);
     const number = (key: string, fallback: number) => Number(params.get(key)) || fallback;
-    const theme = themes.find(name => name === params.get('theme')) ?? 'eyes';
     const mode: ThemeMode = params.get('mode') === 'dark' ? 'dark' : 'light';
 
     const settings: LabSettings = {
@@ -129,7 +124,7 @@ const fromSearch = (search: string) => {
         overlay: params.get('grid') !== '0',
     };
 
-    return { settings, theme, mode };
+    return { settings, mode };
 };
 
 /** True when the page was opened as the standalone screen. */
@@ -265,7 +260,7 @@ const LabControls = ({
                         value: 'raster',
                         label: (
                             <>
-                                <Grid3x3 strokeWidth={1.5} />
+                                <Grid3x3 strokeWidth={2} />
                                 Raster
                             </>
                         ),
@@ -371,10 +366,11 @@ const LabScreen = ({ settings, height }: { settings: LabSettings; height: number
  * borders, shown at full viewport size and scaled to fit, beside the original.
  */
 export const RasterLab = () => {
-    const { theme, mode } = useTheme();
+    const { mode } = useTheme();
     const stageRef = useRef<HTMLDivElement>(null);
     const [available, setAvailable] = useState(1280);
-    const [viewport, setViewport] = useState(1920);
+    // A laptop's width by default, so the scaled-down screen stays readable on the stage.
+    const [viewport, setViewport] = useState(1440);
     const [settings, setSettings] = useState(defaults);
     const update = (patch: Partial<LabSettings>) =>
         setSettings(current => ({ ...current, ...patch }));
@@ -393,14 +389,14 @@ export const RasterLab = () => {
     const scale = Math.min(1, available / viewport);
 
     return (
-        <>
+        <Page width="inset">
             <PageHeader
-                description="Screens on a raster after Müller-Brockmann, made dynamic after Gerstner. The text line is the unit: gutters, margins and gaps are whole lines and every baseline sits on a 4px grid. Grids sit in grids: the viewport's columns size the navigation, and beside it a container steps from 1440 to 768 with columns of its own. Panels and borders give way to columns and space; colour only marks state and data."
+                description="Screens on a raster after Müller-Brockmann, made dynamic after Gerstner. The text line is the unit, and columns and space do the work of panels and borders."
                 eyebrow="Experiment"
                 title="Raster"
             />
 
-            <div className="flex flex-col gap-6 p-4 lg:p-6">
+            <div className="flex flex-col gap-6">
                 <Card className="flex-row flex-wrap items-end gap-x-8 gap-y-4">
                     <LabControls onChange={update} settings={settings} />
                     <Range
@@ -418,16 +414,20 @@ export const RasterLab = () => {
                     <p className="flex items-start gap-2 text-neutral-600 text-xs tabular-nums">
                         {settings.version !== 'original' && (
                             <>
-                                <Ruler className="size-4 shrink-0" strokeWidth={1.5} />
+                                <Ruler className="size-4 shrink-0" strokeWidth={2} />
                                 {describe(viewport, settings)}
                             </>
                         )}
                     </p>
-                    <Button asChild variant="secondary">
-                        <a href={toSearch(settings, theme, mode)} rel="noopener" target="_blank">
-                            Open in new tab
-                            <ExternalLink strokeWidth={1.5} />
-                        </a>
+                    <Button
+                        render={
+                            // biome-ignore lint/a11y/useAnchorContent: Button puts its children (the label) inside this link.
+                            <a href={toSearch(settings, mode)} rel="noopener" target="_blank" />
+                        }
+                        variant="secondary"
+                    >
+                        Open in new tab
+                        <ExternalLink strokeWidth={2} />
                     </Button>
                 </div>
 
@@ -440,13 +440,12 @@ export const RasterLab = () => {
                             height: VIEWPORT_HEIGHT,
                             transform: `scale(${scale})`,
                         }}
-                        theme={theme}
                     >
                         <LabScreen height={VIEWPORT_HEIGHT} settings={settings} />
                     </Theme>
                 </div>
             </div>
-        </>
+        </Page>
     );
 };
 
@@ -470,7 +469,6 @@ const useWindowSize = () => {
 export const RasterStandalone = () => {
     const [initial] = useState(() => fromSearch(window.location.search));
     const [settings, setSettings] = useState(initial.settings);
-    const [theme, setTheme] = useState(initial.theme);
     const [mode, setMode] = useState(initial.mode);
     const [open, setOpen] = useState(false);
     const size = useWindowSize();
@@ -478,12 +476,12 @@ export const RasterStandalone = () => {
         setSettings(current => ({ ...current, ...patch }));
 
     useEffect(() => {
-        window.history.replaceState(null, '', toSearch(settings, theme, mode));
+        window.history.replaceState(null, '', toSearch(settings, mode));
         document.title = `${labScreens[settings.screen].label} · Raster`;
-    }, [settings, theme, mode]);
+    }, [settings, mode]);
 
     return (
-        <Theme className="h-screen overflow-auto bg-neutral-50" mode={mode} theme={theme}>
+        <Theme className="h-screen overflow-auto bg-neutral-50" mode={mode}>
             <LabScreen height={size.height} settings={settings} />
 
             {/* Lab chrome, not part of the screen: it floats above it and folds away */}
@@ -495,33 +493,12 @@ export const RasterStandalone = () => {
                     variant="secondary"
                     className="bg-neutral-50"
                 >
-                    {open ? <X strokeWidth={1.5} /> : <SlidersHorizontal strokeWidth={1.5} />}
+                    {open ? <X strokeWidth={2} /> : <SlidersHorizontal strokeWidth={2} />}
                     <span className="sr-only">{open ? 'Hide settings' : 'Show settings'}</span>
                 </Button>
                 {open && (
                     <Card className="max-h-[calc(100vh-72px)] w-80 overflow-y-auto overflow-x-hidden shadow-sheet">
                         <LabControls onChange={update} panel settings={settings} />
-                        <Field>
-                            <FieldLabel>Theme</FieldLabel>
-                            <Select
-                                onValueChange={value => {
-                                    const next = themes.find(name => name === value);
-                                    if (next) setTheme(next);
-                                }}
-                                value={theme}
-                            >
-                                <SelectTrigger size="sm">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {themes.map(name => (
-                                        <SelectItem key={name} value={name}>
-                                            {themeMeta[name].name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                        </Field>
                         <Field className="flex-row items-center justify-between">
                             <FieldLabel>Dark mode</FieldLabel>
                             <Switch

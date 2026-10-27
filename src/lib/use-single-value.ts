@@ -3,8 +3,8 @@
 import { useState } from 'react';
 
 /**
- * Radix ToggleGroup lets a single group go empty when the active item is
- * clicked again. Segmented controls and the dock must always keep one value.
+ * Base UI's ToggleGroup hands back an empty array when the pressed item is
+ * clicked again, which would leave the group empty. Segmented controls and the dock must always keep one value.
  */
 export const useSingleValue = (
     value: string | undefined,

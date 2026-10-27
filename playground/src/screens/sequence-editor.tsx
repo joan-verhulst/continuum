@@ -24,7 +24,7 @@ import {
     HeaderBar,
     NavGroup,
     NavItem,
-    Separator,
+    PageContent,
     Sidebar,
     SidebarGroup,
     SidebarHeader,
@@ -104,45 +104,45 @@ const SequenceSidebar = () => (
             </SidebarLogo>
             <SidebarToggle />
         </SidebarHeader>
-        <SidebarGroup aria-label="Sequences" divided>
+        <SidebarGroup aria-label="Sequences">
             {/* The call to action sits a step apart from the list below it. */}
-            <NavItem icon={<Plus strokeWidth={1.5} />} variant="primary">
+            <NavItem icon={<Plus strokeWidth={2} />} variant="primary">
                 New sequence
             </NavItem>
-            <NavItem icon={<ListTree strokeWidth={1.5} />}>All sequences</NavItem>
-            <NavItem active icon={<Timer strokeWidth={1.5} />}>
+            <NavItem icon={<ListTree strokeWidth={2} />}>All sequences</NavItem>
+            <NavItem active icon={<Timer strokeWidth={2} />}>
                 Active campaigns
             </NavItem>
-            <NavItem icon={<FileClock strokeWidth={1.5} />}>Drafts</NavItem>
-            <NavItem icon={<Star strokeWidth={1.5} />}>Templates</NavItem>
+            <NavItem icon={<FileClock strokeWidth={2} />}>Drafts</NavItem>
+            <NavItem icon={<Star strokeWidth={2} />}>Templates</NavItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Projects" label="Projects">
             <NavGroup defaultOpen icon="🚀" label="Q1 growth campaign">
-                <NavItem icon={<Megaphone strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<Megaphone strokeWidth={2} />} variant="inset">
                     Campaigns
                 </NavItem>
-                <NavItem icon={<Workflow strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<Workflow strokeWidth={2} />} variant="inset">
                     Automations
                 </NavItem>
-                <NavItem icon={<ChartLine strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<ChartLine strokeWidth={2} />} variant="inset">
                     Analytics
                 </NavItem>
-                <NavItem icon={<UserRoundCog strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<UserRoundCog strokeWidth={2} />} variant="inset">
                     Permissions
                 </NavItem>
             </NavGroup>
             {projects.map(project => (
                 <NavGroup icon={project.icon} key={project.id} label={project.label}>
-                    <NavItem icon={<Megaphone strokeWidth={1.5} />} variant="inset">
+                    <NavItem icon={<Megaphone strokeWidth={2} />} variant="inset">
                         Campaigns
                     </NavItem>
-                    <NavItem icon={<ChartLine strokeWidth={1.5} />} variant="inset">
+                    <NavItem icon={<ChartLine strokeWidth={2} />} variant="inset">
                         Analytics
                     </NavItem>
                 </NavGroup>
             ))}
             {/* Set at the project rows' size, as drawn. */}
-            <NavItem variant="project" icon={<Folder strokeWidth={1.5} />}>
+            <NavItem variant="project" icon={<Folder strokeWidth={2} />}>
                 All projects
             </NavItem>
         </SidebarGroup>
@@ -160,23 +160,23 @@ const SequenceSidebar = () => (
 
 const EmailActions = ({ name, onDelete }: { name: string; onDelete: () => void }) => (
     <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <Button aria-label={`Actions for ${name}`} size="icon-sm" variant="ghost">
-                <EllipsisVertical strokeWidth={1.5} />
-            </Button>
+        <DropdownMenuTrigger
+            render={<Button aria-label={`Actions for ${name}`} size="icon-sm" variant="ghost" />}
+        >
+            <EllipsisVertical strokeWidth={2} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
             <DropdownMenuItem>
-                <Pencil strokeWidth={1.5} />
+                <Pencil strokeWidth={2} />
                 Edit email
             </DropdownMenuItem>
             <DropdownMenuItem>
-                <Copy strokeWidth={1.5} />
+                <Copy strokeWidth={2} />
                 Duplicate
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onSelect={onDelete} variant="danger">
-                <Trash2 strokeWidth={1.5} />
+            <DropdownMenuItem onClick={onDelete} variant="danger">
+                <Trash2 strokeWidth={2} />
                 Delete
             </DropdownMenuItem>
         </DropdownMenuContent>
@@ -239,7 +239,7 @@ export const SequenceEditor = () => {
                 </HeaderBar>
 
                 <div className="min-h-0 flex-1 overflow-auto">
-                    <div className="mx-auto flex w-[1024px] flex-col pt-20 pb-32">
+                    <PageContent className="flex flex-col pb-32" width="wide">
                         <div className="flex items-center gap-3">
                             <AvatarStack>
                                 <Avatar alt="Netherlands" fallback="NL" shape="round" size={24} />
@@ -249,24 +249,21 @@ export const SequenceEditor = () => {
                             <h1 className="font-medium text-lg text-neutral-950">
                                 Q1 growth campaign
                             </h1>
-                            <Separator className="h-4" orientation="vertical" />
-                            <Badge icon={<Info strokeWidth={1.5} />}>Inactive</Badge>
+                            <Badge icon={<Info strokeWidth={2} />}>Inactive</Badge>
                         </div>
 
-                        <Separator className="mt-8 mb-12" />
-
-                        <div className="flex items-start justify-between gap-6">
+                        <div className="mt-12 flex items-start justify-between gap-6">
                             <SectionTitle
                                 description="Build the sequence by adding emails and grouping them into phases. Emails in a phase go out in order at the set interval. Drag to reorder."
                                 title="Email sequencing"
                             />
                             <Button onClick={addEmail}>
                                 Add email
-                                <Plus strokeWidth={1.5} />
+                                <Plus strokeWidth={2} />
                             </Button>
                         </div>
 
-                        <Table className="mt-8">
+                        <Table wrapperClassName="mt-8">
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-10">
@@ -294,13 +291,13 @@ export const SequenceEditor = () => {
                                                     size="icon-sm"
                                                     variant="ghost"
                                                 >
-                                                    <Settings strokeWidth={1.5} />
+                                                    <Settings strokeWidth={2} />
                                                 </Button>
                                             )}
                                             {!phase.interval && (
                                                 <Info
                                                     className="mr-1.5 inline size-3 align-[-1px]"
-                                                    strokeWidth={1.5}
+                                                    strokeWidth={2}
                                                 />
                                             )}
                                             {phase.title}
@@ -311,7 +308,7 @@ export const SequenceEditor = () => {
                                                     <GripHorizontal
                                                         aria-hidden
                                                         className="size-4"
-                                                        strokeWidth={1.5}
+                                                        strokeWidth={2}
                                                     />
                                                 </TableCell>
                                                 <TableCell className="tabular-nums">
@@ -341,34 +338,34 @@ export const SequenceEditor = () => {
                                             onClick={addPhase}
                                             variant="ghost"
                                         >
-                                            <Plus strokeWidth={1.5} />
+                                            <Plus strokeWidth={2} />
                                             Add phase
                                         </Button>
                                     </TableCell>
                                 </TableRow>
                             </TableBody>
                         </Table>
-                    </div>
+                    </PageContent>
                 </div>
 
                 <BottomBar floating>
                     <Dock aria-label="Campaign">
                         <DockItem value="eligibility">
-                            <ToggleLeft strokeWidth={1.5} />
+                            <ToggleLeft strokeWidth={2} />
                             Eligibility
                         </DockItem>
                         <DockItem value="audience">
-                            <Users strokeWidth={1.5} />
+                            <Users strokeWidth={2} />
                             Audience
                         </DockItem>
                         <DockItem value="settings">
-                            <Settings strokeWidth={1.5} />
+                            <Settings strokeWidth={2} />
                             Settings
                         </DockItem>
                     </Dock>
                     <DockAction>
                         Start campaign
-                        <Rocket strokeWidth={1.5} />
+                        <Rocket strokeWidth={2} />
                     </DockAction>
                 </BottomBar>
             </AppPanel>

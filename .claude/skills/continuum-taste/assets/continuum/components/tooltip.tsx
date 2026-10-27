@@ -1,15 +1,15 @@
 'use client';
 
-import { Tooltip as TooltipPrimitive } from 'radix-ui';
+import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import type { ComponentProps } from 'react';
-import { cn } from '../lib/cn';
+import { cn, type WithClassName } from '../lib/cn';
 import { ThemeScope } from './theme';
 
 export const TooltipProvider = ({
-    delayDuration = 300,
+    delay = 300,
     ...props
 }: ComponentProps<typeof TooltipPrimitive.Provider>) => (
-    <TooltipPrimitive.Provider delayDuration={delayDuration} {...props} />
+    <TooltipPrimitive.Provider data-slot="tooltip-provider" delay={delay} {...props} />
 );
 
 /** Brings its own provider so a lone tooltip works without one higher up. */
@@ -23,24 +23,47 @@ export const TooltipTrigger = (props: ComponentProps<typeof TooltipPrimitive.Tri
     <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
 );
 
+type TooltipContentProps = WithClassName<ComponentProps<typeof TooltipPrimitive.Popup>> &
+    Pick<
+        ComponentProps<typeof TooltipPrimitive.Positioner>,
+        'align' | 'alignOffset' | 'side' | 'sideOffset'
+    > & {
+        /** Where the chip is portalled; the body by default. */
+        container?: ComponentProps<typeof TooltipPrimitive.Portal>['container'];
+    };
+
 /** Dark label chip for icon-only controls, such as the analytics rail. */
 export const TooltipContent = ({
     className,
+    side = 'top',
     sideOffset = 6,
+    align = 'center',
+    alignOffset = 0,
+    container,
     ...props
-}: ComponentProps<typeof TooltipPrimitive.Content>) => (
-    <TooltipPrimitive.Portal>
+}: TooltipContentProps) => (
+    <TooltipPrimitive.Portal container={container}>
         <ThemeScope>
-            <TooltipPrimitive.Content
-                className={cn(
-                    'z-50 max-w-64 select-none text-balance rounded-chip bg-neutral-950 px-curve py-1 font-medium text-neutral-50 text-xxs [--curve-base:6.5px] [--curve-height:22px] [--curve-radius:var(--pds-radius-chip)]',
-                    'starting:opacity-0 transition-opacity duration-200 ease-out-strong motion-reduce:transition-none',
-                    className,
-                )}
-                data-slot="tooltip-content"
+            <TooltipPrimitive.Positioner
+                align={align}
+                alignOffset={alignOffset}
+                className="z-50"
+                data-slot="tooltip-positioner"
+                side={side}
                 sideOffset={sideOffset}
-                {...props}
-            />
+            >
+                <TooltipPrimitive.Popup
+                    className={cn(
+                        'max-w-64 origin-(--transform-origin) select-none text-balance rounded-chip bg-neutral-950 px-2 py-1 font-medium text-neutral-50 text-xxs',
+                        // Base UI keeps the popup mounted while it fades out; data-instant marks a hop between
+                        // grouped tooltips, which should swap without fading.
+                        'transition-opacity duration-200 ease-out-strong data-ending-style:opacity-0 data-starting-style:opacity-0 data-instant:transition-none motion-reduce:transition-none',
+                        className,
+                    )}
+                    data-slot="tooltip-content"
+                    {...props}
+                />
+            </TooltipPrimitive.Positioner>
         </ThemeScope>
     </TooltipPrimitive.Portal>
 );

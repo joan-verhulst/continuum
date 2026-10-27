@@ -11,7 +11,7 @@ export type ActivityItemProps = Omit<ComponentProps<'li'>, 'title'> &
         action?: ReactNode;
     };
 
-/** Status-history row from the invoice side sheet. */
+/** One event in a history: a toned icon tile, what happened, when, and an optional status. */
 export const ActivityItem = ({
     tone,
     icon,
@@ -27,11 +27,11 @@ export const ActivityItem = ({
         data-tone={tone ?? 'neutral'}
         {...props}
     >
-        <IconTile aria-hidden className="rounded-item" tone={tone} variant="outline">
+        <IconTile aria-hidden tone={tone} variant="outline">
             {icon}
         </IconTile>
         <div className="flex min-w-0 flex-1 flex-col gap-2 text-xs">
-            <p className="truncate font-medium text-neutral-900">{title}</p>
+            <p className="truncate text-neutral-950">{title}</p>
             {time != null && <p className="truncate font-normal text-neutral-600">{time}</p>}
         </div>
         {action}

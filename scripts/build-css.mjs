@@ -6,7 +6,7 @@ import postcss from 'postcss';
 import scope from './postcss-scope.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const from = resolve(root, 'src/styles/pds.css');
+const from = resolve(root, 'src/styles/continuum.css');
 const to = resolve(root, 'dist/styles.css');
 
 const result = await postcss([tailwind({ optimize: { minify: false } }), scope()]).process(

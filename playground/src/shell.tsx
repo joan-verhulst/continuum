@@ -1,45 +1,65 @@
 import {
     AppPanel,
     AppShell,
+    Badge,
+    BottomBar,
     Breadcrumb,
     BreadcrumbItem,
     BreadcrumbLink,
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-    ContinuumMark,
+    ContinuumLogo,
     cn,
+    DockAction,
     HeaderBar,
+    isDefaultTheme,
     NavGroup,
     NavItem,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+    SheetArea,
     Sidebar,
     SidebarFooter,
     SidebarGroup,
     SidebarHeader,
-    SidebarLogo,
     SidebarToggle,
     Switch,
-    themes,
+    Theme,
 } from 'continuum';
-import { AppWindow, Blocks, Grid3x3, Moon, Palette, Sun } from 'lucide-react';
+import {
+    Grid3x3,
+    House,
+    LayoutGrid,
+    LayoutTemplate,
+    Moon,
+    Newspaper,
+    Palette,
+    Sun,
+    SwatchBook,
+} from 'lucide-react';
 import { type ReactNode, type RefObject, useEffect, useRef, useState } from 'react';
-import { PageIndexProvider, scrollToSection, usePageIndex } from './layout';
-import { type AppState, themeMeta, toHash, type View, views } from './meta';
-import { screens } from './screens';
+import {
+    DockSlotProvider,
+    HeaderSlotProvider,
+    type PageIndexEntry,
+    PageIndexProvider,
+    scrollToSection,
+    usePageIndex,
+} from './layout';
+import { type AppState, CUSTOM_THEME, toHash, type View } from './meta';
+import { ThemeSheet } from './theme-sheet';
 
-const icon = { strokeWidth: 1.5 } as const;
+const icon = { strokeWidth: 2 } as const;
 
 const viewMeta: Record<View, { label: string; icon: ReactNode }> = {
+    home: { label: 'Continuum', icon: <House {...icon} /> },
     foundations: { label: 'Foundations', icon: <Palette {...icon} /> },
-    components: { label: 'Components', icon: <Blocks {...icon} /> },
-    screens: { label: 'Screens', icon: <AppWindow {...icon} /> },
-    raster: { label: 'Raster', icon: <Grid3x3 {...icon} /> },
+    components: { label: 'Components', icon: <LayoutGrid {...icon} /> },
+    patterns: { label: 'Patterns', icon: <LayoutTemplate {...icon} /> },
+    raster: { label: 'Raster lab', icon: <Grid3x3 {...icon} /> },
+    cms: { label: 'CMS test', icon: <Newspaper {...icon} /> },
 };
+
+const mainViews: View[] = ['home', 'foundations', 'components', 'patterns'];
 
 /** Where the sidebar sits beside the panel rather than over it. */
 const desktop = '(min-width: 1024px)';
@@ -51,8 +71,9 @@ type ShellProps = {
 };
 
 /**
- * The playground as one of the products: the Continuum sidebar on the canvas,
- * the current view on an inset panel that scrolls under its header bar.
+ * The playground as a product of its own: the chrome is always Continuum's
+ * default look, the page inside it shows whichever theme is being previewed,
+ * and the dock at the bottom switches between them.
  */
 export const Shell = (props: ShellProps) => (
     <PageIndexProvider>
@@ -65,12 +86,23 @@ const ShellFrame = ({ state, onChange, children }: ShellProps) => {
     // Beside the panel it folds away on request; over it, it only opens on request.
     const [docked, setDocked] = useState(true);
     const [overlay, setOverlay] = useState(false);
+    const [headerSlot, setHeaderSlot] = useState<HTMLDivElement | null>(null);
+    const [dockSlot, setDockSlot] = useState<HTMLDivElement | null>(null);
+    const customising = Boolean(state.builder);
+    const setCustomising = (open: boolean) => onChange({ builder: open || undefined });
+    const custom = !isDefaultTheme(state.theme);
+    // Themes are previewed on what they would change: the foundations, the components, the patterns and the CMS test. The rest is Continuum's own.
+    const previewable =
+        state.view === 'foundations' ||
+        state.view === 'components' ||
+        state.view === 'patterns' ||
+        state.view === 'cms';
 
-    // A new view starts at its top, whether picked here or reached through the hash.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: runs on a view change only
+    // A new page starts at its top, whether picked here or reached through the hash.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: runs on a page change only
     useEffect(() => {
         scroller.current?.scrollTo({ top: 0 });
-    }, [state.view]);
+    }, [state.view, state.component, state.screen]);
 
     useEffect(() => {
         if (!overlay) return;
@@ -118,19 +150,62 @@ const ShellFrame = ({ state, onChange, children }: ShellProps) => {
                         onClick={show}
                     />
                     <Trail scroller={scroller} state={state} />
+                    {/* A page that fills the panel puts its own controls here. */}
+                    <div className="ml-auto flex shrink-0 items-center gap-4" ref={setHeaderSlot} />
                 </HeaderBar>
-                <div className="min-h-0 flex-1 overflow-auto" ref={scroller}>
-                    {children}
-                </div>
+                <SheetArea className="min-h-0 flex-1 overflow-auto" ref={scroller}>
+                    {/* The page previews the theme; the chrome around it stays Continuum's own. */}
+                    <Theme
+                        className="contents"
+                        radius={previewable ? state.radius : 1}
+                        theme={custom && previewable ? CUSTOM_THEME : undefined}
+                    >
+                        <HeaderSlotProvider value={headerSlot}>
+                            <DockSlotProvider value={dockSlot}>{children}</DockSlotProvider>
+                        </HeaderSlotProvider>
+                    </Theme>
+                    {previewable && (
+                        <ThemeSheet
+                            onChange={onChange}
+                            onOpenChange={setCustomising}
+                            open={customising}
+                            state={state}
+                        />
+                    )}
+                </SheetArea>
+                {/* The bar at the foot: the page's own index, if it has one, then the theme's pill. */}
+                {previewable && !customising && (
+                    <BottomBar floating>
+                        <div className="contents" ref={setDockSlot} />
+                        <ThemePill onOpen={() => setCustomising(true)} state={state} />
+                    </BottomBar>
+                )}
             </AppPanel>
         </AppShell>
     );
 };
 
+/**
+ * The theme's pill at the foot of the bar: the previewed theme's own action, its colour, shine
+ * and corners, around the theme's icon. It opens the sheet, where a preview is turned on and
+ * picked; without one it is the system's own action.
+ */
+const ThemePill = ({ state, onOpen }: { state: AppState; onOpen: () => void }) => (
+    <Theme
+        className="contents"
+        radius={state.radius}
+        theme={isDefaultTheme(state.theme) ? undefined : CUSTOM_THEME}
+    >
+        <DockAction aria-label="Theme" onClick={onOpen} size="icon">
+            <SwatchBook {...icon} />
+        </DockAction>
+    </Theme>
+);
+
 type PlaygroundSidebarProps = Omit<ShellProps, 'children'> & {
     className?: string;
     onHide: () => void;
-    /** A section was picked; the overlay closes so the reader sees it. */
+    /** An entry was picked; the overlay closes so the reader sees it. */
     onSection: () => void;
 };
 
@@ -141,24 +216,19 @@ const PlaygroundSidebar = ({
     onSection,
     className,
 }: PlaygroundSidebarProps) => {
-    const { sections, active } = usePageIndex();
-    const meta = themeMeta[state.theme];
+    const { sections, active, label, onSelect } = usePageIndex();
 
     return (
         <Sidebar aria-label="Playground" className={className}>
             <SidebarHeader>
-                <div className="flex min-w-0 items-center gap-1">
-                    <SidebarLogo>
-                        <ContinuumMark shape="round" size={18} />
-                    </SidebarLogo>
-                    <span className="truncate font-medium text-neutral-950 text-sm">Continuum</span>
-                </div>
+                {/* Inset like a nav row, so the mark sits over the icons and the name over the labels. */}
+                <ContinuumLogo className="min-w-0 pl-2.5" size={18} />
                 <SidebarToggle aria-label="Hide sidebar" onClick={onHide} />
             </SidebarHeader>
 
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-3">
-                <SidebarGroup aria-label="Views" divided>
-                    {views.map(view => (
+                <SidebarGroup aria-label="Views">
+                    {mainViews.map(view => (
                         <NavItem
                             active={state.view === view}
                             icon={viewMeta[view].icon}
@@ -170,60 +240,42 @@ const PlaygroundSidebar = ({
                     ))}
                 </SidebarGroup>
 
+                {/* Apart from the system: an experiment that may change or go. It stays with the views, above whatever page is open. */}
+                <SidebarGroup aria-label="Lab" label="Lab">
+                    <NavItem
+                        active={state.view === 'raster'}
+                        icon={viewMeta.raster.icon}
+                        onClick={() => onChange({ view: 'raster' })}
+                        trailing={<Badge tone="primary">Beta</Badge>}
+                    >
+                        {viewMeta.raster.label}
+                    </NavItem>
+                    <NavItem
+                        active={state.view === 'cms'}
+                        icon={viewMeta.cms.icon}
+                        onClick={() => onChange({ view: 'cms' })}
+                    >
+                        {viewMeta.cms.label}
+                    </NavItem>
+                </SidebarGroup>
+
                 {sections.length > 0 && (
-                    <SidebarGroup aria-label="On this page" label="On this page">
-                        <NavGroup
-                            defaultOpen
-                            icon={viewMeta[state.view].icon}
-                            key={state.view}
-                            label={viewMeta[state.view].label}
-                        >
-                            {sections.map(section => (
-                                <NavItem
-                                    active={section.id === active}
-                                    key={section.id}
-                                    onClick={() => {
-                                        scrollToSection(section.id);
-                                        onSection();
-                                    }}
-                                    variant="inset"
-                                >
-                                    {section.title}
-                                </NavItem>
-                            ))}
-                        </NavGroup>
-                    </SidebarGroup>
+                    <PageIndexNav
+                        active={active}
+                        label={label ?? 'On this page'}
+                        onPick={id => {
+                            if (onSelect) onSelect(id);
+                            else scrollToSection(id);
+                            onSection();
+                        }}
+                        sections={sections}
+                        view={state.view}
+                    />
                 )}
             </div>
 
-            <SidebarFooter className="flex-col items-stretch gap-3 pt-3 pr-3 pb-4">
-                <Select
-                    onValueChange={value => {
-                        const theme = themes.find(name => name === value);
-                        if (theme) onChange({ theme, mode: themeMeta[theme].mode });
-                    }}
-                    value={state.theme}
-                >
-                    <SelectTrigger aria-label={`Theme, ${meta.name} ${meta.year}`} size="sm">
-                        <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent align="start" className="w-72" side="top">
-                        {themes.map(theme => (
-                            <SelectItem key={theme} value={theme}>
-                                <span className="text-neutral-950">{themeMeta[theme].name}</span>{' '}
-                                <span className="font-normal text-neutral-500">
-                                    {themeMeta[theme].year}
-                                </span>
-                                {/* The trigger shows the item text too; the product only fits the list. */}
-                                <span className="in-data-[slot=select-trigger]:hidden font-normal text-neutral-500">
-                                    {' '}
-                                    · {themeMeta[theme].product}
-                                </span>
-                            </SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-                <div className="flex items-center justify-between gap-3 px-2">
+            <SidebarFooter className="pt-3 pr-5 pb-5">
+                <div className="flex flex-1 items-center justify-between gap-3 px-2">
                     <span className="text-neutral-600 text-xs">Dark mode</span>
                     <div className="flex items-center gap-2 text-neutral-600">
                         <Sun aria-hidden className="size-4" {...icon} />
@@ -242,27 +294,111 @@ const PlaygroundSidebar = ({
     );
 };
 
+type PageIndexNavProps = {
+    sections: PageIndexEntry[];
+    active?: string;
+    label: string;
+    view: View;
+    onPick: (id: string) => void;
+};
+
+/**
+ * The open page's index. Entries that carry a group sit under their group's label,
+ * one block per group; the rest fold under the view's name.
+ */
+const PageIndexNav = ({ sections, active, label, view, onPick }: PageIndexNavProps) => {
+    const groups = sections.reduce<{ label: string; entries: PageIndexEntry[] }[]>(
+        (list, entry) => {
+            const name = entry.group ?? '';
+            const last = list.at(-1);
+            if (last && last.label === name) last.entries.push(entry);
+            else list.push({ label: name, entries: [entry] });
+            return list;
+        },
+        [],
+    );
+    const grouped = groups.some(group => group.label);
+
+    if (!grouped) {
+        return (
+            <SidebarGroup aria-label={label} label={label}>
+                <NavGroup
+                    defaultOpen
+                    icon={viewMeta[view].icon}
+                    key={view}
+                    label={viewMeta[view].label}
+                >
+                    {sections.map(section => (
+                        <NavItem
+                            active={section.id === active}
+                            key={section.id}
+                            onClick={() => onPick(section.id)}
+                            variant="inset"
+                        >
+                            {section.title}
+                        </NavItem>
+                    ))}
+                </NavGroup>
+            </SidebarGroup>
+        );
+    }
+
+    return (
+        <>
+            {groups.map(group => (
+                <SidebarGroup
+                    aria-label={group.label || label}
+                    key={group.label}
+                    label={group.label || label}
+                >
+                    {group.entries.map(section => (
+                        <NavItem
+                            active={section.id === active}
+                            key={section.id}
+                            onClick={() => onPick(section.id)}
+                        >
+                            {section.title}
+                        </NavItem>
+                    ))}
+                </SidebarGroup>
+            ))}
+        </>
+    );
+};
+
 type TrailProps = {
     state: AppState;
     scroller: RefObject<HTMLDivElement | null>;
 };
 
-/** Continuum › view › the section being read, or the screen on show. */
+/** Continuum › view › the entry being read or the page that is open. */
 const Trail = ({ state, scroller }: TrailProps) => {
     const { sections, active } = usePageIndex();
-    const section = sections.find(entry => entry.id === active);
-    const screen =
-        state.view === 'screens'
-            ? (screens.find(entry => entry.id === state.screen) ?? screens[0])
-            : undefined;
-    const last = section?.title ?? screen?.title;
+    const last = sections.find(entry => entry.id === active)?.title;
+
+    if (state.view === 'home') {
+        return (
+            <Breadcrumb className="min-w-0">
+                <BreadcrumbList className="flex-nowrap">
+                    <BreadcrumbItem>
+                        <BreadcrumbPage>Continuum</BreadcrumbPage>
+                    </BreadcrumbItem>
+                </BreadcrumbList>
+            </Breadcrumb>
+        );
+    }
 
     return (
         <Breadcrumb className="min-w-0">
             <BreadcrumbList className="flex-nowrap">
                 <BreadcrumbItem className="max-sm:hidden">
                     <BreadcrumbLink
-                        href={toHash({ ...state, view: 'foundations', screen: undefined })}
+                        href={toHash({
+                            ...state,
+                            view: 'home',
+                            component: undefined,
+                            screen: undefined,
+                        })}
                     >
                         Continuum
                     </BreadcrumbLink>
@@ -271,8 +407,14 @@ const Trail = ({ state, scroller }: TrailProps) => {
                 <BreadcrumbItem>
                     {last ? (
                         <BreadcrumbLink
-                            href={toHash(state)}
+                            href={toHash({
+                                ...state,
+                                component: undefined,
+                                screen: undefined,
+                            })}
                             onClick={event => {
+                                // On a docs page the view's name scrolls back to its top; on a detail page it is the way back.
+                                if (state.component || state.screen) return;
                                 event.preventDefault();
                                 scroller.current?.scrollTo({ top: 0, behavior: 'smooth' });
                             }}

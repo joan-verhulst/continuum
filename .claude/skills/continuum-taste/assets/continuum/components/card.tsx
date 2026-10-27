@@ -81,7 +81,7 @@ export const CardDelta = ({ trend = 'up', className, ...props }: CardDeltaProps)
     <span
         className={cn(
             'font-normal text-xs',
-            trend === 'up' ? 'text-success-600' : 'text-error-500',
+            trend === 'up' ? 'text-success-600' : 'text-error-600',
             className,
         )}
         data-slot="card-delta"
@@ -140,6 +140,6 @@ export const MetaRow = ({ label, value, className, ...props }: MetaRowProps) => 
         {...props}
     >
         <span className="text-neutral-500">{label}</span>
-        <span className="text-neutral-900">{value}</span>
+        <span className="text-neutral-950">{value}</span>
     </div>
 );

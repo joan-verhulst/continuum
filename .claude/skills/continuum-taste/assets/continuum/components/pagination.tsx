@@ -10,7 +10,7 @@ export type PaginationButtonProps = ComponentProps<'button'> & {
     current?: boolean;
 };
 
-/** A 32px square page button from the library; the current page only darkens its label. */
+/** A square page button on the control row's 34px; the current page only darkens its label. */
 export const PaginationButton = ({
     current,
     className,
@@ -20,9 +20,9 @@ export const PaginationButton = ({
     <button
         aria-current={current ? 'page' : undefined}
         className={cn(
-            'inline-flex size-8 shrink-0 cursor-pointer select-none items-center justify-center rounded-[8px] border border-neutral-200 font-medium text-neutral-600 text-sm tabular-nums transition-[border-color,color] duration-150',
+            'inline-flex size-[34px] shrink-0 cursor-pointer select-none items-center justify-center rounded-control border border-neutral-200 font-medium text-neutral-600 text-sm tabular-nums transition-[border-color,color] duration-150',
             'hover:border-neutral-300 hover:text-neutral-950 aria-[current=page]:text-neutral-950',
-            'disabled:pointer-events-none disabled:text-neutral-200 [&_svg]:size-4 [&_svg]:shrink-0',
+            'disabled:pointer-events-none disabled:text-neutral-300 [&_svg]:size-4 [&_svg]:shrink-0',
             focusRing,
             className,
         )}
@@ -37,7 +37,7 @@ export const PaginationPrevious = ({
     ...props
 }: ComponentProps<'button'>) => (
     <PaginationButton aria-label={label} {...props}>
-        <ChevronLeft strokeWidth={1.5} />
+        <ChevronLeft strokeWidth={2} />
     </PaginationButton>
 );
 
@@ -46,7 +46,7 @@ export const PaginationNext = ({
     ...props
 }: ComponentProps<'button'>) => (
     <PaginationButton aria-label={label} {...props}>
-        <ChevronRight strokeWidth={1.5} />
+        <ChevronRight strokeWidth={2} />
     </PaginationButton>
 );
 
@@ -77,7 +77,8 @@ export const getPageItems = (page: number, pageCount: number, siblings = 1): Pag
     ];
 };
 
-export type PaginationProps = Omit<ComponentProps<'nav'>, 'children'> & {
+// `results` is also a legacy attribute of <nav>, so it is dropped before the slot is typed.
+export type PaginationProps = Omit<ComponentProps<'nav'>, 'children' | 'results'> & {
     /** Current page, starting at 1. */
     page: number;
     pageCount: number;
@@ -130,7 +131,7 @@ export const Pagination = ({
                     ) : (
                         <span
                             aria-hidden
-                            className="inline-flex size-8 items-center justify-center font-medium text-neutral-600 text-sm"
+                            className="inline-flex size-[34px] items-center justify-center font-medium text-neutral-600 text-sm"
                             key={item}
                         >
                             …

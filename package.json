@@ -1,15 +1,16 @@
 {
     "name": "continuum",
     "version": "0.1.0",
-    "description": "A design system distilled from product screens designed over the years, built on Radix primitives and Tailwind v4.",
+    "description": "A quiet, dense design system for tool UI: one default look, a theme builder, Base UI primitives and Tailwind v4.",
     "license": "UNLICENSED",
+    "private": true,
     "type": "module",
     "sideEffects": [
         "*.css"
     ],
     "exports": {
         ".": "./src/index.ts",
-        "./experimental": "./src/experimental/index.ts",
+        "./charts": "./src/charts/index.ts",
         "./styles.css": "./dist/styles.css",
         "./theme.css": "./src/styles/theme.css",
         "./tokens.css": "./src/styles/tokens.css"
@@ -33,15 +34,29 @@
         "react-dom": ">=19"
     },
     "dependencies": {
+        "@base-ui/react": "1.8.0",
+        "@number-flow/react": "^0.6.2",
+        "@visx/curve": "4.0.1-alpha.0",
+        "@visx/event": "4.0.1-alpha.0",
+        "@visx/grid": "4.0.1-alpha.0",
+        "@visx/group": "4.0.1-alpha.0",
+        "@visx/responsive": "4.0.1-alpha.0",
+        "@visx/scale": "4.0.1-alpha.0",
+        "@visx/shape": "4.0.1-alpha.0",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
+        "d3-array": "^3.2.4",
+        "d3-shape": "^3.2.0",
         "lucide-react": "^1.60.0",
-        "radix-ui": "^1.8.1",
+        "motion": "^12.23.24",
+        "react-day-picker": "10.0.0",
         "tailwind-merge": "^3.4.0"
     },
     "devDependencies": {
         "@biomejs/biome": "2.4.0",
         "@tailwindcss/postcss": "^4.3.3",
+        "@types/d3-array": "3.2.2",
+        "@types/d3-shape": "3.1.8",
         "@types/react": "^19.2.10",
         "@types/react-dom": "^19.2.3",
         "biome-config-pixel": "2.1.7",

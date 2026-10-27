@@ -1,5 +1,4 @@
 import {
-    AreaChart,
     BottomBar,
     Card,
     CardTitle,
@@ -7,7 +6,6 @@ import {
     Dock,
     DockAction,
     DockItem,
-    DonutChart,
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
@@ -30,6 +28,17 @@ import {
     TableRow,
 } from 'continuum';
 import {
+    Area,
+    AreaChart,
+    ChartTooltip,
+    Grid,
+    PieCenter,
+    PieChart,
+    PieSlice,
+    XAxis,
+    YAxis,
+} from 'continuum/charts';
+import {
     Calendar,
     ChartLine,
     CloudUpload,
@@ -45,19 +54,73 @@ import {
     Users,
 } from 'lucide-react';
 import { useState } from 'react';
-import { AnalyticsPage, AnalyticsTopBar, ChartCardHeader, PageTitle } from './shared';
+import {
+    AnalyticsPage,
+    AnalyticsTopBar,
+    ChartAnnotation,
+    ChartCardHeader,
+    chartMargin,
+    formatWeekday,
+    PageTitle,
+    reportWeek,
+    seriesRows,
+} from './shared';
 
 const initialFilters = [
-    { id: 'device', label: 'Device: 2', icon: <Monitor strokeWidth={1.5} /> },
-    { id: 'os', label: 'OS: 1', icon: <Smartphone strokeWidth={1.5} /> },
-    { id: 'browser', label: 'Browser: 1', icon: <Calendar strokeWidth={1.5} /> },
-    { id: 'region', label: 'Region: 1', icon: <MapPin strokeWidth={1.5} /> },
-    { id: 'source', label: 'Source: 1', icon: <Link strokeWidth={1.5} /> },
-    { id: 'visitor', label: 'New/Returning', icon: <Users strokeWidth={1.5} /> },
+    { id: 'device', label: 'Device: 2', icon: <Monitor strokeWidth={2} /> },
+    { id: 'os', label: 'OS: 1', icon: <Smartphone strokeWidth={2} /> },
+    { id: 'browser', label: 'Browser: 1', icon: <Calendar strokeWidth={2} /> },
+    { id: 'region', label: 'Region: 1', icon: <MapPin strokeWidth={2} /> },
+    { id: 'source', label: 'Source: 1', icon: <Link strokeWidth={2} /> },
+    { id: 'visitor', label: 'New/Returning', icon: <Users strokeWidth={2} /> },
 ];
 
-const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-const percentTicks = [0, 25, 50, 75, 100];
+// One row per day of the report week; each chart plots its own key.
+const week = reportWeek.map((date, i) => ({
+    date,
+    sessions: [4, 58, 398, 296, 236, 288, 0][i] ?? 0,
+    bounce: [6, 12, 21, 34, 46, 58, 67][i] ?? 0,
+    conversion: [2, 4, 9, 22, 38, 52, 64][i] ?? 0,
+}));
+const percent = (value: number) => `${value}%`;
+
+/** One series over the report week, with an optional release marker on a day. */
+const WeekAreaChart = ({
+    label,
+    dataKey,
+    name,
+    color,
+    height,
+    format = String,
+    annotation,
+}: {
+    label: string;
+    dataKey: 'sessions' | 'bounce' | 'conversion';
+    name: string;
+    color: string;
+    height: number;
+    format?: (value: number) => string;
+    /** Index of the day a release went out. */
+    annotation?: number;
+}) => (
+    <div aria-label={label} role="img">
+        <AreaChart
+            data={week}
+            formatXLabel={formatWeekday}
+            margin={chartMargin}
+            style={{ height }}
+            // Rates stop at 100%, so the axis does not reach past it for headroom.
+            yScaleDomainCap={format === percent ? 100 : undefined}
+        >
+            <Grid />
+            <Area dataKey={dataKey} fill={color} />
+            {annotation !== undefined && <ChartAnnotation icon={CloudUpload} index={annotation} />}
+            <XAxis numTicks={week.length} />
+            <YAxis formatValue={format} />
+            <ChartTooltip rows={seriesRows([{ key: dataKey, label: name, color }], format)} />
+        </AreaChart>
+    </div>
+);
 
 const pages = {
     pages: [
@@ -83,11 +146,22 @@ const pages = {
     ],
 } as const;
 
+// Shades of one series by opacity, as the legend swatches draw them.
 const devices = [
-    { label: 'Desktop', value: 0.62, swatch: 'bg-chart-5' },
-    { label: 'Mobile', value: 0.31, swatch: 'bg-chart-5/80' },
-    { label: 'Tablet', value: 0.07, swatch: 'bg-chart-5/33' },
-];
+    { label: 'Desktop', share: 0.62, color: 'var(--color-chart-5)', swatch: 'bg-chart-5' },
+    {
+        label: 'Mobile',
+        share: 0.31,
+        color: 'color-mix(in oklab, var(--color-chart-5) 80%, transparent)',
+        swatch: 'bg-chart-5/80',
+    },
+    {
+        label: 'Tablet',
+        share: 0.07,
+        color: 'color-mix(in oklab, var(--color-chart-5) 33%, transparent)',
+        swatch: 'bg-chart-5/33',
+    },
+].map(device => ({ ...device, value: Math.round(device.share * 12400) }));
 
 const TopPagesCard = () => {
     const [view, setView] = useState<keyof typeof pages>('pages');
@@ -148,17 +222,29 @@ const DevicesCard = () => (
             </Select>
         </div>
         <div className="flex flex-1 items-center gap-8 px-2">
-            <DonutChart rings={devices} size={152}>
-                <span className="block text-lg">12.4k</span>
-                <span className="block font-normal text-neutral-600 text-xxs">sessions</span>
-            </DonutChart>
+            <div
+                aria-label={devices
+                    .map(device => `${device.label} ${Math.round(device.share * 100)}%`)
+                    .join(', ')}
+                role="img"
+            >
+                <PieChart data={devices} innerRadius={50} padAngle={0.02} size={152}>
+                    {devices.map((device, index) => (
+                        <PieSlice index={index} key={device.label} showGlow={false} />
+                    ))}
+                    <PieCenter
+                        defaultLabel="sessions"
+                        formatOptions={{ notation: 'compact', maximumFractionDigits: 1 }}
+                    />
+                </PieChart>
+            </div>
             <ul className="flex flex-1 flex-col gap-3 text-xs">
                 {devices.map(device => (
                     <li className="flex items-center gap-2" key={device.label}>
                         <span className={`size-2 rounded-full ${device.swatch}`} />
                         <span className="flex-1 text-neutral-600">{device.label}</span>
                         <span className="font-medium text-neutral-950 tabular-nums">
-                            {Math.round(device.value * 100)}%
+                            {Math.round(device.share * 100)}%
                         </span>
                     </li>
                 ))}
@@ -178,31 +264,33 @@ export const AnalyticsOverview = () => {
                 <BottomBar floating>
                     <Dock aria-label="Sections" onValueChange={setSection} value={section}>
                         <DockItem value="overview">
-                            <LayoutGrid strokeWidth={1.5} />
+                            <LayoutGrid strokeWidth={2} />
                             Overview
                         </DockItem>
                         <DockItem value="pages">
-                            <Files strokeWidth={1.5} />
+                            <Files strokeWidth={2} />
                             Pages
                         </DockItem>
                         <DockItem value="performance">
-                            <Gauge strokeWidth={1.5} />
+                            <Gauge strokeWidth={2} />
                             Performance
                         </DockItem>
                         <DockItem value="traffic">
-                            <ChartLine strokeWidth={1.5} />
+                            <ChartLine strokeWidth={2} />
                             Traffic
                         </DockItem>
                         <DockItem value="funnels">
-                            <Funnel strokeWidth={1.5} />
+                            <Funnel strokeWidth={2} />
                             Funnels
                         </DockItem>
                     </Dock>
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <DockAction aria-label={`Filters, ${filters.length} applied`}>
-                                <ListFilter strokeWidth={1.5} />({filters.length})
-                            </DockAction>
+                        <DropdownMenuTrigger
+                            render={
+                                <DockAction aria-label={`Filters, ${filters.length} applied`} />
+                            }
+                        >
+                            <ListFilter strokeWidth={2} />({filters.length})
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" side="top">
                             <DropdownMenuLabel>Filters</DropdownMenuLabel>
@@ -219,7 +307,6 @@ export const AnalyticsOverview = () => {
                                                 : current.filter(f => f.id !== filter.id),
                                         )
                                     }
-                                    onSelect={event => event.preventDefault()}
                                 >
                                     {filter.icon}
                                     {filter.label}
@@ -274,14 +361,12 @@ export const AnalyticsOverview = () => {
                         title="Sessions over time"
                         value="12.4k"
                     />
-                    <AreaChart
-                        aria-label="Sessions per day, last week"
-                        data={days.map((label, i) => ({
-                            label,
-                            value: [4, 58, 398, 296, 236, 288, 0][i] ?? 0,
-                        }))}
+                    <WeekAreaChart
+                        color="var(--color-chart-line-primary)"
+                        dataKey="sessions"
                         height={280}
-                        yTicks={[0, 100, 200, 300, 400]}
+                        label="Sessions per day, last week"
+                        name="Sessions"
                     />
                 </Card>
 
@@ -294,17 +379,14 @@ export const AnalyticsOverview = () => {
                             trend="down"
                             value="67%"
                         />
-                        <AreaChart
-                            annotation={{ index: 4, icon: <CloudUpload strokeWidth={1.5} /> }}
-                            aria-label="Bounce rate per day"
-                            color="var(--pds-error-500)"
-                            data={days.map((label, i) => ({
-                                label,
-                                value: [6, 12, 21, 34, 46, 58, 67][i] ?? 0,
-                            }))}
-                            formatY={value => `${value}%`}
+                        <WeekAreaChart
+                            annotation={4}
+                            color="var(--color-error-500)"
+                            dataKey="bounce"
+                            format={percent}
                             height={240}
-                            yTicks={percentTicks}
+                            label="Bounce rate per day"
+                            name="Bounce rate"
                         />
                     </Card>
                     <Card className="gap-8 p-5 pb-8">
@@ -314,17 +396,14 @@ export const AnalyticsOverview = () => {
                             title="Conversion rate"
                             value="45%"
                         />
-                        <AreaChart
-                            annotation={{ index: 4, icon: <CloudUpload strokeWidth={1.5} /> }}
-                            aria-label="Conversion rate per day"
-                            color="var(--pds-success-500)"
-                            data={days.map((label, i) => ({
-                                label,
-                                value: [2, 4, 9, 22, 38, 52, 64][i] ?? 0,
-                            }))}
-                            formatY={value => `${value}%`}
+                        <WeekAreaChart
+                            annotation={4}
+                            color="var(--color-success-500)"
+                            dataKey="conversion"
+                            format={percent}
                             height={240}
-                            yTicks={percentTicks}
+                            label="Conversion rate per day"
+                            name="Conversion rate"
                         />
                     </Card>
                 </div>

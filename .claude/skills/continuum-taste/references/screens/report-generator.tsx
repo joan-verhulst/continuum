@@ -22,11 +22,11 @@ import {
     NavItem,
     OptionList,
     OptionRow,
+    PageContent,
     RadioGroup,
     RadioGroupItem,
     SegmentedControl,
     SegmentedControlItem,
-    Separator,
     Sidebar,
     SidebarGroup,
     SidebarHeader,
@@ -59,25 +59,25 @@ import { AccountFooter, SectionTitle } from './shared';
 type Stat = { id: string; label: string; icon: ReactNode };
 
 const general: Stat[] = [
-    { id: 'engagement', label: 'Engagement rate', icon: <Users strokeWidth={1.5} /> },
-    { id: 'followers', label: 'Follower growth', icon: <TrendingUp strokeWidth={1.5} /> },
-    { id: 'reach', label: 'Post reach', icon: <Eye strokeWidth={1.5} /> },
-    { id: 'ctr', label: 'Click-through rate', icon: <MousePointerClick strokeWidth={1.5} /> },
-    { id: 'impressions', label: 'Impressions', icon: <ChartColumn strokeWidth={1.5} /> },
+    { id: 'engagement', label: 'Engagement rate', icon: <Users strokeWidth={2} /> },
+    { id: 'followers', label: 'Follower growth', icon: <TrendingUp strokeWidth={2} /> },
+    { id: 'reach', label: 'Post reach', icon: <Eye strokeWidth={2} /> },
+    { id: 'ctr', label: 'Click-through rate', icon: <MousePointerClick strokeWidth={2} /> },
+    { id: 'impressions', label: 'Impressions', icon: <ChartColumn strokeWidth={2} /> },
 ];
 
 const video: Stat[] = [
-    { id: 'views', label: 'Video views', icon: <Eye strokeWidth={1.5} /> },
-    { id: 'watch', label: 'Average watch time', icon: <Clock strokeWidth={1.5} /> },
-    { id: 'completion', label: 'Completion rate', icon: <Gauge strokeWidth={1.5} /> },
-    { id: 'shares', label: 'Shares', icon: <Share2 strokeWidth={1.5} /> },
+    { id: 'views', label: 'Video views', icon: <Eye strokeWidth={2} /> },
+    { id: 'watch', label: 'Average watch time', icon: <Clock strokeWidth={2} /> },
+    { id: 'completion', label: 'Completion rate', icon: <Gauge strokeWidth={2} /> },
+    { id: 'shares', label: 'Shares', icon: <Share2 strokeWidth={2} /> },
 ];
 
 const social: Stat[] = [
-    { id: 'likes', label: 'Likes', icon: <Heart strokeWidth={1.5} /> },
-    { id: 'comments', label: 'Comments', icon: <Users strokeWidth={1.5} /> },
-    { id: 'saves', label: 'Saves', icon: <Layers strokeWidth={1.5} /> },
-    { id: 'profile', label: 'Profile visits', icon: <MousePointerClick strokeWidth={1.5} /> },
+    { id: 'likes', label: 'Likes', icon: <Heart strokeWidth={2} /> },
+    { id: 'comments', label: 'Comments', icon: <Users strokeWidth={2} /> },
+    { id: 'saves', label: 'Saves', icon: <Layers strokeWidth={2} /> },
+    { id: 'profile', label: 'Profile visits', icon: <MousePointerClick strokeWidth={2} /> },
 ];
 
 const platforms: { id: string; label: string; stats: Stat[] }[] = [
@@ -109,21 +109,21 @@ const ReportSidebar = () => (
             </SidebarLogo>
             <SidebarToggle />
         </SidebarHeader>
-        <SidebarGroup aria-label="Main" divided>
-            <NavItem icon={<Plus strokeWidth={1.5} />} variant="primary">
+        <SidebarGroup aria-label="Main">
+            <NavItem icon={<Plus strokeWidth={2} />} variant="primary">
                 New report
             </NavItem>
-            <NavItem icon={<Gauge strokeWidth={1.5} />} trailing={<Kbd>H</Kbd>}>
+            <NavItem icon={<Gauge strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
                 Home
             </NavItem>
-            <NavItem active icon={<Users strokeWidth={1.5} />} trailing={<Kbd>C</Kbd>}>
+            <NavItem active icon={<Users strokeWidth={2} />} trailing={<Kbd>C</Kbd>}>
                 Clients
             </NavItem>
-            <NavItem icon={<Layers strokeWidth={1.5} />} trailing={<Kbd>L</Kbd>}>
+            <NavItem icon={<Layers strokeWidth={2} />} trailing={<Kbd>L</Kbd>}>
                 Logs
             </NavItem>
             <NavItem
-                icon={<LifeBuoy strokeWidth={1.5} />}
+                icon={<LifeBuoy strokeWidth={2} />}
                 trailing={
                     <Badge tone="success" variant="count">
                         128
@@ -135,27 +135,27 @@ const ReportSidebar = () => (
         </SidebarGroup>
         <SidebarGroup aria-label="Clients" label="Clients">
             <NavGroup defaultOpen icon="☕" label="Copper Kettle Café">
-                <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
                     Reports
                 </NavItem>
-                <NavItem icon={<Share2 strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<Share2 strokeWidth={2} />} variant="inset">
                     Channels
                 </NavItem>
-                <NavItem icon={<Calendar strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<Calendar strokeWidth={2} />} variant="inset">
                     Schedule
                 </NavItem>
             </NavGroup>
             {clients.map(client => (
                 <NavGroup icon={client.icon} key={client.id} label={client.label}>
-                    <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                    <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
                         Reports
                     </NavItem>
-                    <NavItem icon={<Share2 strokeWidth={1.5} />} variant="inset">
+                    <NavItem icon={<Share2 strokeWidth={2} />} variant="inset">
                         Channels
                     </NavItem>
                 </NavGroup>
             ))}
-            <NavItem variant="project" icon={<Folder strokeWidth={1.5} />}>
+            <NavItem variant="project" icon={<Folder strokeWidth={2} />}>
                 Archive
             </NavItem>
         </SidebarGroup>
@@ -203,134 +203,133 @@ export const ReportGenerator = () => {
                 </HeaderBar>
 
                 <div className="min-h-0 flex-1 overflow-auto">
-                    <form
-                        className="mx-auto flex w-[960px] flex-col gap-8 pt-[72px] pb-24"
-                        onSubmit={event => event.preventDefault()}
-                    >
-                        <SectionTitle
-                            description="Pick a period and the statistics to include. The report is ready to share as soon as it is generated."
-                            as="h1"
-                            lead
-                            size="lg"
-                            title="Generate report for Acme Corp"
-                        />
-
-                        <Separator />
-
-                        <section className="flex flex-col gap-6">
+                    <PageContent className="pb-24">
+                        <form
+                            className="flex flex-col gap-12"
+                            onSubmit={event => event.preventDefault()}
+                        >
                             <SectionTitle
+                                description="Pick a period and the statistics to include. The report is ready to share as soon as it is generated."
+                                as="h1"
                                 lead
-                                description="Set the period the report covers. Only data from within this period is included."
-                                title="Select period"
+                                size="lg"
+                                title="Generate report for Acme Corp"
                             />
-                            <div className="flex flex-col gap-3">
-                                <Field>
-                                    <FieldLabel>Dates</FieldLabel>
-                                    <Input
-                                        leadingIcon={<Calendar strokeWidth={1.5} />}
-                                        onChange={event => setDates(event.target.value)}
-                                        value={dates}
-                                    />
-                                </Field>
-                                <div className="flex flex-wrap items-center gap-2">
-                                    <span className="mr-2 flex items-center gap-1.5 text-neutral-600 text-xs">
-                                        <Sparkles className="size-4" strokeWidth={1.5} />
-                                        Suggestions:
-                                    </span>
-                                    {Object.entries(suggestions).map(([label, value]) => (
-                                        <SuggestionChip key={label} onClick={() => setDates(value)}>
-                                            {label}
-                                        </SuggestionChip>
-                                    ))}
-                                </div>
-                            </div>
-                        </section>
 
-                        <Separator />
-
-                        <section className="flex flex-col gap-6">
-                            <SectionTitle
-                                lead
-                                description="Select the data to include, both across all platforms and per platform."
-                                title="Choose statistics for the report (optional)"
-                            />
-                            <Card className="gap-0 p-0">
-                                <div className="border-neutral-200 border-b p-3">
-                                    <SegmentedControl
-                                        aria-label="Platform"
-                                        onValueChange={setPlatform}
-                                        value={platform}
-                                    >
-                                        {platforms.map(p => (
-                                            <SegmentedControlItem key={p.id} value={p.id}>
-                                                {p.label}
-                                            </SegmentedControlItem>
+                            <section className="flex flex-col gap-6">
+                                <SectionTitle
+                                    lead
+                                    description="Set the period the report covers. Only data from within this period is included."
+                                    title="Select period"
+                                />
+                                <div className="flex flex-col gap-3">
+                                    <Field>
+                                        <FieldLabel>Dates</FieldLabel>
+                                        <Input
+                                            leadingIcon={<Calendar strokeWidth={2} />}
+                                            onChange={event => setDates(event.target.value)}
+                                            value={dates}
+                                        />
+                                    </Field>
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <span className="mr-2 flex items-center gap-1.5 text-neutral-600 text-xs">
+                                            <Sparkles className="size-4" strokeWidth={2} />
+                                            Suggestions:
+                                        </span>
+                                        {Object.entries(suggestions).map(([label, value]) => (
+                                            <SuggestionChip
+                                                key={label}
+                                                onClick={() => setDates(value)}
+                                            >
+                                                {label}
+                                            </SuggestionChip>
                                         ))}
-                                    </SegmentedControl>
+                                    </div>
                                 </div>
-                                <OptionList className="p-3">
-                                    {current?.stats.map(stat => {
-                                        const key = `${platform}:${stat.id}`;
-                                        return (
-                                            <OptionRow
-                                                control={
-                                                    <Checkbox
-                                                        checked={checked[key] ?? false}
-                                                        onCheckedChange={value =>
-                                                            setChecked(state => ({
-                                                                ...state,
-                                                                [key]: value === true,
-                                                            }))
-                                                        }
-                                                    />
-                                                }
-                                                icon={stat.icon}
-                                                key={key}
-                                                label={stat.label}
-                                            />
-                                        );
-                                    })}
-                                </OptionList>
-                            </Card>
-                        </section>
+                            </section>
 
-                        <Separator />
+                            <section className="flex flex-col gap-6">
+                                <SectionTitle
+                                    lead
+                                    description="Select the data to include, both across all platforms and per platform."
+                                    title="Choose statistics for the report (optional)"
+                                />
+                                <Card className="gap-0 p-0">
+                                    <div className="px-3 pt-3">
+                                        <SegmentedControl
+                                            aria-label="Platform"
+                                            onValueChange={setPlatform}
+                                            value={platform}
+                                        >
+                                            {platforms.map(p => (
+                                                <SegmentedControlItem key={p.id} value={p.id}>
+                                                    {p.label}
+                                                </SegmentedControlItem>
+                                            ))}
+                                        </SegmentedControl>
+                                    </div>
+                                    <OptionList className="p-3">
+                                        {current?.stats.map(stat => {
+                                            const key = `${platform}:${stat.id}`;
+                                            return (
+                                                <OptionRow
+                                                    control={
+                                                        <Checkbox
+                                                            checked={checked[key] ?? false}
+                                                            onCheckedChange={value =>
+                                                                setChecked(state => ({
+                                                                    ...state,
+                                                                    [key]: value === true,
+                                                                }))
+                                                            }
+                                                        />
+                                                    }
+                                                    icon={stat.icon}
+                                                    key={key}
+                                                    label={stat.label}
+                                                />
+                                            );
+                                        })}
+                                    </OptionList>
+                                </Card>
+                            </section>
 
-                        <section className="flex flex-col gap-6">
-                            <SectionTitle
-                                lead
-                                description="Choose which trends the report calls out next to the figures."
-                                title="Trend filter (optional)"
-                            />
-                            <RadioGroup
-                                aria-label="Trend filter"
-                                onValueChange={setTrend}
-                                value={trend}
-                            >
-                                <OptionRow
-                                    control={<RadioGroupItem value="all" />}
-                                    label="Show all trends"
+                            <section className="flex flex-col gap-6">
+                                <SectionTitle
+                                    lead
+                                    description="Choose which trends the report calls out next to the figures."
+                                    title="Trend filter (optional)"
                                 />
-                                <OptionRow
-                                    control={<RadioGroupItem value="positive" />}
-                                    description="Growth against the previous period"
-                                    label="Only positive trends"
-                                />
-                                <OptionRow
-                                    control={<RadioGroupItem value="negative" />}
-                                    description="Declines worth a closer look"
-                                    label="Only negative trends"
-                                />
-                            </RadioGroup>
-                        </section>
+                                <RadioGroup
+                                    aria-label="Trend filter"
+                                    onValueChange={setTrend}
+                                    value={trend}
+                                >
+                                    <OptionRow
+                                        control={<RadioGroupItem value="all" />}
+                                        label="Show all trends"
+                                    />
+                                    <OptionRow
+                                        control={<RadioGroupItem value="positive" />}
+                                        description="Growth against the previous period"
+                                        label="Only positive trends"
+                                    />
+                                    <OptionRow
+                                        control={<RadioGroupItem value="negative" />}
+                                        description="Declines worth a closer look"
+                                        label="Only negative trends"
+                                    />
+                                </RadioGroup>
+                            </section>
 
-                        <div className="flex justify-end">
-                            <Button type="submit">
-                                Generate report
-                                <ArrowRight strokeWidth={1.5} />
-                            </Button>
-                        </div>
-                    </form>
+                            <div className="flex justify-end">
+                                <Button type="submit">
+                                    Generate report
+                                    <ArrowRight strokeWidth={2} />
+                                </Button>
+                            </div>
+                        </form>
+                    </PageContent>
                 </div>
             </AppPanel>
         </AppShell>

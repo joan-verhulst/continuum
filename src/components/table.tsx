@@ -11,7 +11,9 @@ const TableContext = createContext<TableVariant>('ruled');
 const tableWrapperVariants = cva('relative w-full overflow-x-auto', {
     variants: {
         variant: {
-            ruled: 'rounded-panel border border-neutral-200 bg-neutral-50',
+            // The control's corner, as the inputs and filters above a table have: a table is
+            // data beside them, not a second panel, and a panel's corner made it the steepest thing on the page.
+            ruled: 'rounded-control border border-neutral-200 bg-neutral-50',
             rows: '',
         },
     },
@@ -36,7 +38,7 @@ export type TableProps = ComponentProps<'table'> &
 
 /**
  * A data table in two looks. `ruled` is the library table, the email sequencing
- * phases and the invoice lines: hairline rows in a bordered panel. `rows` is the
+ * phases and the invoice lines: hairline rows in a bordered frame. `rows` is the
  * analytics overview's top pages and regions: every row a separate rounded fill.
  */
 export const Table = ({ variant, className, wrapperClassName, ...props }: TableProps) => {
@@ -79,7 +81,10 @@ export const TableFooter = ({ className, ...props }: ComponentProps<'tfoot'>) =>
 const tableRowVariants = cva('', {
     variants: {
         variant: {
-            ruled: 'transition-colors duration-150 data-[state=selected]:bg-neutral-100 [tbody>&]:hover:bg-neutral-950/[0.03]',
+            // A plain <tr>, so the caller marks selection: data-selected, or data-state="selected" as
+            // before the move to Base UI and in shadcn tables. Both keep working. Selection is the
+            // selected wash, and hover leaves a selected row as it is rather than paling it.
+            ruled: 'transition-colors duration-150 data-selected:bg-selected data-[state=selected]:bg-selected [tbody>&]:not-data-selected:hover:bg-neutral-950/[0.03]',
             rows: '',
         },
     },
@@ -141,7 +146,8 @@ const tableCellVariants = cva('text-xs', {
     variants: {
         variant: {
             ruled: 'h-[41px] border-neutral-200 border-b p-3 font-medium text-neutral-900',
-            rows: 'h-[33px] bg-neutral-100 px-3 py-2 font-normal text-neutral-600 first:rounded-l-panel last:rounded-r-panel first:text-neutral-800',
+            // A translucent fill, so the rows read on the surface and on the canvas alike.
+            rows: 'h-[34px] bg-neutral-950/[0.04] px-3 py-2 font-normal text-neutral-600 first:rounded-l-control last:rounded-r-control first:text-neutral-800',
         },
     },
 });
@@ -181,7 +187,7 @@ export const TableGroupRow = ({
 }: TableGroupRowProps) => (
     <tr className={className} data-slot="table-group-row" {...props}>
         <td
-            className="h-[33px] border-neutral-200 border-b bg-neutral-100 px-3 py-2 text-left font-normal text-neutral-700 text-xs"
+            className="h-[34px] border-neutral-200 border-b bg-neutral-100 px-3 py-2 text-left font-normal text-neutral-700 text-xs"
             colSpan={colSpan}
         >
             {children}

@@ -1,0 +1,3 @@
+/* Build entry for dist/styles.css: preflight and utilities, scoped to .continuum by scripts/postcss-scope.mjs */
+@import "tailwindcss" source(none);
+@import "./theme.css";

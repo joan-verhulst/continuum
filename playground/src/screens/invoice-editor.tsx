@@ -22,11 +22,13 @@ import {
     MetaRow,
     NavGroup,
     NavItem,
-    Separator,
+    PageContent,
     Sheet,
+    SheetArea,
     SheetBody,
     SheetContent,
     SheetHeader,
+    SheetSection,
     SheetTitle,
     Sidebar,
     SidebarGroup,
@@ -62,54 +64,8 @@ import {
     Users,
     Wallet,
 } from 'lucide-react';
-import { type CSSProperties, useLayoutEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { AccountFooter, SectionTitle } from './shared';
-
-const HEADER_BAR = 54;
-const SHEET_GAP = 12;
-
-/**
- * The sheet is fixed to the viewport, but the screen is drawn with it inside
- * the panel, below the header bar. When the screen sits in a scrolling frame
- * rather than filling the window, pin the sheet to the visible part of the panel.
- */
-const usePanelInset = () => {
-    const ref = useRef<HTMLElement>(null);
-    const [inset, setInset] = useState<CSSProperties>();
-
-    useLayoutEffect(() => {
-        const node = ref.current;
-        if (!node) return;
-
-        const update = () => {
-            const { clientWidth, clientHeight } = document.documentElement;
-            const panel = node.getBoundingClientRect();
-            const frame = node.closest('[data-screen-frame]')?.getBoundingClientRect();
-            const top = Math.max(panel.top + HEADER_BAR, frame?.top ?? 0, 0) + SHEET_GAP;
-            const right = Math.min(panel.right, frame?.right ?? clientWidth, clientWidth);
-            const bottom = Math.min(panel.bottom, frame?.bottom ?? clientHeight, clientHeight);
-            setInset({
-                top,
-                right: clientWidth - right + SHEET_GAP,
-                bottom: clientHeight - bottom + SHEET_GAP,
-                visibility: bottom - top < 160 ? 'hidden' : undefined,
-            });
-        };
-
-        update();
-        const observer = new ResizeObserver(update);
-        observer.observe(node);
-        window.addEventListener('scroll', update, { capture: true, passive: true });
-        window.addEventListener('resize', update);
-        return () => {
-            observer.disconnect();
-            window.removeEventListener('scroll', update, { capture: true });
-            window.removeEventListener('resize', update);
-        };
-    }, []);
-
-    return [ref, inset] as const;
-};
 
 type Line = { id: number; item: string; description: string; qty: number; price: number };
 
@@ -141,42 +97,42 @@ const eur = new Intl.NumberFormat('en-IE', { style: 'currency', currency: 'EUR' 
 const history = [
     {
         tone: 'error',
-        icon: <CircleX strokeWidth={1.5} />,
+        icon: <CircleX strokeWidth={2} />,
         title: 'Acme Corp rejected the invoice',
         time: '11/03/2025 16:08',
         status: 'Rejected',
     },
     {
         tone: 'neutral',
-        icon: <Eye strokeWidth={1.5} />,
+        icon: <Eye strokeWidth={2} />,
         title: 'Acme Corp viewed the invoice',
         time: '11/03/2025 15:51',
         status: 'Viewed',
     },
     {
         tone: 'neutral',
-        icon: <Send strokeWidth={1.5} />,
+        icon: <Send strokeWidth={2} />,
         title: 'Invoice sent to Acme Corp',
         time: '10/03/2025 09:12',
         status: 'Sent',
     },
     {
         tone: 'warning',
-        icon: <FileText strokeWidth={1.5} />,
+        icon: <FileText strokeWidth={2} />,
         title: 'Status set to Open',
         time: '10/03/2025 09:10',
         status: 'Open',
     },
     {
         tone: 'primary',
-        icon: <PenLine strokeWidth={1.5} />,
+        icon: <PenLine strokeWidth={2} />,
         title: 'Invoice saved as draft',
         time: '09/03/2025 17:34',
         status: 'Draft',
     },
     {
         tone: 'neutral',
-        icon: <FilePlus strokeWidth={1.5} />,
+        icon: <FilePlus strokeWidth={2} />,
         title: 'Invoice created by Jane Cooper',
         time: '09/03/2025 17:02',
         status: 'Draft',
@@ -197,45 +153,45 @@ const InvoiceSidebar = () => (
             </SidebarLogo>
             <SidebarToggle />
         </SidebarHeader>
-        <SidebarGroup aria-label="Payments" divided>
-            <NavItem icon={<Plus strokeWidth={1.5} />} variant="primary">
+        <SidebarGroup aria-label="Payments">
+            <NavItem icon={<Plus strokeWidth={2} />} variant="primary">
                 New invoice
             </NavItem>
-            <NavItem icon={<House strokeWidth={1.5} />} trailing={<Kbd>H</Kbd>}>
+            <NavItem icon={<House strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
                 Home
             </NavItem>
-            <NavItem active icon={<FileText strokeWidth={1.5} />}>
+            <NavItem active icon={<FileText strokeWidth={2} />}>
                 Invoices
             </NavItem>
-            <NavItem icon={<Users strokeWidth={1.5} />}>Payees</NavItem>
-            <NavItem icon={<History strokeWidth={1.5} />}>Payment history</NavItem>
-            <NavItem icon={<Settings strokeWidth={1.5} />} trailing={<Kbd>S</Kbd>}>
+            <NavItem icon={<Users strokeWidth={2} />}>Payees</NavItem>
+            <NavItem icon={<History strokeWidth={2} />}>Payment history</NavItem>
+            <NavItem icon={<Settings strokeWidth={2} />} trailing={<Kbd>S</Kbd>}>
                 Settings
             </NavItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Clients" label="Clients">
             <NavGroup defaultOpen icon="🏛️" label="Harbour Street Studio">
-                <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
                     Invoices
                 </NavItem>
-                <NavItem icon={<FilePlus strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<FilePlus strokeWidth={2} />} variant="inset">
                     Quotes
                 </NavItem>
-                <NavItem icon={<History strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<History strokeWidth={2} />} variant="inset">
                     Payments
                 </NavItem>
             </NavGroup>
             {clients.map(client => (
                 <NavGroup icon={client.icon} key={client.id} label={client.label}>
-                    <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                    <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
                         Invoices
                     </NavItem>
-                    <NavItem icon={<History strokeWidth={1.5} />} variant="inset">
+                    <NavItem icon={<History strokeWidth={2} />} variant="inset">
                         Payments
                     </NavItem>
                 </NavGroup>
             ))}
-            <NavItem variant="project" icon={<Folder strokeWidth={1.5} />}>
+            <NavItem variant="project" icon={<Folder strokeWidth={2} />}>
                 All clients
             </NavItem>
         </SidebarGroup>
@@ -248,10 +204,10 @@ const InvoiceSidebar = () => (
 );
 
 /** Invoice editor (Stone, 2025, dark): invoice details, lines, and the status-history sheet. */
-export const InvoiceEditor = () => {
-    const [historyOpen, setHistoryOpen] = useState(true);
+/** `sheet` opens the status history at once, as the screen was drawn; a still frame leaves it closed. */
+export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
+    const [historyOpen, setHistoryOpen] = useState(sheet);
     const [lines, setLines] = useState(initialLines);
-    const [panelRef, sheetInset] = usePanelInset();
 
     const subtotal = lines.reduce((sum, line) => sum + line.qty * line.price, 0);
     const total = subtotal * (1 + TAX) * (1 - DISCOUNT);
@@ -271,18 +227,17 @@ export const InvoiceEditor = () => {
     return (
         <AppShell className="h-full min-h-0 min-w-[1280px]">
             <InvoiceSidebar />
-            <AppPanel ref={panelRef}>
+            <AppPanel>
                 <HeaderBar className="pl-0">
                     <div className="flex h-full items-center">
                         <div className="flex items-center gap-1.5 px-3">
                             <Button aria-label="Back" size="icon-sm" variant="ghost">
-                                <ArrowLeft strokeWidth={1.5} />
+                                <ArrowLeft strokeWidth={2} />
                             </Button>
                             <Button aria-label="Forward" size="icon-sm" variant="ghost">
-                                <ArrowRight strokeWidth={1.5} />
+                                <ArrowRight strokeWidth={2} />
                             </Button>
                         </div>
-                        <Separator className="-my-2 h-[54px]" orientation="vertical" />
                         <Breadcrumb className="pl-4">
                             <BreadcrumbList className="text-sm">
                                 <BreadcrumbItem>
@@ -306,13 +261,13 @@ export const InvoiceEditor = () => {
                         onClick={() => setHistoryOpen(open => !open)}
                         variant="ghost"
                     >
-                        <History strokeWidth={1.5} />
+                        <History strokeWidth={2} />
                         Status history
                     </Button>
                 </HeaderBar>
 
-                <div className="min-h-0 flex-1 overflow-auto">
-                    <div className="flex flex-col gap-8 px-32 pt-16 pb-16">
+                <SheetArea className="min-h-0 flex-1 overflow-auto">
+                    <PageContent className="flex flex-col gap-8 pb-16" width="wide">
                         <div className="flex max-w-[560px] flex-col gap-2">
                             <h1 className="font-medium text-lg text-neutral-950">
                                 Edit invoice INV-0412
@@ -330,7 +285,7 @@ export const InvoiceEditor = () => {
                                 <SectionTitle size="sm" title="Invoice details" />
                                 <Button variant="secondary">
                                     Edit invoice details
-                                    <SquarePen strokeWidth={1.5} />
+                                    <SquarePen strokeWidth={2} />
                                 </Button>
                             </div>
                             <DescriptionList>
@@ -403,7 +358,7 @@ export const InvoiceEditor = () => {
                                                     <GripHorizontal
                                                         aria-hidden
                                                         className="size-4"
-                                                        strokeWidth={1.5}
+                                                        strokeWidth={2}
                                                     />
                                                 </TableCell>
                                                 <TableCell>{line.item}</TableCell>
@@ -439,7 +394,7 @@ export const InvoiceEditor = () => {
                                                         size="icon-sm"
                                                         variant="ghost"
                                                     >
-                                                        <Trash2 strokeWidth={1.5} />
+                                                        <Trash2 strokeWidth={2} />
                                                     </Button>
                                                 </TableCell>
                                             </TableRow>
@@ -452,7 +407,7 @@ export const InvoiceEditor = () => {
                                                 onClick={addLine}
                                                 variant="ghost"
                                             >
-                                                <Plus strokeWidth={1.5} />
+                                                <Plus strokeWidth={2} />
                                                 Add invoice line
                                             </Button>
                                         </TableCell>
@@ -477,39 +432,36 @@ export const InvoiceEditor = () => {
                                 </TableFooter>
                             </Table>
                         </section>
-                    </div>
-                </div>
+                    </PageContent>
+                    <Sheet onOpenChange={setHistoryOpen} open={historyOpen}>
+                        <SheetContent initialFocus={false}>
+                            <SheetHeader icon={<List strokeWidth={2} />}>
+                                <SheetTitle>Status history</SheetTitle>
+                            </SheetHeader>
+                            <SheetBody>
+                                <SheetSection className="flex items-center justify-between gap-4 text-xs">
+                                    <span className="text-neutral-600">Current status</span>
+                                    <Badge tone="error">Rejected</Badge>
+                                </SheetSection>
+                                <SheetSection>
+                                    <ActivityList>
+                                        {history.map(entry => (
+                                            <ActivityItem
+                                                action={<Badge>{entry.status}</Badge>}
+                                                icon={entry.icon}
+                                                key={entry.title}
+                                                time={entry.time}
+                                                title={entry.title}
+                                                tone={entry.tone}
+                                            />
+                                        ))}
+                                    </ActivityList>
+                                </SheetSection>
+                            </SheetBody>
+                        </SheetContent>
+                    </Sheet>
+                </SheetArea>
             </AppPanel>
-
-            <Sheet onOpenChange={setHistoryOpen} open={historyOpen}>
-                <SheetContent
-                    aria-describedby={undefined}
-                    onOpenAutoFocus={event => event.preventDefault()}
-                    style={sheetInset}
-                >
-                    <SheetHeader icon={<List strokeWidth={1.5} />}>
-                        <SheetTitle>Status history</SheetTitle>
-                    </SheetHeader>
-                    <SheetBody>
-                        <div className="flex items-center justify-between gap-4 border-neutral-200 border-b px-5 py-4 text-xs">
-                            <span className="text-neutral-600">Current status</span>
-                            <Badge tone="error">Rejected</Badge>
-                        </div>
-                        <ActivityList className="p-5">
-                            {history.map(entry => (
-                                <ActivityItem
-                                    action={<Badge>{entry.status}</Badge>}
-                                    icon={entry.icon}
-                                    key={entry.title}
-                                    time={entry.time}
-                                    title={entry.title}
-                                    tone={entry.tone}
-                                />
-                            ))}
-                        </ActivityList>
-                    </SheetBody>
-                </SheetContent>
-            </Sheet>
         </AppShell>
     );
 };

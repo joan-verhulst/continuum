@@ -19,6 +19,9 @@ export const readBackground = (node: HTMLElement) => toHex(getComputedStyle(node
 
 export const readRadius = (node: HTMLElement) => getComputedStyle(node).borderTopLeftRadius;
 
+export const readWidth = (node: HTMLElement) =>
+    `${Number.parseFloat(getComputedStyle(node).width)}px`;
+
 export const readFont = (node: HTMLElement) => {
     const style = getComputedStyle(node);
     return `${Number.parseFloat(style.fontSize)} / ${Number.parseFloat(style.lineHeight)}`;

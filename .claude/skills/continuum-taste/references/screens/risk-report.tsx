@@ -139,42 +139,42 @@ const ReportSidebar = () => (
             </SidebarLogo>
             <SidebarToggle />
         </SidebarHeader>
-        <SidebarGroup aria-label="Reports" divided>
-            <NavItem icon={<Plus strokeWidth={1.5} />} variant="primary">
+        <SidebarGroup aria-label="Reports">
+            <NavItem icon={<Plus strokeWidth={2} />} variant="primary">
                 New report
             </NavItem>
-            <NavItem icon={<House strokeWidth={1.5} />} trailing={<Kbd>H</Kbd>}>
+            <NavItem icon={<House strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
                 Home
             </NavItem>
-            <NavItem icon={<BellRing strokeWidth={1.5} />}>Needs action</NavItem>
-            <NavItem active icon={<FileText strokeWidth={1.5} />}>
+            <NavItem icon={<BellRing strokeWidth={2} />}>Needs action</NavItem>
+            <NavItem active icon={<FileText strokeWidth={2} />}>
                 Reports
             </NavItem>
-            <NavItem icon={<FilePen strokeWidth={1.5} />}>Open reports</NavItem>
+            <NavItem icon={<FilePen strokeWidth={2} />}>Open reports</NavItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Projects" label="Projects">
             <NavGroup defaultOpen icon="🏭" label="Riverside warehouse">
-                <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
                     Reports
                 </NavItem>
-                <NavItem icon={<Users strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<Users strokeWidth={2} />} variant="inset">
                     Users
                 </NavItem>
-                <NavItem icon={<History strokeWidth={1.5} />} variant="inset">
+                <NavItem icon={<History strokeWidth={2} />} variant="inset">
                     Audit logs
                 </NavItem>
             </NavGroup>
             {projects.map(project => (
                 <NavGroup icon={project.icon} key={project.id} label={project.label}>
-                    <NavItem icon={<FileText strokeWidth={1.5} />} variant="inset">
+                    <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
                         Reports
                     </NavItem>
-                    <NavItem icon={<Users strokeWidth={1.5} />} variant="inset">
+                    <NavItem icon={<Users strokeWidth={2} />} variant="inset">
                         Users
                     </NavItem>
                 </NavGroup>
             ))}
-            <NavItem variant="project" icon={<Folder strokeWidth={1.5} />}>
+            <NavItem variant="project" icon={<Folder strokeWidth={2} />}>
                 All projects
             </NavItem>
         </SidebarGroup>
@@ -192,18 +192,18 @@ const ReportSidebar = () => (
 
 const RowActions = ({ label }: { label: string }) => (
     <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-            <Button aria-label={`Actions for ${label}`} size="icon-sm" variant="ghost">
-                <EllipsisVertical strokeWidth={1.5} />
-            </Button>
+        <DropdownMenuTrigger
+            render={<Button aria-label={`Actions for ${label}`} size="icon-sm" variant="ghost" />}
+        >
+            <EllipsisVertical strokeWidth={2} />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
             <DropdownMenuItem>
-                <SquarePen strokeWidth={1.5} />
+                <SquarePen strokeWidth={2} />
                 Edit score
             </DropdownMenuItem>
             <DropdownMenuItem>
-                <History strokeWidth={1.5} />
+                <History strokeWidth={2} />
                 View history
             </DropdownMenuItem>
         </DropdownMenuContent>
@@ -215,7 +215,7 @@ const EmptyTab = ({ children }: { children: ReactNode }) => (
         {children}
         <Button variant="secondary">
             Generate with AI
-            <Sparkles strokeWidth={1.5} />
+            <Sparkles strokeWidth={2} />
         </Button>
     </div>
 );
@@ -253,13 +253,13 @@ export const RiskReport = () => {
                 </HeaderBar>
 
                 <div className="flex min-h-0 flex-1">
-                    <div className="flex w-64 shrink-0 flex-col gap-3 border-neutral-200 border-r p-3">
+                    <div className="flex w-64 shrink-0 flex-col gap-3 p-3">
                         <div className="flex items-center justify-between">
                             <Button aria-label="Hide list" size="icon-sm" variant="ghost">
-                                <PanelLeftClose strokeWidth={1.5} />
+                                <PanelLeftClose strokeWidth={2} />
                             </Button>
                             <Button aria-label="Search topics" size="icon-sm" variant="ghost">
-                                <Search strokeWidth={1.5} />
+                                <Search strokeWidth={2} />
                             </Button>
                         </div>
                         <SegmentedControl
@@ -304,12 +304,12 @@ export const RiskReport = () => {
                             </div>
                             <Button size="lg">
                                 Generate
-                                <Sparkles strokeWidth={1.5} />
+                                <Sparkles strokeWidth={2} />
                             </Button>
                         </div>
 
                         <Tabs className="flex-1 gap-0" defaultValue="evaluation">
-                            <TabsList className="border-neutral-200 border-b px-5 py-3">
+                            <TabsList className="px-5 py-3">
                                 <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
                                 <TabsTrigger value="legislation">Legislation</TabsTrigger>
                                 <TabsTrigger value="research">Research</TabsTrigger>
@@ -326,15 +326,17 @@ export const RiskReport = () => {
                                                 <span className="flex items-center gap-2">
                                                     Score
                                                     <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button
-                                                                aria-label="Score legend"
-                                                                className="-my-1.5 size-6"
-                                                                size="icon-sm"
-                                                                variant="ghost"
-                                                            >
-                                                                <CircleHelp strokeWidth={1.5} />
-                                                            </Button>
+                                                        <TooltipTrigger
+                                                            render={
+                                                                <Button
+                                                                    aria-label="Score legend"
+                                                                    className="-my-1.5 size-6"
+                                                                    size="icon-sm"
+                                                                    variant="ghost"
+                                                                />
+                                                            }
+                                                        >
+                                                            <CircleHelp strokeWidth={2} />
                                                         </TooltipTrigger>
                                                         <TooltipContent>
                                                             R risk · W likelihood · B exposure · E
@@ -433,16 +435,16 @@ export const RiskReport = () => {
                                                                     AI suggestions
                                                                 </ToolbarChip>
                                                                 <ToolbarButton>
-                                                                    <Wand strokeWidth={1.5} />
+                                                                    <Wand strokeWidth={2} />
                                                                     Generate
                                                                 </ToolbarButton>
                                                                 <ToolbarButton>
-                                                                    <SquarePen strokeWidth={1.5} />
+                                                                    <SquarePen strokeWidth={2} />
                                                                     Edit
                                                                 </ToolbarButton>
                                                                 <ToolbarButton>
                                                                     <MessageCircleQuestion
-                                                                        strokeWidth={1.5}
+                                                                        strokeWidth={2}
                                                                     />
                                                                     Explain
                                                                 </ToolbarButton>
@@ -499,17 +501,11 @@ export const RiskReport = () => {
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="approved">
-                                        <CircleCheck
-                                            className="text-success-500"
-                                            strokeWidth={1.5}
-                                        />
+                                        <CircleCheck className="text-success-500" strokeWidth={2} />
                                         Approved
                                     </SelectItem>
                                     <SelectItem value="review">
-                                        <CircleAlert
-                                            className="text-warning-500"
-                                            strokeWidth={1.5}
-                                        />
+                                        <CircleAlert className="text-warning-500" strokeWidth={2} />
                                         Needs review
                                     </SelectItem>
                                 </SelectContent>
@@ -517,7 +513,7 @@ export const RiskReport = () => {
                             {nextTopic && (
                                 <Button onClick={() => setSelected(selected + 1)}>
                                     <span className="max-w-40 truncate">Next: {nextTopic}</span>
-                                    <ArrowRight strokeWidth={1.5} />
+                                    <ArrowRight strokeWidth={2} />
                                 </Button>
                             )}
                         </div>

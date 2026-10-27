@@ -10,12 +10,13 @@ export const iconTileVariants = cva(
                 filled: 'bg-neutral-100',
                 outline: '',
             },
+            // A glyph reads like text, so it takes a ramp's 600 like a delta does; dots and fills take 500.
             tone: {
                 neutral: 'text-neutral-600',
-                success: 'text-success-500',
-                warning: 'text-warning-500',
-                error: 'text-error-500',
-                primary: 'text-primary-500',
+                success: 'text-success-600',
+                warning: 'text-warning-600',
+                error: 'text-error-600',
+                primary: 'text-primary-600',
             },
         },
         defaultVariants: {

@@ -1,6 +1,7 @@
 'use client';
 
-import { Label } from 'radix-ui';
+import { mergeProps } from '@base-ui/react/merge-props';
+import { useRender } from '@base-ui/react/use-render';
 import {
     type ComponentProps,
     createContext,
@@ -82,23 +83,32 @@ export const Field = ({ invalid = false, disabled = false, className, ...props }
     );
 };
 
-export const FieldLabel = ({
-    className,
-    htmlFor,
-    id,
-    ...props
-}: ComponentProps<typeof Label.Root>) => {
+type FieldLabelProps = useRender.ComponentProps<'label'>;
+
+/**
+ * A plain label tied to the Field's control by htmlFor, so any control, native or
+ * Base UI, is named without a primitive in between. `render` swaps the element.
+ */
+export const FieldLabel = ({ className, htmlFor, id, render, ...props }: FieldLabelProps) => {
     const field = useField();
 
-    return (
-        <Label.Root
-            className={cn('font-medium text-neutral-900 text-xs', className)}
-            data-slot="field-label"
-            htmlFor={htmlFor ?? field?.id}
-            id={id ?? field?.labelId}
-            {...props}
-        />
-    );
+    return useRender({
+        defaultTagName: 'label',
+        render,
+        props: mergeProps<'label'>(
+            {
+                className: cn('font-medium text-neutral-900 text-xs', className),
+                htmlFor: htmlFor ?? field?.id,
+                id: id ?? field?.labelId,
+                // A double click on the label would select its text; the control is what matters.
+                onMouseDown: event => {
+                    if (!event.defaultPrevented && event.detail > 1) event.preventDefault();
+                },
+            },
+            { 'data-slot': 'field-label' } as ComponentProps<'label'>,
+            props,
+        ),
+    });
 };
 
 /** Follows the input like the library's helper: darker on hover and while typing. */

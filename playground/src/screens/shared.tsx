@@ -13,17 +13,20 @@ import {
     CardTitle,
     CardValue,
     cn,
+    pageContentVariants,
     Rail,
     RailItem,
     RailSeparator,
     SidebarAccount,
     SidebarFooter,
 } from 'continuum';
+import { type TooltipRow, useChartStable } from 'continuum/charts';
 import {
     Bell,
     ChartColumn,
     Globe,
     LayoutGrid,
+    type LucideIcon,
     MessagesSquare,
     PanelLeft,
     Plus,
@@ -31,10 +34,10 @@ import {
 import { Fragment, type ReactNode, useState } from 'react';
 
 const railItems = [
-    { id: 'dashboards', label: 'Dashboards', icon: <LayoutGrid strokeWidth={1.5} /> },
-    { id: 'analytics', label: 'Analytics', icon: <ChartColumn strokeWidth={1.5} /> },
-    { id: 'regions', label: 'Regions', icon: <Globe strokeWidth={1.5} /> },
-    { id: 'feedback', label: 'Feedback', icon: <MessagesSquare strokeWidth={1.5} /> },
+    { id: 'dashboards', label: 'Dashboards', icon: <LayoutGrid strokeWidth={2} /> },
+    { id: 'analytics', label: 'Analytics', icon: <ChartColumn strokeWidth={2} /> },
+    { id: 'regions', label: 'Regions', icon: <Globe strokeWidth={2} /> },
+    { id: 'feedback', label: 'Feedback', icon: <MessagesSquare strokeWidth={2} /> },
 ];
 
 /** The floating capsule nav the analytics screens share, 32px from the left, centred. */
@@ -44,7 +47,7 @@ const AnalyticsRail = ({ initial }: { initial: string }) => {
     return (
         <Rail aria-label="Main" className="absolute top-1/2 left-8 z-20 -translate-y-1/2">
             <RailItem label="Toggle sidebar">
-                <PanelLeft strokeWidth={1.5} />
+                <PanelLeft strokeWidth={2} />
             </RailItem>
             <RailSeparator />
             {railItems.map(item => (
@@ -60,7 +63,7 @@ const AnalyticsRail = ({ initial }: { initial: string }) => {
             ))}
             <RailSeparator />
             <RailItem label="Notifications">
-                <Bell strokeWidth={1.5} />
+                <Bell strokeWidth={2} />
             </RailItem>
             <Avatar alt="Northwind" className="mt-1" fallback="N" />
         </Rail>
@@ -96,7 +99,7 @@ export const AnalyticsTopBar = ({ trail }: { trail: string[] }) => (
         </Breadcrumb>
         <Button>
             Add to Ask
-            <Plus strokeWidth={1.5} />
+            <Plus strokeWidth={2} />
         </Button>
     </div>
 );
@@ -122,7 +125,8 @@ export const AnalyticsPage = ({
         <div className="h-full overflow-y-auto">
             <div
                 className={cn(
-                    'mx-auto flex w-[896px] flex-col pt-5',
+                    pageContentVariants(),
+                    'flex flex-col pt-5',
                     bottomBar ? 'pb-28' : 'pb-12',
                 )}
             >
@@ -156,6 +160,79 @@ export const ChartCardHeader = ({
     </CardHeader>
 );
 
+/**
+ * Room for the y tick labels on the left and the x labels underneath. The kit's
+ * 40px on every side leaves an empty band above and beside a chart in a card.
+ */
+export const chartMargin = { top: 16, right: 16, bottom: 32, left: 40 };
+
+/** The week the analytics screens report on: Monday 19 to Sunday 25 October 2026. */
+export const reportWeek = Array.from({ length: 7 }, (_, i) => new Date(2026, 9, 19 + i));
+
+/** Weekday names on the x-axis, as the screens were drawn ("Mon", "Tue" …). */
+export const formatWeekday = (date: Date) => date.toLocaleDateString('en-GB', { weekday: 'short' });
+
+/** One tooltip row per series, with a readable name instead of the data key. */
+export const seriesRows =
+    (
+        series: { key: string; label: string; color: string }[],
+        format: (value: number) => string = String,
+    ) =>
+    (point: Record<string, unknown>): TooltipRow[] =>
+        series.map(({ key, label, color }) => ({
+            color,
+            label,
+            value: format(Number(point[key] ?? 0)),
+        }));
+
+/**
+ * Marks one data point with a dashed rule and an icon disc at the top of the
+ * plot, such as the day a release went out. The kit has no annotation part, so
+ * this draws one from the chart's own scales and marker tokens.
+ */
+export const ChartAnnotation = ({ index, icon: Icon }: { index: number; icon?: LucideIcon }) => {
+    const { data, xScale, xAccessor, innerHeight } = useChartStable();
+    const point = data[index];
+    if (!point) return null;
+
+    // Half a pixel off the whole pixel, so the 1px rule lands crisp.
+    const x = Math.round(xScale(xAccessor(point)) ?? 0) + 0.5;
+
+    return (
+        <g data-slot="chart-annotation" pointerEvents="none">
+            <line
+                stroke="var(--color-chart-crosshair)"
+                strokeDasharray="4 4"
+                x1={x}
+                x2={x}
+                y1={0}
+                y2={innerHeight}
+            />
+            {Icon && (
+                <>
+                    <circle
+                        cx={x}
+                        cy={0}
+                        fill="var(--color-chart-marker-background)"
+                        r={12}
+                        stroke="var(--color-chart-marker-border)"
+                    />
+                    <Icon
+                        color="var(--color-chart-marker-foreground)"
+                        height={12}
+                        strokeWidth={2}
+                        width={12}
+                        x={x - 6}
+                        y={-6}
+                    />
+                </>
+            )}
+        </g>
+    );
+};
+// Drawn after the series and outside their reveal clip, so the disc is not cut off at the top.
+ChartAnnotation.__isPostOverlay = true;
+
 /** A dark square with a white 16px glyph: the workspace logo in a sidebar footer. */
 export const WorkspaceMark = ({ children }: { children: ReactNode }) => (
     <span className="grid size-full place-items-center bg-neutral-950 text-neutral-50 [&_svg]:size-4">
@@ -176,7 +253,7 @@ export const AccountFooter = ({
     <SidebarFooter>
         <SidebarAccount avatar={avatar} name={name} plan={plan} />
         <Button aria-label="Notifications" size="icon" variant="ghost">
-            <Bell className="size-[18px]" strokeWidth={1.5} />
+            <Bell className="size-[18px]" strokeWidth={2} />
         </Button>
     </SidebarFooter>
 );

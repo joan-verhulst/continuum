@@ -1,8 +1,8 @@
 'use client';
 
-import { Switch as SwitchPrimitive } from 'radix-ui';
+import { Switch as SwitchPrimitive } from '@base-ui/react/switch';
 import type { ComponentProps } from 'react';
-import { cn } from '../lib/cn';
+import { cn, type WithClassName } from '../lib/cn';
 import { focusRing } from './button';
 import { useFieldControl } from './field';
 
@@ -17,7 +17,7 @@ export const Switch = ({
     'aria-describedby': describedBy,
     'aria-invalid': ariaInvalid,
     ...props
-}: ComponentProps<typeof SwitchPrimitive.Root>) => {
+}: WithClassName<ComponentProps<typeof SwitchPrimitive.Root>>) => {
     const { invalid: _invalid, ...control } = useFieldControl({
         id,
         disabled,
@@ -29,8 +29,9 @@ export const Switch = ({
         <SwitchPrimitive.Root
             className={cn(
                 'inline-flex h-[25px] w-12 shrink-0 cursor-pointer items-center rounded-full bg-neutral-300 p-0.5 transition-[background-color] duration-150',
-                'data-[state=checked]:bg-action data-[state=checked]:shadow-action data-[state=checked]:[background-image:var(--pds-action-gradient)]',
-                'disabled:cursor-not-allowed disabled:opacity-50',
+                'data-checked:bg-action data-checked:shadow-action data-checked:[background-image:var(--action-gradient)]',
+                // The root is a span, not a button, so the disabled state comes from its data attribute.
+                'data-disabled:cursor-not-allowed data-disabled:opacity-50',
                 focusRing,
                 className,
             )}
@@ -41,7 +42,7 @@ export const Switch = ({
             <SwitchPrimitive.Thumb
                 className={cn(
                     'pointer-events-none block size-[21px] rounded-full bg-neutral-50 transition-[translate,background-color] duration-200 ease-out-strong motion-reduce:transition-none',
-                    'data-[state=checked]:translate-x-[23px] data-[state=checked]:bg-on-action',
+                    'data-checked:translate-x-[23px] data-checked:bg-on-action',
                 )}
                 data-slot="switch-thumb"
             />
