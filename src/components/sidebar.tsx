@@ -7,13 +7,19 @@ import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { focusRing } from './button';
 
+type AppShellProps = ComponentProps<'div'> & {
+    /** Where the navigation sits on the canvas: a `Sidebar` beside the panel, or a `TopNav` over it. */
+    nav?: 'side' | 'top';
+};
+
 /**
- * The canvas-and-panel shell: the sidebar sits straight on the canvas, the
+ * The canvas-and-panel shell: the navigation sits straight on the canvas, the
  * page on an inset panel with an 8px gutter.
  */
-export const AppShell = ({ className, ...props }: ComponentProps<'div'>) => (
+export const AppShell = ({ nav = 'side', className, ...props }: AppShellProps) => (
     <div
-        className={cn('flex min-h-screen bg-neutral-100', className)}
+        className={cn('flex min-h-screen bg-neutral-100', nav === 'top' && 'flex-col', className)}
+        data-nav={nav}
         data-slot="app-shell"
         {...props}
     />
@@ -22,7 +28,8 @@ export const AppShell = ({ className, ...props }: ComponentProps<'div'>) => (
 export const AppPanel = ({ className, ...props }: ComponentProps<'main'>) => (
     <main
         className={cn(
-            'relative m-2 ml-0 flex min-w-0 flex-1 flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50',
+            // The gutter opens on every side but the navigation's.
+            'relative m-2 ml-0 flex min-w-0 flex-1 flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 [[data-nav=top]>&]:mt-0 [[data-nav=top]>&]:ml-2',
             className,
         )}
         data-slot="app-panel"

@@ -3,6 +3,7 @@ export * from './components/alert';
 export * from './components/avatar';
 export * from './components/badge';
 export * from './components/bar-list';
+export * from './components/block-slider';
 export * from './components/breadcrumb';
 export * from './components/button';
 export * from './components/calendar';
@@ -30,10 +31,12 @@ export * from './components/input';
 export * from './components/kbd';
 export * from './components/logo';
 export * from './components/meta-list';
+export * from './components/notice';
 export * from './components/option-row';
 export * from './components/page-content';
 export * from './components/pagination';
 export * from './components/popover';
+export * from './components/popover-item';
 export * from './components/progress';
 export * from './components/radio-group';
 export * from './components/rail';
@@ -55,6 +58,7 @@ export * from './components/theme';
 export * from './components/toast';
 export * from './components/toolbar';
 export * from './components/tooltip';
+export * from './components/top-nav';
 export * from './components/value-field';
 export { cn } from './lib/cn';
 export { hexToOklch, type Oklch, oklchToHex, type RampSteps } from './lib/color';
@@ -73,3 +77,19 @@ export {
     themeFonts,
     themeNeutralRamp,
 } from './lib/create-theme';
+export {
+    boxGap,
+    boxPadding,
+    estimateLines,
+    type InnerBox,
+    type SpacingParams,
+    type SpacingStep,
+    snapToSpacing,
+    spacingClass,
+    spacingDefaults,
+    spacingSteps,
+    type TypeRun,
+    textGap,
+    toSpacingStep,
+    typeSize,
+} from './lib/spacing';

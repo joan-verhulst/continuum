@@ -3,8 +3,9 @@
 import { Toggle } from '@base-ui/react/toggle';
 import { ToggleGroup } from '@base-ui/react/toggle-group';
 import { cva, type VariantProps } from 'class-variance-authority';
-import type { ComponentProps } from 'react';
+import { type ComponentProps, useEffect } from 'react';
 import { cn } from '../lib/cn';
+import { OverflowChevron, useOverflowScroll } from '../lib/overflow-scroll';
 import { radioToggleRender } from '../lib/radio-toggle-render';
 import { useSingleValue } from '../lib/use-single-value';
 import { buttonVariants, focusRing } from './button';
@@ -43,13 +44,16 @@ const shapeVariants = {
 
 export const dockVariants = cva(
     // The field row's 38px: 32px items inside a 3px inset and a hairline.
-    'flex h-[38px] w-fit max-w-full items-center gap-0.5 rounded-dock border border-neutral-200 bg-neutral-50 p-[3px] shadow-float',
+    'flex h-[38px] w-fit min-w-0 max-w-full items-center gap-0.5 rounded-dock border border-neutral-200 bg-neutral-50 p-[3px] shadow-float',
     { variants: { shape: shapeVariants }, defaultVariants: { shape: 'theme' } },
 );
 
 export type DockProps = SegmentedControlProps & VariantProps<typeof dockVariants>;
 
-/** The sections of a page. Like a segmented control it always keeps one selected. */
+/**
+ * The sections of a page. Like a segmented control it always keeps one selected. More sections
+ * than fit scroll sideways, with a chevron at the end that has more and the selected one kept in view.
+ */
 export const Dock = ({
     shape,
     value,
@@ -59,19 +63,48 @@ export const Dock = ({
     ...props
 }: DockProps) => {
     const [current, select] = useSingleValue(value, defaultValue, onValueChange);
+    const { ref, edges, step, reveal, style } = useOverflowScroll<HTMLDivElement>();
+
+    useEffect(() => {
+        if (current) reveal('[data-pressed]');
+    }, [current, reveal]);
 
     return (
-        <ToggleGroup
-            className={cn(dockVariants({ shape }), className)}
-            data-slot="dock"
-            role="radiogroup"
-            {...props}
-            // Clicking the pressed item hands back an empty array, which `select` ignores.
-            onValueChange={values => select(values[0] ?? '')}
-            value={current ? [current] : []}
-        />
+        <div className={cn(dockVariants({ shape }), className)} data-slot="dock">
+            {edges.overflows && (
+                <OverflowChevron
+                    className={chevron}
+                    direction={-1}
+                    disabled={!edges.start}
+                    onStep={step}
+                />
+            )}
+            <ToggleGroup
+                // The row clips at the dock's inset, not its items, so a focus ring keeps its room.
+                className="-my-[3px] flex min-w-0 items-center gap-0.5 overflow-x-auto py-[3px] [scrollbar-width:none]"
+                data-slot="dock-items"
+                ref={ref}
+                role="radiogroup"
+                style={style}
+                {...props}
+                // Clicking the pressed item hands back an empty array, which `select` ignores.
+                onValueChange={values => select(values[0] ?? '')}
+                value={current ? [current] : []}
+            />
+            {edges.overflows && (
+                <OverflowChevron
+                    className={chevron}
+                    direction={1}
+                    disabled={!edges.end}
+                    onStep={step}
+                />
+            )}
+        </div>
     );
 };
+
+// An item's 32px and its concentric corner.
+const chevron = 'size-8 rounded-[calc(var(--radius-dock)-4px)]';
 
 export type DockItemProps = Omit<Toggle.Props, 'className'> & { className?: string };
 
@@ -92,16 +125,20 @@ export const DockItem = ({ className, ...props }: DockItemProps) => (
     />
 );
 
-export const dockActionVariants = cva('rounded-dock', {
-    variants: {
-        shape: shapeVariants,
-        size: {
-            default: '',
-            icon: 'w-[38px] px-0',
+export const dockActionVariants = cva(
+    // A lit action's ring drawn inside, so it stays the dock's 38px instead of growing 1px each side.
+    'rounded-dock [box-shadow:inset_0_1px_0_0_var(--color-action-highlight),inset_0_0_0_1px_var(--color-action-ring)]',
+    {
+        variants: {
+            shape: shapeVariants,
+            size: {
+                default: '',
+                icon: 'w-[38px] px-0',
+            },
         },
+        defaultVariants: { shape: 'theme', size: 'default' },
     },
-    defaultVariants: { shape: 'theme', size: 'default' },
-});
+);
 
 export type DockActionProps = ComponentProps<'button'> & VariantProps<typeof dockActionVariants>;
 

@@ -3,6 +3,7 @@
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Children, isValidElement, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { Spinner } from './spinner';
 
@@ -31,7 +32,8 @@ export const buttonVariants = cva(
             },
             size: {
                 // The control row: level with a small input, select or segmented control beside it.
-                md: 'h-[34px] rounded-control px-3',
+                // An icon's end sits a step tighter than a label's, so the whole reads centred.
+                md: 'h-[34px] rounded-control px-4 data-[icon=both]:px-3 data-[icon=leading]:pl-3 data-[icon=trailing]:pr-3',
                 // The field row: level with a medium input, and the height of the dock's action.
                 lg: 'h-[38px] rounded-control px-4',
                 icon: 'size-[34px] rounded-control',
@@ -49,6 +51,17 @@ export const buttonVariants = cva(
         },
     },
 );
+
+/** Which ends of a label hold an element (an icon, a spinner) rather than text. */
+const iconEnds = (children: ReactNode, loading: boolean) => {
+    const items = Children.toArray(children);
+    const leading = loading || isValidElement(items[0]);
+    const trailing = items.length > 1 && isValidElement(items[items.length - 1]);
+    if (leading && trailing) return 'both';
+    if (leading) return 'leading';
+    if (trailing) return 'trailing';
+    return undefined;
+};
 
 export type ButtonProps = useRender.ComponentProps<'button'> &
     VariantProps<typeof buttonVariants> & {
@@ -83,8 +96,12 @@ export const Button = ({
         defaultTagName: 'button',
         render,
         ref,
-        // State keys become data attributes, so this sets data-slot="button" and data-loading.
-        state: { slot: 'button', loading },
+        // State keys become data attributes, so this sets data-slot="button", data-loading and data-icon.
+        state: {
+            slot: 'button',
+            loading,
+            icon: iconOnly ? undefined : iconEnds(children, loading),
+        },
         props: mergeProps<'button'>(
             {
                 className: cn(
