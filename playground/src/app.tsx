@@ -2,7 +2,6 @@ import { createThemeCss, isDefaultTheme, Theme } from 'continuum';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Foundations } from './foundations';
 import { Home } from './home';
-import { CmsTest } from './lab/cms';
 import { type AppState, CUSTOM_THEME, parseHash, toHash } from './meta';
 import { Patterns } from './patterns';
 import { RasterLab } from './raster/lab';
@@ -64,7 +63,6 @@ export const App = () => {
                 {state.view === 'components' && <Components onChange={update} state={state} />}
                 {state.view === 'patterns' && <Patterns onChange={update} state={state} />}
                 {state.view === 'raster' && <RasterLab />}
-                {state.view === 'cms' && <CmsTest state={state} />}
             </Shell>
         </Theme>
     );

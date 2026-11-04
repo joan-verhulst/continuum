@@ -31,7 +31,6 @@ import {
     LayoutGrid,
     LayoutTemplate,
     Moon,
-    Newspaper,
     Palette,
     Sun,
     SwatchBook,
@@ -56,7 +55,6 @@ const viewMeta: Record<View, { label: string; icon: ReactNode }> = {
     components: { label: 'Components', icon: <LayoutGrid {...icon} /> },
     patterns: { label: 'Patterns', icon: <LayoutTemplate {...icon} /> },
     raster: { label: 'Raster lab', icon: <Grid3x3 {...icon} /> },
-    cms: { label: 'CMS test', icon: <Newspaper {...icon} /> },
 };
 
 const mainViews: View[] = ['home', 'foundations', 'components', 'patterns'];
@@ -91,12 +89,9 @@ const ShellFrame = ({ state, onChange, children }: ShellProps) => {
     const customising = Boolean(state.builder);
     const setCustomising = (open: boolean) => onChange({ builder: open || undefined });
     const custom = !isDefaultTheme(state.theme);
-    // Themes are previewed on what they would change: the foundations, the components, the patterns and the CMS test. The rest is Continuum's own.
+    // Themes are previewed on what they would change: the foundations, the components and the patterns. The rest is Continuum's own.
     const previewable =
-        state.view === 'foundations' ||
-        state.view === 'components' ||
-        state.view === 'patterns' ||
-        state.view === 'cms';
+        state.view === 'foundations' || state.view === 'components' || state.view === 'patterns';
 
     // A new page starts at its top, whether picked here or reached through the hash.
     // biome-ignore lint/correctness/useExhaustiveDependencies: runs on a page change only
@@ -175,7 +170,7 @@ const ShellFrame = ({ state, onChange, children }: ShellProps) => {
                 </SheetArea>
                 {/* The bar at the foot: the page's own index, if it has one, then the theme's pill. */}
                 {previewable && !customising && (
-                    <BottomBar floating>
+                    <BottomBar className="max-w-[calc(100%-3rem)]" floating>
                         <div className="contents" ref={setDockSlot} />
                         <ThemePill onOpen={() => setCustomising(true)} state={state} />
                     </BottomBar>
@@ -249,13 +244,6 @@ const PlaygroundSidebar = ({
                         trailing={<Badge tone="primary">Beta</Badge>}
                     >
                         {viewMeta.raster.label}
-                    </NavItem>
-                    <NavItem
-                        active={state.view === 'cms'}
-                        icon={viewMeta.cms.icon}
-                        onClick={() => onChange({ view: 'cms' })}
-                    >
-                        {viewMeta.cms.label}
                     </NavItem>
                 </SidebarGroup>
 

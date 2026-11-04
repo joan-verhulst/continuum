@@ -4,7 +4,7 @@ import { chartsPreset, presets } from './presets';
 /** The id the builder's theme is written under; the default theme needs none. */
 export const CUSTOM_THEME = 'custom';
 
-export const views = ['home', 'foundations', 'components', 'patterns', 'raster', 'cms'] as const;
+export const views = ['home', 'foundations', 'components', 'patterns', 'raster'] as const;
 
 export type View = (typeof views)[number];
 
