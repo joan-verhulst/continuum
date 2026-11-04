@@ -1,8 +1,27 @@
-import { Button, Card, CardHeader, CardTitle, ToastProvider, useToast } from 'continuum';
-import { Archive, ArrowUpRight, FileDown, FileText, Link2, RotateCw } from 'lucide-react';
+import {
+    Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+    ToastProvider,
+    useToast,
+} from 'continuum';
+import { Archive, ArrowUpRight, FileDown, FileText, Link2, Plus, RotateCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useStageContainer } from '../../layout';
-import { type Entry, type InUse, icon, type Knob, o, opts, type PreviewProps, scene } from '../kit';
+import {
+    AppScene,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    o,
+    opts,
+    type PreviewProps,
+} from '../kit';
 
 const toastKnobs: Knob[] = [
     { id: 'type', label: 'Type', options: opts('neutral', 'success', 'error'), default: 'success' },
@@ -119,10 +138,11 @@ export const entry: Entry = {
 };
 
 const archivable = [
-    { id: 'q3', name: 'Northwind Q3 review', owner: 'Anna de Vries' },
-    { id: 'renewal', name: 'Acme renewal forecast', owner: 'Bram Jansen' },
-    { id: 'board', name: 'Board pack · October', owner: 'Chloé Martin' },
-    { id: 'churn', name: 'Churn by plan', owner: 'Daan Visser' },
+    { id: 'q3', name: 'Northwind Q3 review', owner: 'Maya Chen', updated: 'Today' },
+    { id: 'renewal', name: 'Acme renewal forecast', owner: 'Liam Ortiz', updated: 'Yesterday' },
+    { id: 'board', name: 'Board pack · October', owner: 'Sara Kim', updated: '21 Oct' },
+    { id: 'churn', name: 'Churn by plan', owner: 'Noah Patel', updated: '18 Oct' },
+    { id: 'cash', name: 'Cash flow · Q4 outlook', owner: 'Maya Chen', updated: '14 Oct' },
 ];
 
 const ReportRows = () => {
@@ -183,37 +203,47 @@ const ReportRows = () => {
     };
 
     return (
-        <Card className="mb-16 w-full max-w-lg gap-3">
-            <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Reports</CardTitle>
-                <span className="text-neutral-600 text-xs tabular-nums">{reports.length}</span>
-            </CardHeader>
-            <ul className="flex flex-col gap-1">
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Report</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Updated</TableHead>
+                    <TableHead className="w-12">
+                        <span className="sr-only">Archive</span>
+                    </TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
                 {reports.map(report => (
-                    <li className="flex h-[34px] items-center gap-3 text-xs" key={report.id}>
-                        <FileText className="size-4 shrink-0 text-neutral-600" {...icon} />
-                        <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
-                            {report.name}
-                        </span>
-                        <span className="shrink-0 text-neutral-500 max-sm:hidden">
-                            {report.owner}
-                        </span>
-                        <Button
-                            aria-label={`Archive ${report.name}`}
-                            onClick={() => archive(report)}
-                            size="icon-sm"
-                            variant="ghost"
-                        >
-                            <Archive {...icon} />
-                        </Button>
-                    </li>
+                    <TableRow key={report.id}>
+                        <TableCell>
+                            <span className="flex items-center gap-2.5 font-medium text-neutral-950">
+                                <FileText className="size-4 shrink-0 text-neutral-600" {...icon} />
+                                {report.name}
+                            </span>
+                        </TableCell>
+                        <TableCell className="text-neutral-600">{report.owner}</TableCell>
+                        <TableCell className="text-neutral-600">{report.updated}</TableCell>
+                        <TableCell>
+                            <Button
+                                aria-label={`Archive ${report.name}`}
+                                onClick={() => archive(report)}
+                                size="icon-sm"
+                                variant="ghost"
+                            >
+                                <Archive {...icon} />
+                            </Button>
+                        </TableCell>
+                    </TableRow>
                 ))}
-            </ul>
-        </Card>
+            </TableBody>
+        </Table>
     );
 };
 
-const ArchiveReports = () => {
+// Inside the scene, so the toasts portal into its stage and stack in the window's corner.
+const Toasts = () => {
     const stage = useStageContainer();
 
     return (
@@ -223,9 +253,26 @@ const ArchiveReports = () => {
     );
 };
 
+const ArchiveReports = () => (
+    <AppScene
+        page={{
+            actions: (
+                <Button>
+                    <Plus {...icon} /> New report
+                </Button>
+            ),
+            description: 'Weekly and monthly reports, shared with your team.',
+            place: 'reports',
+            title: 'Reports',
+            trail: ['Reports'],
+            children: <Toasts />,
+        }}
+    />
+);
+
 export const inUse: InUse = {
     title: 'Archive a report',
-    note: 'Each archive confirms itself under a Report archived tab, with Undo in it; the running export is a plain card.',
+    note: 'Reports, just after an archive and an export: the archive confirms itself under a tab with Undo, the export is a plain card.',
     bare: true,
-    render: scene(<ArchiveReports />),
+    render: () => <ArchiveReports />,
 };

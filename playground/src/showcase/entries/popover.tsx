@@ -1,22 +1,28 @@
 import {
+    Badge,
     Button,
-    Card,
-    CardHeader,
-    CardTitle,
     Checkbox,
+    cn,
     Field,
     FieldLabel,
+    Input,
     Popover,
     PopoverContent,
     PopoverDescription,
     PopoverHeader,
     PopoverTitle,
     PopoverTrigger,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from 'continuum';
-import { Columns3 } from 'lucide-react';
+import { Columns3, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';
-import { type Entry, type InUse, icon, Labelled, previewIcon, scene } from '../kit';
+import { AppScene, type Entry, type InUse, icon, Labelled, previewIcon } from '../kit';
 
 const columnNames = ['Owner', 'Status', 'Amount', 'Due date'];
 
@@ -71,16 +77,95 @@ export const entry: Entry = {
     Preview: PopoverPreview,
 };
 
-const columnNamesInUse = ['Client', 'Status', 'Amount', 'Due', 'Owner'];
+type Column = 'Client' | 'Status' | 'Amount' | 'Due' | 'Owner';
 
-const ColumnsPopover = () => {
+const columnOrder: Column[] = ['Client', 'Status', 'Amount', 'Due', 'Owner'];
+
+const invoices = [
+    {
+        client: 'Northwind Traders',
+        number: 'INV-0142',
+        status: 'Due soon',
+        amount: '€4,120.00',
+        due: '28 Oct',
+        owner: 'Maya Chen',
+    },
+    {
+        client: 'Globex',
+        number: 'INV-0141',
+        status: 'Paid',
+        amount: '€1,240.00',
+        due: '21 Oct',
+        owner: 'Liam Ortiz',
+    },
+    {
+        client: 'Initech',
+        number: 'INV-0139',
+        status: 'Overdue',
+        amount: '€980.00',
+        due: '14 Oct',
+        owner: 'Sara Kim',
+    },
+    {
+        client: 'Umbrella Health',
+        number: 'INV-0138',
+        status: 'Paid',
+        amount: '€6,200.00',
+        due: '12 Oct',
+        owner: 'Maya Chen',
+    },
+    {
+        client: 'Soylent Labs',
+        number: 'INV-0137',
+        status: 'Due soon',
+        amount: '€1,560.00',
+        due: '30 Oct',
+        owner: 'Noah Patel',
+    },
+    {
+        client: 'Stark Logistics',
+        number: 'INV-0136',
+        status: 'Paid',
+        amount: '€5,400.00',
+        due: '9 Oct',
+        owner: 'Sara Kim',
+    },
+] as const;
+
+const invoiceTone = { Paid: 'success', 'Due soon': 'warning', Overdue: 'error' } as const;
+
+const right: Column[] = ['Amount'];
+
+const cell = (column: Column, row: (typeof invoices)[number]) => {
+    if (column === 'Client')
+        return (
+            <span className="flex flex-col gap-0.5">
+                <span className="font-medium text-neutral-950">{row.client}</span>
+                <span className="text-neutral-500 text-xxs">{row.number}</span>
+            </span>
+        );
+    if (column === 'Status') return <Badge tone={invoiceTone[row.status]}>{row.status}</Badge>;
+    if (column === 'Amount')
+        return <span className="text-neutral-950 tabular-nums">{row.amount}</span>;
+    if (column === 'Due') return <span className="text-neutral-600">{row.due}</span>;
+    return <span className="text-neutral-700">{row.owner}</span>;
+};
+
+const InvoicesWithColumns = () => {
     const stage = useStageContainer();
-    const [shown, setShown] = useState(['Client', 'Status', 'Amount', 'Due']);
+    const [shown, setShown] = useState<Column[]>(['Client', 'Status', 'Amount', 'Due']);
+    const columns = columnOrder.filter(column => shown.includes(column));
 
     return (
-        <Card className="mb-36 w-full max-w-xl gap-4">
-            <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Open invoices</CardTitle>
+        <>
+            <div className="flex items-center justify-between gap-4">
+                <Input
+                    aria-label="Search invoices"
+                    className="w-64"
+                    leadingIcon={<Search {...icon} />}
+                    placeholder="Search invoices"
+                    size="sm"
+                />
                 <Popover modal={false} open>
                     <PopoverTrigger render={<Button variant="secondary" />}>
                         <Columns3 {...icon} /> Columns
@@ -97,10 +182,12 @@ const ColumnsPopover = () => {
                             <PopoverDescription>Pick what the table shows.</PopoverDescription>
                         </PopoverHeader>
                         <div className="flex flex-col gap-2.5">
-                            {columnNamesInUse.map(column => (
+                            {columnOrder.map(column => (
                                 <Field className="flex-row items-center gap-2.5" key={column}>
                                     <Checkbox
                                         checked={shown.includes(column)}
+                                        // The client names the row, so it stays.
+                                        disabled={column === 'Client'}
                                         onCheckedChange={checked =>
                                             setShown(current =>
                                                 checked
@@ -115,22 +202,57 @@ const ColumnsPopover = () => {
                         </div>
                     </PopoverContent>
                 </Popover>
-            </CardHeader>
-            <div className="flex gap-6 border-neutral-200 border-b pb-2 text-neutral-600 text-xs">
-                {shown.map(column => (
-                    <span className="flex-1" key={column}>
-                        {column}
-                    </span>
-                ))}
             </div>
-            <div className="h-16" />
-        </Card>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        {columns.map(column => (
+                            <TableHead
+                                className={cn(right.includes(column) && 'text-right')}
+                                key={column}
+                            >
+                                {column}
+                            </TableHead>
+                        ))}
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {invoices.map(row => (
+                        <TableRow key={row.number}>
+                            {columns.map(column => (
+                                <TableCell
+                                    className={cn(right.includes(column) && 'text-right')}
+                                    key={column}
+                                >
+                                    {cell(column, row)}
+                                </TableCell>
+                            ))}
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </>
     );
 };
 
 export const inUse: InUse = {
-    title: 'Column settings',
-    note: 'Controls in a panel anchored to the button that opened it.',
+    title: 'Invoice columns',
+    note: 'The table’s column settings in a panel anchored to the button that opened it.',
     bare: true,
-    render: scene(<ColumnsPopover />),
+    render: () => (
+        <AppScene
+            page={{
+                nav: 'rail',
+                place: 'invoices',
+                title: 'Invoices',
+                description: '38 sent this month, €48,260 in all.',
+                actions: (
+                    <Button>
+                        <Plus {...icon} /> New invoice
+                    </Button>
+                ),
+                children: <InvoicesWithColumns />,
+            }}
+        />
+    ),
 };

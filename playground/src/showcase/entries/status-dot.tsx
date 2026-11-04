@@ -1,7 +1,10 @@
-import { Card, CardHeader, CardTitle, LiveCount, StatusDot } from 'continuum';
+import { Button, LiveCount, StatusDot } from 'continuum';
+import { Bell } from 'lucide-react';
 import {
+    AppWindow,
     type Entry,
     type InUse,
+    icon,
     type Knob,
     o,
     opts,
@@ -64,33 +67,89 @@ export const entry: Entry = {
 };
 
 const systems = [
-    { name: 'API', tone: 'success', label: 'Operational' },
-    { name: 'Dashboard', tone: 'success', label: 'Operational' },
-    { name: 'Webhooks', tone: 'warning', label: 'Delayed' },
-    { name: 'Payouts', tone: 'error', label: 'Down' },
+    {
+        name: 'API',
+        detail: 'api.acme.com',
+        tone: 'success',
+        label: 'Operational',
+        uptime: '99.99%',
+    },
+    {
+        name: 'Dashboard',
+        detail: 'app.acme.com',
+        tone: 'success',
+        label: 'Operational',
+        uptime: '99.98%',
+    },
+    {
+        name: 'Invoice emails',
+        detail: 'Sending and tracking',
+        tone: 'success',
+        label: 'Operational',
+        uptime: '99.95%',
+    },
+    {
+        name: 'Webhooks',
+        detail: 'Delivery to your endpoints',
+        tone: 'warning',
+        label: 'Delayed',
+        uptime: '99.71%',
+    },
+    {
+        name: 'Payouts',
+        detail: 'Transfers to your bank',
+        tone: 'error',
+        label: 'Down',
+        uptime: '98.40%',
+    },
+    {
+        name: 'Bank feeds',
+        detail: 'Payment matching',
+        tone: 'success',
+        label: 'Operational',
+        uptime: '99.96%',
+    },
 ] as const;
 
 const StatusPage = () => (
-    <Card className="w-full max-w-md gap-4">
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Systems</CardTitle>
-            <LiveCount count={1284} />
-        </CardHeader>
-        <ul className="flex flex-col divide-y divide-neutral-200">
-            {systems.map(system => (
-                <li className="flex h-10 items-center gap-3" key={system.name}>
-                    <StatusDot pulse={system.tone !== 'success'} tone={system.tone} />
-                    <span className="flex-1 text-neutral-950 text-xs">{system.name}</span>
-                    <span className="text-neutral-600 text-xs">{system.label}</span>
-                </li>
-            ))}
-        </ul>
-    </Card>
+    <AppWindow
+        actions={
+            <>
+                <LiveCount count={1284} label="Watching now" />
+                <Button variant="secondary">
+                    <Bell {...icon} /> Subscribe to updates
+                </Button>
+            </>
+        }
+        description="Live status of the Acme API, the dashboard and payouts."
+        nav="none"
+        title="Acme status"
+    >
+        <div className="overflow-hidden rounded-card border border-neutral-200">
+            <ul className="flex flex-col divide-y divide-neutral-200">
+                {systems.map(system => (
+                    <li className="flex h-14 items-center gap-4 px-5 text-xs" key={system.name}>
+                        <StatusDot pulse={system.tone !== 'success'} tone={system.tone} />
+                        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                            <span className="truncate font-medium text-neutral-950">
+                                {system.name}
+                            </span>
+                            <span className="truncate text-neutral-600">{system.detail}</span>
+                        </span>
+                        <span className="w-28 text-neutral-600 tabular-nums">
+                            {system.uptime} uptime
+                        </span>
+                        <span className="w-24 text-right text-neutral-950">{system.label}</span>
+                    </li>
+                ))}
+            </ul>
+        </div>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
     title: 'Status page',
-    note: 'A dot per system, pulsing while something is wrong, and a live count.',
-    canvas: true,
+    note: 'A public status page: a dot for each system, pulsing while something is wrong, and a live count of who is watching.',
+    app: true,
     render: () => <StatusPage />,
 };

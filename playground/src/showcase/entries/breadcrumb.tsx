@@ -1,4 +1,7 @@
 import {
+    AppPanel,
+    AppShell,
+    Badge,
     Breadcrumb,
     BreadcrumbHome,
     BreadcrumbItem,
@@ -10,10 +13,17 @@ import {
     Button,
     DropdownMenuItem,
     HeaderBar,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from 'continuum';
 import { Download, Folder } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';
+import { PageHead, WorkspaceSidebar } from '../../screens/workspace';
 import {
     type Entry,
     type InUse,
@@ -22,7 +32,7 @@ import {
     o,
     type PreviewProps,
     previewIcon,
-    scene,
+    Scene,
 } from '../kit';
 
 const breadcrumbKnobs: Knob[] = [
@@ -128,67 +138,122 @@ export const entry: Entry = {
 
 const foldedCrumbs = ['Finance', 'Payments', '2026'];
 
-const BreadcrumbHeader = () => {
+const payouts = [
+    { supplier: 'Hansa Freight GmbH', country: 'Germany', amount: '€6,240.00', status: 'Paid' },
+    { supplier: 'Atelier Moreau', country: 'France', amount: '€3,180.00', status: 'Paid' },
+    { supplier: 'Noordzee Print BV', country: 'Netherlands', amount: '€2,960.00', status: 'Paid' },
+    { supplier: 'Lisboa Studio Lda', country: 'Portugal', amount: '€2,410.00', status: 'Pending' },
+    { supplier: 'Kraków Components', country: 'Poland', amount: '€1,870.00', status: 'Paid' },
+] as const;
+
+// The trail as the header bar sets it: a workspace switcher, the middle folded, the page last.
+const DeepTrail = () => {
     const stage = useStageContainer();
     const [workspace, setWorkspace] = useState('Northwind');
 
     return (
-        <div className="mb-24 w-full max-w-2xl self-start overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50">
-            <HeaderBar>
-                <Breadcrumb>
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href="#">
-                                <BreadcrumbHome />
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbMenu container={stage} label={workspace}>
-                                {['Northwind', 'Acme Corp', 'Globex'].map(name => (
-                                    <DropdownMenuItem key={name} onClick={() => setWorkspace(name)}>
-                                        {name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </BreadcrumbMenu>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbMenu container={stage} defaultOpen modal={false}>
-                                {foldedCrumbs.map(name => (
-                                    <DropdownMenuItem key={name}>
-                                        <Folder {...icon} /> {name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </BreadcrumbMenu>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbLink href="#">October batches</BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>Batch #12345 · European suppliers</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-                <Button variant="secondary">
-                    <Download {...icon} /> Export
-                </Button>
-            </HeaderBar>
-            <div className="flex flex-col gap-1.5 px-6 py-8 opacity-60">
-                <p className="font-medium text-neutral-950 text-sm">Batch #12345</p>
-                <p className="text-neutral-600 text-xs">
-                    14 payouts · €18,420.00 · sent 14 October
-                </p>
-            </div>
-        </div>
+        <Breadcrumb className="min-w-0">
+            <BreadcrumbList>
+                <BreadcrumbItem>
+                    <BreadcrumbLink href="#">
+                        <BreadcrumbHome />
+                    </BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                    <BreadcrumbMenu container={stage} label={workspace}>
+                        {['Northwind', 'Acme Corp', 'Globex'].map(name => (
+                            <DropdownMenuItem key={name} onClick={() => setWorkspace(name)}>
+                                {name}
+                            </DropdownMenuItem>
+                        ))}
+                    </BreadcrumbMenu>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                    <BreadcrumbMenu container={stage} defaultOpen modal={false}>
+                        {foldedCrumbs.map(name => (
+                            <DropdownMenuItem key={name}>
+                                <Folder {...icon} /> {name}
+                            </DropdownMenuItem>
+                        ))}
+                    </BreadcrumbMenu>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                    <BreadcrumbLink href="#">October batches</BreadcrumbLink>
+                </BreadcrumbItem>
+                <BreadcrumbSeparator />
+                <BreadcrumbItem>
+                    <BreadcrumbPage>Batch #12345 · European suppliers</BreadcrumbPage>
+                </BreadcrumbItem>
+            </BreadcrumbList>
+        </Breadcrumb>
     );
 };
 
+const PayoutBatch = () => (
+    <Scene className="p-0">
+        <div className="absolute inset-0">
+            <AppShell className="h-full min-h-0 w-full">
+                <WorkspaceSidebar place="invoices" />
+                <AppPanel>
+                    <HeaderBar>
+                        <DeepTrail />
+                    </HeaderBar>
+                    <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-hidden px-10 pt-10 [mask-image:linear-gradient(to_bottom,black_calc(100%-48px),transparent)]">
+                        <PageHead
+                            description="14 payouts · €18,420.00 · sent 14 October"
+                            title="Batch #12345"
+                        >
+                            <Button variant="secondary">
+                                <Download {...icon} /> Export
+                            </Button>
+                        </PageHead>
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Supplier</TableHead>
+                                    <TableHead>Country</TableHead>
+                                    <TableHead className="text-right">Amount</TableHead>
+                                    <TableHead className="text-right">Status</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {payouts.map(payout => (
+                                    <TableRow key={payout.supplier}>
+                                        <TableCell className="font-medium text-neutral-950">
+                                            {payout.supplier}
+                                        </TableCell>
+                                        <TableCell className="text-neutral-600">
+                                            {payout.country}
+                                        </TableCell>
+                                        <TableCell className="text-right text-neutral-950 tabular-nums">
+                                            {payout.amount}
+                                        </TableCell>
+                                        <TableCell className="text-right">
+                                            <Badge
+                                                tone={
+                                                    payout.status === 'Paid' ? 'success' : 'neutral'
+                                                }
+                                            >
+                                                {payout.status}
+                                            </Badge>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </AppPanel>
+            </AppShell>
+        </div>
+    </Scene>
+);
+
 export const inUse: InUse = {
-    title: 'A deep trail',
-    note: 'A workspace switcher first, the middle folded into a menu, the page truncating last.',
+    title: 'A payout batch',
+    note: 'A deep trail in the header bar: a workspace switcher, the middle folded, the page last.',
     bare: true,
-    render: scene(<BreadcrumbHeader />, 'items-start'),
+    render: () => <PayoutBatch />,
 };

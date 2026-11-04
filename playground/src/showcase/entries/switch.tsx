@@ -1,7 +1,28 @@
-import { Badge, Button, Card, CardHeader, CardTitle, Field, FieldLabel, Switch } from 'continuum';
-import { Copy } from 'lucide-react';
+import {
+    Badge,
+    BarList,
+    BarListItem,
+    Button,
+    Card,
+    DialogClose,
+    DialogDescription,
+    Field,
+    FieldLabel,
+    StatCard,
+    Switch,
+} from 'continuum';
+import { Copy, Download, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { type Entry, type InUse, icon, type Knob, Labelled, type PreviewProps } from '../kit';
+import {
+    AppScene,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    Labelled,
+    OpenDialog,
+    type PreviewProps,
+} from '../kit';
 
 const switchKnobs: Knob[] = [
     { id: 'on', label: 'On', switch: true, default: true },
@@ -62,13 +83,24 @@ const sharing = [
 ];
 
 const ShareReport = () => (
-    <Card className="w-full max-w-md gap-5">
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Share Q3 review</CardTitle>
+    <OpenDialog
+        footer={
+            <>
+                <Button variant="secondary">
+                    <Copy {...icon} /> Copy link
+                </Button>
+                <DialogClose render={<Button />}>Done</DialogClose>
+            </>
+        }
+        title="Share Q3 review"
+        width={480}
+    >
+        <div className="flex items-center justify-between gap-4">
+            <DialogDescription>Changes apply as soon as you make them.</DialogDescription>
             <Badge tone="success" variant="dot">
                 Public
             </Badge>
-        </CardHeader>
+        </div>
         <div className="flex flex-col gap-4">
             {sharing.map(item => (
                 <Field className="flex-row items-center justify-between gap-4" key={item.id}>
@@ -80,15 +112,49 @@ const ShareReport = () => (
                 </Field>
             ))}
         </div>
-        <Button className="self-end" variant="secondary">
-            <Copy {...icon} /> Copy link
-        </Button>
-    </Card>
+    </OpenDialog>
 );
 
 export const inUse: InUse = {
-    title: 'Share settings',
-    note: 'Switches that take effect at once, each with what it does.',
-    canvas: true,
-    render: () => <ShareReport />,
+    title: 'Share a report',
+    note: 'The share dialog over the Q3 review: switches that take effect at once, each with what it does.',
+    bare: true,
+    render: () => (
+        <AppScene
+            page={{
+                place: 'reports',
+                trail: ['Reports', 'Q3 review'],
+                title: 'Q3 review',
+                description: 'Revenue, churn and pipeline from July to September.',
+                actions: (
+                    <>
+                        <Button variant="secondary">
+                            <Download {...icon} /> Download
+                        </Button>
+                        <Button>
+                            <Share2 {...icon} /> Share
+                        </Button>
+                    </>
+                ),
+                children: (
+                    <>
+                        <div className="grid grid-cols-3 gap-4">
+                            <StatCard delta="+9.2%" label="Revenue" value="€184,300" />
+                            <StatCard delta="−0.6%" label="Churn" value="2.1%" />
+                            <StatCard delta="+14.0%" label="Pipeline" value="€412,000" />
+                        </div>
+                        <Card>
+                            <BarList title="Revenue by plan" valueLabel="Revenue">
+                                <BarListItem value={98400}>Enterprise</BarListItem>
+                                <BarListItem value={61200}>Pro</BarListItem>
+                                <BarListItem value={24700}>Starter</BarListItem>
+                            </BarList>
+                        </Card>
+                    </>
+                ),
+            }}
+        >
+            <ShareReport />
+        </AppScene>
+    ),
 };

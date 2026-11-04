@@ -1,5 +1,5 @@
-import { Button, Card, CardHeader, CardTitle, Meter } from 'continuum';
-import { type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
+import { BarList, BarListItem, Button, Card, Meter } from 'continuum';
+import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 
 const meterKnobs: Knob[] = [
     {
@@ -51,21 +51,71 @@ export const entry: Entry = {
 };
 
 const Usage = () => (
-    <Card className="w-full max-w-md gap-5">
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Usage · Business plan</CardTitle>
-            <Button variant="ghost">Upgrade</Button>
-        </CardHeader>
-        <Meter label="Seats" showValue value={60} />
-        <Meter caption="9.2 of 10 GB" label="Storage" size="md" tone="warning" value={92} />
-        <Meter caption="Resets in 10 days" label="Credits" max={10000} tone="chart" value={2450} />
-        <Meter caption="Limit reached" label="API calls" size="md" tone="error" value={100} />
-    </Card>
+    <AppWindow
+        actions={
+            <>
+                <Button variant="secondary">Compare plans</Button>
+                <Button>Upgrade plan</Button>
+            </>
+        }
+        description="Business plan · this period runs to 1 November."
+        nav="rail"
+        place="settings"
+        title="Usage"
+    >
+        <div className="grid grid-cols-2 gap-4">
+            <Card className="gap-5 p-5">
+                <Meter caption="3 invites pending" label="Seats" max={20} showValue value={12} />
+                <p className="text-neutral-600 text-xs">
+                    Everyone who can sign in, guests included.
+                </p>
+            </Card>
+            <Card className="gap-5 p-5">
+                <Meter caption="9.2 of 10 GB" label="Storage" showValue tone="warning" value={92} />
+                <p className="text-neutral-600 text-xs">
+                    Attachments and exported reports. Old exports can be cleared.
+                </p>
+            </Card>
+            <Card className="gap-5 p-5">
+                <Meter
+                    caption="Resets in 10 days"
+                    label="AI credits"
+                    max={10000}
+                    showValue
+                    tone="chart"
+                    value={2450}
+                />
+                <p className="text-neutral-600 text-xs">
+                    Summaries, drafted reminders and report narratives.
+                </p>
+            </Card>
+            <Card className="gap-5 p-5">
+                <Meter
+                    caption="Limit reached · calls are queued"
+                    label="API calls"
+                    showValue
+                    tone="error"
+                    value={100}
+                />
+                <p className="text-neutral-600 text-xs">
+                    100,000 a month; the Enterprise plan has no limit.
+                </p>
+            </Card>
+        </div>
+        <Card layout="list">
+            <BarList title="AI credits by member" valueLabel="Credits">
+                <BarListItem value={1120}>Maya Chen</BarListItem>
+                <BarListItem value={640}>Liam Ortiz</BarListItem>
+                <BarListItem value={410}>Sara Kim</BarListItem>
+                <BarListItem value={280}>Noah Patel</BarListItem>
+            </BarList>
+        </Card>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
     title: 'Usage',
-    note: 'Usage against each limit, in the tone of how close it is.',
-    canvas: true,
+    note: 'A plan’s usage page: each limit a meter, in the tone of how close it is.',
+    app: true,
     render: () => <Usage />,
 };

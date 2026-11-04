@@ -1,15 +1,8 @@
-import { Checkbox, OptionList, OptionRow, RadioGroup, RadioGroupItem } from 'continuum';
+import { Button, Checkbox, OptionList, OptionRow, RadioGroup, RadioGroupItem } from 'continuum';
 import { FileText, PieChart, PieChart as PieIcon, Table2 } from 'lucide-react';
 import { useState } from 'react';
-import {
-    DialogActions,
-    type Entry,
-    type InUse,
-    icon,
-    OpenDialog,
-    previewIcon,
-    scene,
-} from '../kit';
+import { SectionHead } from '../../screens/workspace';
+import { AppWindow, type Entry, type InUse, icon, previewIcon } from '../kit';
 
 const reportSections = [
     {
@@ -90,68 +83,75 @@ const exportParts = [
     },
 ];
 
-const ExportReport = () => {
+const NewReport = () => {
     const [picked, setPicked] = useState(['summary', 'charts']);
     const [audience, setAudience] = useState('client');
 
     return (
-        <OpenDialog
-            footer={
-                <DialogActions
-                    action={`Export ${picked.length} parts`}
-                    disabled={picked.length === 0}
-                />
-            }
-            title="Export report"
-            width={480}
+        <AppWindow
+            actions={<Button disabled={picked.length === 0}>Create report</Button>}
+            className="mx-auto w-full max-w-content-narrow"
+            description="Northwind Traders, 1 July to 30 September."
+            nav="top"
+            place="reports"
+            title="New report"
         >
-            <OptionList>
-                {exportParts.map(part => (
-                    <OptionRow
-                        control={
-                            <Checkbox
-                                checked={picked.includes(part.id)}
-                                onCheckedChange={checked =>
-                                    setPicked(current =>
-                                        checked === true
-                                            ? [...current, part.id]
-                                            : current.filter(id => id !== part.id),
-                                    )
-                                }
-                            />
-                        }
-                        description={part.description}
-                        icon={part.icon}
-                        key={part.id}
-                        label={part.label}
-                    />
-                ))}
-            </OptionList>
-            <RadioGroup
-                aria-label="Audience"
-                onValueChange={value => setAudience(String(value))}
-                value={audience}
-            >
+            <section className="flex flex-col gap-4">
+                <SectionHead
+                    description="Pick the parts the report is made of; you can reorder them after."
+                    title="What to include"
+                />
                 <OptionList>
-                    <OptionRow
-                        control={<RadioGroupItem value="client" />}
-                        description="Numbers only, no notes"
-                        label="For the client"
-                    />
-                    <OptionRow
-                        control={<RadioGroupItem value="team" />}
-                        description="With notes and next steps"
-                        label="For the team"
-                    />
+                    {exportParts.map(part => (
+                        <OptionRow
+                            control={
+                                <Checkbox
+                                    checked={picked.includes(part.id)}
+                                    onCheckedChange={checked =>
+                                        setPicked(current =>
+                                            checked === true
+                                                ? [...current, part.id]
+                                                : current.filter(id => id !== part.id),
+                                        )
+                                    }
+                                />
+                            }
+                            description={part.description}
+                            icon={part.icon}
+                            key={part.id}
+                            label={part.label}
+                        />
+                    ))}
                 </OptionList>
-            </RadioGroup>
-        </OpenDialog>
+            </section>
+            <section className="flex flex-col gap-4">
+                <SectionHead title="Who it’s for" />
+                <RadioGroup
+                    aria-label="Audience"
+                    onValueChange={value => setAudience(String(value))}
+                    value={audience}
+                >
+                    <OptionList className="grid grid-cols-2">
+                        <OptionRow
+                            control={<RadioGroupItem value="client" />}
+                            description="Numbers only, no notes"
+                            label="The client"
+                        />
+                        <OptionRow
+                            control={<RadioGroupItem value="team" />}
+                            description="With notes and next steps"
+                            label="The team"
+                        />
+                    </OptionList>
+                </RadioGroup>
+            </section>
+        </AppWindow>
     );
 };
 
 export const inUse: InUse = {
-    title: 'Export report',
-    note: 'Parts to include as checkbox rows, the audience as radio rows.',
-    bare: true,
-    render: scene(<ExportReport />, 'min-h-[480px]'),
+    title: 'New report',
+    note: 'The parts of a new report as checkbox rows, its audience as radio rows.',
+    app: true,
+    render: () => <NewReport />,
 };

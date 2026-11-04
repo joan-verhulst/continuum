@@ -1,7 +1,22 @@
-import { DialogDescription, Field, FieldLabel, RadioGroup, RadioGroupItem } from 'continuum';
-import { Download } from 'lucide-react';
+import {
+    Badge,
+    Button,
+    DialogDescription,
+    Field,
+    FieldLabel,
+    RadioGroup,
+    RadioGroupItem,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from 'continuum';
+import { Download, Plus } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import {
+    AppScene,
     DialogActions,
     type Entry,
     type InUse,
@@ -10,7 +25,6 @@ import {
     Labelled,
     OpenDialog,
     type PreviewProps,
-    scene,
 } from '../kit';
 
 const radioKnobs: Knob[] = [
@@ -90,9 +104,9 @@ const ExportFormat = () => {
                     }
                 />
             }
-            title="Export sessions"
+            title="Export invoices"
         >
-            <DialogDescription>12,480 sessions from 1 to 31 October.</DialogDescription>
+            <DialogDescription>38 invoices sent from 1 to 31 October.</DialogDescription>
             <RadioGroup
                 aria-label="Format"
                 className="gap-4"
@@ -105,10 +119,10 @@ const ExportFormat = () => {
                 >
                     <RadioGroupItem value="csv" />
                 </LabelledInUse>
-                <LabelledInUse description="One sheet per week, with totals" label="Excel">
+                <LabelledInUse description="One sheet per client, with totals" label="Excel">
                     <RadioGroupItem value="xlsx" />
                 </LabelledInUse>
-                <LabelledInUse description="The charts and the summary, ready to send" label="PDF">
+                <LabelledInUse description="Every invoice as sent, in one file" label="PDF">
                     <RadioGroupItem value="pdf" />
                 </LabelledInUse>
             </RadioGroup>
@@ -116,9 +130,70 @@ const ExportFormat = () => {
     );
 };
 
+const invoices = [
+    { client: 'Acme Corp', number: 'INV-0142', amount: '€4,120.00', status: 'Due soon' },
+    { client: 'Northwind', number: 'INV-0141', amount: '€1,980.00', status: 'Paid' },
+    { client: 'Lumen Labs', number: 'INV-0139', amount: '€760.00', status: 'Overdue' },
+    { client: 'Harbour Street', number: 'INV-0138', amount: '€2,310.00', status: 'Paid' },
+    { client: 'Tideline Travel', number: 'INV-0137', amount: '€540.00', status: 'Paid' },
+    { client: 'Globex', number: 'INV-0136', amount: '€1,240.00', status: 'Paid' },
+] as const;
+
+const invoiceTone = { Paid: 'success', 'Due soon': 'warning', Overdue: 'error' } as const;
+
+/** The invoices list the export is made from, behind the dialog. */
+const InvoiceList = () => (
+    <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHead>Client</TableHead>
+                <TableHead>Invoice</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">Status</TableHead>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            {invoices.map(row => (
+                <TableRow key={row.number}>
+                    <TableCell className="font-medium text-neutral-950">{row.client}</TableCell>
+                    <TableCell className="text-neutral-600">{row.number}</TableCell>
+                    <TableCell className="text-right text-neutral-950 tabular-nums">
+                        {row.amount}
+                    </TableCell>
+                    <TableCell className="text-right">
+                        <Badge tone={invoiceTone[row.status]}>{row.status}</Badge>
+                    </TableCell>
+                </TableRow>
+            ))}
+        </TableBody>
+    </Table>
+);
+
 export const inUse: InUse = {
-    title: 'Export format',
-    note: 'One choice of three, each with what it means.',
+    title: 'Export invoices',
+    note: 'The export dialog over the invoices list: one format of three, each with what it means.',
     bare: true,
-    render: scene(<ExportFormat />),
+    render: () => (
+        <AppScene
+            page={{
+                place: 'invoices',
+                trail: ['Invoices'],
+                title: 'Invoices',
+                description: '38 sent in October, €61,240 in total.',
+                actions: (
+                    <>
+                        <Button variant="secondary">
+                            <Download {...icon} /> Export
+                        </Button>
+                        <Button>
+                            <Plus {...icon} /> New invoice
+                        </Button>
+                    </>
+                ),
+                children: <InvoiceList />,
+            }}
+        >
+            <ExportFormat />
+        </AppScene>
+    ),
 };

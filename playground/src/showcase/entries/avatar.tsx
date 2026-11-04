@@ -1,5 +1,26 @@
-import { Avatar, AvatarStack, Badge, Card, CardHeader, CardTitle } from 'continuum';
-import { type Entry, type InUse, type Knob, o, opts, type PreviewProps } from '../kit';
+import {
+    Avatar,
+    AvatarStack,
+    Badge,
+    Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from 'continuum';
+import { EllipsisVertical, UserPlus } from 'lucide-react';
+import {
+    AppWindow,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    o,
+    opts,
+    type PreviewProps,
+} from '../kit';
 
 const avatarKnobs: Knob[] = [
     { id: 'shape', label: 'Shape', options: opts('round', 'square'), default: 'round' },
@@ -41,61 +62,120 @@ export const entry: Entry = {
 
 const members = [
     {
-        initials: 'JC',
-        name: 'Jane Cooper',
-        email: 'jane@northwind.studio',
+        initials: 'MC',
+        name: 'Maya Chen',
+        email: 'maya@acme.com',
         role: 'Owner',
+        seen: 'Online now',
         shape: 'round',
     },
     {
-        initials: 'BJ',
-        name: 'Bram Jansen',
-        email: 'bram@northwind.studio',
+        initials: 'LO',
+        name: 'Liam Ortiz',
+        email: 'liam@acme.com',
         role: 'Admin',
+        seen: '18 min ago',
         shape: 'round',
     },
     {
-        initials: 'EB',
-        name: 'Eva Bakker',
-        email: 'eva@northwind.studio',
+        initials: 'SK',
+        name: 'Sara Kim',
+        email: 'sara@acme.com',
         role: 'Member',
+        seen: 'Yesterday',
         shape: 'round',
     },
-    { initials: 'AC', name: 'Acme Corp', email: 'Guest workspace', role: 'Guest', shape: 'square' },
+    {
+        initials: 'NP',
+        name: 'Noah Patel',
+        email: 'noah@acme.com',
+        role: 'Member',
+        seen: '3 days ago',
+        shape: 'round',
+    },
+    {
+        initials: 'NT',
+        name: 'Northwind Traders',
+        email: 'Guest workspace · 3 people',
+        role: 'Guest',
+        seen: 'Last week',
+        shape: 'square',
+    },
 ] as const;
 
-const TeamCard = () => (
-    <Card className="w-full max-w-md gap-4">
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Team</CardTitle>
-            <AvatarStack max={4}>
-                {['JC', 'BJ', 'EB', 'DV', 'FS', 'CM'].map(initials => (
-                    <Avatar fallback={initials} key={initials} shape="round" size={24} />
+const Members = () => (
+    <AppWindow
+        actions={
+            <Button>
+                <UserPlus {...icon} /> Invite people
+            </Button>
+        }
+        description={
+            <span className="inline-flex items-center gap-2.5">
+                <AvatarStack max={5}>
+                    {['MC', 'LO', 'SK', 'NP', 'EB', 'JV', 'TD'].map(initials => (
+                        <Avatar fallback={initials} key={initials} shape="round" size={24} />
+                    ))}
+                </AvatarStack>
+                7 people in Acme, 2 invites pending
+            </span>
+        }
+        place="settings"
+        title="Members"
+        trail={['Settings', 'Members']}
+    >
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead>Last active</TableHead>
+                    <TableHead className="w-12">
+                        <span className="sr-only">Actions</span>
+                    </TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {members.map(member => (
+                    <TableRow key={member.name}>
+                        <TableCell>
+                            <span className="flex items-center gap-3">
+                                <Avatar fallback={member.initials} shape={member.shape} />
+                                <span className="flex min-w-0 flex-col">
+                                    <span className="truncate font-medium text-neutral-950">
+                                        {member.name}
+                                    </span>
+                                    <span className="truncate text-neutral-600">
+                                        {member.email}
+                                    </span>
+                                </span>
+                            </span>
+                        </TableCell>
+                        <TableCell>
+                            <Badge tone={member.role === 'Owner' ? 'primary' : 'neutral'}>
+                                {member.role}
+                            </Badge>
+                        </TableCell>
+                        <TableCell className="text-neutral-600">{member.seen}</TableCell>
+                        <TableCell>
+                            <Button
+                                aria-label={`More for ${member.name}`}
+                                size="icon-sm"
+                                variant="ghost"
+                            >
+                                <EllipsisVertical {...icon} />
+                            </Button>
+                        </TableCell>
+                    </TableRow>
                 ))}
-            </AvatarStack>
-        </CardHeader>
-        <ul className="flex flex-col gap-3">
-            {members.map(member => (
-                <li className="flex items-center gap-3" key={member.name}>
-                    <Avatar fallback={member.initials} shape={member.shape} />
-                    <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="truncate font-medium text-neutral-950 text-xs">
-                            {member.name}
-                        </span>
-                        <span className="truncate text-neutral-500 text-xxs">{member.email}</span>
-                    </span>
-                    <Badge tone={member.role === 'Owner' ? 'primary' : 'neutral'}>
-                        {member.role}
-                    </Badge>
-                </li>
-            ))}
-        </ul>
-    </Card>
+            </TableBody>
+        </Table>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
-    title: 'Team',
-    note: 'People round, a workspace square, the whole team stacked in the header.',
-    canvas: true,
-    render: () => <TeamCard />,
+    title: 'Members',
+    note: 'The members of a workspace: people round, a guest workspace square, everyone stacked in the head.',
+    app: true,
+    render: () => <Members />,
 };

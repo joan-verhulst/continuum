@@ -42,7 +42,7 @@ const icon = { strokeWidth: 2 } as const;
 
 export type Place = 'overview' | 'customers' | 'invoices' | 'reports' | 'inbox' | 'settings';
 
-const places: { id: Place; label: string; icon: ReactNode; count?: number }[] = [
+export const places: { id: Place; label: string; icon: ReactNode; count?: number }[] = [
     { id: 'overview', label: 'Overview', icon: <LayoutDashboard {...icon} /> },
     { id: 'customers', label: 'Customers', icon: <Users {...icon} /> },
     { id: 'invoices', label: 'Invoices', icon: <Receipt {...icon} /> },
@@ -54,7 +54,7 @@ const places: { id: Place; label: string; icon: ReactNode; count?: number }[] = 
  * The sidebar every screen shares: the places, settings and the account. It holds no action of
  * its own: each page has its one primary action, and a second here would make two.
  */
-const WorkspaceSidebar = ({ place }: { place: Place }) => (
+export const WorkspaceSidebar = ({ place }: { place: Place }) => (
     <Sidebar>
         <SidebarHeader>
             <SidebarLogo>
@@ -93,7 +93,7 @@ const WorkspaceSidebar = ({ place }: { place: Place }) => (
 );
 
 /** Where the page sits: the home, then each step down to the page itself. */
-const Trail = ({ trail }: { trail: string[] }) => (
+export const Trail = ({ trail }: { trail: string[] }) => (
     <Breadcrumb>
         <BreadcrumbList>
             <BreadcrumbItem>

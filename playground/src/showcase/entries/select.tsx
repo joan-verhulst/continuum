@@ -1,4 +1,5 @@
 import {
+    Button,
     Field,
     FieldLabel,
     Select,
@@ -6,11 +7,18 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from 'continuum';
-import { CalendarDays, Folder, Users } from 'lucide-react';
+import { CalendarDays, Folder, Plus, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';
 import {
+    AppScene,
     DialogActions,
     type Entry,
     type InUse,
@@ -20,7 +28,6 @@ import {
     o,
     type PreviewProps,
     previewIcon,
-    scene,
     sizes,
 } from '../kit';
 
@@ -95,7 +102,7 @@ const MoveReport = () => {
                     </SelectTrigger>
                     <SelectContent>
                         <SelectItem value="me">Only me</SelectItem>
-                        <SelectItem value="team">Everyone in Northwind</SelectItem>
+                        <SelectItem value="team">Everyone at Acme</SelectItem>
                     </SelectContent>
                 </Select>
             </Field>
@@ -119,9 +126,66 @@ const MoveReport = () => {
     );
 };
 
+const reports = [
+    { name: 'Q3 review', folder: 'Q3 reviews', owner: 'Maya Chen', updated: 'Today' },
+    { name: 'October revenue', folder: 'Q4 planning', owner: 'Liam Ortiz', updated: 'Yesterday' },
+    { name: 'Churn by plan', folder: 'Client reports', owner: 'Sara Kim', updated: '28 Oct' },
+    { name: 'Pipeline forecast', folder: 'Q4 planning', owner: 'Maya Chen', updated: '24 Oct' },
+    {
+        name: 'Northwind quarterly',
+        folder: 'Client reports',
+        owner: 'Liam Ortiz',
+        updated: '19 Oct',
+    },
+    { name: 'Q2 review', folder: 'Archive', owner: 'Sara Kim', updated: '2 Jul' },
+];
+
+/** The reports list the moved report comes from, behind the dialog. */
+const ReportList = () => (
+    <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHead>Report</TableHead>
+                <TableHead>Folder</TableHead>
+                <TableHead>Owner</TableHead>
+                <TableHead className="text-right">Updated</TableHead>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            {reports.map(row => (
+                <TableRow key={row.name}>
+                    <TableCell className="font-medium text-neutral-950">{row.name}</TableCell>
+                    <TableCell className="text-neutral-600">{row.folder}</TableCell>
+                    <TableCell className="text-neutral-600">{row.owner}</TableCell>
+                    <TableCell className="text-right text-neutral-600 tabular-nums">
+                        {row.updated}
+                    </TableCell>
+                </TableRow>
+            ))}
+        </TableBody>
+    </Table>
+);
+
 export const inUse: InUse = {
     title: 'Move report',
-    note: 'Two selects in a dialog, the first one open.',
+    note: 'A dialog over the reports list, its folder select open on four choices.',
     bare: true,
-    render: scene(<MoveReport />, 'min-h-[480px]'),
+    render: () => (
+        <AppScene
+            page={{
+                nav: 'top',
+                place: 'reports',
+                title: 'Reports',
+                description: 'Weekly and monthly reports, shared with your team.',
+                actions: (
+                    <Button>
+                        <Plus {...icon} /> New report
+                    </Button>
+                ),
+                children: <ReportList />,
+            }}
+        >
+            <MoveReport />
+        </AppScene>
+    ),
 };

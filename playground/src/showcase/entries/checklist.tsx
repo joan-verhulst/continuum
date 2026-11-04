@@ -1,6 +1,6 @@
 import { Button, Checklist, ChecklistItem } from 'continuum';
 import { useEffect, useState } from 'react';
-import { type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
+import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 
 const setupSteps = [
     {
@@ -82,24 +82,24 @@ export const entry: Entry = {
 const onboarding = [
     { title: 'Create your workspace', description: '', action: '' },
     {
+        title: 'Add your company details',
+        description: 'Your address and VAT number, printed on every invoice.',
+        action: 'Add details',
+    },
+    {
+        title: 'Connect your bank',
+        description: 'Invoices are marked paid as the money lands.',
+        action: 'Connect a bank',
+    },
+    {
+        title: 'Send your first invoice',
+        description: 'Pick a customer and send it to yourself first, to see what they see.',
+        action: 'New invoice',
+    },
+    {
         title: 'Invite your team',
-        description: 'Reports are better with the people who read them.',
-        action: 'Invite teammates',
-    },
-    {
-        title: 'Connect a data source',
-        description: 'Analytics, your CRM or a spreadsheet; numbers refresh every hour.',
-        action: 'Connect a source',
-    },
-    {
-        title: 'Send your first report',
-        description: 'Pick a template and send it to yourself first.',
-        action: 'Send a report',
-    },
-    {
-        title: 'Schedule a weekly digest',
-        description: 'Every Monday at nine, the week in one email.',
-        action: 'Schedule it',
+        description: 'Finance and sales, so nobody has to ask what was paid.',
+        action: 'Invite people',
     },
 ];
 
@@ -108,45 +108,52 @@ const GetStarted = () => {
     const finished = done === onboarding.length;
 
     return (
-        <Checklist
-            action={
-                finished ? (
-                    <Button onClick={() => setDone(1)} variant="ghost">
-                        Start over
-                    </Button>
-                ) : (
-                    <Button variant="ghost">Skip for now</Button>
-                )
-            }
-            className="w-full max-w-md"
-            completed={done}
-            title={finished ? 'You’re all set' : 'Get started with Continuum'}
-            total={onboarding.length}
+        <AppWindow
+            className="mx-auto w-full max-w-[720px] px-0"
+            description="A few steps and your first invoice is on its way."
+            nav="top"
+            place="overview"
+            title="Welcome to Acme, Maya"
         >
-            {onboarding.map((step, i) => (
-                <ChecklistItem
-                    action={
-                        <>
-                            <Button onClick={() => setDone(n => n + 1)}>{step.action}</Button>
-                            <Button onClick={() => setDone(n => n + 1)} variant="ghost">
-                                Skip
-                            </Button>
-                        </>
-                    }
-                    current={i === done}
-                    description={step.description}
-                    done={i < done}
-                    key={step.title}
-                    title={step.title}
-                />
-            ))}
-        </Checklist>
+            <Checklist
+                action={
+                    finished ? (
+                        <Button onClick={() => setDone(1)} variant="ghost">
+                            Start over
+                        </Button>
+                    ) : (
+                        <Button variant="ghost">Skip for now</Button>
+                    )
+                }
+                completed={done}
+                title={finished ? 'You’re all set' : 'Set up your workspace'}
+                total={onboarding.length}
+            >
+                {onboarding.map((step, i) => (
+                    <ChecklistItem
+                        action={
+                            <>
+                                <Button onClick={() => setDone(n => n + 1)}>{step.action}</Button>
+                                <Button onClick={() => setDone(n => n + 1)} variant="ghost">
+                                    Skip
+                                </Button>
+                            </>
+                        }
+                        current={i === done}
+                        description={step.description}
+                        done={i < done}
+                        key={step.title}
+                        title={step.title}
+                    />
+                ))}
+            </Checklist>
+        </AppWindow>
     );
 };
 
 export const inUse: InUse = {
     title: 'Get started',
-    note: 'Five steps, two done, the next one open with its action.',
-    canvas: true,
+    note: 'The first page of a new workspace: five steps, two done, the next one open with its action.',
+    app: true,
     render: () => <GetStarted />,
 };

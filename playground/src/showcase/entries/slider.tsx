@@ -1,6 +1,26 @@
-import { Card, CardTitle, Field, FieldLabel, Slider } from 'continuum';
+import {
+    BarList,
+    BarListItem,
+    Button,
+    Card,
+    DialogDescription,
+    Field,
+    FieldLabel,
+    Slider,
+    StatCard,
+} from 'continuum';
+import { BellRing } from 'lucide-react';
 import { useState } from 'react';
-import type { Entry, InUse, Knob, PreviewProps } from '../kit';
+import {
+    AppScene,
+    DialogActions,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    OpenDialog,
+    type PreviewProps,
+} from '../kit';
 
 const sliderKnobs: Knob[] = [
     { id: 'range', label: 'Range', switch: true, default: false },
@@ -62,8 +82,10 @@ const Thresholds = () => {
     const clock = (value: number) => `${String(value % 24).padStart(2, '0')}:00`;
 
     return (
-        <Card className="w-full max-w-md gap-6">
-            <CardTitle>Alert thresholds</CardTitle>
+        <OpenDialog footer={<DialogActions action="Save alerts" />} title="Alert thresholds">
+            <DialogDescription>
+                Email the team when a number on the overview crosses its line.
+            </DialogDescription>
             <Field>
                 <div className="flex justify-between">
                     <FieldLabel>Bounce rate above</FieldLabel>
@@ -87,13 +109,57 @@ const Thresholds = () => {
                 </div>
                 <Slider max={36} min={12} onValueChange={setHours} value={hours} />
             </Field>
-        </Card>
+        </OpenDialog>
     );
 };
 
 export const inUse: InUse = {
     title: 'Alert thresholds',
-    note: 'Two sliders and a range, each with its value beside the label.',
-    canvas: true,
-    render: () => <Thresholds />,
+    note: 'A dialog over the overview: two sliders and a range, each with its value beside the label.',
+    bare: true,
+    render: () => (
+        <AppScene
+            page={{
+                nav: 'rail',
+                place: 'overview',
+                title: 'Overview',
+                description: 'Week of 19 October, against the week before.',
+                actions: (
+                    <Button variant="secondary">
+                        <BellRing {...icon} /> Alerts
+                    </Button>
+                ),
+                children: (
+                    <>
+                        <div className="grid grid-cols-4 gap-4">
+                            <StatCard delta="+12.4%" label="Sessions" value="12,480" />
+                            <StatCard
+                                delta="−3.1%"
+                                label="Bounce rate"
+                                trend="down"
+                                value="41.2%"
+                            />
+                            <StatCard
+                                delta="0.0%"
+                                label="Error rate"
+                                trend="neutral"
+                                value="1.6%"
+                            />
+                            <StatCard delta="+8.9%" label="Conversions" value="1,204" />
+                        </div>
+                        <Card>
+                            <BarList title="Top pages" valueLabel="Sessions">
+                                <BarListItem value={4120}>/pricing</BarListItem>
+                                <BarListItem value={3312}>/</BarListItem>
+                                <BarListItem value={2840}>/blog/q3-review</BarListItem>
+                                <BarListItem value={1204}>/contact</BarListItem>
+                            </BarList>
+                        </Card>
+                    </>
+                ),
+            }}
+        >
+            <Thresholds />
+        </AppScene>
+    ),
 };

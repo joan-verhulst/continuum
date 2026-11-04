@@ -1,4 +1,6 @@
 import {
+    Avatar,
+    Badge,
     Button,
     Dialog,
     DialogBody,
@@ -13,11 +15,17 @@ import {
     FieldHelper,
     FieldLabel,
     Input,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from 'continuum';
-import { Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';
-import { type Entry, type InUse, icon, OpenDialog, previewIcon, scene } from '../kit';
+import { AppScene, type Entry, type InUse, icon, OpenDialog, previewIcon } from '../kit';
 
 /*
  * Overlays are shown open: on a stage, the overlay is portalled into the stage and held
@@ -124,9 +132,115 @@ const DeleteReport = () => {
     );
 };
 
+const reports = [
+    {
+        name: 'Northwind Q3 review',
+        owner: 'Maya Chen',
+        initials: 'MC',
+        edited: '2 days ago',
+        exports: 14,
+        status: 'Shared',
+    },
+    {
+        name: 'Churn by plan, September',
+        owner: 'Liam Ortiz',
+        initials: 'LO',
+        edited: '4 days ago',
+        exports: 6,
+        status: 'Shared',
+    },
+    {
+        name: 'Enterprise renewals 2027',
+        owner: 'Sara Kim',
+        initials: 'SK',
+        edited: 'Last week',
+        exports: 3,
+        status: 'Draft',
+    },
+    {
+        name: 'Weekly revenue digest',
+        owner: 'Noah Patel',
+        initials: 'NP',
+        edited: 'Last week',
+        exports: 22,
+        status: 'Scheduled',
+    },
+    {
+        name: 'Trial conversion, Q3',
+        owner: 'Maya Chen',
+        initials: 'MC',
+        edited: '3 weeks ago',
+        exports: 9,
+        status: 'Shared',
+    },
+    {
+        name: 'Support load by region',
+        owner: 'Liam Ortiz',
+        initials: 'LO',
+        edited: 'Last month',
+        exports: 4,
+        status: 'Draft',
+    },
+] as const;
+
+const reportTone = { Shared: 'success', Draft: 'neutral', Scheduled: 'primary' } as const;
+
+const ReportsWithDelete = () => (
+    <AppScene
+        page={{
+            place: 'reports',
+            trail: ['Reports'],
+            title: 'Reports',
+            description: 'Weekly and monthly reports, shared with your team.',
+            actions: (
+                <Button>
+                    <Plus {...icon} /> New report
+                </Button>
+            ),
+            children: (
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Report</TableHead>
+                            <TableHead>Owner</TableHead>
+                            <TableHead>Last edited</TableHead>
+                            <TableHead className="text-right">Exports</TableHead>
+                            <TableHead className="text-right">Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {reports.map(report => (
+                            <TableRow key={report.name}>
+                                <TableCell className="font-medium text-neutral-950">
+                                    {report.name}
+                                </TableCell>
+                                <TableCell>
+                                    <span className="flex items-center gap-2.5 text-neutral-700">
+                                        <Avatar fallback={report.initials} size={24} />
+                                        {report.owner}
+                                    </span>
+                                </TableCell>
+                                <TableCell className="text-neutral-600">{report.edited}</TableCell>
+                                <TableCell className="text-right text-neutral-950 tabular-nums">
+                                    {report.exports}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Badge tone={reportTone[report.status]}>{report.status}</Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            ),
+        }}
+    >
+        <DeleteReport />
+    </AppScene>
+);
+
 export const inUse: InUse = {
-    title: 'Confirm a deletion',
-    note: 'A destructive action that asks for the name back.',
+    title: 'Delete a report',
+    note: 'A destructive confirm held over the reports list, asking for the report’s name back.',
     bare: true,
-    render: scene(<DeleteReport />),
+    render: () => <ReportsWithDelete />,
 };

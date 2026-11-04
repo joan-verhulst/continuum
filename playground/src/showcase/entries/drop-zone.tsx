@@ -1,15 +1,20 @@
-import { DropZone, DropZoneFile, DropZoneFiles } from 'continuum';
-import { useEffect, useState } from 'react';
 import {
-    DialogActions,
-    type Entry,
-    type InUse,
-    type Knob,
-    OpenDialog,
-    o,
-    type PreviewProps,
-    scene,
-} from '../kit';
+    Button,
+    DropZone,
+    DropZoneFile,
+    DropZoneFiles,
+    Field,
+    FieldLabel,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from 'continuum';
+import { ArrowRight, ListChecks } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { PageHead } from '../../screens/workspace';
+import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';
 
 /** Files that upload on a timer, so a drop zone in the playground fills its list as a real one would. */
 export type UploadEntry = {
@@ -144,50 +149,80 @@ export const entry: Entry = {
 const contactLists: UploadEntry[] = [
     { id: 'october', name: 'contacts-october.csv', size: 2_516_582, progress: 100, status: 'done' },
     { id: 'webinar', name: 'webinar-leads.xlsx', size: 880_640, progress: 38, status: 'uploading' },
+    {
+        id: 'badges',
+        name: 'trade-show-badges.pdf',
+        size: 1_204_224,
+        progress: 0,
+        status: 'error',
+        error: 'Not a CSV or XLSX file',
+    },
 ];
 
+// A step of its own, reached from Customers: one thing done, so the narrow column.
 const ImportContacts = () => {
     const { files, add, remove } = useUploads(contactLists);
     const busy = files.some(file => file.status === 'uploading');
+    const ready = files.filter(file => file.status === 'done').length;
 
     return (
-        <OpenDialog
-            footer={
-                <DialogActions
-                    action={busy ? 'Uploading…' : `Import ${files.length} files`}
-                    disabled={busy || files.length === 0}
+        <AppWindow nav="top" place="customers">
+            <div className="mx-auto flex w-full max-w-content-narrow flex-col gap-6">
+                <PageHead
+                    description="Add people from a CSV or XLSX file; the columns are matched on the next step."
+                    title="Import contacts"
                 />
-            }
-            title="Import contacts"
-            width={520}
-        >
-            <DropZone
-                accept=".csv,.xlsx"
-                description="CSV or XLSX with an email column"
-                onFiles={add}
-                title="Drop contact lists here"
-            />
-            {files.length > 0 && (
-                <DropZoneFiles>
-                    {files.map(file => (
-                        <DropZoneFile
-                            key={file.id}
-                            name={file.name}
-                            onRemove={() => remove(file.id)}
-                            progress={file.progress}
-                            size={file.size}
-                            status={file.status}
-                        />
-                    ))}
-                </DropZoneFiles>
-            )}
-        </OpenDialog>
+                <div className="flex flex-col gap-4">
+                    <DropZone
+                        accept=".csv,.xlsx"
+                        description="CSV or XLSX with an email column, up to 10 MB each"
+                        onFiles={add}
+                        title="Drop contact lists here"
+                    />
+                    {files.length > 0 && (
+                        <DropZoneFiles>
+                            {files.map(file => (
+                                <DropZoneFile
+                                    error={file.error}
+                                    key={file.id}
+                                    name={file.name}
+                                    onRemove={() => remove(file.id)}
+                                    progress={file.progress}
+                                    size={file.size}
+                                    status={file.status}
+                                />
+                            ))}
+                        </DropZoneFiles>
+                    )}
+                </div>
+                <Field>
+                    <FieldLabel>Add them to</FieldLabel>
+                    <Select defaultValue="webinar">
+                        <SelectTrigger leadingIcon={<ListChecks {...icon} />}>
+                            <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">No list</SelectItem>
+                            <SelectItem value="newsletter">Monthly newsletter</SelectItem>
+                            <SelectItem value="webinar">Webinar follow-up</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </Field>
+                <div className="flex justify-end gap-2">
+                    <Button variant="secondary">Cancel</Button>
+                    <Button disabled={busy || ready === 0}>
+                        {busy ? 'Uploading…' : 'Match columns'}
+                        {!busy && <ArrowRight {...icon} />}
+                    </Button>
+                </div>
+            </div>
+        </AppWindow>
     );
 };
 
 export const inUse: InUse = {
     title: 'Import contacts',
-    note: 'A drop zone in a dialog, its files uploading under it; Import waits for them.',
-    bare: true,
-    render: scene(<ImportContacts />, 'min-h-[480px]'),
+    note: 'The import step’s drop zone, a file uploading and one turned away under it, the next step waiting for them.',
+    app: true,
+    render: () => <ImportContacts />,
 };

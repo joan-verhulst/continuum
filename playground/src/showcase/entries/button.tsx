@@ -1,6 +1,7 @@
 import { Button, Card, IconTile } from 'continuum';
 import { ArrowRight, FileText, Plus, Upload } from 'lucide-react';
 import {
+    AppWindow,
     type Entry,
     type InUse,
     icon,
@@ -76,33 +77,40 @@ export const entry: Entry = {
 };
 
 const EmptyReports = () => (
-    <Card className="w-full max-w-md items-center gap-5 px-8 py-10 text-center">
-        <IconTile tone="primary" variant="outline">
-            <FileText {...icon} />
-        </IconTile>
-        <div className="flex flex-col gap-1.5">
-            <p className="font-medium text-neutral-950 text-sm">No reports yet</p>
-            <p className="text-neutral-600 text-xs">
-                Start from a template, or bring last quarter’s reports over in one go.
-            </p>
-        </div>
-        <div className="flex flex-wrap justify-center gap-2">
-            <Button variant="secondary">
-                <Upload {...icon} /> Import
+    <AppWindow
+        description="Weekly and monthly reports, shared with your team."
+        nav="top"
+        place="reports"
+        title="Reports"
+    >
+        <Card className="w-full items-center gap-5 px-8 py-16 text-center">
+            <IconTile tone="primary" variant="outline">
+                <FileText {...icon} />
+            </IconTile>
+            <div className="flex flex-col gap-1.5">
+                <p className="font-medium text-neutral-950 text-sm">No reports yet</p>
+                <p className="text-neutral-600 text-xs">
+                    Start from a template, or bring last quarter’s reports over in one go.
+                </p>
+            </div>
+            <div className="flex flex-wrap justify-center gap-2">
+                <Button variant="secondary">
+                    <Upload {...icon} /> Import
+                </Button>
+                <Button>
+                    <Plus {...icon} /> New report
+                </Button>
+            </div>
+            <Button variant="ghost">
+                Browse templates <ArrowRight {...icon} />
             </Button>
-            <Button>
-                <Plus {...icon} /> New report
-            </Button>
-        </div>
-        <Button variant="ghost">
-            Browse templates <ArrowRight {...icon} />
-        </Button>
-    </Card>
+        </Card>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
-    title: 'Empty state',
-    note: 'The primary action, a secondary one beside it, and a ghost link under them.',
-    canvas: true,
+    title: 'Reports, before the first',
+    note: 'The page’s one primary action, a secondary one beside it, and a ghost link under them.',
+    app: true,
     render: () => <EmptyReports />,
 };

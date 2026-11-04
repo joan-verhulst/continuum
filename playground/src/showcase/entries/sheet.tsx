@@ -11,6 +11,12 @@ import {
     SheetTitle,
     SheetTrigger,
     Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
     ValueField,
 } from 'continuum';
 import {
@@ -26,7 +32,7 @@ import {
     SendHorizontal,
 } from 'lucide-react';
 import { useStageContainer } from '../../layout';
-import { type Entry, type InUse, icon, previewIcon, scene } from '../kit';
+import { AppScene, type Entry, type InUse, icon, previewIcon } from '../kit';
 
 const statusHistory = [
     {
@@ -178,60 +184,115 @@ const history = [
     },
 ] as const;
 
+const lineItems = [
+    { item: 'Enterprise plan, October', quantity: '1', amount: '€3,200.00' },
+    { item: 'Additional seats', quantity: '12', amount: '€720.00' },
+    { item: 'Credit pack, 5,000', quantity: '1', amount: '€200.00' },
+];
+
 const HistorySheet = () => {
     const stage = useStageContainer();
 
     return (
-        <div className="flex w-full flex-col gap-4 self-start pr-[420px]">
-            <div className="flex items-center justify-between gap-4">
-                <p className="font-medium text-neutral-950 text-sm">INV-0142 · Acme Corp</p>
-                <Button variant="secondary">
-                    <History {...icon} /> Status history
-                </Button>
-            </div>
-            <div className="grid grid-cols-2 gap-3 opacity-60">
-                <ValueField label="Amount" value="€4,120.00" />
-                <ValueField label="Due" value="26 Oct 2025" />
-            </div>
-            <Sheet open>
-                <SheetContent
-                    className="w-[min(380px,calc(100%-64px))]"
-                    container={stage}
-                    finalFocus={false}
-                    initialFocus={false}
-                >
-                    <SheetHeader icon={<History />}>
-                        <SheetTitle>Status history</SheetTitle>
-                    </SheetHeader>
-                    <SheetBody>
-                        <SheetSection className="flex items-center justify-between gap-4 text-xs">
-                            <span className="text-neutral-600">Current status</span>
-                            <Badge tone="success">Paid</Badge>
-                        </SheetSection>
-                        <SheetSection>
-                            <ActivityList>
-                                {history.map(entry => (
-                                    <ActivityItem
-                                        action={<Badge tone={entry.tone}>{entry.status}</Badge>}
-                                        icon={entry.icon}
-                                        key={entry.title}
-                                        time={entry.time}
-                                        title={entry.title}
-                                        tone={entry.tone}
-                                    />
-                                ))}
-                            </ActivityList>
-                        </SheetSection>
-                    </SheetBody>
-                </SheetContent>
-            </Sheet>
-        </div>
+        <Sheet open>
+            <SheetContent
+                // Below the top nav, as a sheet area would set it: the nav's 56px and its 16px gap.
+                className="top-[72px] w-[380px]"
+                container={stage}
+                finalFocus={false}
+                initialFocus={false}
+            >
+                <SheetHeader icon={<History />}>
+                    <SheetTitle>Status history</SheetTitle>
+                </SheetHeader>
+                <SheetBody>
+                    <SheetSection className="flex items-center justify-between gap-4 text-xs">
+                        <span className="text-neutral-600">Current status</span>
+                        <Badge tone="success">Paid</Badge>
+                    </SheetSection>
+                    <SheetSection>
+                        <ActivityList>
+                            {history.map(entry => (
+                                <ActivityItem
+                                    action={<Badge tone={entry.tone}>{entry.status}</Badge>}
+                                    icon={entry.icon}
+                                    key={entry.title}
+                                    time={entry.time}
+                                    title={entry.title}
+                                    tone={entry.tone}
+                                />
+                            ))}
+                        </ActivityList>
+                    </SheetSection>
+                </SheetBody>
+            </SheetContent>
+        </Sheet>
     );
 };
 
+const InvoiceWithHistory = () => (
+    <AppScene
+        page={{
+            place: 'invoices',
+            nav: 'top',
+            title: 'INV-0142',
+            description: 'Northwind Traders, sent 12 October.',
+            actions: (
+                <Button variant="secondary">
+                    <History {...icon} /> History
+                </Button>
+            ),
+            // The page keeps to the left of the open sheet, as it would beside it.
+            className: 'pr-[420px]',
+            children: (
+                <>
+                    <div className="grid grid-cols-3 gap-3">
+                        <ValueField label="Amount" value="€4,120.00" />
+                        <ValueField label="Issued" value="12 Oct 2026" />
+                        <ValueField label="Due" value="26 Oct 2026" />
+                    </div>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Item</TableHead>
+                                <TableHead className="text-right">Qty</TableHead>
+                                <TableHead className="text-right">Amount</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {lineItems.map(line => (
+                                <TableRow key={line.item}>
+                                    <TableCell className="text-neutral-950">{line.item}</TableCell>
+                                    <TableCell className="text-right tabular-nums">
+                                        {line.quantity}
+                                    </TableCell>
+                                    <TableCell className="text-right text-neutral-950 tabular-nums">
+                                        {line.amount}
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                            <TableRow>
+                                <TableCell className="font-medium text-neutral-950">
+                                    Total
+                                </TableCell>
+                                <TableCell />
+                                <TableCell className="text-right font-medium text-neutral-950 tabular-nums">
+                                    €4,120.00
+                                </TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
+                </>
+            ),
+        }}
+    >
+        <HistorySheet />
+    </AppScene>
+);
+
 export const inUse: InUse = {
-    title: 'History beside a record',
-    note: 'The record stays usable; its history is in a sheet beside it.',
+    title: 'An invoice’s history',
+    note: 'The invoice stays in view while its history is read in a sheet beside it.',
     bare: true,
-    render: scene(<HistorySheet />, 'min-h-[460px] items-start justify-start p-6'),
+    render: () => <InvoiceWithHistory />,
 };

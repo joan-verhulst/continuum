@@ -1,16 +1,7 @@
-import {
-    Alert,
-    Badge,
-    Button,
-    Card,
-    CardHeader,
-    CardTitle,
-    SettingGroup,
-    SettingRow,
-    Switch,
-} from 'continuum';
+import { Alert, Button, SettingGroup, SettingRow, Switch } from 'continuum';
 import { useEffect, useState } from 'react';
 import {
+    AppWindow,
     type Entry,
     type InUse,
     type Knob,
@@ -100,23 +91,25 @@ export const entry: Entry = {
 };
 
 const BillingNotice = () => (
-    <Card className="w-full max-w-xl gap-5">
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>Billing</CardTitle>
-            <Badge tone="success">Business plan</Badge>
-        </CardHeader>
+    <AppWindow
+        description="Your plan, how you pay and where invoices go."
+        place="settings"
+        title="Billing"
+        trail={['Settings', 'Billing']}
+    >
         <Alert
             action={<Button variant="secondary">Update card</Button>}
             title="Your card expires next month"
             tone="warning"
         >
-            Update it before 1 December to keep the Business plan.
+            Update it before 1 December to keep the Business plan without a break.
         </Alert>
-        <SettingGroup>
+        <SettingGroup title="Plan">
             <SettingRow
-                control={<Switch defaultChecked />}
-                description="Send each invoice to finance@northwind.io as well"
-                title="Copy invoices to finance"
+                control={<Button variant="secondary">Compare plans</Button>}
+                description="€49 a month for 20 seats, billed on the 1st"
+                labelControl={false}
+                title="Business plan"
             />
             <SettingRow
                 control={<Button variant="secondary">Change</Button>}
@@ -125,12 +118,24 @@ const BillingNotice = () => (
                 title="Payment method"
             />
         </SettingGroup>
-    </Card>
+        <SettingGroup title="Invoices">
+            <SettingRow
+                control={<Switch defaultChecked />}
+                description="Send each invoice to finance@acme.com as well"
+                title="Copy invoices to finance"
+            />
+            <SettingRow
+                control={<Switch />}
+                description="Add your VAT number and address to every invoice"
+                title="Show tax details"
+            />
+        </SettingGroup>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
     title: 'Billing',
-    note: 'A warning at the top of the settings it concerns, with the fix beside it.',
-    canvas: true,
+    note: 'A warning at the top of the billing settings it concerns, with the fix beside it.',
+    app: true,
     render: () => <BillingNotice />,
 };

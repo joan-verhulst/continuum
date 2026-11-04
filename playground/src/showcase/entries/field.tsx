@@ -1,13 +1,34 @@
-import { DialogDescription, Field, FieldHelper, FieldLabel, Input, Textarea } from 'continuum';
 import {
+    Avatar,
+    Badge,
+    Button,
+    DialogDescription,
+    Field,
+    FieldHelper,
+    FieldLabel,
+    Input,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    Textarea,
+} from 'continuum';
+import { UserPlus } from 'lucide-react';
+import {
+    AppScene,
     DialogActions,
     type Entry,
     type InUse,
+    icon,
     type Knob,
     OpenDialog,
     opts,
     type PreviewProps,
-    scene,
 } from '../kit';
 
 const fieldKnobs: Knob[] = [
@@ -44,11 +65,70 @@ export const entry: Entry = {
     Preview: FieldPreview,
 };
 
+const members = [
+    { name: 'Maya Chen', initials: 'MC', email: 'maya@acme.app', role: 'Owner', seen: 'Now' },
+    {
+        name: 'Liam Ortiz',
+        initials: 'LO',
+        email: 'liam@acme.app',
+        role: 'Admin',
+        seen: '1 hour ago',
+    },
+    { name: 'Sara Kim', initials: 'SK', email: 'sara@acme.app', role: 'Member', seen: 'Yesterday' },
+    {
+        name: 'Noah Patel',
+        initials: 'NP',
+        email: 'noah@acme.app',
+        role: 'Member',
+        seen: '3 days ago',
+    },
+];
+
+// The settings page the invite was opened from.
+const MemberList = () => (
+    <div className="flex flex-col gap-6">
+        <Tabs defaultValue="members">
+            <TabsList>
+                <TabsTrigger value="general">General</TabsTrigger>
+                <TabsTrigger value="members">Members</TabsTrigger>
+                <TabsTrigger value="billing">Billing</TabsTrigger>
+                <TabsTrigger value="integrations">Integrations</TabsTrigger>
+            </TabsList>
+        </Tabs>
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Member</TableHead>
+                    <TableHead>Role</TableHead>
+                    <TableHead className="text-right">Last active</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {members.map(member => (
+                    <TableRow key={member.email}>
+                        <TableCell>
+                            <span className="flex items-center gap-2.5">
+                                <Avatar fallback={member.initials} shape="round" size={24} />
+                                <span className="text-neutral-950">{member.name}</span>
+                                <span className="font-normal text-neutral-500">{member.email}</span>
+                            </span>
+                        </TableCell>
+                        <TableCell>
+                            <Badge>{member.role}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right font-normal text-neutral-600">
+                            {member.seen}
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    </div>
+);
+
 const InviteTeammate = () => (
     <OpenDialog footer={<DialogActions action="Send invite" />} title="Invite a teammate">
-        <DialogDescription>
-            They join Northwind as a member and can see every report.
-        </DialogDescription>
+        <DialogDescription>They join Acme as a member and can see every report.</DialogDescription>
         <Field>
             <FieldLabel>Name</FieldLabel>
             <Input defaultValue="Bram Jansen" />
@@ -66,9 +146,28 @@ const InviteTeammate = () => (
     </OpenDialog>
 );
 
+const MembersWithInvite = () => (
+    <AppScene
+        page={{
+            place: 'settings',
+            trail: ['Settings', 'Members'],
+            title: 'Settings',
+            description: 'The workspace, its members and how it bills.',
+            actions: (
+                <Button>
+                    <UserPlus {...icon} /> Invite
+                </Button>
+            ),
+            children: <MemberList />,
+        }}
+    >
+        <InviteTeammate />
+    </AppScene>
+);
+
 export const inUse: InUse = {
     title: 'Invite a teammate',
-    note: 'Every field labelled, one invalid with its message, a textarea with a hint.',
+    note: 'Labelled fields in a dialog over the members list, one invalid with its message, a textarea with a hint.',
     bare: true,
-    render: scene(<InviteTeammate />),
+    render: () => <MembersWithInvite />,
 };

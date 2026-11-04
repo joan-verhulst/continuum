@@ -1,5 +1,8 @@
 import {
     Avatar,
+    BarList,
+    BarListItem,
+    Card,
     CommandMenu,
     CommandMenuContent,
     CommandMenuEmpty,
@@ -9,11 +12,13 @@ import {
     CommandMenuItem,
     CommandMenuList,
     Kbd,
+    StatCard,
 } from 'continuum';
 import { FileText, Home, Mail, Plus, Settings, Upload, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useStageContainer } from '../../layout';
 import {
+    AppScene,
     type Entry,
     type InUse,
     icon,
@@ -21,7 +26,6 @@ import {
     o,
     type PreviewProps,
     previewIcon,
-    scene,
 } from '../kit';
 
 const commandKnobs: Knob[] = [
@@ -124,7 +128,7 @@ export const entry: Entry = {
     Preview: CommandMenuPreview,
 };
 
-const recentReports = ['Northwind Q3 review', 'Acme renewal forecast', 'Board pack · October'];
+const recentReports = ['Northwind Q3 review', 'Revenue by plan'];
 
 const JumpAnywhere = () => {
     const stage = useStageContainer();
@@ -133,12 +137,12 @@ const JumpAnywhere = () => {
     return (
         <CommandMenu modal={false} onQueryChange={setQuery} open query={query}>
             <CommandMenuContent
-                className="mt-8"
+                className="mt-10"
                 container={stage}
                 finalFocus={false}
                 initialFocus={false}
             >
-                <CommandMenuInput placeholder="Search reports, people and settings" />
+                <CommandMenuInput placeholder="Search customers, reports and actions" />
                 <CommandMenuList>
                     <CommandMenuGroup label="Recent reports">
                         {recentReports.map(report => (
@@ -150,28 +154,28 @@ const JumpAnywhere = () => {
                             />
                         ))}
                     </CommandMenuGroup>
-                    <CommandMenuGroup label="People">
+                    <CommandMenuGroup label="Customers">
                         <CommandMenuItem
-                            hint="Finance"
-                            icon={<Avatar className="size-4 text-[8px]" fallback="AV" size={24} />}
-                            value="Anna de Vries"
+                            hint="Enterprise"
+                            icon={<Avatar className="size-4 text-[8px]" fallback="NT" size={24} />}
+                            value="Northwind Traders"
                         />
                         <CommandMenuItem
-                            hint="Sales"
-                            icon={<Avatar className="size-4 text-[8px]" fallback="BJ" size={24} />}
-                            value="Bram Jansen"
+                            hint="Pro"
+                            icon={<Avatar className="size-4 text-[8px]" fallback="GX" size={24} />}
+                            value="Globex"
                         />
                     </CommandMenuGroup>
                     <CommandMenuGroup label="Actions">
                         <CommandMenuItem
                             hint={<Kbd>⌘N</Kbd>}
                             icon={<Plus {...icon} />}
-                            value="New report"
+                            value="New invoice"
                         />
                         <CommandMenuItem
                             icon={<Upload {...icon} />}
                             keywords={['csv', 'contacts']}
-                            value="Import contacts"
+                            value="Import customers"
                         />
                         <CommandMenuItem
                             hint={<Kbd>⌘,</Kbd>}
@@ -198,9 +202,42 @@ const JumpAnywhere = () => {
     );
 };
 
+// The overview the menu was opened from.
+const OverviewBehind = () => (
+    <>
+        <div className="grid grid-cols-4 gap-4">
+            <StatCard delta="+6.2%" label="Revenue" value="€184,200" />
+            <StatCard delta="+12" label="New customers" value="48" />
+            <StatCard delta="−0.4%" label="Churn" trend="down" value="1.8%" />
+            <StatCard delta="+3.1%" label="Invoices paid" value="92%" />
+        </div>
+        <Card>
+            <BarList title="Revenue by plan" valueLabel="This month">
+                <BarListItem value={96400}>Enterprise</BarListItem>
+                <BarListItem value={61800}>Pro</BarListItem>
+                <BarListItem value={26000}>Starter</BarListItem>
+            </BarList>
+        </Card>
+    </>
+);
+
+const SearchFromOverview = () => (
+    <AppScene
+        page={{
+            nav: 'rail',
+            place: 'overview',
+            title: 'Overview',
+            description: 'October, against September.',
+            children: <OverviewBehind />,
+        }}
+    >
+        <JumpAnywhere />
+    </AppScene>
+);
+
 export const inUse: InUse = {
     title: 'Jump anywhere',
-    note: 'Recent reports, people and actions in one search; type to narrow it.',
+    note: 'Opened with ⌘K over the overview: reports, customers and actions in one search.',
     bare: true,
-    render: scene(<JumpAnywhere />, 'min-h-[520px] items-start'),
+    render: () => <SearchFromOverview />,
 };

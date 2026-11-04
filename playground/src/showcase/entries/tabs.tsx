@@ -1,6 +1,16 @@
 import {
-    Card,
-    CardTitle,
+    Avatar,
+    Badge,
+    Button,
+    DescriptionItem,
+    DescriptionList,
+    StatCard,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
     Tabs,
     TabsContent,
     TabsCount,
@@ -8,8 +18,9 @@ import {
     TabsTrigger,
     type TabsVariant,
 } from 'continuum';
-import { CircleAlert, FileText, History, LayoutList, ListChecks } from 'lucide-react';
+import { FileText, History, LayoutList, ListChecks, Pencil, Plus } from 'lucide-react';
 import {
+    AppWindow,
     type Entry,
     type InUse,
     icon,
@@ -76,47 +87,119 @@ export const entry: Entry = {
     Preview: TabsPreview,
 };
 
-const findings = [
-    'Supplier contract ends in 30 days',
-    'Shared admin account',
-    'Backups weekly, not daily',
+const northwindInvoices = [
+    { number: 'INV-0141', issued: '2 October', amount: '€4,800.00', status: 'Paid' },
+    { number: 'INV-0118', issued: '2 September', amount: '€4,800.00', status: 'Paid' },
+    { number: 'INV-0097', issued: '2 August', amount: '€4,800.00', status: 'Paid' },
+    { number: 'INV-0074', issued: '2 July', amount: '€4,320.00', status: 'Paid' },
 ];
 
-const RiskTabs = () => (
-    <Card className="w-full max-w-lg gap-4">
-        <CardTitle>Q3 risk report</CardTitle>
-        <Tabs defaultValue="summary">
+const northwindActivity = [
+    { who: 'Maya Chen', what: 'renewed the Enterprise plan for a year', when: '2 days ago' },
+    { who: 'Northwind', what: 'added 12 seats', when: '1 week ago' },
+    { who: 'Maya Chen', what: 'logged a call about the Q4 rollout', when: '2 weeks ago' },
+];
+
+const CustomerDetail = () => (
+    <AppWindow
+        actions={
+            <>
+                <Button variant="secondary">
+                    <Pencil {...icon} /> Edit
+                </Button>
+                <Button>
+                    <Plus {...icon} /> New invoice
+                </Button>
+            </>
+        }
+        description="Enterprise · a customer since March 2023 · northwind.com"
+        nav="top"
+        place="customers"
+        title="Northwind Traders"
+    >
+        <Tabs className="gap-6" defaultValue="overview">
             <TabsList>
-                <TabsTrigger value="summary">Summary</TabsTrigger>
-                <TabsTrigger value="findings">
-                    Findings <TabsCount>{findings.length}</TabsCount>
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="invoices">
+                    Invoices <TabsCount>24</TabsCount>
                 </TabsTrigger>
-                <TabsTrigger value="sources">Sources</TabsTrigger>
-                <TabsTrigger disabled value="history">
-                    History
+                <TabsTrigger value="activity">Activity</TabsTrigger>
+                <TabsTrigger value="contacts">
+                    Contacts <TabsCount>3</TabsCount>
                 </TabsTrigger>
             </TabsList>
-            <TabsContent className="text-neutral-700 text-xs" value="summary">
-                Three risks need a decision before the review on Friday: the supplier contract, the
-                shared admin account and the backup schedule.
+            <TabsContent className="flex flex-col gap-6" value="overview">
+                <div className="grid grid-cols-3 gap-4">
+                    <StatCard delta="+12.0%" label="Monthly revenue" value="€4,800" />
+                    <StatCard delta="+12" label="Seats in use" value="86 of 100" />
+                    <StatCard delta="+6" label="Invoices this year" value="24" />
+                </div>
+                <DescriptionList>
+                    <DescriptionItem term="Owner">Maya Chen</DescriptionItem>
+                    <DescriptionItem term="Billing email">finance@northwind.com</DescriptionItem>
+                    <DescriptionItem term="Renews">1 March 2027</DescriptionItem>
+                </DescriptionList>
             </TabsContent>
-            <TabsContent className="flex flex-col gap-2 text-xs" value="findings">
-                {findings.map(finding => (
-                    <span className="flex items-center gap-2 text-neutral-700" key={finding}>
-                        <CircleAlert {...icon} className="size-4 text-warning-600" /> {finding}
-                    </span>
+            <TabsContent value="invoices">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Invoice</TableHead>
+                            <TableHead>Issued</TableHead>
+                            <TableHead className="text-right">Amount</TableHead>
+                            <TableHead className="text-right">Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {northwindInvoices.map(invoice => (
+                            <TableRow key={invoice.number}>
+                                <TableCell className="font-medium text-neutral-950">
+                                    {invoice.number}
+                                </TableCell>
+                                <TableCell className="text-neutral-600">{invoice.issued}</TableCell>
+                                <TableCell className="text-right text-neutral-950 tabular-nums">
+                                    {invoice.amount}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Badge tone="success">{invoice.status}</Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TabsContent>
+            <TabsContent className="flex flex-col gap-4" value="activity">
+                {northwindActivity.map(event => (
+                    <p className="flex items-center gap-3 text-xs" key={event.what}>
+                        <Avatar fallback={event.who === 'Northwind' ? 'NT' : 'MC'} size={24} />
+                        <span className="min-w-0 flex-1 text-neutral-700">
+                            <span className="font-medium text-neutral-950">{event.who}</span>{' '}
+                            {event.what}
+                        </span>
+                        <span className="text-neutral-500">{event.when}</span>
+                    </p>
                 ))}
             </TabsContent>
-            <TabsContent className="text-neutral-700 text-xs" value="sources">
-                Built from 38 documents in the Northwind workspace.
+            <TabsContent className="flex flex-col gap-4" value="contacts">
+                {[
+                    ['Ellen Price', 'Head of finance', 'EP'],
+                    ['Tomás Ruiz', 'IT lead', 'TR'],
+                    ['Grace Liu', 'Operations', 'GL'],
+                ].map(([name, role, initials]) => (
+                    <p className="flex items-center gap-3 text-xs" key={name}>
+                        <Avatar fallback={initials} size={24} />
+                        <span className="font-medium text-neutral-950">{name}</span>
+                        <span className="text-neutral-600">{role}</span>
+                    </p>
+                ))}
             </TabsContent>
         </Tabs>
-    </Card>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
-    title: 'Report facets',
-    note: 'Line tabs under the report title, a count on findings, one tab not available yet.',
-    canvas: true,
-    render: () => <RiskTabs />,
+    title: 'A customer',
+    note: 'Line tabs under the customer’s title for its facets, counts on the lists.',
+    app: true,
+    render: () => <CustomerDetail />,
 };

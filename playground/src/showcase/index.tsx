@@ -261,6 +261,11 @@ type ComponentPageProps = {
 const Piece = ({ piece }: { piece: InUse }) =>
     piece.bare ? (
         piece.render()
+    ) : piece.app ? (
+        // A page of the app, edge to edge: the window is the frame.
+        <div className="aspect-video min-w-0 overflow-hidden rounded-item border border-neutral-200">
+            {piece.render()}
+        </div>
     ) : (
         // The tile's surface without its rule that stretches children: a card keeps its own width.
         <div

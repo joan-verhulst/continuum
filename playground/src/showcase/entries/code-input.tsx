@@ -1,6 +1,7 @@
-import { Button, CodeInput, DialogDescription, Field, FieldHelper, FieldLabel } from 'continuum';
+import { Button, Card, CodeInput, Field, FieldHelper, FieldLabel, SidebarLogo } from 'continuum';
+import { ArrowLeft, Boxes } from 'lucide-react';
 import { useState } from 'react';
-import { type Entry, type InUse, OpenDialog, scene } from '../kit';
+import { AppWindow, type Entry, type InUse, icon } from '../kit';
 
 const CodeInputPreview = () => {
     const [code, setCode] = useState('');
@@ -24,37 +25,52 @@ export const entry: Entry = {
     Preview: CodeInputPreview,
 };
 
-const VerifyEmail = () => {
+// The second step of signing in: the page alone, one card on the canvas.
+const CheckEmail = () => {
     const [code, setCode] = useState('482');
 
     return (
-        <OpenDialog
-            footer={
-                <>
-                    <Button variant="ghost">Resend code</Button>
-                    <Button disabled={code.length < 6}>Continue</Button>
-                </>
-            }
-            title="Verify your email"
-            width={420}
-        >
-            <DialogDescription>
-                We sent a six-digit code to maya@acme.app. It is valid for ten minutes.
-            </DialogDescription>
-            <Field>
-                <FieldLabel>Verification code</FieldLabel>
-                <CodeInput onValueChange={setCode} value={code} />
-                <FieldHelper>
-                    {code.length === 6 ? 'Checking the code…' : 'Paste it or type it in.'}
-                </FieldHelper>
-            </Field>
-        </OpenDialog>
+        <AppWindow className="items-center justify-center bg-neutral-100 px-10 pt-0" nav="none">
+            <Card className="w-[400px] gap-6 p-8">
+                <div className="flex flex-col items-start gap-4">
+                    <SidebarLogo className="-ml-1.5">
+                        <Boxes {...icon} />
+                    </SidebarLogo>
+                    <div className="flex flex-col gap-1.5">
+                        <h1 className="font-medium text-neutral-950 text-xl">Check your email</h1>
+                        <p className="text-neutral-600 text-sm">
+                            We sent a six-digit code to maya@acme.app.
+                        </p>
+                    </div>
+                </div>
+                <Field>
+                    <FieldLabel>Verification code</FieldLabel>
+                    <CodeInput onValueChange={setCode} size="lg" value={code} />
+                    <FieldHelper>
+                        {code.length === 6
+                            ? 'Checking the code…'
+                            : 'Valid for ten minutes. Paste it or type it in.'}
+                    </FieldHelper>
+                </Field>
+                <div className="flex flex-col gap-2">
+                    <Button className="w-full" disabled={code.length < 6} size="lg">
+                        Continue
+                    </Button>
+                    <Button className="w-full" size="lg" variant="ghost">
+                        Resend code
+                    </Button>
+                </div>
+            </Card>
+            <Button variant="ghost">
+                <ArrowLeft {...icon} /> Use another email
+            </Button>
+        </AppWindow>
     );
 };
 
 export const inUse: InUse = {
-    title: 'Verify your email',
-    note: 'Six boxes, half filled; Continue waits for the rest.',
-    bare: true,
-    render: scene(<VerifyEmail />),
+    title: 'Check your email',
+    note: 'The second step of signing in: six boxes, half filled, and Continue waiting for the rest.',
+    app: true,
+    render: () => <CheckEmail />,
 };

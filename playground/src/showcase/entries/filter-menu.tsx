@@ -1,8 +1,6 @@
 import {
     Badge,
-    Card,
-    CardHeader,
-    CardTitle,
+    Button,
     Chip,
     ChipAction,
     cn,
@@ -15,12 +13,26 @@ import {
     FilterMenuItem,
     FilterMenuTrigger,
     type FilterValues,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
     toggleFilter,
 } from 'continuum';
-import { CircleCheck, UserRound } from 'lucide-react';
+import { CircleCheck, Plus, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';
-import { type Entry, type InUse, type Knob, type PreviewProps, previewIcon, scene } from '../kit';
+import {
+    AppScene,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    type PreviewProps,
+    previewIcon,
+} from '../kit';
 
 const invoiceFilters = [
     {
@@ -159,13 +171,23 @@ const filteredInvoices = [
         client: 'Acme Corp',
         status: 'Due soon',
         owner: 'Anna de Vries',
+        due: '8 Nov',
         amount: '€4,120.00',
+    },
+    {
+        number: 'INV-0141',
+        client: 'Northwind Traders',
+        status: 'Paid',
+        owner: 'Bram Jansen',
+        due: '2 Nov',
+        amount: '€1,980.00',
     },
     {
         number: 'INV-0139',
         client: 'Globex',
         status: 'Overdue',
         owner: 'Bram Jansen',
+        due: '28 Oct',
         amount: '€1,860.00',
     },
     {
@@ -173,21 +195,40 @@ const filteredInvoices = [
         client: 'Initech',
         status: 'Paid',
         owner: 'Anna de Vries',
+        due: '25 Oct',
         amount: '€920.00',
     },
     {
         number: 'INV-0134',
-        client: 'Umbrella',
+        client: 'Umbrella Health',
         status: 'Overdue',
         owner: 'Chloé Martin',
+        due: '21 Oct',
         amount: '€2,340.00',
+    },
+    {
+        number: 'INV-0132',
+        client: 'Soylent Labs',
+        status: 'Due soon',
+        owner: 'Chloé Martin',
+        due: '10 Nov',
+        amount: '€1,560.00',
     },
     {
         number: 'INV-0131',
         client: 'Hooli',
         status: 'Paid',
         owner: 'Bram Jansen',
+        due: '18 Oct',
         amount: '€6,480.00',
+    },
+    {
+        number: 'INV-0129',
+        client: 'Stark Logistics',
+        status: 'Overdue',
+        owner: 'Anna de Vries',
+        due: '14 Oct',
+        amount: '€5,400.00',
     },
 ];
 
@@ -208,69 +249,107 @@ const FilteredInvoices = () => {
     );
 
     return (
-        <Card className="w-full max-w-xl gap-4 self-start">
-            <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Invoices</CardTitle>
+        <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-4">
+                <FilterBar>
+                    <FilterMenu modal={false} open>
+                        <FilterMenuTrigger count={count} />
+                        <FilterMenuContent container={stage}>
+                            {filterGroups.map(group => (
+                                <FilterMenuGroup key={group.id} label={group.label}>
+                                    {group.options.map(option => (
+                                        <FilterMenuItem
+                                            checked={values[group.id]?.includes(option) ?? false}
+                                            count={
+                                                filteredInvoices.filter(invoice =>
+                                                    [invoice.status, invoice.owner].includes(
+                                                        option,
+                                                    ),
+                                                ).length
+                                            }
+                                            key={option}
+                                            onCheckedChange={() =>
+                                                setValues(current =>
+                                                    toggleFilter(current, group.id, option),
+                                                )
+                                            }
+                                        >
+                                            {option}
+                                        </FilterMenuItem>
+                                    ))}
+                                </FilterMenuGroup>
+                            ))}
+                            <FilterMenuClear disabled={count === 0} onClick={() => setValues({})} />
+                        </FilterMenuContent>
+                    </FilterMenu>
+                </FilterBar>
                 <span className="text-neutral-600 text-xs tabular-nums">
-                    {rows.length} of {filteredInvoices.length}
+                    {rows.length} of {filteredInvoices.length} invoices
                 </span>
-            </CardHeader>
-            <FilterBar>
-                <FilterMenu modal={false} open>
-                    <FilterMenuTrigger count={count} />
-                    <FilterMenuContent container={stage}>
-                        {filterGroups.map(group => (
-                            <FilterMenuGroup key={group.id} label={group.label}>
-                                {group.options.map(option => (
-                                    <FilterMenuItem
-                                        checked={values[group.id]?.includes(option) ?? false}
-                                        count={
-                                            filteredInvoices.filter(invoice =>
-                                                [invoice.status, invoice.owner].includes(option),
-                                            ).length
-                                        }
-                                        key={option}
-                                        onCheckedChange={() =>
-                                            setValues(current =>
-                                                toggleFilter(current, group.id, option),
-                                            )
-                                        }
-                                    >
-                                        {option}
-                                    </FilterMenuItem>
-                                ))}
-                            </FilterMenuGroup>
-                        ))}
-                        <FilterMenuClear disabled={count === 0} onClick={() => setValues({})} />
-                    </FilterMenuContent>
-                </FilterMenu>
-            </FilterBar>
-            <ul className="flex flex-col gap-3">
-                {rows.map(invoice => (
-                    <li className="flex items-center gap-3 text-xs" key={invoice.number}>
-                        <span className="w-20 shrink-0 text-neutral-500 tabular-nums">
-                            {invoice.number}
-                        </span>
-                        <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
-                            {invoice.client}
-                        </span>
-                        <Badge tone={statusTone[invoice.status]}>{invoice.status}</Badge>
-                        <span className="w-20 shrink-0 text-right text-neutral-900 tabular-nums">
-                            {invoice.amount}
-                        </span>
-                    </li>
-                ))}
-                {rows.length === 0 && (
-                    <li className="text-neutral-600 text-xs">No invoices match these filters.</li>
-                )}
-            </ul>
-        </Card>
+            </div>
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Invoice</TableHead>
+                        <TableHead>Client</TableHead>
+                        <TableHead>Owner</TableHead>
+                        <TableHead>Due</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                        <TableHead className="text-right">Status</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {rows.map(invoice => (
+                        <TableRow key={invoice.number}>
+                            <TableCell className="text-neutral-600 tabular-nums">
+                                {invoice.number}
+                            </TableCell>
+                            <TableCell className="font-medium text-neutral-950">
+                                {invoice.client}
+                            </TableCell>
+                            <TableCell className="text-neutral-600">{invoice.owner}</TableCell>
+                            <TableCell className="text-neutral-600">{invoice.due}</TableCell>
+                            <TableCell className="text-right text-neutral-950 tabular-nums">
+                                {invoice.amount}
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <Badge tone={statusTone[invoice.status]}>{invoice.status}</Badge>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                    {rows.length === 0 && (
+                        <TableRow>
+                            <TableCell className="text-neutral-600" colSpan={6}>
+                                No invoices match these filters.
+                            </TableCell>
+                        </TableRow>
+                    )}
+                </TableBody>
+            </Table>
+        </div>
     );
 };
 
+const InvoicesFiltered = () => (
+    <AppScene
+        page={{
+            nav: 'top',
+            place: 'invoices',
+            title: 'Invoices',
+            description: 'Everything billed this year, newest first.',
+            actions: (
+                <Button>
+                    <Plus {...icon} /> New invoice
+                </Button>
+            ),
+            children: <FilteredInvoices />,
+        }}
+    />
+);
+
 export const inUse: InUse = {
     title: 'Filtered invoices',
-    note: 'The menu open over the list it narrows, the count of what is picked on its button.',
+    note: 'The menu open over the invoices it narrows; its button counts what is picked.',
     bare: true,
-    render: scene(<FilteredInvoices />, 'min-h-[480px] items-start'),
+    render: () => <InvoicesFiltered />,
 };

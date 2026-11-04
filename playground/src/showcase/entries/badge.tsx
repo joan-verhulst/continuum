@@ -1,6 +1,17 @@
-import { Badge, Card, CardHeader, CardTitle } from 'continuum';
-import { TrendingDown, TrendingUp } from 'lucide-react';
 import {
+    Avatar,
+    Badge,
+    Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from 'continuum';
+import { Download, Plus, TrendingDown, TrendingUp } from 'lucide-react';
+import {
+    AppWindow,
     type Entry,
     type InUse,
     icon,
@@ -101,41 +112,77 @@ const statusRows = [
     },
 ] as const;
 
+const initials = (name: string) =>
+    name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .slice(0, 2);
+
 const InvoiceStatuses = () => (
-    <Card className="w-full max-w-lg gap-3">
-        <CardHeader className="flex-row items-center justify-between">
-            <span className="flex items-center gap-2">
-                <CardTitle>Invoices this month</CardTitle>
-                <Badge variant="count">{statusRows.length}</Badge>
+    <AppWindow
+        actions={
+            <>
+                <Button variant="secondary">
+                    <Download {...icon} /> Export
+                </Button>
+                <Button>
+                    <Plus {...icon} /> New invoice
+                </Button>
+            </>
+        }
+        description={
+            <span className="inline-flex items-center gap-2">
+                38 sent this month
+                <Badge icon={<TrendingUp {...icon} />} tone="success" variant="pill">
+                    +12.5%
+                </Badge>
             </span>
-            <Badge icon={<TrendingUp {...icon} />} tone="success" variant="pill">
-                +12.5%
-            </Badge>
-        </CardHeader>
-        <ul className="flex flex-col divide-y divide-neutral-200">
-            {statusRows.map(row => (
-                <li className="flex h-11 items-center gap-3 text-xs" key={row.number}>
-                    <span className="flex-1 truncate font-medium text-neutral-950">
-                        {row.client}
-                    </span>
-                    <span className="text-neutral-500">{row.number}</span>
-                    <span className="w-20 text-right text-neutral-950 tabular-nums">
-                        {row.amount}
-                    </span>
-                    <span className="flex w-24 justify-end">
-                        <Badge tone={row.tone} variant={row.tone === 'primary' ? 'dot' : undefined}>
-                            {row.status}
-                        </Badge>
-                    </span>
-                </li>
-            ))}
-        </ul>
-    </Card>
+        }
+        place="invoices"
+        title="Invoices"
+        trail={['Invoices']}
+    >
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Invoice</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Status</TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {statusRows.map(row => (
+                    <TableRow key={row.number}>
+                        <TableCell>
+                            <span className="flex items-center gap-2.5 font-medium text-neutral-950">
+                                <Avatar fallback={initials(row.client)} size={24} />
+                                {row.client}
+                            </span>
+                        </TableCell>
+                        <TableCell className="text-neutral-600">{row.number}</TableCell>
+                        <TableCell className="text-right text-neutral-950 tabular-nums">
+                            {row.amount}
+                        </TableCell>
+                        <TableCell className="text-right">
+                            <Badge
+                                tone={row.tone}
+                                variant={row.tone === 'primary' ? 'dot' : undefined}
+                            >
+                                {row.status}
+                            </Badge>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
-    title: 'Invoice statuses',
-    note: 'A soft badge per status, a count by the title and a delta pill beside it.',
-    canvas: true,
+    title: 'Invoices',
+    note: 'A soft badge for each invoice’s status, and a delta pill beside the month’s count.',
+    app: true,
     render: () => <InvoiceStatuses />,
 };

@@ -1,29 +1,31 @@
 import {
     Avatar,
     Badge,
+    BottomBar,
     Button,
     Checkbox,
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-    Pagination,
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
     Table,
     TableBody,
     TableCell,
     TableHead,
     TableHeader,
     TableRow,
+    Toolbar,
+    ToolbarButton,
 } from 'continuum';
-import { Ellipsis, Pencil, Send, Trash2 } from 'lucide-react';
+import { Archive, Download, Mail, Plus, Upload, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { type Entry, type InUse, icon, type Knob, Labelled, o, type PreviewProps } from '../kit';
+import { customers, formatEuro, statusTone } from '../../screens/workspace';
+import {
+    AppWindow,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    Labelled,
+    o,
+    type PreviewProps,
+} from '../kit';
 
 const checkboxKnobs: Knob[] = [
     {
@@ -65,165 +67,121 @@ export const entry: Entry = {
     Preview: CheckboxPreview,
 };
 
-const invoices = [
-    {
-        id: 'i1',
-        client: 'Acme Corp',
-        initials: 'AC',
-        number: 'INV-0142',
-        status: 'Due soon',
-        tone: 'warning',
-        amount: '€4,120.00',
-        due: '26 Oct 2025',
-    },
-    {
-        id: 'i2',
-        client: 'Northwind',
-        initials: 'NW',
-        number: 'INV-0141',
-        status: 'Paid',
-        tone: 'success',
-        amount: '€1,980.00',
-        due: '14 Oct 2025',
-    },
-    {
-        id: 'i3',
-        client: 'Lumen Labs',
-        initials: 'LL',
-        number: 'INV-0139',
-        status: 'Overdue',
-        tone: 'error',
-        amount: '€760.00',
-        due: '2 Oct 2025',
-    },
-    {
-        id: 'i4',
-        client: 'Tideline Travel',
-        initials: 'TT',
-        number: 'INV-0138',
-        status: 'Draft',
-        tone: 'neutral',
-        amount: '€2,310.00',
-        due: '—',
-    },
-] as const;
+const rows = customers.slice(0, 7);
 
-const InvoiceTable = () => {
-    const [picked, setPicked] = useState<string[]>(['i3']);
-    const [page, setPage] = useState(1);
-    const all = picked.length === invoices.length;
+const SelectCustomers = () => {
+    const [picked, setPicked] = useState<string[]>(['globex', 'initech', 'hooli']);
+    const all = picked.length === rows.length;
+
+    const toggle = (id: string, on: boolean) =>
+        setPicked(current => (on ? [...current, id] : current.filter(item => item !== id)));
 
     return (
-        <div className="flex w-full flex-col gap-3">
-            <Table wrapperClassName="w-full">
+        <AppWindow
+            actions={
+                <>
+                    <Button variant="secondary">
+                        <Upload {...icon} /> Import
+                    </Button>
+                    <Button>
+                        <Plus {...icon} /> New customer
+                    </Button>
+                </>
+            }
+            description="1,284 companies on a paid plan or a trial."
+            overlay={
+                picked.length > 0 && (
+                    <BottomBar floating>
+                        <Toolbar aria-label="Selected customers" variant="floating">
+                            <span className="flex items-center px-3 font-medium text-neutral-950 text-xs tabular-nums">
+                                {picked.length} selected
+                            </span>
+                            <ToolbarButton>
+                                <Mail {...icon} /> Message
+                            </ToolbarButton>
+                            <ToolbarButton>
+                                <Download {...icon} /> Export
+                            </ToolbarButton>
+                            <ToolbarButton>
+                                <Archive {...icon} /> Archive
+                            </ToolbarButton>
+                            <ToolbarButton
+                                aria-label="Clear the selection"
+                                onClick={() => setPicked([])}
+                            >
+                                <X {...icon} />
+                            </ToolbarButton>
+                        </Toolbar>
+                    </BottomBar>
+                )
+            }
+            place="customers"
+            title="Customers"
+            trail={['Customers']}
+        >
+            <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead className="w-10">
+                        <TableHead className="w-11">
                             <Checkbox
-                                aria-label="Select all"
+                                aria-label="Select every customer"
                                 checked={all ? true : picked.length > 0 ? 'indeterminate' : false}
-                                onCheckedChange={checked =>
-                                    setPicked(checked === true ? invoices.map(row => row.id) : [])
+                                onCheckedChange={on =>
+                                    setPicked(on === true ? rows.map(row => row.id) : [])
                                 }
                             />
                         </TableHead>
-                        <TableHead>Client</TableHead>
-                        <TableHead>Invoice</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Plan</TableHead>
                         <TableHead>Status</TableHead>
-                        <TableHead numeric>Amount</TableHead>
-                        <TableHead>Due</TableHead>
-                        <TableHead className="w-12">
-                            <span className="sr-only">Actions</span>
-                        </TableHead>
+                        <TableHead className="text-right">Monthly revenue</TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {invoices.map(row => (
-                        <TableRow key={row.id}>
+                    {rows.map(customer => (
+                        <TableRow
+                            data-selected={picked.includes(customer.id) || undefined}
+                            key={customer.id}
+                        >
                             <TableCell>
                                 <Checkbox
-                                    aria-label={`Select ${row.number}`}
-                                    checked={picked.includes(row.id)}
-                                    onCheckedChange={checked =>
-                                        setPicked(current =>
-                                            checked === true
-                                                ? [...current, row.id]
-                                                : current.filter(id => id !== row.id),
-                                        )
-                                    }
+                                    aria-label={`Select ${customer.name}`}
+                                    checked={picked.includes(customer.id)}
+                                    onCheckedChange={on => toggle(customer.id, on === true)}
                                 />
                             </TableCell>
                             <TableCell>
-                                <span className="inline-flex items-center gap-2.5">
-                                    <Avatar fallback={row.initials} size={24} />
-                                    {row.client}
+                                <span className="flex min-w-0 items-center gap-2.5">
+                                    <Avatar
+                                        alt={customer.name}
+                                        fallback={customer.initials}
+                                        size={24}
+                                    />
+                                    <span className="truncate text-neutral-950">
+                                        {customer.name}
+                                    </span>
                                 </span>
                             </TableCell>
-                            <TableCell className="font-normal text-neutral-600">
-                                {row.number}
+                            <TableCell className="font-normal text-neutral-700">
+                                {customer.plan}
                             </TableCell>
                             <TableCell>
-                                <Badge tone={row.tone}>{row.status}</Badge>
+                                <Badge tone={statusTone[customer.status]}>{customer.status}</Badge>
                             </TableCell>
-                            <TableCell numeric>{row.amount}</TableCell>
-                            <TableCell className="font-normal text-neutral-600">
-                                {row.due}
-                            </TableCell>
-                            <TableCell>
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger
-                                        render={
-                                            <Button
-                                                aria-label="Actions"
-                                                size="icon-sm"
-                                                variant="ghost"
-                                            />
-                                        }
-                                    >
-                                        <Ellipsis {...icon} />
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuItem>
-                                            <Pencil {...icon} /> Edit
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem>
-                                            <Send {...icon} /> Send reminder
-                                        </DropdownMenuItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem variant="danger">
-                                            <Trash2 {...icon} /> Delete
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                            <TableCell className="text-right tabular-nums">
+                                {customer.mrr ? formatEuro(customer.mrr) : '—'}
                             </TableCell>
                         </TableRow>
                     ))}
                 </TableBody>
             </Table>
-            <Pagination
-                end={
-                    <Select defaultValue="4">
-                        <SelectTrigger aria-label="Rows per page" size="sm">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent align="end">
-                            <SelectItem value="4">4 rows</SelectItem>
-                            <SelectItem value="10">10 rows</SelectItem>
-                            <SelectItem value="25">25 rows</SelectItem>
-                        </SelectContent>
-                    </Select>
-                }
-                onPageChange={setPage}
-                page={page}
-                pageCount={9}
-                results={`${(page - 1) * 4 + 1} – ${page * 4} of 36`}
-            />
-        </div>
+        </AppWindow>
     );
 };
 
 export const inUse: InUse = {
-    title: 'Invoice table',
-    note: 'Selection, a client with an avatar, status badges, numeric columns, row actions and pagination.',
-    render: () => <InvoiceTable />,
+    title: 'Customers, three picked',
+    note: 'A checkbox on each row and a mixed one in the head, with the bar for the picked rows floating below.',
+    app: true,
+    render: () => <SelectCustomers />,
 };

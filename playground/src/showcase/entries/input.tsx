@@ -1,16 +1,15 @@
-import { Field, FieldHelper, FieldLabel, Input, Kbd } from 'continuum';
-import { AtSign, Globe, Search } from 'lucide-react';
+import { Button, Input, Kbd, SettingGroup, SettingRow } from 'continuum';
+import { AtSign, Globe, Hash, Search } from 'lucide-react';
+import { SectionHead } from '../../screens/workspace';
 import {
-    DialogActions,
+    AppWindow,
     type Entry,
     type InUse,
     icon,
     type Knob,
-    OpenDialog,
     o,
     type PreviewProps,
     previewIcon,
-    scene,
     sizes,
 } from '../kit';
 
@@ -54,31 +53,98 @@ export const entry: Entry = {
     Preview: InputPreview,
 };
 
-const NewProject = () => (
-    <OpenDialog footer={<DialogActions action="Create project" />} title="New project">
-        <Field>
-            <FieldLabel>Name</FieldLabel>
-            <Input defaultValue="Northwind Q4 launch" />
-        </Field>
-        <Field invalid>
-            <FieldLabel>Address</FieldLabel>
-            <Input
-                defaultValue="northwind q4"
-                leadingIcon={<Globe {...icon} />}
-                trailing={<span className="text-neutral-500 text-xs">.continuum.app</span>}
-            />
-            <FieldHelper>Letters, numbers and dashes only.</FieldHelper>
-        </Field>
-        <Field>
-            <FieldLabel>Owner email</FieldLabel>
-            <Input leadingIcon={<AtSign {...icon} />} placeholder="name@company.com" />
-        </Field>
-    </OpenDialog>
+// Settings, General: a row per setting, its input at the end.
+const WorkspaceSettings = () => (
+    <AppWindow
+        actions={<Button>Save changes</Button>}
+        className="gap-10"
+        description="How the workspace shows up for the team and for customers."
+        nav="rail"
+        place="settings"
+        title="Settings"
+        width="default"
+    >
+        <section className="flex flex-col gap-5">
+            <SectionHead title="Workspace" />
+            <SettingGroup aria-label="Workspace">
+                <SettingRow
+                    control={<Input className="w-72" defaultValue="Acme Inc." size="sm" />}
+                    description="Shown on invoices and in every email to customers."
+                    title="Name"
+                />
+                <SettingRow
+                    control={
+                        <Input
+                            aria-invalid
+                            className="w-72"
+                            defaultValue="acme inc"
+                            leadingIcon={<Globe {...icon} />}
+                            size="sm"
+                            trailing={<span className="text-neutral-500 text-xs">.acme.app</span>}
+                        />
+                    }
+                    description={
+                        <span className="text-error-600">
+                            Letters, numbers and dashes only, such as acme-inc.
+                        </span>
+                    }
+                    title="Address"
+                />
+                <SettingRow
+                    control={
+                        <Input
+                            className="w-72"
+                            leadingIcon={<AtSign {...icon} />}
+                            placeholder="finance@company.com"
+                            size="sm"
+                        />
+                    }
+                    description="Where invoices and receipts go; the owner’s email when empty."
+                    title="Billing email"
+                />
+                <SettingRow
+                    control={
+                        <Input
+                            className="w-72"
+                            defaultValue="NL859623145B01"
+                            leadingIcon={<Hash {...icon} />}
+                            size="sm"
+                        />
+                    }
+                    description="Printed on every invoice, for customers in the EU."
+                    title="VAT number"
+                />
+            </SettingGroup>
+        </section>
+        <section className="flex flex-col gap-5">
+            <SectionHead title="Invoices" />
+            <SettingGroup aria-label="Invoices">
+                <SettingRow
+                    control={<Input className="w-72" defaultValue="INV-2025-" size="sm" />}
+                    description="Put before each invoice’s number; the count carries on."
+                    title="Number prefix"
+                />
+                <SettingRow
+                    control={
+                        <Input
+                            className="w-72"
+                            defaultValue="30"
+                            inputMode="numeric"
+                            size="sm"
+                            trailing={<span className="text-neutral-500 text-xs">days</span>}
+                        />
+                    }
+                    description="How long a customer has to pay, from the day it is sent."
+                    title="Payment terms"
+                />
+            </SettingGroup>
+        </section>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
-    title: 'New project',
-    note: 'Inputs in a dialog: a plain one, one with an icon and a suffix that is invalid, an empty one.',
-    bare: true,
-    render: scene(<NewProject />),
+    title: 'Workspace settings',
+    note: 'Inputs at the end of setting rows: a plain one, one with an icon and a suffix that is invalid, an empty one.',
+    app: true,
+    render: () => <WorkspaceSettings />,
 };

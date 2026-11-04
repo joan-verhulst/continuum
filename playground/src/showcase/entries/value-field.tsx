@@ -1,5 +1,7 @@
-import { Button, Card, CardHeader, CardTitle, ValueField } from 'continuum';
-import type { Entry, InUse } from '../kit';
+import { Badge, Button, Tabs, TabsList, TabsTrigger, ValueField } from 'continuum';
+import { Pencil, Plus } from 'lucide-react';
+import { SectionHead } from '../../screens/workspace';
+import { AppWindow, type Entry, type InUse, icon } from '../kit';
 
 const ValueFieldPreview = () => (
     <div className="grid w-full max-w-72 grid-cols-2 gap-3">
@@ -16,35 +18,63 @@ export const entry: Entry = {
     Preview: ValueFieldPreview,
 };
 
-const Credentials = () => (
-    <Card className="w-full max-w-lg gap-4">
-        <CardHeader className="flex-row items-center justify-between">
-            <CardTitle>API credentials</CardTitle>
-            <Button variant="ghost">Rotate secret</Button>
-        </CardHeader>
-        <div className="grid grid-cols-2 gap-3">
-            <ValueField copyable label="Client ID" value="cnt_live_4f9a2c" />
-            <ValueField
-                copyable
-                copyValue="sk_live_8Hd2kQm"
-                label="Secret"
-                value="sk_live_••••••••"
+const CustomerBilling = () => (
+    <AppWindow
+        actions={
+            <>
+                <Button variant="secondary">
+                    <Pencil {...icon} /> Edit details
+                </Button>
+                <Button>
+                    <Plus {...icon} /> New invoice
+                </Button>
+            </>
+        }
+        description={
+            <span className="inline-flex items-center gap-2">
+                northwind.com · Enterprise plan
+                <Badge tone="success">Active</Badge>
+            </span>
+        }
+        place="customers"
+        title="Northwind Traders"
+        trail={['Customers', 'Northwind Traders']}
+    >
+        <Tabs defaultValue="billing">
+            <TabsList>
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="invoices">Invoices</TabsTrigger>
+                <TabsTrigger value="contacts">Contacts</TabsTrigger>
+                <TabsTrigger value="billing">Billing</TabsTrigger>
+            </TabsList>
+        </Tabs>
+        <section className="flex flex-col gap-5">
+            <SectionHead
+                description="What goes on every invoice to Northwind; copy any of it into a payment or a reply."
+                title="Billing details"
             />
-            <ValueField
-                className="col-span-2"
-                copyable
-                label="Webhook URL"
-                value="https://api.northwind.studio/hooks/continuum"
-            />
-            <ValueField label="Status" tone="success" value="Active" variant="vital" />
-            <ValueField label="Last call" value="2 minutes ago" variant="vital" />
-        </div>
-    </Card>
+            <div className="grid grid-cols-2 gap-4">
+                <ValueField copyable label="Customer ID" value="cus_8f2a91c4" />
+                <ValueField copyable label="VAT number" value="GB 284 9917 06" />
+                <ValueField copyable label="Billing email" value="accounts@northwind.com" />
+                <ValueField copyable label="IBAN" value="GB29 NWBK 6016 1331 9268 19" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+                <ValueField
+                    label="Card on file"
+                    tone="success"
+                    value="Visa ending 4242"
+                    variant="vital"
+                />
+                <ValueField label="Last payment" value="€4,800.00 on 1 October" variant="vital" />
+            </div>
+        </section>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
-    title: 'API credentials',
-    note: 'Values to read and copy, and two vitals under them.',
-    canvas: true,
-    render: () => <Credentials />,
+    title: 'Billing details',
+    note: 'A customer’s billing facts as values to read and copy, and two vitals under them.',
+    app: true,
+    render: () => <CustomerBilling />,
 };

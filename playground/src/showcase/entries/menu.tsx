@@ -1,7 +1,6 @@
 import {
+    Avatar,
     Button,
-    Card,
-    CardTitle,
     cn,
     DropdownMenu,
     DropdownMenuContent,
@@ -12,30 +11,37 @@ import {
     DropdownMenuSeparator,
     DropdownMenuShortcut,
     DropdownMenuTrigger,
-    IconTile,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from 'continuum';
 import {
     Archive,
     Copy,
     Download,
     Ellipsis,
+    EllipsisVertical,
     FileText,
     FolderInput,
     type LucideIcon,
     Pencil,
+    Plus,
     Share2,
     Trash2,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';
 import {
+    AppScene,
     type Entry,
     type InUse,
     icon,
     type Knob,
     type PreviewProps,
     previewIcon,
-    scene,
 } from '../kit';
 
 type Action = { label: string; Icon: LucideIcon; shortcut?: string; danger?: boolean };
@@ -125,71 +131,140 @@ export const entry: Entry = {
     Preview: MenuPreview,
 };
 
-const files = [
-    { name: 'Q3 review.pdf', meta: '2.4 MB · edited today' },
-    { name: 'Funnel export.csv', meta: '120 KB · edited yesterday' },
-    { name: 'Board deck.key', meta: '18 MB · edited 3 days ago' },
+const reports = [
+    {
+        name: 'Northwind Q3 review',
+        owner: 'Maya Chen',
+        initials: 'MC',
+        schedule: 'Quarterly',
+        run: 'Today, 09:12',
+    },
+    {
+        name: 'Revenue by plan',
+        owner: 'Liam Ortiz',
+        initials: 'LO',
+        schedule: 'Every Monday',
+        run: 'Yesterday',
+    },
+    {
+        name: 'Churn and renewals',
+        owner: 'Sara Kim',
+        initials: 'SK',
+        schedule: 'Monthly',
+        run: '1 October',
+    },
+    {
+        name: 'Board pack · October',
+        owner: 'Maya Chen',
+        initials: 'MC',
+        schedule: 'Once',
+        run: '28 September',
+    },
+    {
+        name: 'Invoice ageing',
+        owner: 'Noah Patel',
+        initials: 'NP',
+        schedule: 'Every Friday',
+        run: '27 September',
+    },
 ];
 
-const FileMenu = () => {
+const ReportRows = () => {
     const stage = useStageContainer();
 
     return (
-        <Card className="mb-28 w-full max-w-md gap-2">
-            <CardTitle>Files</CardTitle>
-            <ul className="flex flex-col divide-y divide-neutral-200">
-                {files.map((file, i) => (
-                    <li className="flex h-12 items-center gap-3" key={file.name}>
-                        <IconTile>
-                            <FileText {...icon} />
-                        </IconTile>
-                        <span className="flex min-w-0 flex-1 flex-col">
-                            <span className="truncate font-medium text-neutral-950 text-xs">
-                                {file.name}
+        <Table>
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Report</TableHead>
+                    <TableHead>Owner</TableHead>
+                    <TableHead>Schedule</TableHead>
+                    <TableHead>Last run</TableHead>
+                    <TableHead>
+                        <span className="sr-only">Actions</span>
+                    </TableHead>
+                </TableRow>
+            </TableHeader>
+            <TableBody>
+                {reports.map((report, i) => (
+                    <TableRow key={report.name}>
+                        <TableCell>
+                            <span className="flex items-center gap-2.5 font-medium text-neutral-950">
+                                <FileText {...icon} className="size-4 text-neutral-600" />
+                                {report.name}
                             </span>
-                            <span className="text-neutral-500 text-xxs">{file.meta}</span>
-                        </span>
-                        <DropdownMenu modal={false} open={i === 0 ? true : undefined}>
-                            <DropdownMenuTrigger
-                                render={
-                                    <Button
-                                        aria-label={`Actions for ${file.name}`}
-                                        size="icon-sm"
-                                        variant="ghost"
-                                    />
-                                }
-                            >
-                                <Ellipsis {...icon} />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-52" container={stage}>
-                                <DropdownMenuLabel>{file.name}</DropdownMenuLabel>
-                                <DropdownMenuItem>
-                                    <Pencil {...icon} /> Rename
-                                    <DropdownMenuShortcut>R</DropdownMenuShortcut>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Copy {...icon} /> Duplicate
-                                    <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem>
-                                    <Download {...icon} /> Download
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem variant="danger">
-                                    <Trash2 {...icon} /> Delete
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </li>
+                        </TableCell>
+                        <TableCell>
+                            <span className="flex items-center gap-2 text-neutral-900">
+                                <Avatar fallback={report.initials} size={24} />
+                                {report.owner}
+                            </span>
+                        </TableCell>
+                        <TableCell className="text-neutral-600">{report.schedule}</TableCell>
+                        <TableCell className="text-neutral-600">{report.run}</TableCell>
+                        <TableCell className="w-12 py-0 text-right">
+                            <DropdownMenu modal={false} open={i === 0 ? true : undefined}>
+                                <DropdownMenuTrigger
+                                    render={
+                                        <Button
+                                            aria-label={`Actions for ${report.name}`}
+                                            size="icon-sm"
+                                            variant="ghost"
+                                        />
+                                    }
+                                >
+                                    <EllipsisVertical {...icon} />
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-52" container={stage}>
+                                    <DropdownMenuLabel>{report.name}</DropdownMenuLabel>
+                                    <DropdownMenuItem>
+                                        <Pencil {...icon} /> Rename
+                                        <DropdownMenuShortcut>R</DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Copy {...icon} /> Duplicate
+                                        <DropdownMenuShortcut>⌘D</DropdownMenuShortcut>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Share2 {...icon} /> Share
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem>
+                                        <Download {...icon} /> Download PDF
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem variant="danger">
+                                        <Trash2 {...icon} /> Delete
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                    </TableRow>
                 ))}
-            </ul>
-        </Card>
+            </TableBody>
+        </Table>
     );
 };
 
+const ReportActions = () => (
+    <AppScene
+        page={{
+            nav: 'top',
+            place: 'reports',
+            title: 'Reports',
+            description: 'Weekly and monthly reports, shared with your team.',
+            actions: (
+                <Button>
+                    <Plus {...icon} /> New report
+                </Button>
+            ),
+            children: <ReportRows />,
+        }}
+    />
+);
+
 export const inUse: InUse = {
-    title: 'File actions',
-    note: 'The actions for a row, opened from its ellipsis.',
+    title: 'Report actions',
+    note: 'A report’s actions, opened from the ellipsis at the end of its row.',
     bare: true,
-    render: scene(<FileMenu />),
+    render: () => <ReportActions />,
 };

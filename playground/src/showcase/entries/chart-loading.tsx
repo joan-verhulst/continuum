@@ -1,8 +1,16 @@
-import { Button, Card, CardHeader, CardTitle } from 'continuum';
+import {
+    Button,
+    Card,
+    CardHeader,
+    CardTitle,
+    SegmentedControl,
+    SegmentedControlItem,
+    StatCard,
+} from 'continuum';
 import { AreaChartLoading } from 'continuum/charts';
 import { Download } from 'lucide-react';
 import { chartMargin } from '../../screens/shared';
-import { type Entry, type InUse, icon } from '../kit';
+import { AppWindow, type Entry, type InUse, icon } from '../kit';
 
 const ChartLoadingPreview = () => (
     <AreaChartLoading className="h-[152px] w-full" label="Loading" margin={chartMargin} />
@@ -17,28 +25,47 @@ export const entry: Entry = {
     Preview: ChartLoadingPreview,
 };
 
-const LoadingChart = () => (
-    <Card className="w-full gap-3" layout="chart">
-        <CardHeader className="flex-row items-center justify-between">
-            <div className="flex flex-col gap-1">
+const SessionsLoading = () => (
+    <AppWindow
+        actions={
+            <>
+                <SegmentedControl aria-label="Range" defaultValue="12m">
+                    <SegmentedControlItem value="30d">30 days</SegmentedControlItem>
+                    <SegmentedControlItem value="90d">90 days</SegmentedControlItem>
+                    <SegmentedControlItem value="12m">12 months</SegmentedControlItem>
+                </SegmentedControl>
+                <Button disabled variant="secondary">
+                    <Download {...icon} /> Export
+                </Button>
+            </>
+        }
+        description="Every visit to acme.com, week by week."
+        nav="rail"
+        place="reports"
+        title="Sessions"
+    >
+        <Card layout="chart">
+            <CardHeader>
                 <CardTitle>Sessions over time</CardTitle>
                 <span className="text-neutral-500 text-xs">Fetching 12 months of data…</span>
-            </div>
-            <Button disabled variant="secondary">
-                <Download {...icon} /> Export
-            </Button>
-        </CardHeader>
-        <AreaChartLoading
-            className="h-[200px] w-full"
-            label="Loading sessions"
-            margin={chartMargin}
-        />
-    </Card>
+            </CardHeader>
+            <AreaChartLoading
+                className="h-[240px] w-full"
+                label="Loading sessions"
+                margin={chartMargin}
+            />
+        </Card>
+        <div className="grid grid-cols-3 gap-4">
+            <StatCard delta="+12.4%" label="Sessions this week" value="12,480" />
+            <StatCard delta="+4.0%" label="Unique visitors" value="9,315" />
+            <StatCard delta="−3.1%" label="Bounce rate" trend="down" value="41.2%" />
+        </div>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
-    title: 'Loading a chart',
-    note: 'The chart’s shape while its data is on the way.',
-    canvas: true,
-    render: () => <LoadingChart />,
+    title: 'Sessions, loading',
+    note: 'The chart’s shape while a year of sessions is on its way.',
+    app: true,
+    render: () => <SessionsLoading />,
 };

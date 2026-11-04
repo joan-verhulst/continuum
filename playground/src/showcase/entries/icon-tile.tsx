@@ -1,17 +1,20 @@
-import { Badge, Button, Card, CardTitle, IconTile } from 'continuum';
+import { Badge, Button, Card, IconTile } from 'continuum';
 import {
+    Calculator,
     CircleAlert,
     CircleCheck,
     Clock,
     Database,
     FileText,
     Hash,
+    Landmark,
     Mail,
     Send,
     Webhook,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
 import {
+    AppWindow,
     type Entry,
     type InUse,
     icon,
@@ -59,61 +62,79 @@ const integrations = [
     {
         icon: <Hash {...icon} />,
         name: 'Slack',
-        description: 'Alerts in a channel',
+        description: 'Overdue invoices and new customers, posted to #finance.',
         connected: true,
     },
     {
         icon: <Mail {...icon} />,
-        name: 'Email',
-        description: 'Reports on a schedule',
+        name: 'Email reports',
+        description: 'The week’s numbers to your inbox every Monday at nine.',
+        connected: true,
+    },
+    {
+        icon: <Landmark {...icon} />,
+        name: 'Bank feed',
+        description: 'Marks invoices paid as the money lands in your account.',
         connected: true,
     },
     {
         icon: <Webhook {...icon} />,
         name: 'Webhooks',
-        description: 'Every event, as JSON',
+        description: 'Every invoice and payment event, as JSON to your endpoint.',
         connected: false,
     },
     {
         icon: <Database {...icon} />,
         name: 'Warehouse',
-        description: 'A nightly export',
+        description: 'A nightly export of every table to BigQuery or Snowflake.',
+        connected: false,
+    },
+    {
+        icon: <Calculator {...icon} />,
+        name: 'Accounting',
+        description: 'Invoices and payments booked in Exact or Xero.',
         connected: false,
     },
 ];
 
 const Integrations = () => (
-    <Card className="w-full max-w-md gap-4">
-        <CardTitle>Integrations</CardTitle>
-        <ul className="flex flex-col gap-3">
+    <AppWindow
+        description="Send what happens in Acme to the tools your team already uses."
+        nav="rail"
+        place="settings"
+        title="Integrations"
+    >
+        <div className="grid grid-cols-3 gap-4">
             {integrations.map(item => (
-                <li className="flex items-center gap-3" key={item.name}>
-                    <IconTile
-                        tone={item.connected ? 'success' : 'neutral'}
-                        variant={item.connected ? 'outline' : 'filled'}
-                    >
-                        {item.icon}
-                    </IconTile>
-                    <span className="flex min-w-0 flex-1 flex-col">
-                        <span className="font-medium text-neutral-950 text-xs">{item.name}</span>
-                        <span className="text-neutral-500 text-xxs">{item.description}</span>
-                    </span>
-                    {item.connected ? (
-                        <Badge tone="success" variant="dot">
-                            Connected
-                        </Badge>
-                    ) : (
-                        <Button variant="secondary">Connect</Button>
-                    )}
-                </li>
+                <Card className="gap-4 p-5" key={item.name}>
+                    <div className="flex items-center justify-between gap-3">
+                        <IconTile
+                            tone={item.connected ? 'success' : 'neutral'}
+                            variant={item.connected ? 'outline' : 'filled'}
+                        >
+                            {item.icon}
+                        </IconTile>
+                        {item.connected ? (
+                            <Badge tone="success" variant="dot">
+                                Connected
+                            </Badge>
+                        ) : (
+                            <Button variant="secondary">Connect</Button>
+                        )}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <p className="font-medium text-neutral-950 text-xs">{item.name}</p>
+                        <p className="text-neutral-600 text-xs">{item.description}</p>
+                    </div>
+                </Card>
             ))}
-        </ul>
-    </Card>
+        </div>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
     title: 'Integrations',
-    note: 'A tile per integration, outlined in a tone once it is connected.',
-    canvas: true,
+    note: 'A tile for each integration, outlined in green once it is connected and a quiet well until then.',
+    app: true,
     render: () => <Integrations />,
 };

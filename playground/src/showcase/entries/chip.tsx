@@ -1,7 +1,30 @@
-import { Button, Card, CardHeader, CardTitle, Chip, ChipAction } from 'continuum';
-import { CalendarDays, Globe, Mail, Monitor, Pencil, Plus, Users } from 'lucide-react';
-import { useState } from 'react';
 import {
+    Avatar,
+    Badge,
+    Button,
+    Chip,
+    ChipAction,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from 'continuum';
+import {
+    CalendarDays,
+    CircleCheck,
+    Globe,
+    Layers,
+    Pencil,
+    Plus,
+    UserRound,
+    Users,
+} from 'lucide-react';
+import { type ReactNode, useState } from 'react';
+import { type Customer, customers, formatEuro, statusTone } from '../../screens/workspace';
+import {
+    AppWindow,
     type Entry,
     type InUse,
     icon,
@@ -101,60 +124,123 @@ export const entry: Entry = {
     Preview: ChipPreview,
 };
 
-const initialFiltersInUse = [
-    { id: 'country', icon: <Globe {...icon} />, label: 'Country is Netherlands' },
-    { id: 'device', icon: <Monitor {...icon} />, label: 'Device is desktop' },
-    { id: 'source', icon: <Mail {...icon} />, label: 'Source is newsletter' },
+type CustomerFilter = {
+    id: string;
+    label: string;
+    icon: ReactNode;
+    keeps: (customer: Customer) => boolean;
+};
+
+const appliedFilters: CustomerFilter[] = [
+    {
+        id: 'status',
+        label: 'Status is Active',
+        icon: <CircleCheck {...icon} />,
+        keeps: customer => customer.status === 'Active',
+    },
+    {
+        id: 'plan',
+        label: 'Plan is Pro or Enterprise',
+        icon: <Layers {...icon} />,
+        keeps: customer => customer.plan !== 'Starter',
+    },
+    {
+        id: 'owner',
+        label: 'Owner is not Liam Ortiz',
+        icon: <UserRound {...icon} />,
+        keeps: customer => customer.owner !== 'Liam Ortiz',
+    },
 ];
 
-const FilteredSessions = () => {
-    const [filters, setFilters] = useState(initialFiltersInUse);
-    const count = filters.length === 0 ? 12480 : 1284 * (4 - filters.length);
+const FilteredCustomers = () => {
+    const [filters, setFilters] = useState(appliedFilters);
+    const rows = customers.filter(customer => filters.every(filter => filter.keeps(customer)));
 
     return (
-        <Card className="w-full max-w-xl gap-4">
-            <CardHeader className="flex-row items-center justify-between">
-                <CardTitle>Sessions</CardTitle>
-                <span className="text-neutral-600 text-xs tabular-nums">
-                    {count.toLocaleString('en-GB')} sessions
-                </span>
-            </CardHeader>
-            <div className="flex flex-wrap items-center gap-2">
-                <Chip icon={<CalendarDays {...icon} />}>Last 30 days</Chip>
-                {filters.map(filter => (
-                    <Chip
-                        icon={filter.icon}
-                        key={filter.id}
-                        action={
-                            <ChipAction
-                                onClick={() =>
-                                    setFilters(current =>
-                                        current.filter(item => item.id !== filter.id),
-                                    )
-                                }
-                            />
-                        }
-                    >
-                        {filter.label}
-                    </Chip>
-                ))}
-                {filters.length < initialFiltersInUse.length ? (
-                    <Button onClick={() => setFilters(initialFiltersInUse)} variant="ghost">
-                        <Plus {...icon} /> Add filter
-                    </Button>
-                ) : (
-                    <Button onClick={() => setFilters([])} variant="ghost">
-                        Clear all
-                    </Button>
-                )}
+        <AppWindow
+            actions={
+                <Button>
+                    <Plus {...icon} /> Add customer
+                </Button>
+            }
+            description={`${rows.length} of ${customers.length} customers`}
+            place="customers"
+            title="Customers"
+            trail={['Customers']}
+        >
+            <div className="flex flex-col gap-4">
+                <div className="flex flex-wrap items-center gap-2">
+                    {filters.map(filter => (
+                        <Chip
+                            action={
+                                <ChipAction
+                                    label={`Remove ${filter.label}`}
+                                    onClick={() =>
+                                        setFilters(current =>
+                                            current.filter(item => item.id !== filter.id),
+                                        )
+                                    }
+                                />
+                            }
+                            icon={filter.icon}
+                            key={filter.id}
+                        >
+                            {filter.label}
+                        </Chip>
+                    ))}
+                    {filters.length < appliedFilters.length ? (
+                        <Button onClick={() => setFilters(appliedFilters)} variant="ghost">
+                            <Plus {...icon} /> Add filter
+                        </Button>
+                    ) : (
+                        <Button onClick={() => setFilters([])} variant="ghost">
+                            Clear all
+                        </Button>
+                    )}
+                </div>
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Customer</TableHead>
+                            <TableHead>Plan</TableHead>
+                            <TableHead>Owner</TableHead>
+                            <TableHead className="text-right">MRR</TableHead>
+                            <TableHead className="text-right">Status</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {rows.map(customer => (
+                            <TableRow key={customer.id}>
+                                <TableCell>
+                                    <span className="flex items-center gap-2.5">
+                                        <Avatar fallback={customer.initials} size={24} />
+                                        <span className="font-medium text-neutral-950">
+                                            {customer.name}
+                                        </span>
+                                    </span>
+                                </TableCell>
+                                <TableCell className="text-neutral-600">{customer.plan}</TableCell>
+                                <TableCell className="text-neutral-600">{customer.owner}</TableCell>
+                                <TableCell className="text-right text-neutral-950 tabular-nums">
+                                    {formatEuro(customer.mrr)}
+                                </TableCell>
+                                <TableCell className="text-right">
+                                    <Badge tone={statusTone[customer.status]}>
+                                        {customer.status}
+                                    </Badge>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
             </div>
-        </Card>
+        </AppWindow>
     );
 };
 
 export const inUse: InUse = {
-    title: 'Applied filters',
-    note: 'Every filter as a chip that removes itself, over the number it narrows.',
-    canvas: true,
-    render: () => <FilteredSessions />,
+    title: 'Filtered customers',
+    note: 'Each applied filter as a chip over the list it narrows; its × takes it off.',
+    app: true,
+    render: () => <FilteredCustomers />,
 };

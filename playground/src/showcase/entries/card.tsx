@@ -1,5 +1,15 @@
-import { Card, CardDelta, CardFigure, CardHeader, CardTitle, CardValue } from 'continuum';
-import type { Entry, InUse } from '../kit';
+import {
+    Avatar,
+    Button,
+    Card,
+    CardDelta,
+    CardFigure,
+    CardHeader,
+    CardTitle,
+    CardValue,
+} from 'continuum';
+import { ArrowRight, CalendarDays, ChevronDown } from 'lucide-react';
+import { AppWindow, type Entry, type InUse, icon } from '../kit';
 
 const CardPreview = () => (
     <Card className="w-64">
@@ -21,40 +31,90 @@ export const entry: Entry = {
     Preview: CardPreview,
 };
 
-const RevenueCards = () => (
-    <div className="grid w-full max-w-2xl grid-cols-2 gap-4">
-        <Card>
-            <CardHeader>
-                <CardTitle>Revenue this month</CardTitle>
-                <CardFigure>
-                    <CardValue size="xl">€48,210</CardValue>
-                    <CardDelta>+6.2%</CardDelta>
-                </CardFigure>
+const headline = [
+    {
+        title: 'Revenue',
+        value: '€48,210',
+        delta: '+6.2%',
+        trend: 'up',
+        fact: '38 of 44 invoices paid',
+    },
+    {
+        title: 'Outstanding',
+        value: '€12,940',
+        delta: '−8.1%',
+        trend: 'down',
+        fact: '6 invoices, 2 overdue',
+    },
+    {
+        title: 'Returning customers',
+        value: '86%',
+        delta: '+1.4%',
+        trend: 'up',
+        fact: '112 of 130 renewed',
+    },
+] as const;
+
+const largest = [
+    { name: 'Northwind Traders', initials: 'NT', plan: 'Enterprise', revenue: '€14,400' },
+    { name: 'Umbrella Health', initials: 'UH', plan: 'Enterprise', revenue: '€9,600' },
+    { name: 'Stark Logistics', initials: 'SL', plan: 'Enterprise', revenue: '€7,250' },
+];
+
+const Overview = () => (
+    <AppWindow
+        actions={
+            <Button variant="secondary">
+                <CalendarDays {...icon} /> October 2026 <ChevronDown {...icon} />
+            </Button>
+        }
+        description="October so far, against the same days in September."
+        place="overview"
+        title="Overview"
+        trail={['Overview']}
+    >
+        <div className="grid grid-cols-3 gap-4">
+            {headline.map(card => (
+                <Card className="gap-6 p-5" key={card.title}>
+                    <CardHeader className="gap-1">
+                        <CardTitle>{card.title}</CardTitle>
+                        <CardFigure>
+                            <CardValue size="lg">{card.value}</CardValue>
+                            <CardDelta trend={card.trend}>{card.delta}</CardDelta>
+                        </CardFigure>
+                    </CardHeader>
+                    <p className="text-neutral-600 text-xs">{card.fact}</p>
+                </Card>
+            ))}
+        </div>
+        <Card className="gap-4 p-5">
+            <CardHeader className="flex-row items-center justify-between">
+                <CardTitle>Largest customers this month</CardTitle>
+                <Button variant="ghost">
+                    All customers <ArrowRight {...icon} />
+                </Button>
             </CardHeader>
-            <div className="flex items-center justify-between gap-4 rounded-panel border border-neutral-200 p-4 font-normal text-xs">
-                <span className="text-neutral-500">Invoices paid</span>
-                <span className="text-neutral-950">38 of 44</span>
-            </div>
+            <ul className="flex flex-col gap-3">
+                {largest.map(customer => (
+                    <li className="flex items-center gap-3 text-xs" key={customer.name}>
+                        <Avatar fallback={customer.initials} size={24} />
+                        <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
+                            {customer.name}
+                        </span>
+                        <span className="text-neutral-600">{customer.plan}</span>
+                        <span className="w-20 text-right text-neutral-950 tabular-nums">
+                            {customer.revenue}
+                        </span>
+                    </li>
+                ))}
+            </ul>
         </Card>
-        <Card>
-            <CardHeader>
-                <CardTitle>Returning visitors</CardTitle>
-                <CardFigure>
-                    <CardValue size="xl">38%</CardValue>
-                    <CardDelta trend="down">−2.4%</CardDelta>
-                </CardFigure>
-            </CardHeader>
-            <div className="flex items-center justify-between gap-4 rounded-panel border border-neutral-200 p-4 font-normal text-xs">
-                <span className="text-neutral-500">Compared to</span>
-                <span className="text-neutral-950">September</span>
-            </div>
-        </Card>
-    </div>
+    </AppWindow>
 );
 
 export const inUse: InUse = {
-    title: 'Headline figures',
-    note: 'A title, a value with its change, and one fact under it.',
-    canvas: true,
-    render: () => <RevenueCards />,
+    title: 'Overview',
+    note: 'The month’s headline figures, each a card with its value, change and one fact, over a card of the largest customers.',
+    app: true,
+    render: () => <Overview />,
 };

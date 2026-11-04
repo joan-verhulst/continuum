@@ -1,7 +1,8 @@
-import { Card, Toolbar, ToolbarButton, ToolbarChip } from 'continuum';
-import { Check, Minimize2, WandSparkles } from 'lucide-react';
+import { Button, Toolbar, ToolbarButton, ToolbarChip } from 'continuum';
+import { Check, Minimize2, Share2, WandSparkles } from 'lucide-react';
 import { useState } from 'react';
 import {
+    AppWindow,
     type Entry,
     type InUse,
     icon,
@@ -49,42 +50,87 @@ export const entry: Entry = {
     Preview: ToolbarPreview,
 };
 
-const SelectionToolbar = () => {
-    const [last, setLast] = useState<string>();
+// The selected sentence, and what Rewrite and Shorten make of it.
+const versions = {
+    original:
+        'Bounce rate rose in August, mostly on mobile, after the pricing page moved below the fold',
+    rewritten:
+        'In August more mobile visitors left at once, because the pricing page had dropped below the fold',
+    shortened: 'Mobile bounce rose in August, with pricing below the fold',
+};
+
+const ReportDraft = () => {
+    const [version, setVersion] = useState<keyof typeof versions>('original');
+    const [selected, setSelected] = useState(true);
 
     return (
-        <Card className="w-full max-w-xl gap-3 p-6">
-            <p className="font-medium text-neutral-950 text-sm">Q3 review</p>
-            <p className="text-neutral-700 text-xs">
-                Sessions held steady through the quarter.{' '}
-                <mark className="rounded-chip bg-tint px-0.5 text-tint-fg">
-                    Bounce rate rose in August, mostly on mobile, after the pricing page moved below
-                    the fold
-                </mark>
-                , and recovered once it moved back.
-            </p>
-            <Toolbar aria-label="AI suggestions" className="self-start" variant="floating">
-                <ToolbarChip>AI</ToolbarChip>
-                <ToolbarButton onClick={() => setLast('Rewritten')}>
-                    <WandSparkles {...icon} /> Rewrite
-                </ToolbarButton>
-                <ToolbarButton onClick={() => setLast('Shortened')}>
-                    <Minimize2 {...icon} /> Shorten
-                </ToolbarButton>
-                <ToolbarButton onClick={() => setLast('Accepted')}>
-                    <Check {...icon} /> Accept
-                </ToolbarButton>
-            </Toolbar>
-            <p className="text-neutral-500 text-xs">
-                {last ?? 'Conversions followed the same line, a week behind.'}
-            </p>
-        </Card>
+        <AppWindow
+            actions={
+                <>
+                    <Button variant="secondary">
+                        <Share2 {...icon} /> Share
+                    </Button>
+                    <Button>Publish</Button>
+                </>
+            }
+            description="Draft · Maya Chen edited it 12 minutes ago"
+            place="reports"
+            title="Northwind Q3 review"
+            trail={['Reports', 'Northwind Q3 review']}
+        >
+            <article className="flex max-w-[600px] flex-col gap-4 text-neutral-800 text-sm leading-relaxed">
+                <h2 className="pt-2 font-medium text-base text-neutral-950">Traffic</h2>
+                <p>
+                    Sessions held steady through the quarter at around 12,000 a week, with the
+                    newsletter bringing in a fifth of them.
+                </p>
+                <div className="relative">
+                    <p>
+                        Most of the quarter went to plan.{' '}
+                        <mark
+                            className={
+                                selected
+                                    ? 'rounded-chip bg-tint px-0.5 text-tint-fg'
+                                    : 'cursor-text bg-transparent text-inherit'
+                            }
+                            onClick={() => setSelected(true)}
+                        >
+                            {versions[version]}
+                        </mark>
+                        , and recovered once it moved back in September.
+                    </p>
+                    {selected && (
+                        <Toolbar
+                            aria-label="AI suggestions"
+                            className="absolute top-full left-24 z-10 mt-2 shadow-float"
+                        >
+                            <ToolbarChip>AI</ToolbarChip>
+                            <ToolbarButton onClick={() => setVersion('rewritten')}>
+                                <WandSparkles {...icon} /> Rewrite
+                            </ToolbarButton>
+                            <ToolbarButton onClick={() => setVersion('shortened')}>
+                                <Minimize2 {...icon} /> Shorten
+                            </ToolbarButton>
+                            <ToolbarButton onClick={() => setSelected(false)}>
+                                <Check {...icon} /> Accept
+                            </ToolbarButton>
+                        </Toolbar>
+                    )}
+                </div>
+                <p>
+                    Conversions followed the same line a week behind, and ended the quarter 8.9% up
+                    on the last.
+                </p>
+                <h2 className="pt-2 font-medium text-base text-neutral-950">Revenue</h2>
+                <p>Recurring revenue reached €184,000 a month, led by two Enterprise renewals.</p>
+            </article>
+        </AppWindow>
     );
 };
 
 export const inUse: InUse = {
-    title: 'Selection toolbar',
-    note: 'AI actions floating under a selected sentence in a document.',
-    canvas: true,
-    render: () => <SelectionToolbar />,
+    title: 'A report draft',
+    note: 'AI actions under a selected sentence in a report: rewrite it, shorten it or keep it.',
+    app: true,
+    render: () => <ReportDraft />,
 };

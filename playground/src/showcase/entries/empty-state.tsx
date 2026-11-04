@@ -1,7 +1,28 @@
-import { Badge, Button, Chip, ChipAction, EmptyState } from 'continuum';
+import {
+    Badge,
+    Button,
+    Chip,
+    ChipAction,
+    EmptyState,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from 'continuum';
 import { CalendarDays, CircleAlert, CircleCheck, FileText, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
-import { type Entry, type InUse, icon, type Knob, o, type PreviewProps, previewIcon } from '../kit';
+import {
+    AppWindow,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    o,
+    type PreviewProps,
+    previewIcon,
+} from '../kit';
 
 const emptyKnobs: Knob[] = [
     {
@@ -48,79 +69,100 @@ export const entry: Entry = {
     Preview: EmptyStatePreview,
 };
 
-const overdueInvoices = [
-    { number: 'INV-0139', client: 'Globex', amount: '€1,860.00' },
-    { number: 'INV-0134', client: 'Umbrella', amount: '€2,340.00' },
-];
+const thisQuarter = [
+    { number: 'INV-0142', client: 'Acme Corp', amount: '€4,120.00', status: 'Due soon' },
+    { number: 'INV-0141', client: 'Northwind', amount: '€1,980.00', status: 'Paid' },
+    { number: 'INV-0139', client: 'Globex', amount: '€1,860.00', status: 'Paid' },
+    { number: 'INV-0134', client: 'Umbrella Health', amount: '€2,340.00', status: 'Due soon' },
+] as const;
 
 const NoOverdue = () => {
     const [filtered, setFiltered] = useState(true);
 
     return (
-        <div className="flex w-full max-w-xl flex-col gap-5">
-            <div className="flex items-center justify-between gap-3">
-                <p className="font-medium text-neutral-950 text-sm">Invoices</p>
+        <AppWindow
+            actions={
                 <Button>
-                    New invoice <Plus {...icon} />
+                    <Plus {...icon} /> New invoice
                 </Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-                <Chip icon={<CalendarDays {...icon} />}>This quarter</Chip>
+            }
+            description="Everything you have sent, with when it is due and who has paid."
+            nav="rail"
+            place="invoices"
+            title="Invoices"
+        >
+            <div className="flex flex-col gap-5">
+                <div className="flex flex-wrap items-center gap-2">
+                    <Chip icon={<CalendarDays {...icon} />}>This quarter</Chip>
+                    {filtered ? (
+                        <Chip
+                            action={
+                                <ChipAction
+                                    label="Remove the overdue filter"
+                                    onClick={() => setFiltered(false)}
+                                />
+                            }
+                            icon={<CircleAlert {...icon} />}
+                        >
+                            Status is Overdue
+                        </Chip>
+                    ) : (
+                        <Button onClick={() => setFiltered(true)} variant="ghost">
+                            <Plus {...icon} /> Overdue only
+                        </Button>
+                    )}
+                </div>
                 {filtered ? (
-                    <Chip
-                        icon={<CircleAlert {...icon} />}
+                    <EmptyState
                         action={
-                            <ChipAction
-                                label="Remove the overdue filter"
-                                onClick={() => setFiltered(false)}
-                            />
+                            <Button onClick={() => setFiltered(false)} variant="secondary">
+                                Show all invoices
+                            </Button>
                         }
-                    >
-                        Status is Overdue
-                    </Chip>
+                        description="Everything sent this quarter has been paid or is not due yet."
+                        icon={<CircleCheck {...icon} />}
+                        title="No overdue invoices"
+                    />
                 ) : (
-                    <Button onClick={() => setFiltered(true)} variant="ghost">
-                        <Plus {...icon} /> Overdue only
-                    </Button>
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                <TableHead>Invoice</TableHead>
+                                <TableHead>Client</TableHead>
+                                <TableHead numeric>Amount</TableHead>
+                                <TableHead align="right">Status</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {thisQuarter.map(invoice => (
+                                <TableRow key={invoice.number}>
+                                    <TableCell className="text-neutral-600">
+                                        {invoice.number}
+                                    </TableCell>
+                                    <TableCell className="font-medium text-neutral-950">
+                                        {invoice.client}
+                                    </TableCell>
+                                    <TableCell numeric>{invoice.amount}</TableCell>
+                                    <TableCell align="right">
+                                        <Badge
+                                            tone={invoice.status === 'Paid' ? 'success' : 'warning'}
+                                        >
+                                            {invoice.status}
+                                        </Badge>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 )}
             </div>
-            {filtered ? (
-                <EmptyState
-                    action={
-                        <Button onClick={() => setFiltered(false)} variant="secondary">
-                            Show all invoices
-                        </Button>
-                    }
-                    description="Everything sent this quarter has been paid or is not due yet."
-                    icon={<CircleCheck {...icon} />}
-                    title="No overdue invoices"
-                />
-            ) : (
-                <ul className="flex flex-col gap-3">
-                    {overdueInvoices
-                        .map(invoice => ({ ...invoice, status: 'Due soon' }))
-                        .map(invoice => (
-                            <li className="flex items-center gap-3 text-xs" key={invoice.number}>
-                                <span className="w-20 shrink-0 text-neutral-500 tabular-nums">
-                                    {invoice.number}
-                                </span>
-                                <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
-                                    {invoice.client}
-                                </span>
-                                <Badge tone="warning">{invoice.status}</Badge>
-                                <span className="w-20 shrink-0 text-right text-neutral-900 tabular-nums">
-                                    {invoice.amount}
-                                </span>
-                            </li>
-                        ))}
-                </ul>
-            )}
-        </div>
+        </AppWindow>
     );
 };
 
 export const inUse: InUse = {
     title: 'Filtered to nothing',
-    note: 'A filter that matches nothing says so, and offers the way back.',
+    note: 'An invoice list filtered to nothing says so where the table would be, and offers the way back.',
+    app: true,
     render: () => <NoOverdue />,
 };

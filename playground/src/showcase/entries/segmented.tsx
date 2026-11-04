@@ -1,6 +1,29 @@
-import { Card, CardTitle, SegmentedControl, SegmentedControlItem } from 'continuum';
-import { CalendarDays, Clock, Timer } from 'lucide-react';
-import { type Entry, type InUse, type Knob, type PreviewProps, previewIcon } from '../kit';
+import {
+    Avatar,
+    Badge,
+    Button,
+    Input,
+    SegmentedControl,
+    SegmentedControlItem,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from 'continuum';
+import { CalendarDays, Clock, Plus, Search, Timer } from 'lucide-react';
+import { useState } from 'react';
+import { customers, formatEuro, statusTone } from '../../screens/workspace';
+import {
+    AppWindow,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    type PreviewProps,
+    previewIcon,
+} from '../kit';
 
 const segmentedKnobs: Knob[] = [
     { id: 'icons', label: 'Icons', switch: true, default: false },
@@ -36,34 +59,91 @@ export const entry: Entry = {
     Preview: SegmentedPreview,
 };
 
-const appearance = [
-    { id: 'theme', label: 'Theme', options: ['Light', 'Dark', 'System'], value: 'System' },
-    { id: 'density', label: 'Density', options: ['Compact', 'Comfortable'], value: 'Compact' },
-    { id: 'week', label: 'Week starts on', options: ['Monday', 'Sunday'], value: 'Monday' },
-    { id: 'chart', label: 'Charts as', options: ['Lines', 'Areas', 'Bars'], value: 'Areas' },
-];
+const statuses = ['All', 'Active', 'Trial', 'Past due', 'Churned'] as const;
 
-const Appearance = () => (
-    <Card className="w-full max-w-md gap-5">
-        <CardTitle>Appearance</CardTitle>
-        {appearance.map(row => (
-            <div className="flex items-center justify-between gap-4" key={row.id}>
-                <span className="font-medium text-neutral-950 text-xs">{row.label}</span>
-                <SegmentedControl aria-label={row.label} defaultValue={row.value}>
-                    {row.options.map(option => (
-                        <SegmentedControlItem key={option} value={option}>
-                            {option}
+type StatusFilter = (typeof statuses)[number];
+
+const CustomerList = () => {
+    const [status, setStatus] = useState<StatusFilter>('All');
+    const shown = customers.filter(customer => status === 'All' || customer.status === status);
+    const count = (filter: StatusFilter) =>
+        filter === 'All'
+            ? customers.length
+            : customers.filter(customer => customer.status === filter).length;
+
+    return (
+        <AppWindow
+            actions={
+                <Button>
+                    <Plus {...icon} /> Add customer
+                </Button>
+            }
+            description={`${customers.length} companies, ${formatEuro(
+                customers.reduce((sum, customer) => sum + customer.mrr, 0),
+            )} a month.`}
+            nav="top"
+            place="customers"
+            title="Customers"
+        >
+            <div className="flex items-center justify-between gap-4">
+                <SegmentedControl
+                    aria-label="Status"
+                    onValueChange={value => setStatus(value as StatusFilter)}
+                    value={status}
+                >
+                    {statuses.map(filter => (
+                        <SegmentedControlItem key={filter} value={filter}>
+                            {filter}
+                            <span className="text-neutral-500 tabular-nums">{count(filter)}</span>
                         </SegmentedControlItem>
                     ))}
                 </SegmentedControl>
+                <Input
+                    aria-label="Search customers"
+                    className="w-56"
+                    leadingIcon={<Search {...icon} />}
+                    placeholder="Search customers"
+                    size="sm"
+                />
             </div>
-        ))}
-    </Card>
-);
+            <Table>
+                <TableHeader>
+                    <TableRow>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Plan</TableHead>
+                        <TableHead>Owner</TableHead>
+                        <TableHead className="text-right">MRR</TableHead>
+                        <TableHead className="text-right">Status</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
+                    {shown.slice(0, 6).map(customer => (
+                        <TableRow key={customer.id}>
+                            <TableCell>
+                                <span className="flex items-center gap-2.5 font-medium text-neutral-950">
+                                    <Avatar fallback={customer.initials} size={24} />
+                                    {customer.name}
+                                </span>
+                            </TableCell>
+                            <TableCell className="text-neutral-600">{customer.plan}</TableCell>
+                            <TableCell className="text-neutral-600">{customer.owner}</TableCell>
+                            <TableCell className="text-right text-neutral-950 tabular-nums">
+                                {formatEuro(customer.mrr)}
+                            </TableCell>
+                            <TableCell className="text-right">
+                                <Badge tone={statusTone[customer.status]}>{customer.status}</Badge>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </AppWindow>
+    );
+};
 
 export const inUse: InUse = {
-    title: 'Appearance',
-    note: 'A segmented control per setting, each holding one value.',
-    canvas: true,
-    render: () => <Appearance />,
+    title: 'Customers by status',
+    note: 'A segmented control over the customers table, filtering it in place by status.',
+    app: true,
+    render: () => <CustomerList />,
 };
