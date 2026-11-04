@@ -1,6 +1,7 @@
 import {
     Badge,
     Button,
+    boxPadding,
     cn,
     Dock,
     DockItem,
@@ -8,10 +9,13 @@ import {
     FieldLabel,
     Input,
     NavItem,
+    spacingDefaults,
     Tabs,
     TabsList,
     TabsTrigger,
     Theme,
+    textGap,
+    toSpacingStep,
 } from 'continuum';
 import {
     Activity,
@@ -21,6 +25,7 @@ import {
     MousePointerClick,
     Palette,
     Rows3,
+    Ruler,
     Settings,
     SquareDashed,
     Type as TypeIcon,
@@ -31,7 +36,7 @@ import { Page, PageDock, PageHeader, scrollToSection, usePageIndex, useScrollSpy
 import type { AppState } from './meta';
 import { readBackground, readFont, readFontFamily, useResolved } from './resolve';
 import { KnobStage } from './showcase/detail';
-import type { Knob, PreviewProps } from './showcase/previews';
+import type { Knob, PreviewProps } from './showcase/kit';
 
 const icon = { strokeWidth: 2 } as const;
 
@@ -243,7 +248,7 @@ const SelectionFigure = () => (
                         </NavItem>
                     </div>
                     <Tabs defaultValue="summary">
-                        <TabsList>
+                        <TabsList variant="pill">
                             <TabsTrigger value="summary">Summary</TabsTrigger>
                             <TabsTrigger value="sources">Sources</TabsTrigger>
                         </TabsList>
@@ -493,6 +498,152 @@ const LayoutBody = () => (
             <C>--spacing</C>.
         </P>
         <GridFigure />
+    </Article>
+);
+
+/* ---------- Padding ---------- */
+
+type Run = { text: string; size: 13 | 24; lines: number; tone: 'label' | 'value' | 'body' };
+
+/** Three cards of rising content, each as its lines would measure at the stage's width. */
+const paddingContents: Record<string, { runs: Run[]; pairs: boolean[] }> = {
+    label: {
+        runs: [{ text: 'Two seats left', size: 13, lines: 1, tone: 'value' }],
+        pairs: [],
+    },
+    note: {
+        runs: [
+            { text: 'Seats', size: 13, lines: 1, tone: 'value' },
+            {
+                text: 'Two of your ten seats are free. Invite a teammate, or remove a seat to pay less from next month.',
+                size: 13,
+                lines: 3,
+                tone: 'body',
+            },
+        ],
+        pairs: [true],
+    },
+    figure: {
+        runs: [
+            { text: 'Seats', size: 13, lines: 1, tone: 'label' },
+            { text: '8 of 10', size: 24, lines: 1, tone: 'value' },
+            { text: 'Two left to assign', size: 13, lines: 1, tone: 'label' },
+        ],
+        pairs: [true, true],
+    },
+};
+
+// Written out so Tailwind finds them: the formula picks a step, the class comes from this list.
+const paddingClasses: Record<number, string> = {
+    2: 'p-2',
+    2.5: 'p-2.5',
+    3: 'p-3',
+    3.5: 'p-3.5',
+    4: 'p-4',
+    5: 'p-5',
+    6: 'p-6',
+    7: 'p-7',
+    8: 'p-8',
+};
+const gapClasses: Record<number, string> = {
+    0.5: 'mt-0.5',
+    1: 'mt-1',
+    1.5: 'mt-1.5',
+    2: 'mt-2',
+    2.5: 'mt-2.5',
+    3: 'mt-3',
+};
+const runClasses = {
+    label: 'text-neutral-600',
+    value: 'font-medium text-neutral-950',
+    body: 'text-neutral-600',
+};
+
+const paddingKnobs: Knob[] = [
+    {
+        id: 'content',
+        label: 'Content',
+        options: [
+            { value: 'label', label: 'A label' },
+            { value: 'note', label: 'A note' },
+            { value: 'figure', label: 'A figure' },
+        ],
+        default: 'figure',
+    },
+];
+
+/** One card whose padding and gaps the formula works out from what it holds, shaded and named. */
+const PaddingStage = ({ knobs }: PreviewProps) => {
+    const content = paddingContents[String(knobs.content)] ?? paddingContents.figure;
+    if (!content) return null;
+    const { runs, pairs } = content;
+    const step = toSpacingStep(boxPadding({ runs }));
+    const gaps = runs.slice(1).map((run, index) => {
+        const before = runs[index] ?? run;
+        return toSpacingStep(textGap({ before, after: run, pair: pairs[index] ?? false }));
+    });
+
+    return (
+        <div
+            className={cn(
+                'relative flex w-72 flex-col rounded-card border border-neutral-200 bg-neutral-50',
+                paddingClasses[step],
+            )}
+        >
+            {/* The padding shaded as it measures, its class over the top edge. */}
+            <span
+                aria-hidden
+                className="pointer-events-none absolute inset-0 rounded-[calc(var(--radius-card)-1px)] border-primary-500/15"
+                style={{ borderWidth: step * 4 }}
+            />
+            <span className="absolute inset-x-0 -top-6 text-center font-medium text-primary-700 text-xxs tabular-nums">
+                p-{step} · {step * 4}px
+            </span>
+            {runs.map((run, index) => {
+                const gap = index > 0 ? gaps[index - 1] : undefined;
+                return (
+                    <span
+                        className={cn(
+                            'relative',
+                            run.size === 24 ? 'text-2xl' : 'text-xs',
+                            runClasses[run.tone],
+                            gap !== undefined && gapClasses[gap],
+                        )}
+                        key={run.text}
+                    >
+                        {run.text}
+                    </span>
+                );
+            })}
+        </div>
+    );
+};
+
+const PaddingBody = () => (
+    <Article>
+        <H>Padding follows what a box holds</H>
+        <P>
+            A box's padding is worked out from its content, not picked: {spacingDefaults.k} times
+            its type size, growing by {spacingDefaults.alpha} for every doubling of its lines. The
+            type size is averaged over the lines, so one large figure does not pad a whole card. A
+            box of boxes pads at least {spacingDefaults.nesting} times the boxes inside it, and the
+            gap between boxes is {spacingDefaults.gapRatio} times their padding.
+        </P>
+
+        <H>Gaps follow the text after them</H>
+        <P>
+            The gap between two texts is sized by the one that follows. It is tight within a pair,
+            such as a label and its value or a figure and its caption, at {spacingDefaults.tight} of
+            that size. Between blocks it is {spacingDefaults.loose} of it. Nothing pads past{' '}
+            {spacingDefaults.cap}px.
+        </P>
+
+        <H>Always a Tailwind step</H>
+        <P>
+            Every result snaps to the spacing scale and is written as a class, <C>p-6</C> or{' '}
+            <C>gap-1.5</C>, never an arbitrary value. Controls keep their fixed side padding and
+            heights; the formula is for boxes that hold content.
+        </P>
     </Article>
 );
 
@@ -884,6 +1035,17 @@ const foundations: Foundation[] = [
         group: 'Space',
         description: 'A centred column as wide as the content is dense, spaced on a 4px grid.',
         Body: LayoutBody,
+    },
+    {
+        id: 'f-padding',
+        name: 'Padding',
+        short: 'Padding',
+        icon: <Ruler {...icon} />,
+        group: 'Space',
+        description: 'Worked out from what a box holds, and always a step of the scale.',
+        knobs: paddingKnobs,
+        Stage: PaddingStage,
+        Body: PaddingBody,
     },
     {
         id: 'f-states',

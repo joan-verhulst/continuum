@@ -337,7 +337,10 @@ const themeRows = (options: ThemeOptions): [string, string][] => {
     ];
 };
 
-/** DESIGN.md: how the project is set up, what its theme is, and the rules in brief, for Claude. */
+/**
+ * DESIGN.md: how the project is set up, what its theme is, and the rules in brief, for Claude.
+ * The rules are a short form of the skill's references/rules.md, their one full statement: change both together.
+ */
 export const designBrief = (theme: ThemeExport) => {
     const { label, options, mode } = theme;
     const font = fontPackages[fontOf(options)];
@@ -395,7 +398,8 @@ To change the look, change the values in \`app.css\`, and their dark counterpart
 - The column is as wide as the content is dense: \`max-w-content-narrow\` for making or editing one thing (its fields stacked), \`max-w-content\` for settings, overviews and details, \`max-w-content-wide\` for a table of several columns, \`max-w-content-dense\` for a very dense one. Never edge to edge unless asked.
 - An item from a list opens on its own page, with the breadcrumb back; never a pane docked beside the list. Every page has its breadcrumb.
 - Controls sit on 34px (buttons, small inputs, nav items) or 38px (fields, large buttons, the dock), nothing between.
-- Space on the 4px grid, and tight: \`gap-1.5\` to \`gap-2\` inside controls, \`gap-3\` to \`gap-4\` between blocks, \`p-4\` or \`p-5\` in cards, \`gap-12\` between page sections.
+- Space on the 4px grid, and tight: \`gap-1.5\` to \`gap-2\` inside controls, \`gap-12\` between page sections.
+- Padding in boxes that hold content, and the gaps between texts, are derived, not picked: a box pads by its type size averaged over its lines (\`0.75 × size × (1 + 0.6·log₂ lines)\`), a box of boxes at least 1.5× its children, the gap between boxes 1.1× their padding, and the gap between two texts by the text after it, 0.25× for a pair (header and subheader, label and value) and 1.5× between blocks. Snap every result to a Tailwind step (\`p-6\`, \`gap-1.5\`), never an arbitrary value. The \`fix-padding\` skill works it out and applies it.
 
 ### Radius
 
