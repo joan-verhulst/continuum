@@ -1,4 +1,4 @@
-<img alt="Continuum" height="48" src="assets/continuum-mark-round.svg" width="48">
+<img alt="Continuum" height="48" src="brand/continuum-mark-round.svg" width="48">
 
 # Continuum
 
@@ -142,29 +142,12 @@ the same way, so an accent sits beside them without a seam. Every theme works in
 
 ## Components
 
-- **Foundations:** `Theme`, `ThemeScope`, `useTheme`, `cn`, `focusRing`, `createThemeCss`, `createThemeVariables`,
-  `isDefaultTheme`, `defaultThemeOptions`
-- **Actions:** `Button`, `Toolbar`, `ToolbarButton`, `ToolbarChip`, `BottomBar`, `Dock`, `DockItem`, `DockAction`,
-  `FilterChip`, `SuggestionChip`, `Kbd`
-- **Forms:** `Field`, `FieldLabel`, `FieldHelper`, `Input`, `Textarea`, `Select`, `Combobox`, `Checkbox`,
-  `RadioGroup`, `Switch`, `Slider`, `SegmentedControl`, `OptionRow`, `OptionList`, `SettingRow`, `SettingGroup`,
-  `CodeInput`, `ValueField`, `Calendar`, `DatePicker`, `DateRangePicker`, `DropZone`, `DropZoneFiles`,
-  `DropZoneFile`, `Stepper`, `StepperItem`, `FilterMenu` (trigger, content, group, item, clear), `FilterBar`
-- **Navigation:** `AppShell`, `AppPanel`, `HeaderBar` (start, `HeaderBarNav` + `usePageHistory`, actions, `HeaderBarNotice` +
-  `useHeaderNotice`),
-  `PageContent`, `Sidebar` (header, logo, toggle, group,
-  footer, account), `NavItem`, `NavGroup`, `Rail`, `Tabs`, `Breadcrumb` (+ `BreadcrumbMenu`), `Pagination`, `CommandMenu`
-  (content, input, list, group, item, empty, footer; `useCommandMenuShortcut`)
-- **Overlays:** `Dialog`, `Sheet`, `Popover`, `DropdownMenu`, `Tooltip`, `InfoTip`
-- **Feedback:** `Progress`, `Meter`, `StatusDot`, `LiveCount`, `Alert`, `ToastProvider` + `useToast`,
-  `EmptyState`, `Skeleton`, `SkeletonText`, `Spinner` (and `Button loading`), `Checklist`, `ChecklistItem`
-- **Data display:** `Card`, `StatCard`, `MetaRow`, `MetaList`, `MetaItem`, `Table`, `DescriptionList`,
-  `ActivityList`, `ActivityItem`, `BarList`, `BarListItem`, `Badge`, `Avatar`, `AvatarStack`, `IconTile`,
-  `Separator`, `ContinuumMark`, `ContinuumLogo`
-- **Chat:** `ChatThread`, `ChatMessage`, `ChatEvent`, `ChatToken`, `ChatReference`, `ChatComposer`
-
-Compound parts (`DialogContent`, `SelectItem`, `TableRow`, ...) and the cva `*Variants` functions are exported
-alongside each family.
+The components come in families: the app frame (shell, sidebar, top nav, header bar, dock), navigation,
+actions, inputs, forms and settings, filtering, overlays, content, labels, status, messages and chat. The full
+list, with what each is for, is in
+[the skill's component reference](.claude/skills/continuum-taste/references/components.md), and every one has a
+page in the playground. Compound parts (`DialogContent`, `SelectItem`, `TableRow` …) and the cva `*Variants`
+functions are exported alongside each family.
 
 ### Charts
 
@@ -190,7 +173,7 @@ The `playground` workspace is built from the system itself:
 - **Patterns:** six screens of one generic app (a dashboard, a list, a detail, a form, settings and sign-in) and
   eight blocks from earlier products. Every screen opens full screen at the window's own size.
 - **Theme builder:** previews a theme on all of the above and exports it for a project.
-- **Lab:** a raster lab, and a CMS test: the same brief drawn freehand and with Continuum.
+- **Lab:** a raster lab.
 
 ```sh
 pnpm install
@@ -199,29 +182,35 @@ pnpm dev
 
 ## Repository
 
-| Path                             | What it is                                                                  |
-| -------------------------------- | --------------------------------------------------------------------------- |
-| `src/components`, `src/lib`      | The library and its helpers, including the theme builder's maths.           |
-| `src/charts`                     | The chart kit (`continuum/charts`).                                         |
-| `src/styles`                     | `tokens.css` (the default theme), `theme.css` (the Tailwind entry).         |
-| `dist/styles.css`                | The prebuilt, scoped stylesheet.                                            |
-| `playground`                     | The playground app.                                                         |
-| `labs/raster`                    | An experiment: screens on a Swiss raster. Not part of the package.          |
-| `.claude/skills/continuum-taste` | A Claude skill that carries the library and its method into other projects. |
-| `reference`                      | The original Figma screens the system was distilled from.                   |
+| Path                             | What it is                                                                    |
+| -------------------------------- | ----------------------------------------------------------------------------- |
+| `src/components`, `src/lib`      | The library and its helpers, including the theme builder's maths.             |
+| `src/charts`                     | The chart kit (`continuum/charts`).                                           |
+| `src/styles`                     | `tokens.css` (the default theme), `theme.css` (the Tailwind entry).           |
+| `dist/styles.css`                | The prebuilt, scoped stylesheet.                                              |
+| `playground`                     | The playground app.                                                           |
+| `labs/raster`                    | An experiment: screens on a Swiss raster. Not part of the package.            |
+| `scripts`                        | The stylesheet build, its scoping plugin and the skill build.                 |
+| `.claude/skills/continuum-taste` | A Claude skill that carries the library, its rules and its method into other projects. |
+| `.claude/skills/fix-padding`     | A Claude skill that works out padding and gaps with the spacing formula.      |
+| `brand`                          | The Continuum mark and the social preview.                                    |
+
+The skills' copies of the library (`assets/`, `references/screens/`, `fix-padding/scripts/spacing.ts`) are built by
+`pnpm build:skill` and not tracked.
 
 ## Scripts
 
-| Script               | Does                                                           |
-| -------------------- | -------------------------------------------------------------- |
-| `pnpm dev`           | Starts the playground (Vite).                                  |
-| `pnpm build`         | Builds `dist/styles.css`, then the playground.                 |
-| `pnpm build:css`     | Builds the scoped `dist/styles.css` (`scripts/build-css.mjs`). |
-| `pnpm build:skill`   | Bundles the system into the `continuum-taste` Claude skill.    |
-| `pnpm install:skill` | Bundles the skill and installs it to `~/.claude/skills`.       |
-| `pnpm type-check`    | Type-checks the package and the playground.                    |
-| `pnpm lint`          | Runs Biome.                                                    |
-| `pnpm lint:fix`      | Runs Biome and applies fixes.                                  |
+| Script               | Does                                                                  |
+| -------------------- | --------------------------------------------------------------------- |
+| `pnpm dev`           | Starts the playground (Vite).                                         |
+| `pnpm build`         | Builds `dist/styles.css`, then the playground.                        |
+| `pnpm build:css`     | Builds the scoped `dist/styles.css` (`scripts/build-css.mjs`).        |
+| `pnpm build:skill`   | Builds the stylesheet, then the skills' copies of the library.        |
+| `pnpm install:skill` | Builds the skills and installs both to `~/.claude/skills`.            |
+| `pnpm type-check`    | Type-checks the package and the playground.                           |
+| `pnpm lint`          | Runs Biome.                                                           |
+| `pnpm lint:fix`      | Runs Biome and applies fixes.                                         |
+| `pnpm check`         | Type-checks, lints and builds the skills: the one command before a commit. |
 
 ## Credits
 

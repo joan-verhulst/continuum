@@ -1,43 +1,53 @@
 /*
- * Bundles the system into the continuum-taste skill, so the skill works in a
- * project that has never seen this repo: the components, the tokens, the
- * prebuilt stylesheet and the recreated screens as examples. With --install it
- * also copies the skill to ~/.claude/skills, where every project can use it.
+ * Builds the generated half of the two skills from the one source, so they work in a project
+ * that has never seen this repo:
+ *
+ * - continuum-taste/assets/continuum: src/ (components, lib, charts, the index, the token and
+ *   theme sheets) and the prebuilt dist/styles.css.
+ * - continuum-taste/references/screens: the playground's screens, as examples.
+ * - fix-padding/scripts/spacing.ts: the spacing formula, which its script runs with Node.
+ *
+ * These copies are gitignored; SKILL.md and the hand-written references are not. With --install
+ * it also copies both skills to ~/.claude/skills, where every project can use them.
  */
-import { cp, mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
-import { dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const skill = resolve(root, '.claude/skills/continuum-taste');
+const skill = join(root, '.claude/skills/continuum-taste');
+const fixPadding = join(root, '.claude/skills/fix-padding');
 const assets = join(skill, 'assets/continuum');
 const screens = join(skill, 'references/screens');
 
 await rm(assets, { recursive: true, force: true });
 await rm(screens, { recursive: true, force: true });
-await mkdir(join(assets, 'styles'), { recursive: true });
-await mkdir(screens, { recursive: true });
 
-await cp(join(root, 'src/components'), join(assets, 'components'), { recursive: true });
-await cp(join(root, 'src/lib'), join(assets, 'lib'), { recursive: true });
-await cp(join(root, 'src/charts'), join(assets, 'charts'), { recursive: true });
-await cp(join(root, 'src/index.ts'), join(assets, 'index.ts'));
-await cp(join(root, 'src/styles/tokens.css'), join(assets, 'styles/tokens.css'));
-await cp(join(root, 'src/styles/theme.css'), join(assets, 'styles/theme.css'));
-await cp(join(root, 'dist/styles.css'), join(assets, 'styles.css'));
+const copies = [
+    ['src/components', join(assets, 'components')],
+    ['src/lib', join(assets, 'lib')],
+    ['src/charts', join(assets, 'charts')],
+    ['src/index.ts', join(assets, 'index.ts')],
+    ['src/styles/tokens.css', join(assets, 'styles/tokens.css')],
+    ['src/styles/theme.css', join(assets, 'styles/theme.css')],
+    ['dist/styles.css', join(assets, 'styles.css')],
+    // The screens import from 'continuum'; SKILL.md says to point that at the copied folder.
+    ['playground/src/screens', screens],
+    ['src/lib/spacing.ts', join(fixPadding, 'scripts/spacing.ts')],
+];
 
-// The screens import from the package; in a host project that is wherever the assets were copied.
-for (const file of await readdir(join(root, 'playground/src/screens'))) {
-    const source = await readFile(join(root, 'playground/src/screens', file), 'utf8');
-    await writeFile(join(screens, file), source);
+for (const [from, to] of copies) {
+    await cp(join(root, from), to, { recursive: true });
 }
 
-console.log(`Bundled the system into ${skill}`);
+console.log(`Built ${basename(skill)} and ${basename(fixPadding)}`);
 
 if (process.argv.includes('--install')) {
-    const target = join(homedir(), '.claude/skills/continuum-taste');
-    await rm(target, { recursive: true, force: true });
-    await cp(skill, target, { recursive: true });
-    console.log(`Installed to ${target}`);
+    for (const source of [skill, fixPadding]) {
+        const target = join(homedir(), '.claude/skills', basename(source));
+        await rm(target, { recursive: true, force: true });
+        await cp(source, target, { recursive: true });
+        console.log(`Installed to ${target}`);
+    }
 }
