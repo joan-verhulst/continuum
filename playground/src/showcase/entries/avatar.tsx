@@ -35,7 +35,7 @@ const AvatarPreview = ({ knobs }: PreviewProps) => {
 
     if (knobs.stack) {
         return (
-            <AvatarStack max={4}>
+            <AvatarStack>
                 {['AS', 'TB', 'RV', 'EP', 'JL', 'MK'].map(initials => (
                     <Avatar
                         fallback={knobs.initials ? initials : undefined}
@@ -112,7 +112,7 @@ const Members = () => (
         }
         description={
             <span className="inline-flex items-center gap-2.5">
-                <AvatarStack max={5}>
+                <AvatarStack>
                     {['MC', 'LO', 'SK', 'NP', 'EB', 'JV', 'TD'].map(initials => (
                         <Avatar fallback={initials} key={initials} shape="round" size={24} />
                     ))}

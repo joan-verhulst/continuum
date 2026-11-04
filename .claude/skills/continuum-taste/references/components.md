@@ -50,7 +50,7 @@ missing, build it with the recipe in `designing-new.md`.
 - **Content:** `Card` (+ `CardTitle`, `CardValue`, `CardDelta`, `CardFigure`), `StatCard`, `Table` (ruled · rows),
   `DescriptionList`, `ActivityList`, `BarList` + `BarListItem` (ranked breakdown with bars, show more, rows as filter
   toggles), `Separator` (rarely; see Surfaces)
-- **Labels and identity:** `Badge` (soft · pill · dot · count), `Chip` (a short value in a pill: `soft` for a filter, picked value or tag, removable with `onRemove`; `outline` with `onClick` for a prompt to click; `sm` 25px, `md` 29px), `Avatar`, `AvatarStack`, `IconTile`, `StatusDot`
+- **Labels and identity:** `Badge` (soft · pill · dot · count), `Chip` (a short value in a pill, `soft` for a filter, picked value or tag, `outline` for a prompt; `onClick` makes the chip a button and `action` ends it in one `ChipAction`, an × by default; `sm` 25px, `md` 29px), `Avatar`, `AvatarStack` (three at most by default, the rest as a "+N" tile on top), `IconTile`, `StatusDot`
   (+ `LiveCount`, the pulsing "129 Active now")
 - **Status:** `Progress`/`Meter` (task progress and a measured amount such as usage or credits; label, caption,
   value; tones), `Spinner` (only inside a busy button: `<Button loading>`), `Skeleton`/`SkeletonText` (4%

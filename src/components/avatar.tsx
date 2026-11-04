@@ -126,14 +126,14 @@ export const Avatar = ({
 );
 
 export type AvatarStackProps = ComponentProps<'div'> & {
-    /** Avatars past this count collapse into a "+N" tile. */
+    /** Avatars past this count collapse into a "+N" tile; three by default. */
     max?: number;
 };
 
 /** Row of 24px avatars overlapping by a third, each ringed in the surface colour so they read apart. */
-export const AvatarStack = ({ max, className, children, ...props }: AvatarStackProps) => {
+export const AvatarStack = ({ max = 3, className, children, ...props }: AvatarStackProps) => {
     const items = Children.toArray(children).filter(isValidElement);
-    const shown = max === undefined ? items : items.slice(0, max);
+    const shown = items.slice(0, max);
     const hidden = items.length - shown.length;
 
     return (
@@ -145,7 +145,8 @@ export const AvatarStack = ({ max, className, children, ...props }: AvatarStackP
             {shown}
             {hidden > 0 && (
                 <span
-                    className="inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 font-medium text-neutral-600 text-xxs"
+                    // Positioned like the avatars, so it lands on top of the last one rather than under it.
+                    className="relative inline-flex size-6 shrink-0 items-center justify-center rounded-full border border-neutral-200 bg-neutral-100 font-medium text-neutral-600 text-xxs"
                     data-slot="avatar-stack-overflow"
                 >
                     +{hidden}
