@@ -35,7 +35,7 @@ export const OptionRow = ({
         {...props}
     >
         <span className="flex min-w-0 items-center gap-3">
-            {icon && <IconTile className="text-action">{icon}</IconTile>}
+            {icon && <IconTile>{icon}</IconTile>}
             <span className="flex min-w-0 flex-col">
                 <span className="font-normal text-neutral-950 text-sm">{label}</span>
                 {description && (

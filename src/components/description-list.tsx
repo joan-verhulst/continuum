@@ -17,18 +17,22 @@ export type DescriptionItemProps = ComponentProps<'div'> & {
     term: ReactNode;
 };
 
-/** One row: `term` on the left, children as the value. Multi-line values align to the top. */
+/**
+ * One row: `term` on the left, children as the value. Every one-line row is 41px, the ruled table
+ * row, whether its value is text, a badge or an avatar: 40px cells over a 1px rule, centring what
+ * they hold rather than padding round it. A value that wraps grows the row; the term stays on top.
+ */
 export const DescriptionItem = ({ term, className, children, ...props }: DescriptionItemProps) => (
     <div
         className={cn(
-            'grid min-h-[41px] grid-cols-2 items-start border-neutral-200 border-b font-medium text-xs last:border-b-0',
+            'grid grid-cols-2 items-start border-neutral-200 border-b font-medium text-xs last:border-b-0',
             className,
         )}
         data-slot="description-item"
         {...props}
     >
-        <dt className="min-w-0 p-3 text-neutral-900">{term}</dt>
-        <dd className="flex min-w-0 flex-wrap items-center gap-2.5 p-3 text-neutral-950">
+        <dt className="flex min-h-10 min-w-0 items-center px-3 py-2 text-neutral-900">{term}</dt>
+        <dd className="flex min-h-10 min-w-0 flex-wrap items-center gap-2.5 px-3 py-2 text-neutral-950">
             {children}
         </dd>
     </div>

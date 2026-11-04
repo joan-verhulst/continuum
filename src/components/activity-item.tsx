@@ -30,7 +30,7 @@ export const ActivityItem = ({
         <IconTile aria-hidden tone={tone} variant="outline">
             {icon}
         </IconTile>
-        <div className="flex min-w-0 flex-1 flex-col gap-2 text-xs">
+        <div className="flex min-w-0 flex-1 flex-col gap-0.5 text-xs">
             <p className="truncate text-neutral-950">{title}</p>
             {time != null && <p className="truncate font-normal text-neutral-600">{time}</p>}
         </div>
