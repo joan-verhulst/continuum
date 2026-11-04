@@ -30,7 +30,6 @@ export * from './components/info-tip';
 export * from './components/input';
 export * from './components/kbd';
 export * from './components/logo';
-export * from './components/meta-list';
 export * from './components/notice';
 export * from './components/option-row';
 export * from './components/page-content';

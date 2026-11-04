@@ -123,23 +123,3 @@ export const StatCard = ({
         )}
     </Card>
 );
-
-export type MetaRowProps = Omit<ComponentProps<'div'>, 'children'> & {
-    label: ReactNode;
-    value: ReactNode;
-};
-
-/** Label/value strip above the invoice table. */
-export const MetaRow = ({ label, value, className, ...props }: MetaRowProps) => (
-    <div
-        className={cn(
-            'flex items-center justify-between gap-4 rounded-panel border border-neutral-200 p-4 font-normal text-xs',
-            className,
-        )}
-        data-slot="meta-row"
-        {...props}
-    >
-        <span className="text-neutral-500">{label}</span>
-        <span className="text-neutral-950">{value}</span>
-    </div>
-);
