@@ -12,7 +12,9 @@ export const focusRing =
 
 export const buttonVariants = cva(
     [
-        'inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap font-medium text-xs transition-[background-color,border-color,color,opacity] duration-150',
+        'inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap font-medium text-xs transition-[background-color,border-color,color,opacity,scale] duration-150 ease-out-strong',
+        // Gives a little under the press, so a click is felt; still under reduced motion.
+        'active:scale-[0.97] motion-reduce:active:scale-100',
         'disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
         focusRing,
     ],

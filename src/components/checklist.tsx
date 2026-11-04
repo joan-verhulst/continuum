@@ -71,6 +71,9 @@ export type ChecklistItemProps = Omit<ComponentProps<'li'>, 'title'> & {
     action?: ReactNode;
 };
 
+const revealClass =
+    'transition-[opacity,translate] delay-60 duration-250 ease-out-strong starting:-translate-y-1 starting:opacity-0 motion-reduce:starting:translate-y-0';
+
 /** One step: a round tick, its title, and while it is the next one, a line and the action that does it. */
 export const ChecklistItem = ({
     title,
@@ -95,7 +98,7 @@ export const ChecklistItem = ({
         {/* The stepper's marker: filled with a tick when done, a hairline ring while open. */}
         <span
             className={cn(
-                'mt-[-3px] inline-flex size-[22px] shrink-0 items-center justify-center rounded-pill border [&_svg]:size-3.5',
+                'mt-[-3px] inline-flex size-[22px] shrink-0 items-center justify-center rounded-pill border transition-[background-color,border-color] duration-200 ease-out-strong [&_svg]:size-3.5',
                 done
                     ? 'border-transparent bg-action text-on-action [background-image:var(--action-gradient)]'
                     : current
@@ -104,7 +107,14 @@ export const ChecklistItem = ({
             )}
             data-slot="checklist-marker"
         >
-            {done && <Check aria-hidden strokeWidth={2} />}
+            {/* The tick grows in as the step is done; a first run is the place for it. */}
+            {done && (
+                <Check
+                    aria-hidden
+                    className="starting:scale-[0.5] starting:opacity-0 transition-[opacity,scale] duration-200 ease-out-strong motion-reduce:starting:scale-100"
+                    strokeWidth={2}
+                />
+            )}
         </span>
         <div className="flex min-w-0 flex-1 flex-col gap-0.5">
             <p
@@ -116,9 +126,15 @@ export const ChecklistItem = ({
                 {title}
                 <span className="sr-only">{done ? ', done' : current ? ', next' : ''}</span>
             </p>
-            {current && description && <p className="text-neutral-600 text-xs">{description}</p>}
+            {/* The next step's line and action arrive just after the tick, drawing the eye down. */}
+            {current && description && (
+                <p className={cn('text-neutral-600 text-xs', revealClass)}>{description}</p>
+            )}
             {current && action && (
-                <div className="mt-2.5 flex flex-wrap gap-2" data-slot="checklist-action">
+                <div
+                    className={cn('mt-2.5 flex flex-wrap gap-2', revealClass)}
+                    data-slot="checklist-action"
+                >
                     {action}
                 </div>
             )}

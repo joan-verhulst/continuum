@@ -233,10 +233,16 @@ export const NavGroup = ({ icon, label, className, children, ...props }: NavGrou
             />
         </CollapsiblePrimitive.Trigger>
         <CollapsiblePrimitive.Panel
-            className="flex flex-col gap-0.5 py-1"
+            className={cn(
+                // Opens to its own height and closes back, the rows fading with it.
+                'h-(--collapsible-panel-height) overflow-hidden transition-[height,opacity] duration-200 ease-out-strong',
+                'data-ending-style:h-0 data-starting-style:h-0 data-ending-style:opacity-0 data-starting-style:opacity-0',
+                'motion-reduce:transition-[opacity]',
+            )}
             data-slot="nav-group-content"
         >
-            {children}
+            {/* The padding sits inside, so a closed panel is truly 0px tall. */}
+            <div className="flex flex-col gap-0.5 py-1">{children}</div>
         </CollapsiblePrimitive.Panel>
     </CollapsiblePrimitive.Root>
 );

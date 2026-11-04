@@ -10,7 +10,11 @@ import { Button } from './button';
  * while the box stays quiet: a coloured box would make every notice the loudest thing on the page.
  */
 export const alertVariants = cva(
-    '@container/alert flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2.5 rounded-item border border-neutral-200 bg-neutral-50 px-4 py-3 text-xs',
+    [
+        '@container/alert flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2.5 rounded-item border border-neutral-200 bg-neutral-50 px-4 py-3 text-xs',
+        // It settles in from just above as it appears, rather than landing all at once.
+        'transition-[opacity,translate] duration-200 ease-out-strong starting:-translate-y-1 starting:opacity-0 motion-reduce:starting:translate-y-0',
+    ],
     {
         variants: {
             tone: {

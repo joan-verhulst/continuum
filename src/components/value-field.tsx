@@ -200,7 +200,11 @@ const CopyButton = ({ text, disabled, className, describedBy, onCopy }: CopyButt
                         />
                     }
                 >
-                    {copied ? <Check strokeWidth={2} /> : <Copy strokeWidth={2} />}
+                    {/* Both stacked in one cell, so the tick crossfades in over the copy icon and back. */}
+                    <span className="grid place-items-center *:col-start-1 *:row-start-1 *:transition-[opacity,scale] *:duration-150 *:ease-out-strong motion-reduce:*:scale-100">
+                        <Copy className={cn(copied && 'scale-[0.8] opacity-0')} strokeWidth={2} />
+                        <Check className={cn(!copied && 'scale-[0.8] opacity-0')} strokeWidth={2} />
+                    </span>
                 </TooltipTrigger>
                 <TooltipContent>{copied ? 'Copied' : 'Copy'}</TooltipContent>
             </Tooltip>
