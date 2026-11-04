@@ -18,6 +18,7 @@ import {
 } from 'react';
 import { cn } from '../lib/cn';
 import { Dialog, DialogContent, type DialogContentProps } from './dialog';
+import { PopoverItem } from './popover-item';
 
 type CommandMenuContextValue = {
     query: string;
@@ -264,7 +265,7 @@ export const CommandMenuGroup = ({
             {...props}
         >
             <div
-                className="px-2 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs"
+                className="px-2.5 pt-2 pb-1 font-medium text-neutral-600 text-xxs"
                 data-slot="command-menu-label"
                 id={labelId}
             >
@@ -289,7 +290,7 @@ export type CommandMenuItemProps = Omit<ComponentProps<'div'>, 'onSelect'> & {
     onSelect?: () => void;
 };
 
-/** One command: a 32px menu row, highlighted with the 5% wash as the arrows reach it. */
+/** One command: a 36px row, highlighted with the 5% wash as the arrows reach it. */
 export const CommandMenuItem = ({
     value,
     keywords,
@@ -310,16 +311,12 @@ export const CommandMenuItem = ({
 
     return (
         // Never focused itself: the search keeps focus and points at the highlighted option.
-        <div
+        <PopoverItem
             aria-disabled={disabled || undefined}
             aria-selected={highlighted}
-            className={cn(
-                'flex h-8 shrink-0 cursor-pointer select-none items-center gap-2 rounded-item px-2 font-medium text-neutral-700 text-xs',
-                'data-highlighted:bg-neutral-950/5 data-highlighted:text-neutral-950',
-                'data-disabled:pointer-events-none data-disabled:opacity-50',
-                '[&>svg]:text-neutral-600 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
-                className,
-            )}
+            // A size up from a popup row and set on the search row's lines: its icon 16px in
+            // from the panel edge (6px of list plus 10px of row) and 10px from the label.
+            className={cn('gap-2.5 rounded-item px-2.5', className)}
             data-disabled={disabled || undefined}
             data-highlighted={highlighted || undefined}
             data-slot="command-menu-item"
@@ -330,19 +327,12 @@ export const CommandMenuItem = ({
             }}
             role="option"
             tabIndex={-1}
+            leading={icon}
+            trailing={hint}
             {...props}
         >
-            {icon}
-            <span className="min-w-0 flex-1 truncate">{children ?? value}</span>
-            {hint && (
-                <span
-                    className="ml-auto flex shrink-0 items-center gap-1 pl-3 font-normal text-neutral-500 text-xxs"
-                    data-slot="command-menu-hint"
-                >
-                    {hint}
-                </span>
-            )}
-        </div>
+            {children ?? value}
+        </PopoverItem>
     );
 };
 
@@ -353,7 +343,7 @@ export const CommandMenuEmpty = ({ className, children, ...props }: ComponentPro
     return (
         <p
             className={cn(
-                'hidden px-2 py-3 text-neutral-600 text-xs group-not-has-[[data-slot=command-menu-item]]/command-list:block',
+                'hidden px-2.5 py-3 text-neutral-600 text-xs group-not-has-[[data-slot=command-menu-item]]/command-list:block',
                 className,
             )}
             data-slot="command-menu-empty"

@@ -1,7 +1,7 @@
 'use client';
 
 import { Menu as MenuPrimitive } from '@base-ui/react/menu';
-import { Check, ListFilter } from 'lucide-react';
+import { ListFilter } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
 import { Badge } from './badge';
@@ -17,6 +17,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from './dropdown-menu';
+import { PopoverItem, PopoverItemIndicator } from './popover-item';
 
 /** Applied filters as a map of group to picked values, the shape the menu and its chips share. */
 export type FilterValues = Record<string, string[]>;
@@ -110,38 +111,22 @@ export const FilterMenuItem = ({
     closeOnClick = false,
     ...props
 }: FilterMenuItemProps) => (
-    <MenuPrimitive.CheckboxItem
-        className={cn(
-            'group/filter-item relative flex h-8 shrink-0 cursor-pointer select-none items-center gap-2 rounded-item px-2 font-medium text-neutral-700 text-xs outline-none',
-            'data-highlighted:bg-neutral-950/5 data-highlighted:text-neutral-800',
-            'data-disabled:pointer-events-none data-disabled:opacity-50',
-            '[&>svg]:text-neutral-600 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
-            className,
-        )}
-        closeOnClick={closeOnClick}
+    <PopoverItem
+        className={className}
         data-slot="filter-menu-item"
-        {...props}
+        leading={
+            <>
+                <PopoverItemIndicator />
+                {icon}
+            </>
+        }
+        render={<MenuPrimitive.CheckboxItem closeOnClick={closeOnClick} {...props} />}
+        trailing={
+            count !== undefined && <span className="tabular-nums">{count.toLocaleString()}</span>
+        }
     >
-        <span
-            className={cn(
-                // 16px in a 32px row: the checkbox's look, its corner one step in from the chip's.
-                'inline-flex size-4 shrink-0 items-center justify-center rounded-[calc(var(--radius-chip)-2px)] border border-neutral-300 text-on-action transition-[background-color,border-color] duration-150',
-                'group-data-checked/filter-item:border-transparent group-data-checked/filter-item:bg-action group-data-checked/filter-item:[background-image:var(--action-gradient)]',
-            )}
-            data-slot="filter-menu-box"
-        >
-            <MenuPrimitive.CheckboxItemIndicator className="flex">
-                <Check className="size-3" strokeWidth={2} />
-            </MenuPrimitive.CheckboxItemIndicator>
-        </span>
-        {icon}
-        <span className="min-w-0 flex-1 truncate">{children}</span>
-        {count !== undefined && (
-            <span className="shrink-0 font-normal text-neutral-500 text-xxs tabular-nums">
-                {count.toLocaleString()}
-            </span>
-        )}
-    </MenuPrimitive.CheckboxItem>
+        {children}
+    </PopoverItem>
 );
 
 export type FilterMenuClearProps = Omit<DropdownMenuItemProps, 'children'> & {
@@ -166,7 +151,7 @@ export type FilterBarProps = ComponentProps<'div'> & {
 
 /**
  * The trigger and the applied filters in one row: put the `FilterMenuTrigger`'s menu first, then a
- * `FilterChip` per group; "Clear all" follows once there is something to clear.
+ * `Chip` per group; "Clear all" follows once there is something to clear.
  */
 export const FilterBar = ({
     onClear,

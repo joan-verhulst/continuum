@@ -1,10 +1,18 @@
 'use client';
 
 import { Menu as MenuPrimitive } from '@base-ui/react/menu';
-import { cva, type VariantProps } from 'class-variance-authority';
-import { Check, ChevronRight } from 'lucide-react';
-import { type ComponentProps, createContext, useContext } from 'react';
+import type { VariantProps } from 'class-variance-authority';
+import { Check, ChevronRight, Search } from 'lucide-react';
+import {
+    type ComponentProps,
+    createContext,
+    type KeyboardEvent,
+    useContext,
+    useEffect,
+    useRef,
+} from 'react';
 import { cn, type WithClassName } from '../lib/cn';
+import { PopoverItem, popoverItemVariants } from './popover-item';
 import { ThemeScope } from './theme';
 
 const contentClass = [
@@ -12,26 +20,6 @@ const contentClass = [
     // Base UI keeps the popup mounted while it closes, so the same scale and fade play on the way out.
     'origin-(--transform-origin) transition-[opacity,scale] duration-200 ease-out-strong data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
 ];
-
-const itemVariants = cva(
-    [
-        'relative flex h-8 shrink-0 cursor-pointer select-none items-center gap-1.5 rounded-item px-2 font-medium text-xs outline-none',
-        'data-disabled:pointer-events-none data-disabled:opacity-50',
-        '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
-    ],
-    {
-        variants: {
-            variant: {
-                default: [
-                    'text-neutral-700 [&_svg]:text-neutral-600',
-                    'data-highlighted:bg-neutral-950/5 data-highlighted:text-neutral-800',
-                ],
-                danger: 'text-error-600 data-highlighted:bg-neutral-950/5 [&_svg]:text-current',
-            },
-        },
-        defaultVariants: { variant: 'default' },
-    },
-);
 
 /*
  * Base UI's GroupLabel throws outside a Group, while a label at the top of a menu is common.
@@ -138,11 +126,11 @@ export const DropdownMenuSubContent = ({
 );
 
 export type DropdownMenuItemProps = WithClassName<MenuPrimitive.Item.Props> &
-    VariantProps<typeof itemVariants>;
+    VariantProps<typeof popoverItemVariants>;
 
 export const DropdownMenuItem = ({ variant, className, ...props }: DropdownMenuItemProps) => (
     <MenuPrimitive.Item
-        className={cn(itemVariants({ variant }), className)}
+        className={cn(popoverItemVariants({ variant }), className)}
         data-slot="dropdown-menu-item"
         data-variant={variant ?? 'default'}
         {...props}
@@ -154,16 +142,18 @@ export const DropdownMenuCheckboxItem = ({
     children,
     ...props
 }: WithClassName<MenuPrimitive.CheckboxItem.Props>) => (
-    <MenuPrimitive.CheckboxItem
-        className={cn(itemVariants(), 'pr-1.5', className)}
+    <PopoverItem
+        className={className}
         data-slot="dropdown-menu-checkbox-item"
-        {...props}
+        render={<MenuPrimitive.CheckboxItem {...props} />}
+        trailing={
+            <MenuPrimitive.CheckboxItemIndicator className="flex">
+                <Check strokeWidth={2} />
+            </MenuPrimitive.CheckboxItemIndicator>
+        }
     >
         {children}
-        <MenuPrimitive.CheckboxItemIndicator className="ml-auto flex">
-            <Check strokeWidth={2} />
-        </MenuPrimitive.CheckboxItemIndicator>
-    </MenuPrimitive.CheckboxItem>
+    </PopoverItem>
 );
 
 export const DropdownMenuRadioItem = ({
@@ -171,20 +161,19 @@ export const DropdownMenuRadioItem = ({
     children,
     ...props
 }: WithClassName<MenuPrimitive.RadioItem.Props>) => (
-    <MenuPrimitive.RadioItem
-        className={cn(
-            itemVariants(),
-            'pr-1.5 data-checked:bg-neutral-100 data-checked:text-neutral-950',
-            className,
-        )}
+    // Checked takes the same selected wash as a select's picked option.
+    <PopoverItem
+        className={cn('data-checked:bg-selected data-checked:text-neutral-950', className)}
         data-slot="dropdown-menu-radio-item"
-        {...props}
+        render={<MenuPrimitive.RadioItem {...props} />}
+        trailing={
+            <MenuPrimitive.RadioItemIndicator className="flex">
+                <Check strokeWidth={2} />
+            </MenuPrimitive.RadioItemIndicator>
+        }
     >
         {children}
-        <MenuPrimitive.RadioItemIndicator className="ml-auto flex">
-            <Check strokeWidth={2} />
-        </MenuPrimitive.RadioItemIndicator>
-    </MenuPrimitive.RadioItem>
+    </PopoverItem>
 );
 
 export const DropdownMenuSubTrigger = ({
@@ -192,21 +181,17 @@ export const DropdownMenuSubTrigger = ({
     children,
     ...props
 }: WithClassName<MenuPrimitive.SubmenuTrigger.Props>) => (
-    <MenuPrimitive.SubmenuTrigger
-        className={cn(
-            itemVariants(),
-            'pr-1.5 data-popup-open:bg-selected data-popup-open:text-neutral-800',
-            className,
-        )}
+    <PopoverItem
+        className={cn('data-popup-open:bg-selected data-popup-open:text-neutral-800', className)}
         data-slot="dropdown-menu-sub-trigger"
-        {...props}
+        render={<MenuPrimitive.SubmenuTrigger {...props} />}
+        trailing={<ChevronRight strokeWidth={2} />}
     >
         {children}
-        <ChevronRight className="ml-auto" strokeWidth={2} />
-    </MenuPrimitive.SubmenuTrigger>
+    </PopoverItem>
 );
 
-const labelClass = 'px-2 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs';
+const labelClass = 'px-3 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs';
 
 export const DropdownMenuLabel = ({ className, ...props }: ComponentProps<'div'>) => {
     const inGroup = useContext(InGroupContext);
@@ -234,6 +219,75 @@ export const DropdownMenuShortcut = ({ className, ...props }: ComponentProps<'sp
     <span
         className={cn('ml-auto pl-3 font-medium text-neutral-500 text-xxs', className)}
         data-slot="dropdown-menu-shortcut"
+        {...props}
+    />
+);
+
+// The keys a search hands on to the menu: moving into the list, and leaving it.
+const menuKeys = new Set(['ArrowDown', 'ArrowUp', 'Escape', 'Tab']);
+
+export type DropdownMenuSearchProps = Omit<ComponentProps<'input'>, 'value' | 'onChange'> & {
+    value: string;
+    onValueChange: (value: string) => void;
+};
+
+/**
+ * A search at the top of a menu, for one long enough to need it (assign to, move to, add label).
+ * No box: a 16px icon and the text, ruled off from the list full width, the icon in line with the
+ * rows' icons. It takes focus as the menu opens and keeps its typing from the menu's typeahead;
+ * the arrows still move into the list. The menu filters its own items by `value`.
+ */
+export const DropdownMenuSearch = ({
+    value,
+    onValueChange,
+    placeholder = 'Search',
+    className,
+    onKeyDown,
+    ...props
+}: DropdownMenuSearchProps) => {
+    const ref = useRef<HTMLInputElement>(null);
+
+    // The menu focuses its popup as it opens; the search takes it over on the next frame.
+    useEffect(() => {
+        const frame = requestAnimationFrame(() => ref.current?.focus());
+        return () => cancelAnimationFrame(frame);
+    }, []);
+
+    const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+        onKeyDown?.(event);
+        if (!menuKeys.has(event.key)) event.stopPropagation();
+    };
+
+    return (
+        <div
+            className="-mx-1 -mt-1 flex h-10 shrink-0 items-center gap-3 border-neutral-200 border-b px-4 text-neutral-500 [&_svg]:size-4 [&_svg]:shrink-0"
+            data-slot="dropdown-menu-search"
+        >
+            <Search aria-hidden strokeWidth={2} />
+            <input
+                autoComplete="off"
+                className={cn(
+                    'h-full min-w-0 flex-1 bg-transparent text-neutral-950 text-xs outline-none placeholder:text-neutral-500',
+                    className,
+                )}
+                data-slot="dropdown-menu-search-input"
+                onChange={event => onValueChange(event.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder}
+                ref={ref}
+                spellCheck={false}
+                value={value}
+                {...props}
+            />
+        </div>
+    );
+};
+
+/** What a searched menu shows when nothing matches. */
+export const DropdownMenuEmpty = ({ className, ...props }: ComponentProps<'div'>) => (
+    <div
+        className={cn('px-3 py-2.5 text-neutral-500 text-xs', className)}
+        data-slot="dropdown-menu-empty"
         {...props}
     />
 );

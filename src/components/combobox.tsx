@@ -9,6 +9,7 @@ import { focusRing } from './button';
 import { chipClass, chipRemoveClass } from './chip';
 import { useFieldControl } from './field';
 import { inputTextClass, inputVariants } from './input';
+import { PopoverItem } from './popover-item';
 import { ThemeScope } from './theme';
 
 /*
@@ -215,7 +216,7 @@ export type ComboboxChipProps = Omit<ComboboxPrimitive.Chip.Props, 'className'> 
 };
 
 /**
- * A selected value, drawn as FilterChip: a 25px pill on neutral-100 with a 12px remove icon.
+ * A selected value, drawn as a soft Chip: a 25px pill on neutral-100 with a 12px remove icon.
  * Backspace and the arrow keys move between chips, so a chip shows the focus ring when it has focus.
  */
 export const ComboboxChip = ({
@@ -313,29 +314,24 @@ export const ComboboxList = ({
     />
 );
 
-/** A 32px row like SelectItem: a wash on highlight, neutral-100 and a check once selected. */
+/** An option: a `PopoverItem` row, as in a select, with a check on the picked one. */
 export const ComboboxItem = ({
     className,
     children,
     ...props
 }: WithClassName<ComboboxPrimitive.Item.Props>) => (
-    <ComboboxPrimitive.Item
-        className={cn(
-            'relative flex h-8 cursor-pointer select-none items-center gap-1.5 rounded-item px-2 font-medium text-neutral-700 text-xs outline-none [&_svg]:text-neutral-600',
-            'data-highlighted:bg-neutral-950/5 data-highlighted:text-neutral-800',
-            'data-selected:bg-selected data-selected:text-neutral-950',
-            'data-disabled:pointer-events-none data-disabled:opacity-50',
-            '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
-            className,
-        )}
+    <PopoverItem
+        className={className}
         data-slot="combobox-item"
-        {...props}
+        render={<ComboboxPrimitive.Item {...props} />}
+        trailing={
+            <ComboboxPrimitive.ItemIndicator className="flex">
+                <Check strokeWidth={2} />
+            </ComboboxPrimitive.ItemIndicator>
+        }
     >
-        <span className="inline-flex min-w-0 items-center gap-1.5 truncate">{children}</span>
-        <ComboboxPrimitive.ItemIndicator className="ml-auto flex">
-            <Check strokeWidth={2} />
-        </ComboboxPrimitive.ItemIndicator>
-    </ComboboxPrimitive.Item>
+        {children}
+    </PopoverItem>
 );
 
 /*
@@ -349,7 +345,7 @@ export const ComboboxEmpty = ({
 }: WithClassName<ComboboxPrimitive.Empty.Props>) => (
     <ComboboxPrimitive.Empty
         className={cn(
-            'not-empty:m-1 not-empty:flex not-empty:h-8 not-empty:items-center not-empty:px-2 font-normal text-neutral-500 text-xs',
+            'not-empty:m-1 not-empty:flex not-empty:h-9 not-empty:items-center not-empty:px-2 font-normal text-neutral-500 text-xs',
             className,
         )}
         data-slot="combobox-empty"
@@ -376,7 +372,7 @@ export const ComboboxGroupLabel = ({
     ...props
 }: WithClassName<ComboboxPrimitive.GroupLabel.Props>) => (
     <ComboboxPrimitive.GroupLabel
-        className={cn('px-2 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs', className)}
+        className={cn('px-3 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs', className)}
         data-slot="combobox-group-label"
         {...props}
     />

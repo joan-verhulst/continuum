@@ -7,6 +7,7 @@ import { Children, isValidElement, type ReactNode, useMemo } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
 import { focusRing } from './button';
 import { useFieldControl } from './field';
+import { PopoverItem } from './popover-item';
 import { ThemeScope } from './theme';
 
 type SelectItemEntry = { value: unknown; label: ReactNode };
@@ -215,35 +216,31 @@ export const SelectLabel = ({
     ...props
 }: WithClassName<SelectPrimitive.GroupLabel.Props>) => (
     <SelectPrimitive.GroupLabel
-        className={cn('px-2 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs', className)}
+        className={cn('px-3 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs', className)}
         data-slot="select-label"
         {...props}
     />
 );
 
+/** An option: a `PopoverItem` row, with a check on the picked one. */
 export const SelectItem = ({
     className,
     children,
     ...props
 }: WithClassName<SelectPrimitive.Item.Props>) => (
-    <SelectPrimitive.Item
-        className={cn(
-            'relative flex h-8 cursor-pointer select-none items-center gap-1.5 rounded-item px-2 font-medium text-neutral-700 text-xs outline-none [&_svg]:text-neutral-600',
-            'data-highlighted:bg-neutral-950/5 data-highlighted:text-neutral-800',
-            'data-selected:bg-selected data-selected:text-neutral-950',
-            'data-disabled:pointer-events-none data-disabled:opacity-50',
-            '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
-            className,
-        )}
+    <PopoverItem
+        className={className}
         data-slot="select-item"
-        {...props}
+        render={<SelectPrimitive.Item {...props} />}
+        trailing={
+            <SelectPrimitive.ItemIndicator className="flex">
+                <Check strokeWidth={2} />
+            </SelectPrimitive.ItemIndicator>
+        }
     >
-        {/* A span, as before: rich labels (icon, name, muted year) flow inline in the list and the trigger. */}
+        {/* A span: rich labels (icon, name, muted year) flow inline in the list and the trigger. */}
         <SelectPrimitive.ItemText render={<span />}>{children}</SelectPrimitive.ItemText>
-        <SelectPrimitive.ItemIndicator className="ml-auto flex">
-            <Check strokeWidth={2} />
-        </SelectPrimitive.ItemIndicator>
-    </SelectPrimitive.Item>
+    </PopoverItem>
 );
 
 export const SelectSeparator = ({
