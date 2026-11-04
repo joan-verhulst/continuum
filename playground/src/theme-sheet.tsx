@@ -274,7 +274,7 @@ const ExportDialog = ({
                     </DialogDescription>
                     <Tabs onValueChange={value => setTab(String(value))} value={current?.id}>
                         <div className="flex items-center justify-between gap-3">
-                            <TabsList>
+                            <TabsList variant="pill">
                                 {files.map(file => (
                                     <TabsTrigger key={file.id} value={file.id}>
                                         {file.name}

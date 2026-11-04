@@ -30,9 +30,10 @@ import {
 } from '../layout';
 import { type AppState, toHash } from '../meta';
 import { KnobStage, Neighbours, PreviewTile } from './detail';
+import { entries, inUseOf } from './entries';
 import { type Gap, type GapStart, gaps } from './gaps';
-import { type InUse, inUseOf } from './in-use';
-import { type Category, categories, type Entry, entries, knobDefaults } from './previews';
+import type { InUse } from './kit';
+import { type Category, categories, type Entry, knobDefaults } from './kit';
 
 const icon = { strokeWidth: 2 } as const;
 
@@ -129,6 +130,8 @@ const ComponentsGrid = ({ state, onOpen }: GridProps) => {
                 <PageDock>
                     <Dock
                         aria-label="Categories"
+                        // Thirteen categories would run the width of the page; a few at a time, with chevrons.
+                        className="max-w-[560px]"
                         onValueChange={scrollToSection}
                         value={current ?? sectionIds[0]}
                     >

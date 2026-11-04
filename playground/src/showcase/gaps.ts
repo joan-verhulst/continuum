@@ -1,4 +1,4 @@
-import type { Category } from './previews';
+import type { Category } from './kit';
 
 /**
  * How far a missing component is from existing: a recipe already written in the
@@ -19,7 +19,7 @@ export type Gap = {
 export const gaps: Gap[] = [
     {
         name: 'Data table',
-        category: 'data',
+        category: 'content',
         description:
             'Sorting, column choice, a selection bar and a sticky header on the ruled table.',
         start: 'new',
@@ -27,24 +27,24 @@ export const gaps: Gap[] = [
     },
     {
         name: 'Board',
-        category: 'data',
+        category: 'content',
         description: 'Kanban columns of cards you drag between states.',
         start: 'recipe',
         from: 'Badge count, Card',
     },
     {
         name: 'Comment thread',
-        category: 'data',
+        category: 'content',
         description: 'A comment with replies and mentions beside a document.',
         start: 'compose',
         from: 'Avatar, ActivityList, Textarea',
     },
     {
         name: 'Change summary',
-        category: 'data',
+        category: 'content',
         description: 'What moved since last time, one metric per row with its delta.',
         start: 'compose',
-        from: 'MetaRow, Badge pill',
+        from: 'DescriptionList, Badge pill',
     },
     {
         name: 'Bar chart',

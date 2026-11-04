@@ -7,7 +7,7 @@ import { Frame, Page, PageHeader } from './layout';
 import { type AppState, toHash } from './meta';
 import { screens } from './screens';
 import { Overview } from './screens/overview';
-import { entries } from './showcase/previews';
+import { entries } from './showcase/entries';
 
 const icon = { strokeWidth: 2 } as const;
 

@@ -17,7 +17,7 @@ import {
 import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { Stage } from '../layout';
-import { type Knob, type KnobValues, knobDefaults } from './previews';
+import { type Knob, type KnobValues, knobDefaults } from './kit';
 
 const icon = { strokeWidth: 2 } as const;
 
