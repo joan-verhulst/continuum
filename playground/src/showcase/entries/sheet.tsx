@@ -92,8 +92,16 @@ const SheetPreview = () => {
     const tile = Boolean(stage?.inert);
 
     return (
-        // On a stage the trigger keeps to the left, where the page would be, and the sheet is open beside it.
-        <div className={stage ? 'flex w-full justify-start' : 'contents'}>
+        // On a stage the trigger stands in the middle of the room the sheet leaves, as the page would.
+        <div
+            className={
+                tile
+                    ? 'flex w-full justify-start'
+                    : stage
+                      ? 'flex w-full justify-center pr-[min(336px,calc(100%-136px))]'
+                      : 'contents'
+            }
+        >
             <Sheet open={stage ? true : undefined}>
                 {tile ? (
                     <div className="flex w-[28%] flex-col gap-3">
@@ -148,8 +156,9 @@ export const entry: Entry = {
     id: 'sheet',
     name: 'Sheet',
     category: 'overlays',
-    description: 'A non-modal side sheet beside the page.',
-    hero: 'min-h-[520px]',
+    description: 'A non-modal side sheet over the page.',
+    // Tall enough for the whole history, so the open sheet does not stop mid-list.
+    hero: 'min-h-[600px]',
     Preview: SheetPreview,
 };
 
@@ -242,14 +251,13 @@ const InvoiceWithHistory = () => (
                     <History {...icon} /> History
                 </Button>
             ),
-            // The page keeps to the left of the open sheet, as it would beside it.
-            className: 'pr-[420px]',
             children: (
                 <>
-                    <div className="grid grid-cols-3 gap-3">
+                    <div className="grid grid-cols-4 gap-3">
                         <ValueField label="Amount" value="€4,120.00" />
                         <ValueField label="Issued" value="12 Oct 2026" />
                         <ValueField label="Due" value="26 Oct 2026" />
+                        <ValueField label="Paid" value="Today, 09:12" />
                     </div>
                     <Table>
                         <TableHeader>
@@ -292,7 +300,7 @@ const InvoiceWithHistory = () => (
 
 export const inUse: InUse = {
     title: 'An invoice’s history',
-    note: 'The invoice stays in view while its history is read in a sheet beside it.',
+    note: 'The history slides over the invoice, which stays as it was underneath.',
     bare: true,
     render: () => <InvoiceWithHistory />,
 };
