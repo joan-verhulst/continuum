@@ -1,79 +1,141 @@
+'use client';
+
+import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
-import type { ComponentProps, ReactNode } from 'react';
+import { type ComponentProps, createContext, type ReactNode, useContext } from 'react';
 import { cn } from '../lib/cn';
 import { focusRing } from './button';
 
-/** The 25px pill a filter or a picked value sits in; the combobox draws its chips with it too. */
-export const chipClass =
-    'inline-flex h-[25px] shrink-0 items-center gap-3 whitespace-nowrap rounded-pill bg-neutral-100 px-2 font-normal text-neutral-600 text-xs [&_svg:not([class*=size-])]:size-3 [&_svg]:shrink-0';
+/*
+ * A chip: a short value in a pill. Soft, on neutral-100, it holds a filter, a picked value or a tag.
+ * Outlined, a hairline round it, it is something offered, such as a prompt for the assistant. Its
+ * icon follows its height: 12px in the 25px chip, 16px in the 29px one.
+ *
+ * Two things can answer a click, apart: the chip itself (`onClick`: open the filter it shows, ask
+ * the prompt) and one action at its end (`action`: remove it, edit it). They are sibling buttons,
+ * never one inside the other.
+ */
+export const chipVariants = cva(
+    'relative inline-flex shrink-0 items-center gap-3 whitespace-nowrap rounded-pill font-normal text-xs [&_svg]:shrink-0',
+    {
+        variants: {
+            variant: {
+                soft: 'bg-neutral-100 text-neutral-600',
+                outline: 'border border-neutral-200 text-neutral-950',
+            },
+            size: {
+                sm: 'h-[25px] px-2 [&_svg:not([class*=size-])]:size-3',
+                md: 'h-[29px] px-2.5 [&_svg:not([class*=size-])]:size-4',
+            },
+        },
+        defaultVariants: { variant: 'soft', size: 'sm' },
+    },
+);
 
-/** The × at the end of a chip: a 20px target drawn round a 12px icon. */
+// A chip that takes a click answers the pointer over its whole face, its action aside.
+const pressable = {
+    soft: 'has-[[data-slot=chip-button]:hover]:bg-neutral-200 has-[[data-slot=chip-button]:hover]:text-neutral-950',
+    outline: 'has-[[data-slot=chip-button]:hover]:border-neutral-300',
+} as const;
+
+/** The 25px soft chip, as the combobox draws its picked values. */
+export const chipClass = chipVariants();
+
+/** The button at the end of a chip: a 20px target drawn round a 12px icon. */
 export const chipRemoveClass =
-    '-m-1 inline-flex cursor-pointer items-center justify-center rounded-full p-1 transition-colors duration-150 hover:text-neutral-950';
+    'relative z-10 -m-1 inline-flex cursor-pointer items-center justify-center rounded-full p-1 transition-colors duration-150 hover:text-neutral-950 [&_svg]:size-3!';
 
-export type FilterChipProps = ComponentProps<'span'> & {
-    /** Leading 12px icon. */
-    icon?: ReactNode;
-    onRemove?: () => void;
-    /** Accessible name of the remove button; defaults to "Remove <label>" for text labels. */
-    removeLabel?: string;
-};
+// The chip's text label, for an action's default name ("Remove Country is Netherlands").
+const ChipLabelContext = createContext<string | undefined>(undefined);
 
-/** A removable filter tag in a top bar. Without `onRemove` it renders as a static tag. */
-export const FilterChip = ({
+export type ChipProps = Omit<ComponentProps<'span'>, 'onClick'> &
+    VariantProps<typeof chipVariants> & {
+        /** Leading icon, 12px in a `sm` chip and 16px in an `md` one. */
+        icon?: ReactNode;
+        /** Makes the chip a button: open the filter it shows, ask the prompt it holds. */
+        onClick?: () => void;
+        /** One `ChipAction` at the end: remove (the default), edit, or any one icon. */
+        action?: ReactNode;
+        disabled?: boolean;
+    };
+
+/**
+ * A short value in a pill: a filter in a top bar ("Status is Paid"), a picked value, a tag, or a
+ * prompt offered to the user. It can take a click, end in an action, both, or neither.
+ */
+export const Chip = ({
+    variant = 'soft',
+    size = 'sm',
     icon,
-    onRemove,
-    removeLabel,
+    onClick,
+    action,
+    disabled,
     className,
     children,
     ...props
-}: FilterChipProps) => (
-    <span className={cn(chipClass, className)} data-slot="filter-chip" {...props}>
+}: ChipProps) => {
+    const label = (
         <span className="inline-flex items-center gap-1.5">
             {icon}
             {children}
         </span>
-        {onRemove && (
-            <button
-                aria-label={
-                    removeLabel ?? (typeof children === 'string' ? `Remove ${children}` : 'Remove')
-                }
-                className={cn(chipRemoveClass, focusRing)}
-                data-slot="filter-chip-remove"
-                onClick={onRemove}
-                type="button"
-            >
-                <X aria-hidden strokeWidth={2} />
-            </button>
-        )}
-    </span>
-);
+    );
 
-export type SuggestionChipProps = ComponentProps<'button'> & {
-    /** Leading 16px icon. */
-    icon?: ReactNode;
+    return (
+        <ChipLabelContext.Provider value={typeof children === 'string' ? children : undefined}>
+            <span
+                className={cn(
+                    chipVariants({ variant, size }),
+                    'transition-[background-color,border-color,color] duration-150',
+                    onClick && pressable[variant ?? 'soft'],
+                    disabled && 'pointer-events-none opacity-50',
+                    className,
+                )}
+                data-slot="chip"
+                data-variant={variant}
+                {...props}
+            >
+                {onClick ? (
+                    <button
+                        className={cn(
+                            // Its hit area spreads over the whole chip; the action sits above it.
+                            'inline-flex cursor-pointer items-center rounded-pill after:absolute after:inset-0 after:rounded-pill',
+                            focusRing,
+                        )}
+                        data-slot="chip-button"
+                        disabled={disabled}
+                        onClick={onClick}
+                        type="button"
+                    >
+                        {label}
+                    </button>
+                ) : (
+                    label
+                )}
+                {action}
+            </span>
+        </ChipLabelContext.Provider>
+    );
 };
 
-/** A prompt offered to the user, set in a row after a "Suggestions:" label. */
-export const SuggestionChip = ({
-    icon,
-    className,
-    children,
-    type = 'button',
-    ...props
-}: SuggestionChipProps) => (
-    <button
-        className={cn(
-            'inline-flex h-[29px] shrink-0 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-control border border-neutral-200 px-2 font-normal text-neutral-950 text-xs transition-colors duration-150 hover:border-neutral-300',
-            'disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
-            focusRing,
-            className,
-        )}
-        data-slot="suggestion-chip"
-        type={type}
-        {...props}
-    >
-        {icon}
-        {children}
-    </button>
-);
+export type ChipActionProps = Omit<ComponentProps<'button'>, 'type'> & {
+    /** Its accessible name; "Remove <the chip's label>" when left out. */
+    label?: string;
+};
+
+/** The action at a chip's end. An × that removes the chip unless given another icon. */
+export const ChipAction = ({ label, className, children, ...props }: ChipActionProps) => {
+    const chipLabel = useContext(ChipLabelContext);
+
+    return (
+        <button
+            aria-label={label ?? (chipLabel ? `Remove ${chipLabel}` : 'Remove')}
+            className={cn(chipRemoveClass, focusRing, className)}
+            data-slot="chip-action"
+            type="button"
+            {...props}
+        >
+            {children ?? <X aria-hidden strokeWidth={2} />}
+        </button>
+    );
+};
