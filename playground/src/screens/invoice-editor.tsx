@@ -19,7 +19,6 @@ import {
     focusRing,
     HeaderBar,
     Kbd,
-    MetaRow,
     NavGroup,
     NavItem,
     PageContent,
@@ -278,7 +277,10 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                             </p>
                         </div>
 
-                        <MetaRow label="Invoice created" value="09/03/2025" />
+                        <div className="flex items-center justify-between gap-4 rounded-panel border border-neutral-200 p-4 font-normal text-xs">
+                            <span className="text-neutral-500">Invoice created</span>
+                            <span className="text-neutral-950">09/03/2025</span>
+                        </div>
 
                         <section className="flex flex-col gap-4">
                             <div className="flex items-center justify-between gap-4">

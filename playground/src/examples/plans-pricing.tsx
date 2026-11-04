@@ -11,8 +11,6 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    MetaItem,
-    MetaList,
     Meter,
     OptionRow,
     RadioGroup,
@@ -88,11 +86,9 @@ const PlansPricing = () => {
                         </p>
                         <Badge tone="success">Active</Badge>
                     </div>
-                    <MetaList separated>
-                        <MetaItem>${current.price} / month</MetaItem>
-                        <MetaItem>Renews 5 Nov 2026</MetaItem>
-                        <MetaItem>{seats(current.seats)}</MetaItem>
-                    </MetaList>
+                    <p className="text-neutral-700 text-xs">
+                        ${current.price} / month · Renews 5 Nov 2026 · {seats(current.seats)}
+                    </p>
                 </div>
 
                 <Dialog

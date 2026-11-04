@@ -13,6 +13,7 @@ import {
     Button,
     Card,
     Checkbox,
+    Chip,
     Field,
     FieldLabel,
     HeaderBar,
@@ -32,7 +33,6 @@ import {
     SidebarHeader,
     SidebarLogo,
     SidebarToggle,
-    SuggestionChip,
 } from 'continuum';
 import {
     ArrowRight,
@@ -237,12 +237,14 @@ export const ReportGenerator = () => {
                                             Suggestions:
                                         </span>
                                         {Object.entries(suggestions).map(([label, value]) => (
-                                            <SuggestionChip
+                                            <Chip
+                                                size="md"
+                                                variant="outline"
                                                 key={label}
                                                 onClick={() => setDates(value)}
                                             >
                                                 {label}
-                                            </SuggestionChip>
+                                            </Chip>
                                         ))}
                                     </div>
                                 </div>

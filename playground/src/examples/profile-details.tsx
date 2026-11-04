@@ -4,8 +4,6 @@ import {
     Button,
     DialogFooter,
     InfoTip,
-    MetaItem,
-    MetaList,
     Sheet,
     SheetBody,
     SheetContent,
@@ -30,6 +28,27 @@ import {
     UserRound,
 } from 'lucide-react';
 import { type ReactNode, useEffect, useId, useRef, useState } from 'react';
+
+/** One fact about the visitor: its icon, and its text named for screen readers. */
+const Fact = ({
+    icon,
+    label,
+    children,
+}: {
+    icon: ReactNode;
+    label: string;
+    children: ReactNode;
+}) => (
+    <li className="flex min-w-0 items-center gap-1.5 [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:text-neutral-600">
+        <span aria-hidden className="flex">
+            {icon}
+        </span>
+        <span className="min-w-0 truncate">
+            <span className="sr-only">{label}: </span>
+            {children}
+        </span>
+    </li>
+);
 
 type PageView = {
     path: string;
@@ -165,20 +184,20 @@ const ProfilePerson = () => (
                 <p className="min-w-0 truncate font-medium text-neutral-950 text-sm">PietHein18</p>
                 <StatusDot label="Online now" pulse />
             </div>
-            <MetaList className="max-w-[360px]" layout="grid">
-                <MetaItem icon={<MapPin strokeWidth={2} />} label="Location">
+            <ul className="grid max-w-[360px] grid-cols-2 gap-x-4 gap-y-1.5 text-neutral-700 text-xs">
+                <Fact icon={<MapPin strokeWidth={2} />} label="Location">
                     Zierikzee, Zeeland
-                </MetaItem>
-                <MetaItem icon={<Globe strokeWidth={2} />} label="Browser">
+                </Fact>
+                <Fact icon={<Globe strokeWidth={2} />} label="Browser">
                     Chrome 141
-                </MetaItem>
-                <MetaItem icon={<Monitor strokeWidth={2} />} label="OS">
+                </Fact>
+                <Fact icon={<Monitor strokeWidth={2} />} label="OS">
                     Windows 11
-                </MetaItem>
-                <MetaItem icon={<Laptop strokeWidth={2} />} label="Device">
+                </Fact>
+                <Fact icon={<Laptop strokeWidth={2} />} label="Device">
                     Desktop
-                </MetaItem>
-            </MetaList>
+                </Fact>
+            </ul>
         </div>
     </div>
 );
@@ -242,27 +261,25 @@ const SessionReplay = ({ summary, onGenerate }: ProfileBodyProps) => (
                 <p className="min-w-0 truncate font-medium text-neutral-950 text-xs tabular-nums">
                     a720e16585ad4e6d8b9072e9
                 </p>
-                <MetaList className="text-neutral-500" separated>
-                    <MetaItem>
-                        <time dateTime="2026-10-26T14:22:10">26 Oct 2026, 14:22</time>
-                    </MetaItem>
-                    <MetaItem label="Duration">4m 18s</MetaItem>
-                </MetaList>
+                <p className="text-neutral-500 text-xs">
+                    <time dateTime="2026-10-26T14:22:10">26 Oct 2026, 14:22</time> ·{' '}
+                    <span className="sr-only">Duration: </span>4m 18s
+                </p>
             </div>
-            <MetaList>
-                <MetaItem icon={<MapPin strokeWidth={2} />} label="Location">
+            <ul className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-neutral-700 text-xs">
+                <Fact icon={<MapPin strokeWidth={2} />} label="Location">
                     Zierikzee
-                </MetaItem>
-                <MetaItem icon={<Monitor strokeWidth={2} />} label="OS">
+                </Fact>
+                <Fact icon={<Monitor strokeWidth={2} />} label="OS">
                     Windows
-                </MetaItem>
-                <MetaItem icon={<Globe strokeWidth={2} />} label="Browser">
+                </Fact>
+                <Fact icon={<Globe strokeWidth={2} />} label="Browser">
                     Chrome
-                </MetaItem>
-                <MetaItem icon={<Laptop strokeWidth={2} />} label="Device">
+                </Fact>
+                <Fact icon={<Laptop strokeWidth={2} />} label="Device">
                     Desktop
-                </MetaItem>
-            </MetaList>
+                </Fact>
+            </ul>
         </div>
 
         {/* Polite, so the finished summary is read out without stealing focus from the button. */}

@@ -17,6 +17,7 @@ import {
     Rail,
     RailItem,
     RailSeparator,
+    RailToggle,
     SidebarAccount,
     SidebarFooter,
 } from 'continuum';
@@ -28,7 +29,6 @@ import {
     LayoutGrid,
     type LucideIcon,
     MessagesSquare,
-    PanelLeft,
     Plus,
 } from 'lucide-react';
 import { Fragment, type ReactNode, useState } from 'react';
@@ -46,9 +46,7 @@ const AnalyticsRail = ({ initial }: { initial: string }) => {
 
     return (
         <Rail aria-label="Main" className="absolute top-1/2 left-8 z-20 -translate-y-1/2">
-            <RailItem label="Toggle sidebar">
-                <PanelLeft strokeWidth={2} />
-            </RailItem>
+            <RailToggle />
             <RailSeparator />
             {railItems.map(item => (
                 <RailItem

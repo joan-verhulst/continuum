@@ -309,7 +309,7 @@ export const RiskReport = () => {
                         </div>
 
                         <Tabs className="flex-1 gap-0" defaultValue="evaluation">
-                            <TabsList className="px-5 py-3">
+                            <TabsList className="px-6">
                                 <TabsTrigger value="evaluation">Evaluation</TabsTrigger>
                                 <TabsTrigger value="legislation">Legislation</TabsTrigger>
                                 <TabsTrigger value="research">Research</TabsTrigger>

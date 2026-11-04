@@ -4,6 +4,8 @@ import {
     BarListItem,
     Button,
     Card,
+    Chip,
+    ChipAction,
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
@@ -17,7 +19,6 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
-    FilterChip,
     LiveCount,
 } from 'continuum';
 import { History, ListFilter, Monitor, Smartphone, Tablet } from 'lucide-react';
@@ -273,16 +274,20 @@ const LiveAnalytics = () => {
                 {active.length > 0 && (
                     <div className="flex flex-wrap items-center gap-1.5">
                         {active.map(({ dimension, name }) => (
-                            <FilterChip
+                            <Chip
                                 key={`${dimension}:${name}`}
-                                onRemove={() => toggle(dimension, name)}
-                                removeLabel={`Remove ${dimensionLabels[dimension].toLowerCase()} filter ${name}`}
+                                action={
+                                    <ChipAction
+                                        label={`Remove ${dimensionLabels[dimension].toLowerCase()} filter ${name}`}
+                                        onClick={() => toggle(dimension, name)}
+                                    />
+                                }
                             >
                                 <span className="text-neutral-500">
                                     {dimensionLabels[dimension]}
                                 </span>{' '}
                                 {name}
-                            </FilterChip>
+                            </Chip>
                         ))}
                     </div>
                 )}

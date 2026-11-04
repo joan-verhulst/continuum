@@ -1,12 +1,13 @@
 import {
     Button,
     Card,
+    Chip,
+    ChipAction,
     DatePicker,
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
-    FilterChip,
     formatDate,
     InfoTip,
     OptionRow,
@@ -319,15 +320,19 @@ const StartCampaign = () => {
                                 <ul className="flex flex-wrap gap-1.5">
                                     {chosenCountries.map(country => (
                                         <li key={country.id}>
-                                            <FilterChip
-                                                onRemove={() =>
-                                                    setCountries(list =>
-                                                        toggle(list, country.id, false),
-                                                    )
+                                            <Chip
+                                                action={
+                                                    <ChipAction
+                                                        onClick={() =>
+                                                            setCountries(list =>
+                                                                toggle(list, country.id, false),
+                                                            )
+                                                        }
+                                                    />
                                                 }
                                             >
                                                 {country.label}
-                                            </FilterChip>
+                                            </Chip>
                                         </li>
                                     ))}
                                 </ul>

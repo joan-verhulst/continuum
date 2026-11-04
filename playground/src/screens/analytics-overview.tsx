@@ -2,6 +2,8 @@ import {
     BottomBar,
     Card,
     CardTitle,
+    Chip,
+    ChipAction,
     cn,
     Dock,
     DockAction,
@@ -11,7 +13,6 @@ import {
     DropdownMenuContent,
     DropdownMenuLabel,
     DropdownMenuTrigger,
-    FilterChip,
     focusRing,
     SegmentedControl,
     SegmentedControlItem,
@@ -323,15 +324,21 @@ export const AnalyticsOverview = () => {
             <div className="mt-1 flex min-h-[56px] items-end justify-between gap-6">
                 <div className="flex flex-wrap gap-1.5">
                     {filters.map(filter => (
-                        <FilterChip
+                        <Chip
                             icon={filter.icon}
                             key={filter.id}
-                            onRemove={() =>
-                                setFilters(current => current.filter(f => f.id !== filter.id))
+                            action={
+                                <ChipAction
+                                    onClick={() =>
+                                        setFilters(current =>
+                                            current.filter(f => f.id !== filter.id),
+                                        )
+                                    }
+                                />
                             }
                         >
                             {filter.label}
-                        </FilterChip>
+                        </Chip>
                     ))}
                     {filters.length === 0 && (
                         <span className="text-neutral-500 text-xs">No filters applied</span>

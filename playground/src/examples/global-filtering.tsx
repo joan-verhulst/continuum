@@ -2,6 +2,8 @@ import {
     Badge,
     Button,
     Card,
+    Chip,
+    ChipAction,
     Combobox,
     ComboboxChip,
     ComboboxChips,
@@ -23,7 +25,6 @@ import {
     Field,
     FieldHelper,
     FieldLabel,
-    FilterChip,
     formatDateRange,
 } from 'continuum';
 import { CalendarDays, Check, Earth, Globe, ListFilter } from 'lucide-react';
@@ -200,46 +201,62 @@ const AppliedFilters = ({
         <ul aria-label="Applied filters" className="flex min-w-0 flex-wrap items-center gap-1.5">
             {range && (
                 <li>
-                    <FilterChip
+                    <Chip
                         icon={<CalendarDays strokeWidth={2} />}
-                        onRemove={() => onChange({ ...filters, range: undefined })}
-                        removeLabel="Remove date range"
+                        action={
+                            <ChipAction
+                                label="Remove date range"
+                                onClick={() => onChange({ ...filters, range: undefined })}
+                            />
+                        }
                     >
                         {formatDateRange(range)}
-                    </FilterChip>
+                    </Chip>
                 </li>
             )}
             {filters.regions.map(region => (
                 <li key={region}>
-                    <FilterChip
+                    <Chip
                         icon={<Globe strokeWidth={2} />}
-                        onRemove={() => {
-                            const regionsLeft = filters.regions.filter(item => item !== region);
-                            const allowed = new Set(countriesFor(regionsLeft));
-                            onChange({
-                                ...filters,
-                                regions: regionsLeft,
-                                countries: filters.countries.filter(c => allowed.has(c)),
-                            });
-                        }}
+                        action={
+                            <ChipAction
+                                onClick={() => {
+                                    const regionsLeft = filters.regions.filter(
+                                        item => item !== region,
+                                    );
+                                    const allowed = new Set(countriesFor(regionsLeft));
+                                    onChange({
+                                        ...filters,
+                                        regions: regionsLeft,
+                                        countries: filters.countries.filter(c => allowed.has(c)),
+                                    });
+                                }}
+                            />
+                        }
                     >
                         {region}
-                    </FilterChip>
+                    </Chip>
                 </li>
             ))}
             {filters.countries.map(country => (
                 <li key={country}>
-                    <FilterChip
+                    <Chip
                         icon={<Earth strokeWidth={2} />}
-                        onRemove={() =>
-                            onChange({
-                                ...filters,
-                                countries: filters.countries.filter(item => item !== country),
-                            })
+                        action={
+                            <ChipAction
+                                onClick={() =>
+                                    onChange({
+                                        ...filters,
+                                        countries: filters.countries.filter(
+                                            item => item !== country,
+                                        ),
+                                    })
+                                }
+                            />
                         }
                     >
                         {country}
-                    </FilterChip>
+                    </Chip>
                 </li>
             ))}
         </ul>
