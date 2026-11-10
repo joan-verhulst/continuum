@@ -1,8 +1,9 @@
 # Continuum
 
 A React design system for quiet, dense tool UI (Base UI, Tailwind v4, cva), its playground, and the skills that
-carry it into other projects. For any UI work here, the rules are in
-`.claude/skills/continuum-taste/references/rules.md`.
+carry it into other projects. For any UI work here, the system is described in
+`.claude/skills/continuum-taste/references/`: `foundations.md` (the values), `pages.md` (the composition),
+`components.md` (the parts) and `patterns.md` (need → build it as).
 
 ## Where things live
 
@@ -14,9 +15,10 @@ carry it into other projects. For any UI work here, the rules are in
 | `dist/styles.css`                     | The prebuilt, scoped stylesheet. Built, but tracked: git installs need it. |
 | `playground/src/showcase`             | The Components view: `kit.tsx` is shared, `entries/<id>.tsx` is one component's preview, knobs and in-use piece. |
 | `playground/src/screens`, `examples`  | The Patterns view: screens of one generic app, then blocks from earlier products. |
+| `playground/src/theme-editor`        | Projects: a product's theme, edited in tabs beside a preview, with its accessibility checks. |
 | `playground/src/theme-export.ts`      | The theme builder's export: `app.css` and the `DESIGN.md` brief.           |
 | `.claude/skills/continuum-taste`      | The skill. `SKILL.md` and `references/*.md` are written by hand; `assets/` and `references/screens/` are built. |
-| `.claude/skills/fix-padding`          | The spacing skill. `scripts/spacing.ts` is built from `src/lib/spacing.ts`. |
+| `.claude/skills/continuum-fix-padding` | The spacing skill. `scripts/spacing.ts` is built from `src/lib/spacing.ts`. |
 
 ## Conventions
 
@@ -26,12 +28,16 @@ carry it into other projects. For any UI work here, the rules are in
 - A new component goes in `src/components/`, is exported from `src/index.ts`, gets a file in
   `playground/src/showcase/entries/` (its entry with knobs and one in-use piece) listed in `entries/index.ts`, and a
   line in the skill's `references/components.md`.
-- Each rule has one home: `references/rules.md`. The `DESIGN.md` brief in `theme-export.ts` is its short form for
-  projects, so change both together. The README describes the package for people and points at the skill for the
-  rest.
+- Each rule has one home, and it is stated in units, never as a class string: values in
+  `references/foundations.md`, composition in `pages.md`, a part's spec in `components.md`, a recipe in
+  `patterns.md`; the Tailwind names for the values live only in `references/media/react.md`. The `DESIGN.md`
+  brief in `theme-export.ts` is the short form of foundations and pages for projects, so change both together.
+  The README describes the package for people and points at the skill for the rest.
+- A design mistake an agent makes is fixed in the skill's text, then checked by re-running the same prompt with
+  only the skill's markdown to read; a component changes only on a judgement of the component itself.
 - Experiments that are not part of the package live outside `src/`: `labs/` for their code (the raster lab), and
   `playground/src/lab` or `playground/src/raster` for their pages. They stay out of the skill.
-- Never edit the built copies under `.claude/skills/*/assets`, `references/screens` or `fix-padding/scripts/spacing.ts`;
+- Never edit the built copies under `.claude/skills/*/assets`, `references/screens` or `continuum-fix-padding/scripts/spacing.ts`;
   they are gitignored and rebuilt.
 
 ## Before finishing

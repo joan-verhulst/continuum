@@ -12,17 +12,20 @@ primitives (`@base-ui/react`), Tailwind CSS v4, class-variance-authority and luc
   `--shadow-*`); nothing in a component names a colour, a font or a theme. `src/styles/tokens.css` is the default
   theme.
 - **Semantic by index.** Colour ramps are used by what the step means: `neutral-50` is the surface, `neutral-100`
-  the canvas, `neutral-200` the hairline, `neutral-600` secondary text, `neutral-950` primary text. Dark mode reads
+  the canvas, `neutral-200` the hairline, `neutral-600` secondary text (hints and placeholders too),
+  `neutral-950` primary text. Each role sits on the lightest whole step that passes WCAG contrast: 4.5:1 for read
+  text, 3:1 for the focus ring and the border of an unchecked checkbox or radio (`neutral-500`). Dark mode reads
   every ramp back to front, so components never need `dark:` variants or raw hex.
 - **Themed by choice, not by product.** A theme is a handful of choices (an accent, how grey the greys are, a
   font, how the action and the selection draw, the corners) turned into a block of CSS that overrides the default
-  tokens. The playground's theme builder writes it; so does `createThemeCss()`. For a project, the builder
+  tokens. The playground's Projects view builds it; so does `createThemeCss()`. For a project, the builder
   exports the theme as an `app.css` in Tailwind's names and a `DESIGN.md` for Claude.
 - **Two control heights.** Everything that sits in a row is 34px (buttons, small inputs and selects, segmented
   controls, nav items, pagination) or 38px (medium inputs and selects, large buttons, the dock), so a field and a
-  button beside it line up without adjustment.
+  button beside it line up without adjustment. Widths of panels and popups (the sidebar, a toast, a popover, a
+  menu) are fixed pixel tokens too, so a theme's spacing unit changes the room inside them, never their size.
 - **Pages by density.** A page sits in a centred column as wide as its content needs: 640px to make or edit one
-  thing, 896 for settings, overviews and details, 1080 for a table, 1280 for a very dense one. An item opens on its
+  thing and for settings, 896 for overviews, details and documents, 1080 for a table, 1280 for a very dense one. An item opens on its
   own page with a breadcrumb back, never in a pane beside its list.
 
 Everything is scoped under `.continuum`, so the system can sit inside another site without touching its variables.
@@ -78,20 +81,25 @@ export const App = () => (
   content (`DialogContent`, `SheetContent`, `PopoverContent`, `DropdownMenuContent`, `TooltipContent`,
   `SelectContent`, `ComboboxContent`, `InfoTip`) takes a `container` to portal into instead of the body, so a
   dialog or menu can be shown open inside a box of its own, as the playground does.
-- `<Theme radius={0.5}>` halves every corner; `0` squares them off.
-- Fonts are not bundled. The tokens read `--font-geist` (the default) and `--font-inter` and fall back to the
-  families `Geist Variable` / `Geist` and `Inter Variable` / `Inter`. Load them yourself, for example with
-  `@fontsource-variable/geist` and `@fontsource-variable/inter`, or set the variables from `next/font`.
+- The corners follow one corner scale, a theme choice (`radius`: `0.5` halves every corner, `0` squares them off).
+  Set it in the playground's builder or in `createThemeCss()`; the exported `app.css` carries the corners already
+  worked out.
+- Fonts are not bundled. A theme picks one of Geist (the default), Inter, Instrument Sans, IBM Plex Sans and
+  Figtree, or names a family of its own. Each is read from `--font-<name>` (`--font-geist`,
+  `--font-ibm-plex-sans` …), then its Fontsource variable family, then the installed one. Load the one you use,
+  for example with `@fontsource-variable/geist`, or set the variable from `next/font`.
 
 ## Theming
 
 With no theme applied, `tokens.css` is the baseline: achromatic greys, a near-black action, Geist, pill docks.
-It is not a theme of its own; a theme is what a product adds on top. In the playground, the theme pill at the
-foot of Foundations, Components and Patterns opens the **Theme builder**: start from a preset (Eyes, the product
-the system was distilled from, among them), then pick an accent, the greys, the font, how the action draws (flat,
-lit or glossy) and the corners, and every page previews it.
+It is not a theme of its own; a theme is what a product adds on top. In the playground, **Projects** holds one per
+product, switched between at the top of the sidebar. A new one starts clear and is built in six steps: the primary
+colour and the step it is, the neutral colour, the chart colours (auto or a harmony, adjusted on a wheel), the font,
+the action and the corners, the type, padding and heights, then a review. A preview beside the steps takes the
+theme, and its check layer measures it in light and dark, with a contrast grid. **Use this theme** makes it the
+theme the whole playground wears while the project is current; anything that misses its contrast is put first.
 
-**Use this theme** hands a project two files:
+**Export**, on the review, hands a project two files:
 
 - `app.css`, the whole theme as a Tailwind v4 entry in Tailwind's own names (colours, type, radii, shadows,
   spacing, widths), light in `@theme` and dark under `[data-mode="dark"]`. It takes the place of `theme.css`, and
@@ -99,24 +107,13 @@ lit or glossy) and the corners, and every page previews it.
 - `DESIGN.md`, a brief for Claude: how the project is set up, the theme in words and the system's rules. Put it at
   the root and add `@DESIGN.md` to `CLAUDE.md`.
 
-To switch themes at runtime instead, write the theme as a scoped block after the tokens import and open the scope
-with its name:
+To change the look in a project, change the values in `app.css` by their Tailwind names (and their dark
+counterparts with them), or build the theme again and export it. The `--continuum-*` names are the engine's own;
+`app.css` leaves them out, and a project never writes them.
 
-```css
-@import "continuum/theme.css";
-
-.continuum[data-theme="custom"] {
-    --continuum-p-500: #2c52e8;
-    --color-action: var(--color-primary-500);
-    /* … */
-}
-```
-
-```tsx
-<Theme theme="custom" mode="dark">…</Theme>
-```
-
-The same options go into `createThemeCss()` at build time:
+To switch themes at runtime instead, while using the library's own stylesheet, let `createThemeCss()` write the
+theme as a scoped `.continuum[data-theme="custom"]` block, load it after the tokens, and open the scope with its
+name:
 
 ```ts
 import { createThemeCss } from 'continuum';
@@ -130,7 +127,12 @@ createThemeCss({
     actionStyle: 'glossy',
     segment: 'raised',
     dock: 'rounded',
+    radius: 0.5,
 });
+```
+
+```tsx
+<Theme theme="custom" mode="dark">…</Theme>
 ```
 
 An accent leads the data colours; a theme with a palette of its own passes `charts` (the steps, their dark-mode
@@ -167,12 +169,12 @@ charts follow the theme and mode like every component.
 
 The `playground` workspace is built from the system itself:
 
-- **Foundations:** colour, type, surfaces and radii, layout, states and motion, one article each, read live from
-  the tokens.
+- **Foundations:** colour, type, surfaces and radii, layout, padding, states and motion, one article each, read
+  live from the tokens.
 - **Components:** every component on its own page, with knobs to try its variants and the pieces it is used in.
 - **Patterns:** six screens of one generic app (a dashboard, a list, a detail, a form, settings and sign-in) and
   eight blocks from earlier products. Every screen opens full screen at the window's own size.
-- **Theme builder:** previews a theme on all of the above and exports it for a project.
+- **Projects:** a theme per product, edited beside a preview, measured for contrast and exported for the project.
 - **Lab:** a raster lab.
 
 ```sh
@@ -189,13 +191,14 @@ pnpm dev
 | `src/styles`                     | `tokens.css` (the default theme), `theme.css` (the Tailwind entry).           |
 | `dist/styles.css`                | The prebuilt, scoped stylesheet.                                              |
 | `playground`                     | The playground app.                                                           |
+| `site`                           | The marketing site, a Vite app beside the playground.                         |
 | `labs/raster`                    | An experiment: screens on a Swiss raster. Not part of the package.            |
 | `scripts`                        | The stylesheet build, its scoping plugin and the skill build.                 |
 | `.claude/skills/continuum-taste` | A Claude skill that carries the library, its rules and its method into other projects. |
-| `.claude/skills/fix-padding`     | A Claude skill that works out padding and gaps with the spacing formula.      |
+| `.claude/skills/continuum-fix-padding` | A Claude skill that works out padding and gaps with the spacing formula. |
 | `brand`                          | The Continuum mark and the social preview.                                    |
 
-The skills' copies of the library (`assets/`, `references/screens/`, `fix-padding/scripts/spacing.ts`) are built by
+The skills' copies of the library (`assets/`, `references/screens/`, `continuum-fix-padding/scripts/spacing.ts`) are built by
 `pnpm build:skill` and not tracked.
 
 ## Scripts
@@ -203,11 +206,12 @@ The skills' copies of the library (`assets/`, `references/screens/`, `fix-paddin
 | Script               | Does                                                                  |
 | -------------------- | --------------------------------------------------------------------- |
 | `pnpm dev`           | Starts the playground (Vite).                                         |
+| `pnpm dev:site`      | Starts the marketing site (Vite).                                     |
 | `pnpm build`         | Builds `dist/styles.css`, then the playground.                        |
 | `pnpm build:css`     | Builds the scoped `dist/styles.css` (`scripts/build-css.mjs`).        |
 | `pnpm build:skill`   | Builds the stylesheet, then the skills' copies of the library.        |
 | `pnpm install:skill` | Builds the skills and installs both to `~/.claude/skills`.            |
-| `pnpm type-check`    | Type-checks the package and the playground.                           |
+| `pnpm type-check`    | Type-checks the package, the playground and the site.                 |
 | `pnpm lint`          | Runs Biome.                                                           |
 | `pnpm lint:fix`      | Runs Biome and applies fixes.                                         |
 | `pnpm check`         | Type-checks, lints and builds the skills: the one command before a commit. |
