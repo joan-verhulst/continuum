@@ -4,10 +4,21 @@ import {
     Chip,
     ChipAction,
     DatePicker,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
     DropdownMenu,
     DropdownMenuCheckboxItem,
     DropdownMenuContent,
     DropdownMenuTrigger,
+    Field,
+    FieldHelper,
     formatDate,
     InfoTip,
     OptionRow,
@@ -21,7 +32,7 @@ import {
     StatusDot,
 } from 'continuum';
 import { ArrowRight, X } from 'lucide-react';
-import { type FormEvent, type ReactNode, useId, useState } from 'react';
+import { type FormEvent, type ReactNode, useId, useRef, useState } from 'react';
 
 type StartMode = 'date' | 'trigger';
 type Activation = 'now' | 'later';
@@ -52,6 +63,9 @@ const countryCatalogue = [
     { id: 'gb', label: 'United Kingdom', contacts: 9_180 },
 ];
 
+const initialConditions = ['signed-up', 'ref-newsletter'];
+const initialCountries = ['nl', 'be'];
+
 const today = new Date();
 today.setHours(0, 0, 0, 0);
 
@@ -75,7 +89,7 @@ const SectionHeading = ({
             {title}
             {tip && <InfoTip content={tip} />}
         </h3>
-        {description && <p className="max-w-[340px] text-neutral-600 text-xs">{description}</p>}
+        {description && <p className="max-w-85 text-neutral-600 text-xs">{description}</p>}
     </div>
 );
 
@@ -94,9 +108,11 @@ const StartCampaign = () => {
     const [sendDate, setSendDate] = useState<Date | undefined>();
     const [activation, setActivation] = useState<Activation>('later');
     const [activeDate, setActiveDate] = useState<Date | undefined>();
-    const [conditions, setConditions] = useState<string[]>(['signed-up', 'ref-newsletter']);
-    const [countries, setCountries] = useState<string[]>(['nl', 'be']);
+    const [conditions, setConditions] = useState<string[]>(initialConditions);
+    const [countries, setCountries] = useState<string[]>(initialCountries);
     const [scheduledKey, setScheduledKey] = useState<string | null>(null);
+    const [discardOpen, setDiscardOpen] = useState(false);
+    const titleRef = useRef<HTMLHeadingElement>(null);
 
     const reset = () => {
         setStart('trigger');
@@ -104,9 +120,10 @@ const StartCampaign = () => {
         setSendDate(undefined);
         setActivation('later');
         setActiveDate(undefined);
-        setConditions(['signed-up', 'ref-newsletter']);
-        setCountries(['nl', 'be']);
+        setConditions(initialConditions);
+        setCountries(initialCountries);
         setScheduledKey(null);
+        setDiscardOpen(false);
     };
 
     const chosenConditions = conditionCatalogue.filter(c => conditions.includes(c.id));
@@ -116,12 +133,31 @@ const StartCampaign = () => {
         chosenCountries.reduce((sum, c) => sum + c.contacts, 0) / 2 ** chosenConditions.length,
     );
 
+    // A send date before the campaign is active would send to nobody, so the pair must agree.
+    const sendBeforeActive =
+        start === 'date' &&
+        activation === 'later' &&
+        sendDate !== undefined &&
+        activeDate !== undefined &&
+        sendDate < activeDate;
+
     const missing = [
         start === 'trigger' && !trigger && 'pick a trigger',
         start === 'date' && !sendDate && 'pick a send date',
         activation === 'later' && !activeDate && 'pick an activation date',
+        sendBeforeActive && 'activate on or before the send date',
         chosenCountries.length === 0 && 'add at least one country',
     ].filter(Boolean) as string[];
+
+    // Nothing to discard while the form still holds what it opened with.
+    const pristine =
+        start === 'trigger' &&
+        trigger === null &&
+        sendDate === undefined &&
+        activation === 'later' &&
+        activeDate === undefined &&
+        conditions.join() === initialConditions.join() &&
+        countries.join() === initialCountries.join();
 
     // The confirmation belongs to the exact settings it was given, so any edit afterwards hides it.
     const key = JSON.stringify([
@@ -141,22 +177,43 @@ const StartCampaign = () => {
     };
 
     return (
-        <Card className="w-[480px] max-w-full gap-0 p-0">
+        <Card className="w-120 max-w-full gap-0 p-0">
             <form className="flex flex-col" onSubmit={submit}>
-                <div className="flex h-[52px] items-center justify-between gap-4 pr-[11px] pl-5">
-                    <h2 className="min-w-0 truncate font-medium text-neutral-950 text-sm">
+                {/* The 34px button sits 9px in from the top, the side and the bottom alike. */}
+                <div className="flex h-13 items-center justify-between gap-4 pr-2.25 pl-5">
+                    <h2
+                        className="min-w-0 truncate font-medium text-neutral-950 text-sm outline-none"
+                        ref={titleRef}
+                        tabIndex={-1}
+                    >
                         Start campaign
                     </h2>
-                    {/* Discards the draft: there is no dialog around the example to close. */}
-                    <Button
-                        aria-label="Discard and close"
-                        className="size-[30px] rounded-control"
-                        onClick={reset}
-                        size="icon-sm"
-                        variant="secondary"
-                    >
-                        <X className="size-3.5" strokeWidth={2} />
-                    </Button>
+                    {/* There is no dialog round the example to close, so the button says what it
+                        does, and asks first: one click must not wipe a form that took a while to fill. */}
+                    <Dialog onOpenChange={setDiscardOpen} open={discardOpen}>
+                        <DialogTrigger disabled={pristine} render={<Button variant="ghost" />}>
+                            Discard draft
+                        </DialogTrigger>
+                        {/* Once discarded the trigger is disabled, so focus goes to the form's title
+                            instead of falling to the body; on Cancel it returns to the trigger. */}
+                        <DialogContent finalFocus={pristine ? titleRef : undefined}>
+                            <DialogHeader>
+                                <DialogTitle>Discard this draft?</DialogTitle>
+                            </DialogHeader>
+                            <DialogBody>
+                                <DialogDescription>
+                                    The start, the activation date and the audience go back to where
+                                    they began. This cannot be undone.
+                                </DialogDescription>
+                            </DialogBody>
+                            <DialogFooter>
+                                <DialogClose render={<Button variant="secondary" />}>
+                                    Cancel
+                                </DialogClose>
+                                <Button onClick={reset}>Discard draft</Button>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 </div>
 
                 <div className="flex flex-col gap-8 px-5 pt-2 pb-5">
@@ -230,13 +287,21 @@ const StartCampaign = () => {
                             />
                         </RadioGroup>
                         {activation === 'later' && (
-                            <DatePicker
-                                aria-label="Activation date"
-                                className="w-full"
-                                disabledDates={{ before: today }}
-                                onValueChange={setActiveDate}
-                                value={activeDate}
-                            />
+                            // The error sits under the later of the two dates, nearest the button it holds back.
+                            <Field invalid={sendBeforeActive}>
+                                <DatePicker
+                                    aria-label="Activation date"
+                                    className="w-full"
+                                    disabledDates={{ before: today }}
+                                    onValueChange={setActiveDate}
+                                    value={activeDate}
+                                />
+                                {sendBeforeActive && sendDate && (
+                                    <FieldHelper>
+                                        Activate on or before the send date, {formatDate(sendDate)}.
+                                    </FieldHelper>
+                                )}
+                            </Field>
                         )}
                     </section>
 
@@ -251,7 +316,7 @@ const StartCampaign = () => {
                             <ul className="flex flex-col gap-2" data-slot="condition-list">
                                 {chosenConditions.map(condition => (
                                     <li
-                                        className="flex h-[40px] items-center justify-between gap-3 rounded-item border border-neutral-200 pr-[5px] pl-3"
+                                        className="flex h-10 items-center justify-between gap-3 rounded-item border border-neutral-200 pr-1.25 pl-3"
                                         key={condition.id}
                                     >
                                         <span className="min-w-0 truncate text-sm">
@@ -284,7 +349,7 @@ const StartCampaign = () => {
                                 ))}
                             </ul>
                         ) : (
-                            <p className="text-neutral-500 text-xs">
+                            <p className="text-neutral-600 text-xs">
                                 No conditions: everyone in the audience enters the campaign.
                             </p>
                         )}
@@ -312,7 +377,7 @@ const StartCampaign = () => {
                         </DropdownMenu>
 
                         <div
-                            className="flex min-h-[40px] flex-wrap items-center gap-x-3 gap-y-2 rounded-item border border-neutral-200 px-3 py-[7px]"
+                            className="flex min-h-10 flex-wrap items-center gap-x-3 gap-y-2 rounded-item border border-neutral-200 px-3 py-1.75"
                             data-slot="audience"
                         >
                             <span className="text-neutral-600 text-xs">Audience</span>
@@ -337,7 +402,7 @@ const StartCampaign = () => {
                                     ))}
                                 </ul>
                             ) : (
-                                <span className="text-neutral-500 text-xs">No countries yet</span>
+                                <span className="text-neutral-600 text-xs">No countries yet</span>
                             )}
                         </div>
 
@@ -362,7 +427,7 @@ const StartCampaign = () => {
                             </DropdownMenuContent>
                         </DropdownMenu>
 
-                        <p className="text-neutral-500 text-xxs tabular-nums">
+                        <p className="text-neutral-600 text-xxs tabular-nums">
                             About {estimate.toLocaleString('en-GB')} recipients match today
                         </p>
                     </section>
@@ -381,7 +446,7 @@ const StartCampaign = () => {
                                 </>
                             ) : (
                                 missing.length > 0 && (
-                                    <span className="text-neutral-500">
+                                    <span className="text-neutral-600">
                                         To continue, {missing.join(', ')}.
                                     </span>
                                 )

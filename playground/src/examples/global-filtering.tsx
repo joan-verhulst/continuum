@@ -17,6 +17,7 @@ import {
     type DateRangeValue,
     Dialog,
     DialogBody,
+    DialogClose,
     DialogContent,
     DialogFooter,
     DialogHeader,
@@ -25,6 +26,7 @@ import {
     Field,
     FieldHelper,
     FieldLabel,
+    FilterBar,
     formatDateRange,
 } from 'continuum';
 import { CalendarDays, Check, Earth, Globe, ListFilter } from 'lucide-react';
@@ -183,7 +185,16 @@ const FilterFields = ({ draft, onChange }: FilterFieldsProps) => {
     );
 };
 
-/** Chips for what is applied, each removable without reopening the dialog. */
+/** "Europe", "Europe or Asia Pacific", "Belgium, France or Spain": the values one chip holds. */
+const either = (values: string[]) =>
+    values.length < 2
+        ? values.join('')
+        : `${values.slice(0, -1).join(', ')} or ${values[values.length - 1]}`;
+
+/**
+ * A chip per kind of filter ("Region is Europe or Asia Pacific"), each removable without reopening
+ * the dialog, then a ghost Clear all; so the count on the Filters button is the number of chips.
+ */
 const AppliedFilters = ({
     filters,
     onChange,
@@ -194,72 +205,52 @@ const AppliedFilters = ({
     const { range } = filters;
 
     if (countFilters(filters) === 0) {
-        return <p className="text-neutral-500 text-xs">Showing all traffic</p>;
+        return <p className="text-neutral-600 text-xs">Showing all traffic</p>;
     }
 
     return (
-        <ul aria-label="Applied filters" className="flex min-w-0 flex-wrap items-center gap-1.5">
+        <FilterBar aria-label="Applied filters" onClear={() => onChange(noFilters)} role="group">
             {range && (
-                <li>
-                    <Chip
-                        icon={<CalendarDays strokeWidth={2} />}
-                        action={
-                            <ChipAction
-                                label="Remove date range"
-                                onClick={() => onChange({ ...filters, range: undefined })}
-                            />
-                        }
-                    >
-                        {formatDateRange(range)}
-                    </Chip>
-                </li>
+                <Chip
+                    icon={<CalendarDays strokeWidth={2} />}
+                    action={
+                        <ChipAction
+                            label="Remove date range"
+                            onClick={() => onChange({ ...filters, range: undefined })}
+                        />
+                    }
+                >
+                    {formatDateRange(range)}
+                </Chip>
             )}
-            {filters.regions.map(region => (
-                <li key={region}>
-                    <Chip
-                        icon={<Globe strokeWidth={2} />}
-                        action={
-                            <ChipAction
-                                onClick={() => {
-                                    const regionsLeft = filters.regions.filter(
-                                        item => item !== region,
-                                    );
-                                    const allowed = new Set(countriesFor(regionsLeft));
-                                    onChange({
-                                        ...filters,
-                                        regions: regionsLeft,
-                                        countries: filters.countries.filter(c => allowed.has(c)),
-                                    });
-                                }}
-                            />
-                        }
-                    >
-                        {region}
-                    </Chip>
-                </li>
-            ))}
-            {filters.countries.map(country => (
-                <li key={country}>
-                    <Chip
-                        icon={<Earth strokeWidth={2} />}
-                        action={
-                            <ChipAction
-                                onClick={() =>
-                                    onChange({
-                                        ...filters,
-                                        countries: filters.countries.filter(
-                                            item => item !== country,
-                                        ),
-                                    })
-                                }
-                            />
-                        }
-                    >
-                        {country}
-                    </Chip>
-                </li>
-            ))}
-        </ul>
+            {filters.regions.length > 0 && (
+                <Chip
+                    icon={<Globe strokeWidth={2} />}
+                    action={
+                        <ChipAction
+                            label="Remove region filter"
+                            // No region means every region, so the countries picked all stay allowed.
+                            onClick={() => onChange({ ...filters, regions: [] })}
+                        />
+                    }
+                >
+                    Region is {either(filters.regions)}
+                </Chip>
+            )}
+            {filters.countries.length > 0 && (
+                <Chip
+                    icon={<Earth strokeWidth={2} />}
+                    action={
+                        <ChipAction
+                            label="Remove country filter"
+                            onClick={() => onChange({ ...filters, countries: [] })}
+                        />
+                    }
+                >
+                    Country is {either(filters.countries)}
+                </Chip>
+            )}
+        </FilterBar>
     );
 };
 
@@ -280,8 +271,8 @@ const GlobalFiltering = () => {
     };
 
     return (
-        <div className="flex w-full max-w-[720px] flex-col gap-8">
-            <section className="flex flex-col gap-3">
+        <div className="flex w-full max-w-180 flex-col gap-8">
+            <section className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-4">
                     <h2 className="font-medium text-neutral-950 text-xs">Traffic overview</h2>
                     <Dialog
@@ -316,6 +307,9 @@ const GlobalFiltering = () => {
                                 >
                                     Clear all
                                 </Button>
+                                <DialogClose render={<Button variant="secondary" />}>
+                                    Cancel
+                                </DialogClose>
                                 <Button
                                     onClick={() => {
                                         apply(draft);
@@ -333,7 +327,7 @@ const GlobalFiltering = () => {
             </section>
 
             {/* The same form laid flat on the page, for a filter panel that stays open beside a report. */}
-            <Card className="w-full max-w-[480px] gap-0 p-0">
+            <Card className="w-full max-w-120 gap-0 p-0">
                 <div className="flex flex-col gap-4 p-5">
                     <h3 className="font-medium text-neutral-950 text-sm">Global filtering</h3>
                     <FilterFields draft={inlineDraft} onChange={setInlineDraft} />

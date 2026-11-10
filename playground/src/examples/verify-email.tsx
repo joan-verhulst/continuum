@@ -11,7 +11,7 @@ import {
     Input,
 } from 'continuum';
 import { ArrowRight, CircleCheck } from 'lucide-react';
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useRef, useState } from 'react';
 
 const icon = { strokeWidth: 2 } as const;
 
@@ -44,6 +44,18 @@ const VerifyEmail = () => {
     const [verified, setVerified] = useState(false);
     const [announcement, setAnnouncement] = useState('');
 
+    // Each of these buttons takes itself out of the page, so focus is handed on after the swap
+    // instead of falling to the body: to the code boxes after a send, back to "Wrong email?" on Cancel.
+    const codeRef = useRef<HTMLInputElement>(null);
+    const wrongEmailRef = useRef<HTMLButtonElement>(null);
+    const focusNext = useRef<'code' | 'wrong-email' | null>(null);
+
+    useEffect(() => {
+        if (!focusNext.current) return;
+        (focusNext.current === 'code' ? codeRef.current : wrongEmailRef.current)?.focus();
+        focusNext.current = null;
+    });
+
     useEffect(() => {
         if (remaining <= 0) return;
         const timer = window.setTimeout(() => setRemaining(seconds => seconds - 1), 1000);
@@ -62,6 +74,7 @@ const VerifyEmail = () => {
         setInvalid(false);
         setRemaining(resendDelay);
         setAnnouncement(`A new code was sent to ${to}.`);
+        focusNext.current = 'code';
     };
 
     const verify = (event: FormEvent<HTMLFormElement>) => {
@@ -71,13 +84,16 @@ const VerifyEmail = () => {
         else setInvalid(true);
     };
 
+    const nextEmail = draftEmail.trim();
+    // The same address again is a resend, so it waits for the same countdown as "Resend code".
+    const sameEmailWaiting = nextEmail === email && remaining > 0;
+
     const changeEmail = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        const next = draftEmail.trim();
-        if (!next) return;
-        setEmail(next);
+        if (!nextEmail || sameEmailWaiting) return;
+        setEmail(nextEmail);
         setEditing(false);
-        sendCode(next);
+        sendCode(nextEmail);
     };
 
     const startOver = () => {
@@ -87,7 +103,7 @@ const VerifyEmail = () => {
 
     if (verified) {
         return (
-            <Card className="w-full max-w-[400px] gap-6 p-6">
+            <Card className="w-full max-w-100 gap-6 p-6">
                 <div className="flex flex-col gap-3">
                     <IconTile tone="success" variant="outline">
                         <CircleCheck {...icon} />
@@ -108,7 +124,7 @@ const VerifyEmail = () => {
     }
 
     return (
-        <Card className="w-full max-w-[400px] gap-6 p-6">
+        <Card className="w-full max-w-100 gap-6 p-6">
             <div className="flex flex-col gap-1.5">
                 <h2 className="font-medium text-lg text-neutral-950">Verify your email</h2>
                 {editing ? (
@@ -133,6 +149,7 @@ const VerifyEmail = () => {
                                     setDraftEmail(email);
                                     setEditing(true);
                                 }}
+                                ref={wrongEmailRef}
                                 type="button"
                             >
                                 Wrong email?
@@ -155,11 +172,17 @@ const VerifyEmail = () => {
                             type="email"
                             value={draftEmail}
                         />
+                        {sameEmailWaiting && (
+                            <FieldHelper>
+                                That is the address the code went to. A new one can be sent in{' '}
+                                {clock(remaining)}.
+                            </FieldHelper>
+                        )}
                     </Field>
                     <div className="flex flex-col gap-2">
                         <Button
                             className="w-full"
-                            disabled={!draftEmail.trim()}
+                            disabled={!nextEmail || sameEmailWaiting}
                             size="lg"
                             type="submit"
                         >
@@ -168,7 +191,10 @@ const VerifyEmail = () => {
                         </Button>
                         <Button
                             className="w-full"
-                            onClick={() => setEditing(false)}
+                            onClick={() => {
+                                focusNext.current = 'wrong-email';
+                                setEditing(false);
+                            }}
                             size="lg"
                             variant="ghost"
                         >
@@ -185,6 +211,7 @@ const VerifyEmail = () => {
                             className="w-full"
                             length={codeLength}
                             name="code"
+                            ref={codeRef}
                             onValueChange={next => {
                                 setCode(next);
                                 setInvalid(false);
@@ -208,7 +235,7 @@ const VerifyEmail = () => {
 
             {!editing &&
                 (remaining > 0 ? (
-                    <p className="text-neutral-500 text-xs">
+                    <p className="text-neutral-600 text-xs">
                         Resend code in{' '}
                         <time
                             className="font-medium text-neutral-950 tabular-nums"
@@ -218,7 +245,7 @@ const VerifyEmail = () => {
                         </time>
                     </p>
                 ) : (
-                    <p className="text-neutral-500 text-xs">
+                    <p className="text-neutral-600 text-xs">
                         Didn't get it?{' '}
                         <button
                             className={textAction}

@@ -3,28 +3,77 @@ import {
     AvatarStack,
     Badge,
     Button,
+    ChatAttachment,
+    ChatAttachments,
     ChatComposer,
+    ChatComposerAttachItem,
     ChatEvent,
     ChatMessage,
     type ChatMessageStatus,
     ChatReference,
+    ChatSuggestion,
+    ChatSuggestions,
     ChatThread,
     ChatToken,
+    DropdownMenuItem,
+    useChatTrigger,
 } from 'continuum';
 import {
-    ArrowLeft,
     CircleCheck,
     CircleDollarSign,
-    ExternalLink,
+    FileClock,
+    FileText,
     Loader,
     MessageCircleQuestion,
+    ReceiptText,
+    Sparkles,
     X,
 } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 const icon = { strokeWidth: 2 } as const;
 
 const invoice = '#inv_1CU2KZuPR5J4329dVo3a7b';
+
+/** A record linked from the "+" menu: what it is, its token, one fact and its state. */
+type Linked = {
+    name: string;
+    token: string;
+    fact: string;
+    status: { label: string; tone: 'warning' | 'success'; icon: ReactNode };
+};
+
+const records = {
+    invoice: {
+        name: 'Invoice',
+        token: invoice,
+        fact: 'Amount due: $40',
+        status: { label: 'Pending', tone: 'warning', icon: <Loader {...icon} /> },
+    },
+    application: {
+        name: 'Application',
+        token: '#app_1CU94h5MjxVVgwapQ3vJxJ',
+        fact: 'Creator programme',
+        status: { label: 'In review', tone: 'warning', icon: <Loader {...icon} /> },
+    },
+    audit: {
+        name: 'Audit',
+        token: '#aud_7QX2mPa91LkR0sTe4bYw',
+        fact: 'Payout audit, October',
+        status: { label: 'Passed', tone: 'success', icon: <CircleCheck {...icon} /> },
+    },
+} satisfies Record<string, Linked>;
+
+// The applications "#" offers, newest first.
+const applications = [
+    { token: '#app_1CU94h5MjxVVgwapQ3vJxJ', creator: 'Joan Verhulst' },
+    { token: '#app_3Hk2Pq8WnLzAe7Ud0RfTgY', creator: 'Mara Aydin' },
+    { token: '#app_7Rt5Vb2YcXmEq1Lo9NsKdH', creator: 'Liam Ortiz' },
+    { token: '#app_9Fd4Gs6JhKwQz3Pi8MuBnC', creator: 'Noor Haddad' },
+    { token: '#app_2Wq8Er4TyUiOp6As1DfGhJ', creator: 'Eva Tyrell' },
+];
+
+type Waiting = { id: number; file?: string; record?: Linked };
 
 type Entry =
     | {
@@ -37,8 +86,22 @@ type Entry =
       }
     | { kind: 'bot'; id: number; text: string; time: string }
     | { kind: 'agent'; id: number; text: string; time: string; dateTime: string }
-    | { kind: 'reference'; id: number }
+    | { kind: 'reference'; id: number; record: Linked }
+    | { kind: 'files'; id: number; files: string[] }
     | { kind: 'event'; id: number; text: string };
+
+const tokenPattern = /(#[a-z]+_\w+)/g;
+
+/** The words with every "#app_…" drawn as a token. */
+const withTokens = (text: string) =>
+    text.split(tokenPattern).map((part, i) =>
+        i % 2 === 1 ? (
+            // biome-ignore lint/suspicious/noArrayIndexKey: the parts of one message never reorder
+            <ChatToken key={i}>{part}</ChatToken>
+        ) : (
+            part
+        ),
+    );
 
 // Omit on a union would keep only the shared keys; mapping each member keeps them apart.
 type NewEntry = Entry extends infer E ? (E extends Entry ? Omit<E, 'id'> : never) : never;
@@ -53,7 +116,7 @@ const history: Entry[] = [
         dateTime: '2026-10-26T14:48',
         status: 'read',
     },
-    { kind: 'reference', id: 2 },
+    { kind: 'reference', id: 2, record: records.invoice },
     {
         kind: 'bot',
         id: 3,
@@ -101,10 +164,30 @@ const SupportChat = () => {
     const [open, setOpen] = useState(true);
     const [closed, setClosed] = useState(true);
     const [entries, setEntries] = useState<Entry[]>(history);
+    // What is attached or linked waits above the composer and goes out with the next message.
+    const [waiting, setWaiting] = useState<Waiting[]>([]);
+    const [draft, setDraft] = useState('');
+    const trigger = useChatTrigger(draft);
     const nextId = useRef(history.length + 1);
     const timers = useRef<number[]>([]);
+    const launcherRef = useRef<HTMLButtonElement>(null);
+    const composerRef = useRef<HTMLTextAreaElement>(null);
+    const toggled = useRef(false);
 
     useEffect(() => () => timers.current.forEach(window.clearTimeout), []);
+
+    // Closing and opening swap the whole tree, so focus is handed on rather than dropped to the body:
+    // to the launcher once the widget closes, to the composer once it opens again.
+    useEffect(() => {
+        if (!toggled.current) return;
+        toggled.current = false;
+        (open ? composerRef.current : launcherRef.current)?.focus();
+    }, [open]);
+
+    const toggle = (next: boolean) => {
+        toggled.current = true;
+        setOpen(next);
+    };
 
     const later = (ms: number, run: () => void) => {
         timers.current.push(window.setTimeout(run, ms));
@@ -131,13 +214,22 @@ const SupportChat = () => {
         }
 
         const id = nextId.current;
-        add({
-            kind: 'own',
-            text,
-            time: clock(),
-            dateTime: new Date().toISOString(),
-            status: 'sending',
-        });
+        if (text) {
+            add({
+                kind: 'own',
+                text,
+                time: clock(),
+                dateTime: new Date().toISOString(),
+                status: 'sending',
+            });
+        }
+        const files = waiting.flatMap(item => (item.file ? [item.file] : []));
+        if (files.length > 0) add({ kind: 'files', files });
+        for (const item of waiting) {
+            if (item.record) add({ kind: 'reference', record: item.record });
+        }
+        setWaiting([]);
+        if (!text) return;
         // Walk the tick through its states, then let Joan answer.
         later(500, () => setStatus(id, 'delivered'));
         later(1400, () => setStatus(id, 'read'));
@@ -151,10 +243,24 @@ const SupportChat = () => {
         );
     };
 
+    const wait = (item: Omit<Waiting, 'id'>) => {
+        const id = nextId.current++;
+        setWaiting(current =>
+            item.record && current.some(other => other.record?.token === item.record?.token)
+                ? current
+                : [...current, { ...item, id }],
+        );
+    };
+
+    const query = trigger.query.toLowerCase();
+    const matches = applications.filter(
+        app => app.token.toLowerCase().includes(query) || app.creator.toLowerCase().includes(query),
+    );
+
     if (!open) {
         return (
-            <div className="flex h-[720px] w-full max-w-[440px] items-end justify-end">
-                <Button onClick={() => setOpen(true)} size="lg">
+            <div className="flex h-180 w-full max-w-110 items-end justify-end">
+                <Button onClick={() => toggle(true)} ref={launcherRef} size="lg">
                     <MessageCircleQuestion aria-hidden {...icon} />
                     Support
                 </Button>
@@ -165,50 +271,31 @@ const SupportChat = () => {
     return (
         <section
             aria-labelledby="support-chat-title"
-            className="flex h-[720px] w-full max-w-[440px] flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50"
+            className="flex h-180 w-full max-w-110 flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50"
         >
             {/* Header and ticket bar are one block the thread scrolls under, so a single hairline closes it. */}
             <header className="flex shrink-0 flex-col border-neutral-200 border-b">
-                <div className="flex h-[52px] items-center justify-between gap-4 pr-[11px] pl-5">
+                <div className="flex h-13 items-center justify-between gap-4 pr-2.75 pl-5">
                     <h2
                         className="min-w-0 truncate font-medium text-neutral-950 text-sm"
                         id="support-chat-title"
                     >
                         Support
                     </h2>
-                    <div className="flex items-center gap-1">
-                        <Button
-                            aria-label="Open ticket in a new tab"
-                            render={
-                                // biome-ignore lint/a11y/useAnchorContent: the Button fills it with the icon and label.
-                                <a
-                                    href="#support/ID_0102_payment"
-                                    rel="noreferrer"
-                                    target="_blank"
-                                />
-                            }
-                            size="icon-sm"
-                            variant="ghost"
-                        >
-                            <ExternalLink aria-hidden {...icon} />
-                        </Button>
-                        <Button
-                            aria-label="Close support"
-                            onClick={() => setOpen(false)}
-                            size="icon-sm"
-                            variant="ghost"
-                        >
-                            <X aria-hidden {...icon} />
-                        </Button>
-                    </div>
-                </div>
-                <div className="flex h-[48px] items-center gap-3 pr-4 pl-3">
-                    <Button aria-label="Back to tickets" size="icon-sm" variant="ghost">
-                        <ArrowLeft aria-hidden {...icon} />
+                    {/* No ticket list or ticket page stands behind the demo, so only the close is offered. */}
+                    <Button
+                        aria-label="Close support"
+                        onClick={() => toggle(false)}
+                        size="icon-sm"
+                        variant="ghost"
+                    >
+                        <X aria-hidden {...icon} />
                     </Button>
+                </div>
+                <div className="flex h-12 items-center gap-3 pr-4 pl-5">
                     <p className="flex min-w-0 flex-1 items-center gap-1.5 text-xs">
                         {/* The ID gives way before the subject, which is what the reader scans the bar for. */}
-                        <span className="min-w-8 truncate text-neutral-500 tabular-nums">
+                        <span className="min-w-8 truncate text-neutral-600 tabular-nums">
                             ID_0102_payment
                         </span>
                         <span aria-hidden className="text-neutral-500">
@@ -260,7 +347,7 @@ const SupportChat = () => {
                                             <ChatToken>{invoice}</ChatToken>
                                         </>
                                     ) : (
-                                        entry.text
+                                        withTokens(entry.text)
                                     )}
                                 </ChatMessage>
                             );
@@ -269,14 +356,25 @@ const SupportChat = () => {
                                 <ChatReference
                                     key={entry.id}
                                     status={
-                                        <Badge icon={<Loader {...icon} />} tone="warning">
-                                            Pending
+                                        <Badge
+                                            icon={entry.record.status.icon}
+                                            tone={entry.record.status.tone}
+                                        >
+                                            {entry.record.status.label}
                                         </Badge>
                                     }
-                                    token={invoice}
+                                    token={entry.record.token}
                                 >
-                                    Amount due: $40
+                                    {entry.record.fact}
                                 </ChatReference>
+                            );
+                        case 'files':
+                            return (
+                                <ChatAttachments align="end" key={entry.id}>
+                                    {entry.files.map(file => (
+                                        <ChatAttachment key={file} name={file} />
+                                    ))}
+                                </ChatAttachments>
                             );
                         case 'bot':
                             return (
@@ -310,11 +408,101 @@ const SupportChat = () => {
 
             <div className="shrink-0 px-3 pb-3">
                 <ChatComposer
+                    accept="image/*,.pdf"
+                    // What a payout ticket needs is the invoice, the application or the audit: the "+"
+                    // links one, and it waits above the box until the message goes.
+                    attachMenu={
+                        <>
+                            <ChatComposerAttachItem />
+                            <DropdownMenuItem onClick={() => wait({ record: records.invoice })}>
+                                <ReceiptText {...icon} /> Link invoice
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => wait({ record: records.application })}>
+                                <FileText {...icon} /> Link application
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => wait({ record: records.audit })}>
+                                <FileClock {...icon} /> Link audit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                                onClick={() =>
+                                    setDraft(current =>
+                                        current.startsWith('@Support Bot')
+                                            ? current
+                                            : `@Support Bot ${current}`,
+                                    )
+                                }
+                            >
+                                <Sparkles {...icon} /> Ask the assistant
+                            </DropdownMenuItem>
+                        </>
+                    }
+                    attachments={
+                        waiting.length > 0 ? (
+                            <ChatAttachments>
+                                {waiting.map(item => {
+                                    const remove = () => {
+                                        setWaiting(current =>
+                                            current.filter(other => other.id !== item.id),
+                                        );
+                                        composerRef.current?.focus();
+                                    };
+                                    return item.record ? (
+                                        <ChatAttachment
+                                            key={item.id}
+                                            name={item.record.name}
+                                            onRemove={remove}
+                                            removeLabel={`Remove ${item.record.name.toLowerCase()}`}
+                                            status={
+                                                <Badge
+                                                    icon={item.record.status.icon}
+                                                    tone={item.record.status.tone}
+                                                >
+                                                    {item.record.status.label}
+                                                </Badge>
+                                            }
+                                            token={item.record.token}
+                                            variant="record"
+                                        />
+                                    ) : (
+                                        <ChatAttachment
+                                            key={item.id}
+                                            name={item.file ?? ''}
+                                            onRemove={remove}
+                                        />
+                                    );
+                                })}
+                            </ChatAttachments>
+                        ) : undefined
+                    }
                     label="Message #payment issue"
-                    // What a payout ticket needs attaching is the invoice, so add drops its record in.
-                    onAdd={() => add({ kind: 'reference' })}
+                    onAttach={files => {
+                        for (const file of files) wait({ file: file.name });
+                    }}
                     onSend={send}
-                    placeholder="Message #payment issue"
+                    onSuggestionsClose={trigger.dismiss}
+                    onValueChange={setDraft}
+                    placeholder="Message #payment issue, # for an application"
+                    suggestions={
+                        trigger.open ? (
+                            <ChatSuggestions
+                                empty="No applications match"
+                                title="Recent applications"
+                            >
+                                {matches.map(app => (
+                                    <ChatSuggestion
+                                        key={app.token}
+                                        leading={<FileText {...icon} />}
+                                        meta={app.creator}
+                                        onSelect={() => setDraft(trigger.insert(app.token))}
+                                    >
+                                        {app.token}
+                                    </ChatSuggestion>
+                                ))}
+                            </ChatSuggestions>
+                        ) : undefined
+                    }
+                    textareaRef={composerRef}
+                    value={draft}
                 />
             </div>
         </section>

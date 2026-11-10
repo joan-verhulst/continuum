@@ -100,7 +100,7 @@ const ProfileDetailsExample = () => {
 
     return (
         <TooltipProvider>
-            <div className="flex w-full max-w-[720px] flex-col items-start gap-3">
+            <div className="flex w-full max-w-180 flex-col items-start gap-3">
                 <Sheet onOpenChange={setSheetOpen} open={sheetOpen}>
                     <SheetTrigger render={<Button variant="secondary" />}>
                         <PanelRight strokeWidth={2} /> Open as sheet
@@ -118,9 +118,9 @@ const ProfileDetailsExample = () => {
                 {/* The same sheet drawn in place: header and footer ruled off full width, only the body scrolls. */}
                 <section
                     aria-labelledby={titleId}
-                    className="flex h-[760px] w-full flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50"
+                    className="flex h-190 w-full flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50"
                 >
-                    <div className="flex h-[52px] shrink-0 items-center border-neutral-200 border-b px-4">
+                    <div className="flex h-13 shrink-0 items-center border-neutral-200 border-b px-4">
                         <h2
                             className="min-w-0 truncate font-medium text-neutral-950 text-sm"
                             id={titleId}
@@ -148,7 +148,8 @@ const figures = [
     { label: 'Total sessions', value: '7' },
     { label: 'First seen', value: '12 Apr' },
     { label: 'Avg session', value: '6m 14s' },
-    { label: 'Session time', value: '10m 32s' },
+    // The current session so far: the four pages' times added up, as the replay's length says too.
+    { label: 'Session time', value: '8m 32s' },
 ];
 
 const ProfileBody = ({ summary, onGenerate }: ProfileBodyProps) => (
@@ -184,7 +185,7 @@ const ProfilePerson = () => (
                 <p className="min-w-0 truncate font-medium text-neutral-950 text-sm">PietHein18</p>
                 <StatusDot label="Online now" pulse />
             </div>
-            <ul className="grid max-w-[360px] grid-cols-2 gap-x-4 gap-y-1.5 text-neutral-700 text-xs">
+            <ul className="grid max-w-90 grid-cols-2 gap-x-4 gap-y-1.5 text-neutral-700 text-xs">
                 <Fact icon={<MapPin strokeWidth={2} />} label="Location">
                     Zierikzee, Zeeland
                 </Fact>
@@ -212,7 +213,7 @@ const CurrentSession = () => {
                 <h3 className={sectionTitle} id={titleId}>
                     Current session
                 </h3>
-                <span className="text-neutral-500 text-xs tabular-nums">{pages.length} pages</span>
+                <span className="text-neutral-600 text-xs tabular-nums">{pages.length} pages</span>
             </div>
             <ol aria-labelledby={titleId} className="flex flex-col gap-4">
                 {pages.map(page => (
@@ -230,18 +231,18 @@ const CurrentSession = () => {
                         <dl className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                             {page.entry && (
                                 <div className="flex items-center gap-1.5">
-                                    <dt className="text-neutral-500">Entry</dt>
+                                    <dt className="text-neutral-600">Entry</dt>
                                     <dd>
                                         <Badge>{page.entry}</Badge>
                                     </dd>
                                 </div>
                             )}
                             <div className="flex items-center gap-1.5">
-                                <dt className="text-neutral-500">Time on page</dt>
+                                <dt className="text-neutral-600">Time on page</dt>
                                 <dd className="text-neutral-900 tabular-nums">{page.timeOnPage}</dd>
                             </div>
                             <div className="flex items-center gap-1.5">
-                                <dt className="text-neutral-500">Scroll</dt>
+                                <dt className="text-neutral-600">Scroll</dt>
                                 <dd className="text-neutral-900 tabular-nums">{page.scroll}</dd>
                             </div>
                         </dl>
@@ -261,9 +262,9 @@ const SessionReplay = ({ summary, onGenerate }: ProfileBodyProps) => (
                 <p className="min-w-0 truncate font-medium text-neutral-950 text-xs tabular-nums">
                     a720e16585ad4e6d8b9072e9
                 </p>
-                <p className="text-neutral-500 text-xs">
+                <p className="text-neutral-600 text-xs">
                     <time dateTime="2026-10-26T14:22:10">26 Oct 2026, 14:22</time> ·{' '}
-                    <span className="sr-only">Duration: </span>4m 18s
+                    <span className="sr-only">Duration: </span>8m 32s so far
                 </p>
             </div>
             <ul className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-neutral-700 text-xs">
@@ -324,9 +325,9 @@ const SessionReplay = ({ summary, onGenerate }: ProfileBodyProps) => (
 
         {/* Three facets of the visit, kept apart by space rather than the design's column rules. */}
         <div className="mt-2 grid @lg:grid-cols-3 grid-cols-1 gap-x-4 gap-y-6">
-            <ReplayColumn title="Entry / exit">
-                <ValueField copyable label="Entry" size="sm" value="/home" />
-                <ValueField copyable label="Exit" size="sm" value="/contact" />
+            {/* The visitor is still on the site, so the visit has no exit yet. */}
+            <ReplayColumn title="Entry">
+                <ValueField copyable label="Entry page" size="sm" value="/home" />
                 <ValueField label="Referrer" size="sm" value="x.com" />
             </ReplayColumn>
             <ReplayColumn title="UTM">
@@ -381,12 +382,15 @@ const ReplayColumn = ({ title, info, gap = 'default', children }: ReplayColumnPr
     );
 };
 
+// Both lead into the analytics app, which the playground does not have, so they say so rather than
+// taking a click and doing nothing.
 const ProfileFooter = () => (
-    <DialogFooter>
-        <Button variant="secondary">
+    <DialogFooter className="pl-4">
+        <p className="me-auto min-w-0 truncate text-neutral-600 text-xs">Not part of this demo</p>
+        <Button disabled variant="secondary">
             View full user profile <UserRound strokeWidth={2} />
         </Button>
-        <Button>
+        <Button disabled>
             Ask about this session <Sparkles strokeWidth={2} />
         </Button>
     </DialogFooter>

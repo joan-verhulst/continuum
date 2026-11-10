@@ -19,6 +19,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
+    FilterBar,
     LiveCount,
 } from 'continuum';
 import { History, ListFilter, Monitor, Smartphone, Tablet } from 'lucide-react';
@@ -107,6 +108,12 @@ const shareOf = (dimension: Dimension, filters: Filters) => {
     return kept.reduce((sum, row) => sum + row.visitors, 0) / BASE_TOTAL;
 };
 
+/** "Germany", "Germany or France", "Germany, France or Spain": the values one chip holds. */
+const either = (values: string[]) =>
+    values.length < 2
+        ? values.join('')
+        : `${values.slice(0, -1).join(', ')} or ${values[values.length - 1]}`;
+
 const formatDelta = (ratio: number) => {
     const percent = Math.round(ratio * 100);
     // A true minus sign, so "−9%" and "+12%" line up in tabular figures.
@@ -139,16 +146,16 @@ const LiveAnalytics = () => {
                 : [...current[dimension], name],
         }));
 
-    const active = dimensions.flatMap(dimension =>
-        filters[dimension].map(name => ({ dimension, name })),
-    );
+    // One chip per dimension, so the count on the trigger is the number of chips under it.
+    const active = dimensions.filter(dimension => filters[dimension].length > 0);
 
     // Dimensions are treated as independent: a filter on one scales every other breakdown by its share.
     const scale = live / BASE_TOTAL;
     const filteredShare = dimensions.reduce((product, d) => product * shareOf(d, filters), 1);
     const count = Math.round(live * filteredShare);
-    const baseline = comparisons[comparison].visitors;
-    const delta = live / baseline - 1;
+    // The baseline is narrowed by the same filters, so the delta compares like with like.
+    const baseline = Math.round(comparisons[comparison].visitors * filteredShare);
+    const delta = baseline > 0 ? count / baseline - 1 : 0;
 
     const rowsFor = (dimension: Dimension) => {
         // A list is not narrowed by its own filter, so the other rows stay there to add.
@@ -164,14 +171,14 @@ const LiveAnalytics = () => {
     return (
         <Card
             aria-labelledby="live-analytics-title"
-            className="w-full max-w-[640px] gap-6"
+            className="w-full max-w-160 gap-6"
             layout="list"
             role="region"
         >
             <h2 className="sr-only" id="live-analytics-title">
                 Live visitors
             </h2>
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between gap-3">
                     <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
                         <LiveCount count={count} />
@@ -183,7 +190,7 @@ const LiveAnalytics = () => {
                             >
                                 {formatDelta(delta)}
                             </Badge>
-                            <span className="text-neutral-500 text-xs">
+                            <span className="text-neutral-600 text-xs">
                                 vs {comparisons[comparison].label}
                             </span>
                         </span>
@@ -236,7 +243,7 @@ const LiveAnalytics = () => {
                                             <DropdownMenuSubTrigger>
                                                 {dimensionLabels[dimension]}
                                                 {filters[dimension].length > 0 && (
-                                                    <span className="ml-auto text-neutral-500 text-xxs tabular-nums">
+                                                    <span className="ml-auto text-neutral-600 text-xxs tabular-nums">
                                                         {filters[dimension].length}
                                                     </span>
                                                 )}
@@ -265,31 +272,31 @@ const LiveAnalytics = () => {
                                     disabled={active.length === 0}
                                     onClick={() => setFilters(noFilters)}
                                 >
-                                    Clear filters
+                                    Clear all
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
                 </div>
+                {/* A chip per dimension ("Country is Germany or France"), then a ghost Clear all. */}
                 {active.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-1.5">
-                        {active.map(({ dimension, name }) => (
+                    <FilterBar onClear={() => setFilters(noFilters)}>
+                        {active.map(dimension => (
                             <Chip
-                                key={`${dimension}:${name}`}
+                                key={dimension}
                                 action={
                                     <ChipAction
-                                        label={`Remove ${dimensionLabels[dimension].toLowerCase()} filter ${name}`}
-                                        onClick={() => toggle(dimension, name)}
+                                        label={`Remove ${dimensionLabels[dimension].toLowerCase()} filter`}
+                                        onClick={() =>
+                                            setFilters(current => ({ ...current, [dimension]: [] }))
+                                        }
                                     />
                                 }
                             >
-                                <span className="text-neutral-500">
-                                    {dimensionLabels[dimension]}
-                                </span>{' '}
-                                {name}
+                                {dimensionLabels[dimension]} is {either(filters[dimension])}
                             </Chip>
                         ))}
-                    </div>
+                    </FilterBar>
                 )}
             </div>
             <div className="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-2">

@@ -1,4 +1,5 @@
 import {
+    Alert,
     Badge,
     Button,
     Card,
@@ -66,7 +67,7 @@ const PlansPricing = () => {
     return (
         <section
             aria-labelledby="plans-pricing-title"
-            className="flex w-full max-w-[640px] flex-col gap-8"
+            className="flex w-full max-w-160 flex-col gap-8"
         >
             {/* The docs section above already shows this title, so it is kept for screen readers only. */}
             <header className="sr-only">
@@ -107,10 +108,20 @@ const PlansPricing = () => {
                             <DialogTitle>Change plan</DialogTitle>
                         </DialogHeader>
                         <DialogBody>
+                            {/* Said as the switch will do it: this month's credits become the new
+                                plan's allowance, less what is already used; bought credits stay. */}
                             <DialogDescription>
-                                The new plan starts today. Unused credits carry over until the reset
-                                on 5 Nov.
+                                The new plan starts today. This month’s credits become its{' '}
+                                {number.format(plans[draftPlan].credits)}, less the{' '}
+                                {number.format(creditsUsed)} already used
+                                {extra > 0 && `, plus the ${number.format(extra)} you bought`}.
                             </DialogDescription>
+                            {plans[draftPlan].seats < current.seats && (
+                                <Alert
+                                    title={`${plans[draftPlan].name} has ${seats(plans[draftPlan].seats)}: ${current.seats - plans[draftPlan].seats} of the ${current.seats} you have now are removed today.`}
+                                    tone="warning"
+                                />
+                            )}
                             <RadioGroup
                                 aria-label="Plan"
                                 onValueChange={value => setDraftPlan(value as PlanId)}
@@ -171,7 +182,8 @@ const PlansPricing = () => {
                 <SettingRow
                     control={
                         <Dialog onOpenChange={setCreditsOpen} open={creditsOpen}>
-                            <DialogTrigger render={<Button />}>
+                            {/* Secondary: a setting row's action never takes the page's one primary. */}
+                            <DialogTrigger render={<Button variant="secondary" />}>
                                 <Plus {...icon} /> Add credits
                             </DialogTrigger>
                             <DialogContent>
