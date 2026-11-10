@@ -171,7 +171,7 @@ const RampStrip = ({ name }: { name: RampName }) => {
                     />
                 ))}
             </div>
-            <span className="text-center text-neutral-500 text-xs tabular-nums">
+            <span className="text-center text-neutral-600 text-xs tabular-nums">
                 {pointed ? `${name}-${pointed}` : 'Point at a step to read its value.'}
             </span>
         </div>
@@ -186,7 +186,13 @@ const ColourBody = () => (
         <P>
             A colour is never picked by how it looks. <C>neutral-50</C> is the surface, <C>100</C>{' '}
             the canvas and muted fills, <C>200</C> the hairline, <C>300</C> a hover border,{' '}
-            <C>500</C> a placeholder, <C>600</C> secondary text and <C>950</C> primary text.
+            <C>500</C> an unchecked box's border, <C>600</C> secondary text, placeholders and hints,
+            and <C>950</C> primary text.
+        </P>
+        <P>
+            Each role takes the first whole step that meets WCAG on the surface: 4.5:1 for text, 3:1
+            for the edge of a control. Text that is read never sits on <C>500</C>, which misses
+            4.5:1, so a hint shares the secondary step.
         </P>
         <P>
             Dark mode reads every ramp back to front, so the same class is right in both modes and
@@ -205,18 +211,18 @@ const ColourBody = () => (
 
         <H>Selection is a wash, not a colour</H>
         <P>
-            A hovered or selected row takes a 5% wash of the text colour, a table row on hover 3%.
-            Pill tabs and an own chat message take the tint, a translucent wash by default, so it
-            reads on the surface and on the canvas alike.
+            A hovered row takes a 5% wash of the text colour, a table row on hover 3%, and a
+            selected or current row 7%. Pill tabs and an own chat message take the tint, a
+            translucent wash by default, so it reads on the surface and on the canvas alike.
         </P>
         <SelectionFigure />
 
         <H>Status colours</H>
         <P>
-            A coloured component takes its text from step <C>700</C> and its fill from step{' '}
+            A coloured component takes its text from step <C>800</C> and its fill from step{' '}
             <C>500</C> of the same ramp at 20%, so the fill adapts to whatever it sits on, in light
-            and dark. Dots and solid fills take <C>500</C>; icons and delta text take <C>600</C>.
-            Badges are filled, never outlined.
+            and dark. Dots and solid fills take <C>500</C>, icons <C>600</C>. A rising delta takes{' '}
+            <C>success-800</C>, a falling one <C>error-600</C>. Badges are filled, never outlined.
         </P>
         <P>
             Status colours mean status. The primary ramp is for information and the assistant, not
@@ -228,7 +234,7 @@ const ColourBody = () => (
 
 /** The same selection on a surface and on the canvas: a translucent wash reads on both. */
 const SelectionFigure = () => (
-    <Figure caption="The same rows and tabs on a surface and on the canvas: the selected row takes a 5% wash, the active tab the tint, and both read on either.">
+    <Figure caption="The same rows and tabs on a surface and on the canvas: the selected row takes a 7% wash, the active tab the tint, and both read on either.">
         <div className={cn(frame, 'grid sm:grid-cols-2')}>
             {[
                 { label: 'On a surface', className: 'bg-neutral-50' },
@@ -239,7 +245,7 @@ const SelectionFigure = () => (
                     inert
                     key={label}
                 >
-                    <span className="text-neutral-500 text-xxs">{label}</span>
+                    <span className="text-neutral-600 text-xxs">{label}</span>
                     <div className="flex flex-col gap-0.5">
                         <NavItem icon={<Inbox {...icon} />}>Inbox</NavItem>
                         <NavItem icon={<FileText {...icon} />}>Drafts</NavItem>
@@ -270,7 +276,7 @@ const grounds = [
 
 /** One badge on every ground: its fill takes on what is under it, its text reads on all. */
 const StatusFigure = () => (
-    <Figure caption="One badge on five grounds. Its fill is 500 at 20%, so it takes on what is under it, and its 700 text reads on all of them; any ramp works the same way.">
+    <Figure caption="One badge on five grounds. Its fill is 500 at 20%, so it takes on what is under it, and its 800 text reads on all of them; any ramp works the same way.">
         <div className={cn(frame, 'grid grid-cols-2 sm:grid-cols-5')} inert>
             {grounds.map(({ label, className, mode }) => (
                 <Theme
@@ -281,7 +287,7 @@ const StatusFigure = () => (
                     key={label}
                     mode={mode}
                 >
-                    <span className="text-neutral-500 text-xxs">{label}</span>
+                    <span className="text-neutral-600 text-xxs">{label}</span>
                     <Badge tone="success">Paid</Badge>
                 </Theme>
             ))}
@@ -313,7 +319,7 @@ const TypeRow = ({ name, className }: (typeof typeScale)[number]) => {
         <div className="grid items-baseline gap-x-6 gap-y-1 border-neutral-200 border-b px-5 py-4 last:border-b-0 md:grid-cols-[140px_minmax(0,1fr)]">
             <span className="flex flex-col gap-0.5 text-xxs">
                 <span className="font-medium text-neutral-950">text-{name}</span>
-                <span className="text-neutral-500 tabular-nums">{metrics} px</span>
+                <span className="text-neutral-600 tabular-nums">{metrics} px</span>
             </span>
             <span
                 className={cn('min-w-0 truncate font-medium text-neutral-950', className)}
@@ -332,9 +338,10 @@ const TypeBody = () => {
         <Article>
             <H>13px, two weights, no caps</H>
             <P>
-                Most UI is <C>text-xs</C>. <C>text-xxs</C>, 11px, is for badges, counts, tooltips
-                and hints; <C>text-sm</C>, 14px, for input values, dialog titles and option labels.
-                Larger sizes are only for headline numbers and page titles. Every size is set in{' '}
+                Most UI is <C>text-xs</C>, 13px, input values included. <C>text-xxs</C>, 11px, is
+                for badges, counts, tooltips and hints; <C>text-sm</C>, 14px, for dialog and sheet
+                titles, option labels and a page's description line. Larger sizes are only for
+                headline numbers and page titles. Every size is set in{' '}
                 <span ref={ref}>{family}</span>, normal 400 or medium 500, with a 0.32px tracking
                 and a line height of 1.25 times the size.
             </P>
@@ -393,7 +400,8 @@ const SurfacesBody = () => (
 const panel = 1600;
 
 const widths = [
-    { name: 'default', width: 896, value: '896px', use: 'Inputs and light content' },
+    { name: 'narrow', width: 640, value: '640px', use: 'A form or settings' },
+    { name: 'default', width: 896, value: '896px', use: 'An overview, a detail or a document' },
     { name: 'wide', width: 1080, value: '1080px', use: 'A list with several columns' },
     { name: 'dense', width: 1280, value: '1280px', use: 'A very dense table' },
     { name: 'inset', width: panel - 128, value: 'panel less 64px a side', use: 'Several tables' },
@@ -416,7 +424,7 @@ const WidthsFigure = () => (
                 >
                     <span className="flex min-w-0 items-baseline gap-2">
                         <span className="font-medium text-neutral-950">{name}</span>
-                        <span className="truncate text-neutral-500 tabular-nums">{value}</span>
+                        <span className="truncate text-neutral-600 tabular-nums">{value}</span>
                     </span>
                     <span className="truncate text-neutral-600">{use}</span>
                 </div>
@@ -429,7 +437,7 @@ const WidthsFigure = () => (
 const Band = ({ className, children }: { className?: string; children?: ReactNode }) => (
     <span
         className={cn(
-            'relative flex shrink-0 items-center justify-center bg-primary-500/15 font-medium text-primary-700 text-xxs tabular-nums',
+            'relative flex shrink-0 items-center justify-center bg-primary-500/15 font-medium text-primary-800 text-xxs tabular-nums',
             className,
         )}
     >
@@ -458,7 +466,7 @@ const GridFigure = () => (
                     aria-hidden
                     className="pointer-events-none absolute inset-0 rounded-[calc(var(--radius-card)*2-2px)] border-32 border-primary-500/15"
                 />
-                <span className="absolute inset-x-0 top-0 flex h-8 items-center justify-center font-medium text-primary-700 text-xxs tabular-nums">
+                <span className="absolute inset-x-0 top-0 flex h-8 items-center justify-center font-medium text-primary-800 text-xxs tabular-nums">
                     16
                 </span>
                 {/* The parts at twice their size; the spacing between them drawn as it measures. */}
@@ -653,10 +661,11 @@ const StatesBody = () => (
     <Article>
         <H>The same states on every control</H>
         <P>
-            Focus is a 2px outline in the focus colour, offset by 2px; inside a clipping container
-            it moves inside. Hover darkens a border from <C>200</C> to <C>300</C> and text from{' '}
-            <C>600</C> to <C>800</C>, or adds the 5% wash. Disabled is 50% opacity with no pointer
-            events. Invalid is an <C>error-500</C> border with error icons and placeholder.
+            Focus is a 2px outline in the focus colour, <C>neutral-500</C>, offset by 2px; inside a
+            clipping container it moves inside. Hover darkens a border from <C>200</C> to <C>300</C>{' '}
+            (an unchecked box's from <C>500</C> to <C>600</C>) and text from <C>600</C> to{' '}
+            <C>800</C>, or adds the 5% wash. Disabled is 50% opacity with no pointer events. Invalid
+            is an <C>error-500</C> border with error icons and placeholder.
         </P>
 
         <H>Icons</H>
@@ -668,8 +677,9 @@ const StatesBody = () => (
         <H>Motion</H>
         <P>
             Colour changes take 150ms with an explicit property list; popups enter in 200ms from a
-            small offset and fade out. Nothing bounces, nothing takes longer than 250ms, and motion
-            is off for people who ask for less of it.
+            small offset and fade out. A control answers in 250ms or less; a large surface entering
+            or changing size (the rail's width, a toast, a sheet) may take up to 400ms. Nothing
+            bounces, and motion is off for people who ask for less of it.
         </P>
         <Figure caption="Read off the page: a menu or a dialog enters in 200ms on a strong ease-out, from 95% or 8px below; a colour changes in 150ms. Slow it down to see the curve.">
             <KnobStage
@@ -901,7 +911,7 @@ const MotionSpecimen = ({
             <MotionCurve curve={curve} on={on} time={time} />
             <div className="flex items-baseline justify-between gap-4 text-xs">
                 <span className="font-medium text-neutral-950">{motions[name].name}</span>
-                <span className="truncate text-neutral-500 tabular-nums">
+                <span className="truncate text-neutral-600 tabular-nums">
                     {ms}ms · cubic-bezier({curve.join(', ')})
                 </span>
             </div>
@@ -1072,7 +1082,7 @@ type FoundationsProps = { state: AppState };
 export const Foundations = ({ state }: FoundationsProps) => {
     const { setIndex, setActive, active } = usePageIndex();
     // Every value read off the page is read again whenever the theme, its corners or the mode change.
-    const reading = `${JSON.stringify(state.theme)}-${state.radius}-${state.mode}`;
+    const reading = state.mode;
 
     useEffect(() => {
         setIndex(

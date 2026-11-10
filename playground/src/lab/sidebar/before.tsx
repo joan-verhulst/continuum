@@ -18,7 +18,7 @@ import {
 export const BeforeSidebar = () => (
     <aside className="flex w-64 shrink-0 flex-col bg-[#FAFAFA] font-['Geist_Variable',sans-serif] antialiased">
         <div className="flex h-14 shrink-0 items-center gap-3 px-4">
-            <span className="grid size-[26px] shrink-0 place-items-center rounded-[6px] bg-[#0A0A0A] font-[600] text-[#FFFFFF] text-[13px]/4.5">
+            <span className="grid size-6.5 shrink-0 place-items-center rounded-[6px] bg-[#0A0A0A] font-[600] text-[#FFFFFF] text-[13px]/4.5">
                 N
             </span>
             <span className="font-[500] text-[#171717] text-[14px]/5">Northwind</span>
@@ -26,21 +26,21 @@ export const BeforeSidebar = () => (
 
         <nav className="flex flex-col gap-0.5 px-2 pt-2">
             <button
-                className="flex h-[30px] items-center gap-2 rounded-[10px] bg-[#EDEDED] px-2.5 text-left"
+                className="flex h-7.5 items-center gap-2 rounded-[10px] bg-[#EDEDED] px-2.5 text-left"
                 type="button"
             >
                 <LayoutDashboard color="#171717" size={16} strokeWidth={2} />
                 <span className="text-[#171717] text-[13px]/4.5">Dashboard</span>
             </button>
             <button
-                className="flex h-[30px] items-center gap-2 rounded-[10px] px-2.5 text-left"
+                className="flex h-7.5 items-center gap-2 rounded-[10px] px-2.5 text-left"
                 type="button"
             >
                 <Folder color="#737373" size={16} strokeWidth={2} />
                 <span className="text-[#171717] text-[13px]/4.5">Projects</span>
             </button>
             <button
-                className="flex h-[30px] items-center gap-2 rounded-[10px] px-2.5 text-left"
+                className="flex h-7.5 items-center gap-2 rounded-[10px] px-2.5 text-left"
                 type="button"
             >
                 <Inbox color="#737373" size={16} strokeWidth={2} />
@@ -50,14 +50,14 @@ export const BeforeSidebar = () => (
                 </span>
             </button>
             <button
-                className="flex h-[30px] items-center gap-2 rounded-[10px] px-2.5 text-left"
+                className="flex h-7.5 items-center gap-2 rounded-[10px] px-2.5 text-left"
                 type="button"
             >
                 <CalendarDays color="#737373" size={16} strokeWidth={2} />
                 <span className="text-[#171717] text-[13px]/4.5">Calendar</span>
             </button>
             <button
-                className="flex h-[30px] items-center gap-2 rounded-[10px] px-2.5 text-left"
+                className="flex h-7.5 items-center gap-2 rounded-[10px] px-2.5 text-left"
                 type="button"
             >
                 <ChartLine color="#737373" size={16} strokeWidth={2} />
@@ -71,7 +71,7 @@ export const BeforeSidebar = () => (
                 <Plus color="#8F8F8F" size={16} strokeWidth={2} />
             </div>
             <button
-                className="flex h-[30px] items-center gap-2 rounded-[10px] px-2.5 text-left"
+                className="flex h-7.5 items-center gap-2 rounded-[10px] px-2.5 text-left"
                 type="button"
             >
                 <span className="grid size-4 shrink-0 place-items-center">
@@ -80,7 +80,7 @@ export const BeforeSidebar = () => (
                 <span className="text-[#171717] text-[13px]/4.5">Design</span>
             </button>
             <button
-                className="flex h-[30px] items-center gap-2 rounded-[10px] px-2.5 text-left"
+                className="flex h-7.5 items-center gap-2 rounded-[10px] px-2.5 text-left"
                 type="button"
             >
                 <span className="grid size-4 shrink-0 place-items-center">
@@ -89,7 +89,7 @@ export const BeforeSidebar = () => (
                 <span className="text-[#171717] text-[13px]/4.5">Engineering</span>
             </button>
             <button
-                className="flex h-[30px] items-center gap-2 rounded-[10px] px-2.5 text-left"
+                className="flex h-7.5 items-center gap-2 rounded-[10px] px-2.5 text-left"
                 type="button"
             >
                 <span className="grid size-4 shrink-0 place-items-center">

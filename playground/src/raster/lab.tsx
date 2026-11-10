@@ -306,7 +306,7 @@ const LabControls = ({
             <Field disabled={original}>
                 <FieldLabel>Grid</FieldLabel>
                 {/* As tall as a segmented control, so the row's controls share a centre line. */}
-                <div className="flex h-[34px] items-center">
+                <div className="flex h-8.5 items-center">
                     <Switch
                         checked={settings.overlay}
                         onCheckedChange={overlay => onChange({ overlay })}

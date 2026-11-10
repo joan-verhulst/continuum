@@ -1,5 +1,5 @@
 import { Badge, Dock, DockItem } from 'continuum';
-import { type CSSProperties, type ReactNode, useCallback, useEffect, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { exampleSections } from './examples';
 import {
     DetailHeader,
@@ -17,6 +17,7 @@ import {
 } from './layout';
 import { type AppState, toHash } from './meta';
 import { screens } from './screens';
+import { type ScreenId, type ScreenNav, ScreenNavProvider } from './screens/shared';
 import { Neighbours, PreviewTile } from './showcase/detail';
 
 type Kind = 'screen' | 'block';
@@ -56,7 +57,28 @@ type PatternsProps = {
 export const Patterns = ({ state, onChange }: PatternsProps) => {
     const item = items.find(entry => entry.id === state.screen);
     const { setIndex, setActive } = usePageIndex();
-    const open = useCallback((id?: string) => onChange({ screen: id }), [onChange]);
+    // Full screen is kept here, above the item's page, so a link inside a screen can open the next
+    // screen without leaving it.
+    const [full, setFull] = useState(false);
+    const [customer, setCustomer] = useState<string>();
+    const open = useCallback(
+        (id?: string) => {
+            if (!id) setFull(false);
+            onChange({ screen: id });
+        },
+        [onChange],
+    );
+    // How a live screen opens another of the app: the page and its link follow.
+    const nav = useMemo<ScreenNav>(
+        () => ({
+            open: (id: ScreenId, next?: string) => {
+                setCustomer(next);
+                open(id);
+            },
+            customer,
+        }),
+        [open, customer],
+    );
 
     useEffect(() => {
         setIndex(
@@ -75,12 +97,27 @@ export const Patterns = ({ state, onChange }: PatternsProps) => {
 
     useEffect(() => {
         setActive(item?.id);
+        // Leaving the screens, by the browser's back as well, leaves full screen with them.
+        if (item?.kind !== 'screen') setFull(false);
     }, [item, setActive]);
 
-    return item ? (
-        <ItemPage item={item} key={item.id} onOpen={open} radius={state.radius} />
-    ) : (
-        <PatternsIndex onOpen={open} state={state} />
+    if (!item) return <PatternsIndex onOpen={open} state={state} />;
+
+    return (
+        <>
+            <ItemPage
+                item={item}
+                key={item.id}
+                nav={nav}
+                onFull={() => setFull(true)}
+                onOpen={open}
+            />
+            {full && (
+                <FullScreen onClose={() => setFull(false)}>
+                    <ScreenNavProvider value={nav}>{item.render()}</ScreenNavProvider>
+                </FullScreen>
+            )}
+        </>
     );
 };
 
@@ -104,7 +141,7 @@ const PatternsIndex = ({ state, onOpen }: IndexProps) => {
     return (
         <Page width="dense">
             <PageHeader
-                description="Whole screens of one generic app, and the blocks of earlier products, all built from the system's components alone. Every one follows the mode and the theme previewed from the pill at the foot; open one to use it."
+                description="Whole screens of one generic app, and the blocks of earlier products, all built from the system's components alone. Every one follows the mode and the theme of the project picked in the sidebar; open one to use it."
                 title="Patterns"
             />
             <div className="flex min-w-0 flex-col gap-20">
@@ -126,7 +163,6 @@ const PatternsIndex = ({ state, onOpen }: IndexProps) => {
                                     item={item}
                                     key={item.id}
                                     onOpen={() => onOpen(item.id)}
-                                    radius={state.radius}
                                 />
                             ))}
                         </div>
@@ -150,13 +186,6 @@ const PatternsIndex = ({ state, onOpen }: IndexProps) => {
     );
 };
 
-/** The playground's own corners, on a container round a pattern, whatever the theme previews. */
-export const ownCorners = { '--continuum-radius-scale': 1 } as CSSProperties;
-
-/** The previewed theme's corners again, on the pattern inside such a container. */
-export const themeCorners = (radius: number) =>
-    ({ '--continuum-radius-scale': radius }) as CSSProperties;
-
 // Each kind at the size it is drawn at, and the scale of its shot in a tile.
 const shot = {
     screen: { width: 1440, height: 900, scale: 0.6 },
@@ -167,8 +196,6 @@ type TileProps = {
     item: Item;
     href: string;
     onOpen: () => void;
-    /** The previewed corner scale, for the pattern inside; the tile keeps the playground's. */
-    radius: number;
 };
 
 /**
@@ -176,11 +203,11 @@ type TileProps = {
  * and its name in a well below. The shot sits at a fixed size, 40px in from the stage's left
  * and 24px from its top, and runs off its right and its foot.
  */
-const PatternTile = ({ item, href, onOpen, radius }: TileProps) => {
+const PatternTile = ({ item, href, onOpen }: TileProps) => {
     const { width, height, scale } = shot[item.kind];
 
     return (
-        <div className="min-w-0" style={ownCorners}>
+        <div className="min-w-0">
             <PreviewTile
                 badge={<Badge>{kindLabel[item.kind]}</Badge>}
                 description={item.description}
@@ -195,13 +222,15 @@ const PatternTile = ({ item, href, onOpen, radius }: TileProps) => {
                 >
                     <div
                         className="origin-top-left"
-                        style={{ width, height, scale: String(scale), ...themeCorners(radius) }}
+                        style={{ width, height, scale: String(scale) }}
                     >
                         {item.kind === 'screen' ? (
                             item.render(true)
                         ) : (
                             // A block keeps its own width and sits flush left, as it would on a page.
-                            <div className="h-full p-8 *:max-w-full">{item.render()}</div>
+                            <div className="h-full p-8 [:where(&>*)]:max-w-full">
+                                {item.render()}
+                            </div>
                         )}
                     </div>
                 </div>
@@ -213,46 +242,37 @@ const PatternTile = ({ item, href, onOpen, radius }: TileProps) => {
 type ItemPageProps = {
     item: Item;
     onOpen: (id?: string) => void;
-    /** The previewed corner scale, for the pattern; its container keeps the playground's. */
-    radius: number;
+    /** Lets the live screen open the app's other screens. */
+    nav: ScreenNav;
+    onFull: () => void;
 };
 
 /**
  * One screen or block on a page of its own, as a component's page is: the way back and what
  * it is, the thing itself, live, then its neighbours of the same kind.
  */
-const ItemPage = ({ item, onOpen, radius }: ItemPageProps) => {
+const ItemPage = ({ item, onOpen, nav, onFull }: ItemPageProps) => {
     const siblings = items.filter(entry => entry.kind === item.kind);
     const index = siblings.indexOf(item);
     const neighbour = (entry?: Item) => entry && { id: entry.id, name: entry.title };
-    const [full, setFull] = useState(false);
 
     return (
         <Page className="gap-10" width={item.kind === 'screen' ? 'dense' : 'wide'}>
             <DetailHeader
                 // A screen is judged as it opens, at the window's size; a block has no window of its own.
-                aside={item.kind === 'screen' && <FullScreenButton onOpen={() => setFull(true)} />}
+                aside={item.kind === 'screen' && <FullScreenButton onOpen={onFull} />}
                 description={item.description}
                 onBack={() => onOpen(undefined)}
                 parent="Patterns"
                 title={item.title}
             />
-            {full && <FullScreen onClose={() => setFull(false)}>{item.render()}</FullScreen>}
             {item.kind === 'screen' ? (
                 // At its design size where the page is wide enough, scaled to it where it is not.
-                <div style={ownCorners}>
-                    <Frame designHeight={900} designWidth={1440}>
-                        <div className="contents" style={themeCorners(radius)}>
-                            {item.render()}
-                        </div>
-                    </Frame>
-                </div>
+                <Frame designHeight={900} designWidth={1440}>
+                    <ScreenNavProvider value={nav}>{item.render()}</ScreenNavProvider>
+                </Frame>
             ) : (
-                <Stage className="min-h-120" style={ownCorners}>
-                    <div className="contents" style={themeCorners(radius)}>
-                        {item.render()}
-                    </div>
-                </Stage>
+                <Stage className="min-h-120">{item.render()}</Stage>
             )}
             <Neighbours
                 label={item.kind === 'screen' ? 'Neighbouring screens' : 'Neighbouring blocks'}

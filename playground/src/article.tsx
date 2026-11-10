@@ -48,7 +48,7 @@ export const C = ({ children }: { children: ReactNode }) => (
 export const Figure = ({ caption, children }: { caption: ReactNode; children: ReactNode }) => (
     <div className="flex min-w-0 flex-col gap-3">
         {children}
-        <p className="mx-auto max-w-xl text-center text-neutral-500 text-xs">{caption}</p>
+        <p className="mx-auto max-w-xl text-center text-neutral-600 text-xs">{caption}</p>
     </div>
 );
 
