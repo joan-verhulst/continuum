@@ -2,7 +2,7 @@
 
 import { scaleLinear, scaleTime } from '@visx/scale';
 import { bisector, extent } from 'd3-array';
-import type { Transition } from 'motion/react';
+import { type Transition, useReducedMotion } from 'motion/react';
 import {
     Children,
     cloneElement,
@@ -185,7 +185,7 @@ const TimeSeriesChartCore = memo(function TimeSeriesChartCore({
     data,
     xDataKey,
     margin,
-    animationDuration,
+    animationDuration: animationDurationProp,
     animationEasing = DEFAULT_ANIMATION_EASING,
     enterTransition,
     revealSignature = '',
@@ -214,6 +214,10 @@ const TimeSeriesChartCore = memo(function TimeSeriesChartCore({
     onPhaseChange,
 }: TimeSeriesChartInnerProps) {
     const staticPreview = useStaticChartPreview();
+    // Under reduced motion the series is drawn whole: no clip reveal, and status changes swap
+    // the data at once (the y-domain tween already snaps for the same preference).
+    const reduceMotion = useReducedMotion() === true;
+    const animationDuration = reduceMotion ? 0 : animationDurationProp;
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 

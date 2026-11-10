@@ -1,9 +1,9 @@
 export const chartCenterContainerClassName = '@container/chart-center size-full min-w-0';
 
-/** Primary stat: ~22% of center width, clamped between text-sm and text-3xl. */
+/** Primary stat: ~22% of center width, clamped between the text-sm and text-3xl tokens. */
 export const chartCenterValueClassName =
-    'font-medium tabular-nums leading-none text-[clamp(0.75rem,22cqw,1.875rem)]';
+    'font-medium tabular-nums leading-none text-[length:clamp(var(--text-sm),22cqw,var(--text-3xl))]';
 
-/** Supporting label: ~9% of center width, clamped between 10px and text-xs. */
+/** Supporting label: ~9% of center width, clamped between the text-xxs and text-xs tokens. */
 export const chartCenterLabelClassName =
-    'max-w-full truncate leading-tight text-[clamp(0.625rem,9cqw,0.75rem)]';
+    'max-w-full truncate leading-tight text-[length:clamp(var(--text-xxs),9cqw,var(--text-xs))]';

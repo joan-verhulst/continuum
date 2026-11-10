@@ -70,6 +70,8 @@ export interface AreaChartProps {
     formatXLabel?: (date: Date) => string;
     /** Fires when the internal chart phase changes (e.g. OG capture readiness). */
     onPhaseChange?: (phase: ChartPhase) => void;
+    /** Names the chart for assistive technology; the chart is then announced as one image. */
+    'aria-label'?: string;
     /** Child components (Area, Grid, ChartTooltip, etc.) */
     children: ReactNode;
 }
@@ -221,9 +223,12 @@ export function AreaChart({
     formatXLabel,
     style,
     onPhaseChange,
+    'aria-label': ariaLabel,
     children,
 }: AreaChartProps) {
     const containerRef = useRef<HTMLDivElement>(null);
+    // Named, the chart reads as one image; unnamed, it is exposed as before.
+    const labelProps = ariaLabel ? ({ 'aria-label': ariaLabel, role: 'img' } as const) : undefined;
     const margin = { ...DEFAULT_MARGIN, ...marginProp };
     const [chartPhase, setChartPhase] = useState<ChartPhase>(() =>
         resolveRestingChartPhase(status),
@@ -249,6 +254,7 @@ export function AreaChart({
             className={cn('relative w-full', !interactive && 'pointer-events-none', className)}
             data-slot="area-chart"
             ref={containerRef}
+            {...labelProps}
             style={{ aspectRatio, touchAction: interactive ? 'none' : undefined, ...style }}
         >
             <ParentSize debounceTime={10}>

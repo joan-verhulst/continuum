@@ -4,7 +4,7 @@ import { Group } from '@visx/group';
 import { ParentSize } from '@visx/responsive';
 import { arc as arcGenerator } from '@visx/shape';
 import { pie as d3Pie } from 'd3-shape';
-import type { Transition } from 'motion/react';
+import { MotionConfig, type Transition } from 'motion/react';
 import {
     Children,
     isValidElement,
@@ -67,6 +67,8 @@ export interface PieChartProps {
      * Uses plain SVG paths instead of Motion `d` / spring hover morphing.
      */
     geometryScrubbing?: boolean;
+    /** Names the chart for assistive technology; the chart is then announced as one image. */
+    'aria-label'?: string;
 }
 
 interface PieChartInnerProps {
@@ -363,52 +365,55 @@ const PieChartCore = memo(function PieChartCore({
     // This avoids Safari's foreignObject rendering bugs
     return (
         <PieProvider value={contextValue}>
-            <div
-                className="grid"
-                style={{
-                    gridTemplateColumns: '1fr',
-                    gridTemplateRows: '1fr',
-                    width: size,
-                    height: size,
-                }}
-            >
-                {/* SVG layer with pie slices */}
-                <svg
-                    aria-hidden="true"
-                    height={size}
-                    style={{ gridArea: '1 / 1', contain: 'layout style paint' }}
-                    width={size}
+            {/* A hovered slice moves out on a spring; under reduced motion it moves at once. */}
+            <MotionConfig reducedMotion="user">
+                <div
+                    className="grid"
+                    style={{
+                        gridTemplateColumns: '1fr',
+                        gridTemplateRows: '1fr',
+                        width: size,
+                        height: size,
+                    }}
                 >
-                    {/* Defs for patterns and gradients */}
-                    {defsChildren.length > 0 && <defs>{defsChildren}</defs>}
-
-                    <Group left={center} top={center}>
-                        {scrubSlicePaths && scrubSliceFills
-                            ? scrubSlicePaths.map((d, index) =>
-                                  d ? (
-                                      <path
-                                          d={d}
-                                          fill={scrubSliceFills[index]}
-                                          key={data[index]?.label ?? index}
-                                          pointerEvents="none"
-                                      />
-                                  ) : null,
-                              )
-                            : null}
-                        {svgChildren}
-                    </Group>
-                </svg>
-
-                {/* HTML layer with center content - stacked on top via grid */}
-                {centerChildren.length > 0 && (
-                    <div
-                        className="pointer-events-none flex items-center justify-center"
-                        style={{ gridArea: '1 / 1' }}
+                    {/* SVG layer with pie slices */}
+                    <svg
+                        aria-hidden="true"
+                        height={size}
+                        style={{ gridArea: '1 / 1', contain: 'layout style paint' }}
+                        width={size}
                     >
-                        {centerChildren}
-                    </div>
-                )}
-            </div>
+                        {/* Defs for patterns and gradients */}
+                        {defsChildren.length > 0 && <defs>{defsChildren}</defs>}
+
+                        <Group left={center} top={center}>
+                            {scrubSlicePaths && scrubSliceFills
+                                ? scrubSlicePaths.map((d, index) =>
+                                      d ? (
+                                          <path
+                                              d={d}
+                                              fill={scrubSliceFills[index]}
+                                              key={data[index]?.label ?? index}
+                                              pointerEvents="none"
+                                          />
+                                      ) : null,
+                                  )
+                                : null}
+                            {svgChildren}
+                        </Group>
+                    </svg>
+
+                    {/* HTML layer with center content - stacked on top via grid */}
+                    {centerChildren.length > 0 && (
+                        <div
+                            className="pointer-events-none flex items-center justify-center"
+                            style={{ gridArea: '1 / 1' }}
+                        >
+                            {centerChildren}
+                        </div>
+                    )}
+                </div>
+            </MotionConfig>
         </PieProvider>
     );
 }, pieChartCorePropsEqual);
@@ -448,9 +453,12 @@ export function PieChart({
     enterTransition,
     enterStaggerScale = 1,
     geometryScrubbing = false,
+    'aria-label': ariaLabel,
     children,
 }: PieChartProps) {
     const containerRef = useRef<HTMLDivElement>(null);
+    // Named, the chart reads as one image; unnamed, it is exposed as before.
+    const labelProps = ariaLabel ? ({ 'aria-label': ariaLabel, role: 'img' } as const) : undefined;
 
     // If fixed size is provided, use it directly
     if (fixedSize) {
@@ -459,6 +467,7 @@ export function PieChart({
                 className={cn('relative flex items-center justify-center', className)}
                 data-slot="pie-chart"
                 ref={containerRef}
+                {...labelProps}
                 style={{ width: fixedSize, height: fixedSize }}
             >
                 <PieChartInner
@@ -490,6 +499,7 @@ export function PieChart({
             className={cn('relative aspect-square w-full', className)}
             data-slot="pie-chart"
             ref={containerRef}
+            {...labelProps}
         >
             <ParentSize debounceTime={10}>
                 {({ width, height }) => (

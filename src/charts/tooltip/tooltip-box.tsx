@@ -157,7 +157,7 @@ function TooltipBoxInner({
             {/* A raised surface card: the hairline marks its edge, shadow-float lifts it off the plot */}
             <motion.div
                 animate={{ scale: 1, opacity: 1, x: 0 }}
-                className="text-(color:--color-chart-tooltip-foreground) min-w-[140px] overflow-hidden rounded-item border border-neutral-200 shadow-float"
+                className="text-(color:--color-chart-tooltip-foreground) min-w-chart-tooltip overflow-hidden rounded-item border border-neutral-200 shadow-float"
                 data-slot="chart-tooltip"
                 initial={{ scale: 0.85, opacity: 0, x: isFlipped ? 20 : -20 }}
                 key={flipKey}

@@ -1,7 +1,7 @@
 'use client';
 
 import type { Transition } from 'motion/react';
-import { motion, useTransform } from 'motion/react';
+import { MotionConfig, motion, useReducedMotion, useTransform } from 'motion/react';
 import {
     type CSSProperties,
     type ReactNode,
@@ -62,6 +62,8 @@ export interface FunnelChartProps {
               lineOpacity?: number;
               lineWidth?: number;
           };
+    /** Names the chart for assistive technology; the chart is then announced as one image. */
+    'aria-label'?: string;
 }
 
 import { intFmt } from './chart-formatters';
@@ -605,6 +607,8 @@ function SegmentLabel({
     align?: 'center' | 'start' | 'end';
 }) {
     const display = stage.displayValue ?? formatValue(stage.value);
+    // Under reduced motion the labels are there from the start, with the stages drawn whole.
+    const initial = useReducedMotion() ? false : { opacity: 0 };
 
     const valueEl = showValues && (
         <span className="whitespace-nowrap font-medium text-neutral-950 text-xs tabular-nums">
@@ -630,7 +634,7 @@ function SegmentLabel({
                     'absolute inset-0 flex',
                     isHorizontal ? 'flex-col items-center' : 'flex-row items-center',
                 )}
-                initial={{ opacity: 0 }}
+                initial={initial}
                 transition={{
                     delay: enterDelay + index * staggerDelay + 0.25,
                     duration: 0.35,
@@ -689,7 +693,7 @@ function SegmentLabel({
                     ? cn('flex-col items-center', justifyMap[align])
                     : cn('flex-row items-center', justifyMap[align]),
             )}
-            initial={{ opacity: 0 }}
+            initial={initial}
             style={{
                 padding: isHorizontal ? '8% 0' : '0 8%',
             }}
@@ -762,8 +766,11 @@ export function FunnelChart({
     labelOrientation,
     labelAlign = 'center',
     grid: gridProp = false,
+    'aria-label': ariaLabel,
 }: FunnelChartProps) {
     const ref = useRef<HTMLDivElement>(null);
+    // Named, the chart reads as one image; unnamed, its stage labels stay readable as text.
+    const labelProps = ariaLabel ? ({ 'aria-label': ariaLabel, role: 'img' } as const) : undefined;
     const [sz, setSz] = useState({ w: 0, h: 0 });
     const [internalHoveredIndex, setInternalHoveredIndex] = useState<number | null>(null);
 
@@ -839,13 +846,15 @@ export function FunnelChart({
             className={cn('relative w-full select-none overflow-visible', className)}
             data-slot="funnel-chart"
             ref={ref}
+            {...labelProps}
             style={{
                 aspectRatio: horiz ? '2.2 / 1' : '1 / 1.8',
                 ...style,
             }}
         >
+            {/* A hovered stage swells on a spring; under reduced motion it changes at once. */}
             {W > 0 && H > 0 && (
-                <>
+                <MotionConfig reducedMotion="user">
                     {gridEnabled && (
                         <svg
                             aria-hidden="true"
@@ -1036,7 +1045,7 @@ export function FunnelChart({
                             </motion.div>
                         );
                     })}
-                </>
+                </MotionConfig>
             )}
         </div>
     );
