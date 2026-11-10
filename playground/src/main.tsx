@@ -6,6 +6,9 @@ import { isRasterStandalone, RasterStandalone } from './raster/lab';
 // Imported here rather than in styles.css so Vite resolves the font files.
 import '@fontsource-variable/geist';
 import '@fontsource-variable/inter';
+import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/ibm-plex-sans';
+import '@fontsource-variable/figtree';
 import './styles.css';
 
 const root = document.getElementById('root');
