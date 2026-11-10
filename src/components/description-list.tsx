@@ -31,8 +31,8 @@ export const DescriptionItem = ({ term, className, children, ...props }: Descrip
         data-slot="description-item"
         {...props}
     >
-        <dt className="flex min-h-10 min-w-0 items-center px-3 py-2 text-neutral-900">{term}</dt>
-        <dd className="flex min-h-10 min-w-0 flex-wrap items-center gap-2.5 px-3 py-2 text-neutral-950">
+        <dt className="flex min-h-row min-w-0 items-center px-3 py-2 text-neutral-900">{term}</dt>
+        <dd className="flex min-h-row min-w-0 flex-wrap items-center gap-2.5 px-3 py-2 text-neutral-950">
             {children}
         </dd>
     </div>

@@ -19,9 +19,10 @@ type CheckboxProps = Omit<
 };
 
 /**
- * The library checkbox (22px, chip radius), used in table header/body cells and
- * the report-generator option rows. Checked fills with the action colour but
- * keeps its hairline, as drawn; it has no lit ring like the primary button.
+ * The library checkbox (20px like the radio, chip radius), used in table header/body cells,
+ * forms and the report-generator option rows. A menu row draws its own 16px
+ * `PopoverItemIndicator`. Checked fills with the action colour but keeps its hairline, as
+ * drawn; it has no lit ring like the primary button.
  */
 export const Checkbox = ({
     className,
@@ -46,8 +47,10 @@ export const Checkbox = ({
             // A mixed box reads as unticked underneath, so a click ticks it, as it did before.
             checked={checked === 'indeterminate' ? false : checked}
             className={cn(
-                'group/checkbox inline-flex size-[22px] shrink-0 cursor-pointer items-center justify-center rounded-chip border bg-transparent text-on-action transition-[background-color,border-color] duration-150',
-                invalid ? 'border-error-500' : 'border-neutral-300 hover:border-neutral-500',
+                'group/checkbox inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-chip border bg-transparent text-on-action transition-[background-color,border-color] duration-150',
+                invalid
+                    ? 'border-error-500'
+                    : 'border-neutral-500 not-data-disabled:hover:border-neutral-600',
                 'data-checked:bg-action data-indeterminate:bg-action',
                 'data-checked:[background-image:var(--action-gradient)] data-indeterminate:[background-image:var(--action-gradient)]',
                 // The root is a span, not a button, so the disabled state comes from its data attribute.
@@ -65,11 +68,11 @@ export const Checkbox = ({
                 data-slot="checkbox-indicator"
             >
                 <Check
-                    className="hidden size-4 group-data-checked/checkbox:block"
+                    className="hidden size-3.5 group-data-checked/checkbox:block"
                     strokeWidth={2}
                 />
                 <Minus
-                    className="hidden size-4 group-data-indeterminate/checkbox:block"
+                    className="hidden size-3.5 group-data-indeterminate/checkbox:block"
                     strokeWidth={2}
                 />
             </CheckboxPrimitive.Indicator>

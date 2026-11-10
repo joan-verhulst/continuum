@@ -34,7 +34,7 @@ export const Checklist = ({
         {...props}
     >
         <div className="flex flex-col gap-3" data-slot="checklist-header">
-            <div className="flex min-h-[34px] items-center gap-3">
+            <div className="flex min-h-control items-center gap-3">
                 <h3 className="min-w-0 flex-1 truncate font-medium text-neutral-950 text-sm">
                     {title}
                 </h3>
@@ -88,7 +88,7 @@ export const ChecklistItem = ({
         aria-current={current ? 'step' : undefined}
         className={cn(
             'flex items-start gap-3 rounded-item px-2 py-2',
-            current && 'bg-neutral-950/[0.04] py-3',
+            current && 'bg-neutral-950/4 py-3',
             className,
         )}
         data-done={done || undefined}
@@ -98,12 +98,12 @@ export const ChecklistItem = ({
         {/* The stepper's marker: filled with a tick when done, a hairline ring while open. */}
         <span
             className={cn(
-                'mt-[-3px] inline-flex size-[22px] shrink-0 items-center justify-center rounded-pill border transition-[background-color,border-color] duration-200 ease-out-strong [&_svg]:size-3.5',
+                'mt-[-3px] inline-flex size-5.5 shrink-0 items-center justify-center rounded-pill border transition-[background-color,border-color] duration-200 ease-out-strong [&_svg]:size-3.5',
                 done
                     ? 'border-transparent bg-action text-on-action [background-image:var(--action-gradient)]'
                     : current
                       ? 'border-action bg-neutral-50'
-                      : 'border-neutral-300 bg-neutral-50',
+                      : 'border-neutral-500 bg-neutral-50',
             )}
             data-slot="checklist-marker"
         >

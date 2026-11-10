@@ -71,7 +71,7 @@ export const InfoTip = ({
                 align={align}
                 aria-label={label}
                 // A short explanation, not a panel of controls: sized to its text, with the item corner.
-                className="w-auto max-w-64 gap-0 text-balance rounded-item px-2.5 py-1.5 text-neutral-700 text-xs"
+                className="w-auto max-w-tooltip gap-0 text-balance rounded-item px-2.5 py-1.5 text-neutral-700 text-xs"
                 container={container}
                 data-slot="info-tip-content"
                 // Focus stays on the icon, so tabbing on after a tap carries on through the page.

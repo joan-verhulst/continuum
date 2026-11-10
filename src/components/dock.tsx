@@ -43,8 +43,9 @@ const shapeVariants = {
 };
 
 export const dockVariants = cva(
-    // The field row's 38px: 32px items inside a 3px inset and a hairline.
-    'flex h-[38px] w-fit min-w-0 max-w-full items-center gap-0.5 rounded-dock border border-neutral-200 bg-neutral-50 p-[3px] shadow-float',
+    // The field row's 38px: 32px items inside a 2px inset and a hairline. The inset is fixed like the
+    // heights, so it stays even on all four sides whatever the spacing unit.
+    'flex h-control-lg w-fit min-w-0 max-w-full items-center gap-0.5 rounded-dock border border-neutral-200 bg-neutral-50 p-[2px] shadow-float',
     { variants: { shape: shapeVariants }, defaultVariants: { shape: 'theme' } },
 );
 
@@ -81,7 +82,7 @@ export const Dock = ({
             )}
             <ToggleGroup
                 // The row clips at the dock's inset, not its items, so a focus ring keeps its room.
-                className="-my-[3px] flex min-w-0 items-center gap-0.5 overflow-x-auto py-[3px] [scrollbar-width:none]"
+                className="scrollbar-none my-[-2px] flex min-w-0 items-center gap-0.5 overflow-x-auto py-[2px]"
                 data-slot="dock-items"
                 ref={ref}
                 role="radiogroup"
@@ -104,15 +105,15 @@ export const Dock = ({
 };
 
 // An item's 32px and its concentric corner.
-const chevron = 'size-8 rounded-[calc(var(--radius-dock)-4px)]';
+const chevron = 'size-cell rounded-[calc(var(--radius-dock)-3px)]';
 
 export type DockItemProps = Omit<Toggle.Props, 'className'> & { className?: string };
 
 export const DockItem = ({ className, ...props }: DockItemProps) => (
     <Toggle
         className={cn(
-            // The bar's radius minus its 3px inset and 1px border, so the curves stay concentric.
-            'inline-flex h-8 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-[calc(var(--radius-dock)-4px)] px-3 font-medium text-neutral-600 text-xs transition-[background-color,color,box-shadow] duration-150',
+            // The bar's radius minus its 2px inset and 1px border, so the curves stay concentric.
+            'inline-flex h-cell cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-[calc(var(--radius-dock)-3px)] px-3 font-medium text-neutral-600 text-xs transition-[background-color,color,box-shadow] duration-150',
             'hover:text-neutral-950',
             'data-pressed:bg-segment data-pressed:text-segment-fg data-pressed:[box-shadow:inset_0_0_0_1px_var(--color-segment-border),var(--shadow-segment)]',
             'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
@@ -133,7 +134,7 @@ export const dockActionVariants = cva(
             shape: shapeVariants,
             size: {
                 default: '',
-                icon: 'w-[38px] px-0',
+                icon: 'w-control-lg px-0',
             },
         },
         defaultVariants: { shape: 'theme', size: 'default' },

@@ -12,9 +12,9 @@ const toArray = (value: number | readonly number[]): number[] =>
 /** The box height, and a grip line that keeps the same share of it. */
 const sizes = {
     // Level with a button, and with a large one or a field-row input.
-    sm: { box: 'h-[34px]', grip: 'after:h-3.5' },
-    md: { box: 'h-[38px]', grip: 'after:h-4' },
-    lg: { box: 'h-12', grip: 'after:h-5' },
+    sm: { box: 'h-control', grip: 'after:h-3.5' },
+    md: { box: 'h-control-lg', grip: 'after:h-4' },
+    lg: { box: 'h-control-xl', grip: 'after:h-5' },
 } as const;
 
 type BlockSliderProps = Omit<
@@ -119,7 +119,7 @@ export const BlockSlider = ({
             {/* The control is the box, so a press anywhere in it, padding included, moves the value. */}
             <SliderPrimitive.Control
                 className={cn(
-                    'relative flex w-full cursor-pointer touch-none select-none rounded-control border border-neutral-200 p-0.5 transition-[border-color] duration-150 hover:border-neutral-300 group-data-disabled/block-slider:cursor-not-allowed group-data-disabled/block-slider:hover:border-neutral-200',
+                    'relative flex w-full cursor-pointer touch-none select-none rounded-control border border-neutral-200 p-[2px] transition-[border-color] duration-150 hover:border-neutral-300 group-data-disabled/block-slider:cursor-not-allowed group-data-disabled/block-slider:hover:border-neutral-200',
                     sizes[size].box,
                 )}
                 data-size={size}
@@ -134,13 +134,14 @@ export const BlockSlider = ({
                             aria-hidden
                             // A notch in the box's bottom hairline: it crosses the padding to meet the
                             // border, shares its colour and hover, and sits under the fill.
-                            className="pointer-events-none absolute -bottom-0.5 h-2 w-px -translate-x-1/2 bg-neutral-200 transition-[background-color] duration-150 group-hover/block-slider:bg-neutral-300 group-data-disabled/block-slider:bg-neutral-200"
+                            className="pointer-events-none absolute bottom-[-2px] h-2 w-px -translate-x-1/2 bg-neutral-200 transition-[background-color] duration-150 group-hover/block-slider:bg-neutral-300 group-data-disabled/block-slider:bg-neutral-200"
                             data-slot="block-slider-mark"
                             key={at}
                             style={{ left: `${at}%` }}
                         />
                     ))}
                     <SliderPrimitive.Indicator
+                        // The box's corner less its fixed 2px inset, which a spacing unit never moves.
                         className="h-full rounded-[calc(var(--radius-control)-2px)] bg-neutral-200"
                         data-slot="block-slider-range"
                     />
@@ -165,11 +166,11 @@ export const BlockSlider = ({
                             aria-label={ariaLabel}
                             className={cn(
                                 // A 12px hit area round a 2px grip line at the edge of the fill.
-                                'flex h-full w-3 cursor-grab items-center justify-center rounded-xs active:cursor-grabbing data-dragging:cursor-grabbing',
+                                'flex h-full w-3 cursor-grab items-center justify-center rounded-chip active:cursor-grabbing data-dragging:cursor-grabbing',
                                 sizes[size].grip,
                                 'after:w-0.5 after:rounded-full after:bg-neutral-500 after:opacity-0 after:transition-[opacity,background-color] after:duration-150',
                                 'group-hover/block-slider:after:opacity-100 has-focus-visible:after:opacity-100 data-dragging:after:bg-neutral-950 data-dragging:after:opacity-100',
-                                'group-data-disabled/block-slider:after:opacity-0',
+                                'group-data-disabled/block-slider:cursor-not-allowed group-data-disabled/block-slider:after:opacity-0',
                                 // Focus lands on the hidden input inside the grip, so the ring follows it.
                                 'outline-none has-focus-visible:outline-2 has-focus-visible:outline-focus has-focus-visible:outline-solid has-focus-visible:outline-offset-2',
                             )}

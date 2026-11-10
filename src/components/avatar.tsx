@@ -138,7 +138,7 @@ export const AvatarStack = ({ max = 3, className, children, ...props }: AvatarSt
 
     return (
         <div
-            className={cn('flex items-center -space-x-2 *:ring-2 *:ring-neutral-50', className)}
+            className={cn('flex items-center space-x-[-8px] *:ring-2 *:ring-neutral-50', className)}
             data-slot="avatar-stack"
             {...props}
         >

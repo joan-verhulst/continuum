@@ -3,13 +3,13 @@ import { cn } from '../lib/cn';
 
 /**
  * A quiet placeholder at the real element's size while its data loads: the 4% fill that sits on
- * the canvas and the surface alike, pulsing gently. Size it with classes (`h-[34px] w-40`, `size-8`)
+ * the canvas and the surface alike, pulsing gently. Size it with classes (`h-control w-40`, `size-8`)
  * and give the region that loads `aria-busy`; the blocks themselves are hidden from screen readers.
  */
 export const Skeleton = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
         aria-hidden
-        className={cn('rounded-item bg-neutral-950/[0.04] motion-safe:animate-pulse', className)}
+        className={cn('rounded-item bg-neutral-950/4 motion-safe:animate-pulse', className)}
         data-slot="skeleton"
         {...props}
     />
@@ -23,17 +23,24 @@ export type SkeletonTextProps = ComponentProps<'div'> & {
     lines?: number;
 };
 
-/** Lines of text as 10px bars on the 13px text's rhythm, the last one short. */
+/**
+ * Lines of text as 10px bars on the 13px text's rhythm, the last one short. The gap and padding are
+ * read from the text's line height, so the block is as tall as the lines it stands in for at any
+ * type size or spacing unit.
+ */
 export const SkeletonText = ({ lines = 3, className, ...props }: SkeletonTextProps) => (
     <div
         aria-hidden
-        className={cn('flex flex-col gap-1.5 py-[3px]', className)}
+        className={cn(
+            'flex flex-col gap-[calc(var(--text-xs--line-height)-10px)] py-[calc((var(--text-xs--line-height)-10px)/2)]',
+            className,
+        )}
         data-slot="skeleton-text"
         {...props}
     >
         {Array.from({ length: lines }, (_, i) => (
             <Skeleton
-                className="h-2.5 rounded-chip"
+                className="h-[10px] rounded-chip"
                 // biome-ignore lint/suspicious/noArrayIndexKey: the lines never reorder
                 key={i}
                 style={{

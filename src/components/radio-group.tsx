@@ -57,9 +57,9 @@ export const RadioGroupItem = <Value,>({
     return (
         <RadioPrimitive.Root<Value>
             className={cn(
-                'inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-transparent transition-[border-color] duration-150',
+                'inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-500 bg-transparent transition-[border-color] duration-150',
                 // The root is a span, not a button, so the disabled state comes from its data attribute.
-                'hover:border-neutral-500 data-disabled:cursor-not-allowed data-disabled:opacity-50',
+                'not-data-disabled:hover:border-neutral-600 data-disabled:cursor-not-allowed data-disabled:opacity-50',
                 '[[aria-invalid=true]_&]:border-error-500',
                 focusRing,
                 className,

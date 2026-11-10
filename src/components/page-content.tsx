@@ -9,9 +9,9 @@ export const pageContentVariants = cva(
     {
         variants: {
             width: {
-                /** 640: one object made or edited, its fields stacked: a new post, a new customer. */
+                /** 640: one object made or edited, its fields stacked (a new post, a new customer), and settings. */
                 narrow: 'max-w-content-narrow',
-                /** 896: settings, overviews, details; rows of inputs or light content. */
+                /** 896: overviews, details, documents. */
                 default: 'max-w-content',
                 /** 1080: content that needs the width, like a list with several columns. */
                 wide: 'max-w-content-wide',

@@ -89,7 +89,8 @@ export const Slider = ({
                         aria-describedby={control['aria-describedby']}
                         aria-label={ariaLabel}
                         className={cn(
-                            'block size-4 cursor-grab rounded-full border border-neutral-300 bg-neutral-50 shadow-float transition-[border-color] duration-150 hover:border-neutral-500 active:cursor-grabbing data-dragging:cursor-grabbing',
+                            'block size-4 cursor-grab rounded-full border border-neutral-300 bg-neutral-50 shadow-float transition-[border-color] duration-150 not-data-disabled:hover:border-neutral-500 active:cursor-grabbing data-dragging:cursor-grabbing',
+                            'data-disabled:cursor-not-allowed',
                             // Focus lands on the hidden input inside the knob, so the ring follows it.
                             'outline-none has-focus-visible:outline-2 has-focus-visible:outline-focus has-focus-visible:outline-solid has-focus-visible:outline-offset-2',
                         )}

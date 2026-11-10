@@ -16,7 +16,7 @@ import { Badge } from './badge';
  */
 export const popoverItemVariants = cva(
     [
-        'relative flex h-9 shrink-0 cursor-pointer select-none items-center gap-3 rounded-[calc(var(--radius-item)-5px)] px-3 py-2 font-medium text-xs outline-none',
+        'relative flex h-option shrink-0 cursor-pointer select-none items-center gap-3 rounded-[calc(var(--radius-item)-5px)] px-3 py-2 font-medium text-xs outline-none',
         'data-disabled:pointer-events-none data-disabled:opacity-50',
         '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
     ],
@@ -122,7 +122,7 @@ export const PopoverItem = ({
                 'group/popover-item',
                 popoverItemVariants({ variant }),
                 // Two lines: the row grows past 36px and keeps the same space above and below.
-                description !== undefined && 'h-auto min-h-9 py-2.5',
+                description !== undefined && 'h-auto min-h-option py-2.5',
                 leads[lead],
                 // Beside an avatar or a chip one line of text sits closer; two lines keep the wider gap.
                 description === undefined && lead !== 'sm' && 'gap-2.5',
@@ -140,7 +140,7 @@ export const PopoverItem = ({
                             <span className="min-w-0 truncate">{children}</span>
                             {meta && (
                                 <span
-                                    className="flex shrink-0 items-center gap-1 font-normal text-neutral-500"
+                                    className="flex shrink-0 items-center gap-1 font-normal text-neutral-600"
                                     data-slot="popover-item-meta"
                                 >
                                     {meta}
@@ -149,7 +149,7 @@ export const PopoverItem = ({
                         </span>
                         {description !== undefined && (
                             <span
-                                className="truncate font-normal text-neutral-500 text-xxs"
+                                className="truncate font-normal text-neutral-600 text-xxs"
                                 data-slot="popover-item-description"
                             >
                                 {description}
@@ -158,7 +158,7 @@ export const PopoverItem = ({
                     </span>
                     {trailing && (
                         <span
-                            className="ml-auto flex shrink-0 items-center gap-2 pl-2 font-normal text-neutral-500 text-xxs"
+                            className="ml-auto flex shrink-0 items-center gap-2 pl-2 font-normal text-neutral-600 text-xxs"
                             data-slot="popover-item-trailing"
                         >
                             {trailing}
@@ -184,7 +184,7 @@ export const PopoverItemIndicator = ({
 }: PopoverItemIndicatorProps) => (
     <span
         className={cn(
-            'inline-flex size-4 shrink-0 items-center justify-center border border-neutral-300 text-on-action transition-[background-color,border-color] duration-150',
+            'inline-flex size-4 shrink-0 items-center justify-center border border-neutral-500 text-on-action transition-[background-color,border-color] duration-150',
             kind === 'radio' ? 'rounded-full' : 'rounded-[calc(var(--radius-chip)-2px)]',
             'group-data-checked/popover-item:border-transparent group-data-checked/popover-item:bg-action group-data-checked/popover-item:[background-image:var(--action-gradient)]',
             'group-data-selected/popover-item:border-transparent group-data-selected/popover-item:bg-action group-data-selected/popover-item:[background-image:var(--action-gradient)]',
@@ -209,7 +209,7 @@ export const PopoverItemIndicator = ({
 /** A shortcut at the end of a row, muted: "⌘D", "G I". */
 export const PopoverItemShortcut = ({ className, ...props }: ComponentProps<'span'>) => (
     <span
-        className={cn('font-medium text-neutral-500 text-xxs tracking-wide', className)}
+        className={cn('font-medium text-neutral-600 text-xxs', className)}
         data-slot="popover-item-shortcut"
         {...props}
     />

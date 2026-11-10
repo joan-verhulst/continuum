@@ -66,7 +66,7 @@ export const PopoverContent = ({
             >
                 <PopoverPrimitive.Popup
                     className={cn(
-                        'flex max-h-(--available-height) w-72 flex-col gap-3 overflow-y-auto rounded-card border border-neutral-200 bg-neutral-50 p-3 text-neutral-700 text-xs shadow-float outline-none',
+                        'flex max-h-(--available-height) w-popover flex-col gap-3 overflow-y-auto rounded-card border border-neutral-200 bg-neutral-50 p-3 text-neutral-700 text-xs shadow-float outline-none',
                         'origin-(--transform-origin) transition-[opacity,scale] duration-150 ease-out-strong data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0 data-ending-style:duration-100 motion-reduce:transition-none',
                         className,
                     )}

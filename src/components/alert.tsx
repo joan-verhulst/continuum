@@ -6,7 +6,8 @@ import { Button } from './button';
 
 /*
  * A notice is a hairline card like any other. Its tone sits in the icon's well, the badge's two
- * colours from one ramp (a 500 wash at 20%, the glyph at 600), so the state reads at a glance
+ * colours from one ramp (a 500 wash at 20%, the glyph at 600, or 700 for the pale green and amber and
+ * for the theme's accent, which may be pale, so it keeps 3:1 on the wash), so the state reads at a glance
  * while the box stays quiet: a coloured box would make every notice the loudest thing on the page.
  */
 export const alertVariants = cva(
@@ -21,11 +22,11 @@ export const alertVariants = cva(
                 neutral:
                     '[&>[data-slot=alert-icon]]:bg-neutral-950/5 [&>[data-slot=alert-icon]]:text-neutral-600',
                 primary:
-                    '[&>[data-slot=alert-icon]]:bg-primary-500/20 [&>[data-slot=alert-icon]]:text-primary-600',
+                    '[&>[data-slot=alert-icon]]:bg-primary-500/20 [&>[data-slot=alert-icon]]:text-primary-700',
                 success:
-                    '[&>[data-slot=alert-icon]]:bg-success-500/20 [&>[data-slot=alert-icon]]:text-success-600',
+                    '[&>[data-slot=alert-icon]]:bg-success-500/20 [&>[data-slot=alert-icon]]:text-success-700',
                 warning:
-                    '[&>[data-slot=alert-icon]]:bg-warning-500/20 [&>[data-slot=alert-icon]]:text-warning-600',
+                    '[&>[data-slot=alert-icon]]:bg-warning-500/20 [&>[data-slot=alert-icon]]:text-warning-700',
                 error: '[&>[data-slot=alert-icon]]:bg-error-500/20 [&>[data-slot=alert-icon]]:text-error-600',
             },
         },
@@ -114,11 +115,15 @@ export const Alert = ({
             )}
             {action && (
                 // Beside the words while the alert has 384px inside; narrower, it takes a line of its own
-                // under them, in line with the title, rather than squeezing them.
+                // under them, in line with the title, rather than squeezing them: indented by the
+                // well's fixed pixels and the gap-x-3, which moves with the spacing unit.
                 <div
                     className={cn(
                         '@max-sm/alert:order-3 order-1 flex shrink-0 @max-sm/alert:basis-full items-center gap-2',
-                        icon !== false && (slim ? '@max-sm/alert:ps-9' : '@max-sm/alert:ps-11'),
+                        icon !== false &&
+                            (slim
+                                ? '@max-sm/alert:ps-[calc(24px+var(--spacing)*3)]'
+                                : '@max-sm/alert:ps-[calc(32px+var(--spacing)*3)]'),
                     )}
                     data-slot="alert-action"
                 >

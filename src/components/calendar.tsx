@@ -47,7 +47,7 @@ const CalendarDay = ({ day: _day, modifiers, className, ...props }: DayProps) =>
 };
 
 const dayButtonClass = [
-    'relative inline-flex size-8 cursor-pointer select-none items-center justify-center rounded-item font-normal text-neutral-900 text-xs tabular-nums transition-[background-color,color] duration-150',
+    'relative inline-flex size-cell cursor-pointer select-none items-center justify-center rounded-item font-normal text-neutral-900 text-xs tabular-nums transition-[background-color,color] duration-150',
     'hover:bg-neutral-950/5 hover:text-neutral-950',
     // Neighbouring days sit flush, so the focused one is lifted above them to keep its ring whole.
     'focus-visible:z-10',
@@ -55,7 +55,7 @@ const dayButtonClass = [
     // Today is marked quietly: a medium weight and a dot that takes the text colour, whatever the fill.
     // The colour only on a plain day: on the action fill or the tint it would beat their own text colour.
     'data-today:font-medium data-today:not-data-chosen:not-data-range-middle:text-neutral-950',
-    'data-today:after:-translate-x-1/2 data-today:after:absolute data-today:after:bottom-1 data-today:after:left-1/2 data-today:after:size-[3px] data-today:after:rounded-full data-today:after:bg-current',
+    'data-today:after:-translate-x-1/2 data-today:after:absolute data-today:after:bottom-1 data-today:after:left-1/2 data-today:after:size-0.75 data-today:after:rounded-full data-today:after:bg-current',
     'data-outside:text-neutral-400',
     'data-range-middle:text-tint-fg data-range-middle:hover:bg-neutral-950/5',
     // The chosen day, and both ends of a range, take the one action colour.
@@ -114,7 +114,7 @@ export const Calendar = ({
             months: 'flex gap-6',
             month: 'flex flex-col gap-3',
             // One bar over all months: previous on the far left, next on the far right, level with the captions.
-            nav: 'pointer-events-none absolute inset-x-0 top-0 z-10 flex h-7 items-center justify-between',
+            nav: 'pointer-events-none absolute inset-x-0 top-0 z-10 flex h-control-sm items-center justify-between',
             button_previous: cn(
                 buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
                 'pointer-events-auto',
@@ -123,7 +123,7 @@ export const Calendar = ({
                 buttonVariants({ variant: 'ghost', size: 'icon-sm' }),
                 'pointer-events-auto',
             ),
-            month_caption: 'flex h-7 items-center justify-center px-8',
+            month_caption: 'flex h-control-sm items-center justify-center px-8',
             caption_label:
                 'flex select-none items-center gap-1 font-medium text-neutral-950 text-sm [&_svg]:text-neutral-600',
             dropdowns: 'flex items-center gap-1.5',
@@ -133,9 +133,9 @@ export const Calendar = ({
             dropdown: 'absolute inset-0 cursor-pointer opacity-0',
             // Separate borders let the rows breathe while a range strip still runs across each week.
             month_grid: 'border-separate border-spacing-x-0 border-spacing-y-0.5',
-            weekday: 'h-7 w-8 select-none p-0 font-normal text-neutral-500 text-xxs',
-            week_number_header: 'w-8 select-none font-normal text-neutral-500 text-xxs',
-            week_number: 'w-8 select-none text-center text-neutral-500 text-xxs tabular-nums',
+            weekday: 'h-control-sm w-cell select-none p-0 font-normal text-neutral-600 text-xxs',
+            week_number_header: 'w-cell select-none font-normal text-neutral-600 text-xxs',
+            week_number: 'w-cell select-none text-center text-neutral-600 text-xxs tabular-nums',
             footer: 'pt-3 text-neutral-600 text-xs',
             hidden: 'invisible',
             ...classNames,

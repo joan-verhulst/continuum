@@ -36,7 +36,7 @@ export const EmptyState = ({
         {...props}
     >
         {icon && <IconTile>{icon}</IconTile>}
-        <div className="flex max-w-[480px] flex-col gap-1" data-slot="empty-state-text">
+        <div className="flex max-w-measure flex-col gap-1" data-slot="empty-state-text">
             <p className="font-medium text-neutral-950 text-xs">{title}</p>
             {description && <p className="text-neutral-600 text-xs">{description}</p>}
         </div>

@@ -10,13 +10,14 @@ export const iconTileVariants = cva(
                 filled: 'bg-neutral-100',
                 outline: '',
             },
-            // A glyph reads like text, so it takes a ramp's 600 like a delta does; dots and fills take 500.
+            // A glyph needs 3:1 on the tile: a ramp's 600, or 700 for the pale green and amber and for the
+            // theme's accent, which may be pale; dots and fills take 500.
             tone: {
                 neutral: 'text-neutral-600',
-                success: 'text-success-600',
-                warning: 'text-warning-600',
+                success: 'text-success-700',
+                warning: 'text-warning-700',
                 error: 'text-error-600',
-                primary: 'text-primary-600',
+                primary: 'text-primary-700',
             },
         },
         defaultVariants: {

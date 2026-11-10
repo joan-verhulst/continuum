@@ -27,12 +27,13 @@ export const Textarea = ({
             className={cn(
                 'block min-h-24 w-full resize-y rounded-control border bg-transparent px-3 py-2.5 transition-[border-color] duration-150',
                 inputTextClass,
+                'disabled:opacity-50',
                 focusRing,
                 invalid
                     ? 'border-error-500'
                     : control.disabled
                       ? 'border-neutral-200'
-                      : 'border-neutral-200 hover:border-neutral-300 hover:placeholder:text-neutral-600 focus:border-neutral-300',
+                      : 'border-neutral-200 hover:border-neutral-300 hover:placeholder:text-neutral-700 focus:border-neutral-300',
                 className,
             )}
             data-slot="textarea"

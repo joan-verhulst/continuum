@@ -4,7 +4,7 @@ import { cn } from '../lib/cn';
 import { StatusDot } from './status-dot';
 
 export const badgeVariants = cva(
-    'inline-flex h-[22px] shrink-0 items-center gap-1 whitespace-nowrap font-medium text-xxs [&_svg:not([class*=size-])]:size-3 [&_svg]:shrink-0',
+    'inline-flex h-5.5 shrink-0 items-center gap-1 whitespace-nowrap font-medium text-xxs [&_svg:not([class*=size-])]:size-3 [&_svg]:shrink-0',
     {
         variants: {
             variant: {
@@ -14,13 +14,13 @@ export const badgeVariants = cva(
                 dot: 'gap-1.5 rounded-chip px-1.5',
                 count: 'min-w-8 justify-center rounded-chip px-1.5',
             },
-            // Two steps of one ramp: text at 700 on its own 500 at 20%, so a badge reads on any surface.
+            // Two steps of one ramp: text at 800 on its own 500 at 20%, so a badge reads on any surface.
             tone: {
-                neutral: 'bg-neutral-500/20 text-neutral-700',
-                success: 'bg-success-500/20 text-success-700',
-                warning: 'bg-warning-500/20 text-warning-700',
-                error: 'bg-error-500/20 text-error-700',
-                primary: 'bg-primary-500/20 text-primary-700',
+                neutral: 'bg-neutral-500/20 text-neutral-800',
+                success: 'bg-success-500/20 text-success-800',
+                warning: 'bg-warning-500/20 text-warning-800',
+                error: 'bg-error-500/20 text-error-800',
+                primary: 'bg-primary-500/20 text-primary-800',
             },
         },
         defaultVariants: {

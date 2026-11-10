@@ -60,7 +60,7 @@ const rootClassName = 'flex w-full min-w-0 flex-col gap-2';
 const labelClassName = 'min-w-0 truncate font-medium text-neutral-900 text-xs';
 // Without a label the trailing text still sits at the end of the row.
 const valueClassName = 'ms-auto shrink-0 font-normal text-neutral-600 text-xs tabular-nums';
-const captionClassName = 'ms-auto shrink-0 font-normal text-neutral-500 text-xs';
+const captionClassName = 'ms-auto shrink-0 font-normal text-neutral-600 text-xs';
 
 /** The label left and the value or caption right, sharing a baseline. */
 const LabelRow = ({ slot, children }: { slot: string; children: ReactNode }) => (

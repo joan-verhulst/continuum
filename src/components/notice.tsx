@@ -12,14 +12,14 @@ import {
 import { cn } from '../lib/cn';
 
 /*
- * Only the icon carries the tone, at 600 as an alert's does: the tab stays the bar's surface, and the
- * colour is the accent that says how it went.
+ * Only the icon carries the tone, at the step an alert's takes (700, 600 for the error red, so it
+ * reaches 3:1): the tab stays the bar's surface, and the colour is the accent that says how it went.
  */
 const noticeTones = {
     neutral: '[&_svg]:text-neutral-500',
-    primary: '[&_svg]:text-primary-600',
-    success: '[&_svg]:text-success-600',
-    warning: '[&_svg]:text-warning-600',
+    primary: '[&_svg]:text-primary-700',
+    success: '[&_svg]:text-success-700',
+    warning: '[&_svg]:text-warning-700',
     error: '[&_svg]:text-error-600',
 } as const;
 
@@ -56,8 +56,9 @@ export const Notice = ({ message, icon, tone, className, ...props }: NoticeProps
         <output
             aria-live="polite"
             className={cn(
-                // Padded by the fillets' size, so the clip keeps them.
-                'pointer-events-none absolute top-full left-1/2 z-20 -translate-x-1/2 overflow-hidden px-2 pb-px',
+                // Padded by the fillets' size, so the clip keeps them. The fillet follows the tab's
+                // corner (8px at the default 10px), so a square theme squares it too.
+                'pointer-events-none absolute top-full left-1/2 z-20 -translate-x-1/2 overflow-hidden px-(--fillet) pb-px [--fillet:calc(var(--radius-item)*0.8)]',
                 className,
             )}
             data-slot="notice"
@@ -65,17 +66,18 @@ export const Notice = ({ message, icon, tone, className, ...props }: NoticeProps
         >
             <div
                 className={cn(
-                    'pointer-events-auto relative flex h-8 items-center gap-1.5 whitespace-nowrap rounded-b-item border border-neutral-200 border-t-0 bg-neutral-50 px-3 text-neutral-700 text-xs',
+                    'pointer-events-auto relative flex h-cell items-center gap-1.5 whitespace-nowrap rounded-b-item border border-neutral-200 border-t-0 bg-neutral-50 px-3 text-neutral-700 text-xs',
                     /*
-                     * Where the bar's hairline turns down into the tab, it bends round an 8px curve
-                     * instead of a corner: a square either side, filled with the bar's surface outside
-                     * a quarter circle and drawn with its border on the curve, transparent inside.
+                     * Where the bar's hairline turns down into the tab, it bends round a curve the
+                     * fillet's size instead of a corner: a square either side, filled with the bar's
+                     * surface outside a quarter circle and drawn with its border on the curve,
+                     * transparent inside. At a 0 corner the squares are 0 and the turn is square.
                      */
-                    "before:absolute before:top-0 before:-left-2 before:size-2 before:content-[''] before:[background:radial-gradient(circle_at_0_100%,transparent_6.75px,var(--color-neutral-200)_7.25px,var(--color-neutral-200)_7.75px,var(--color-neutral-50)_8.25px)]",
-                    "after:absolute after:top-0 after:-right-2 after:size-2 after:content-[''] after:[background:radial-gradient(circle_at_100%_100%,transparent_6.75px,var(--color-neutral-200)_7.25px,var(--color-neutral-200)_7.75px,var(--color-neutral-50)_8.25px)]",
+                    "before:absolute before:top-0 before:left-[calc(var(--fillet)*-1)] before:size-(--fillet) before:content-[''] before:[background:radial-gradient(circle_at_0_100%,transparent_calc(var(--fillet)_-_1.25px),var(--color-neutral-200)_calc(var(--fillet)_-_0.75px),var(--color-neutral-200)_calc(var(--fillet)_-_0.25px),var(--color-neutral-50)_calc(var(--fillet)_+_0.25px))]",
+                    "after:absolute after:top-0 after:right-[calc(var(--fillet)*-1)] after:size-(--fillet) after:content-[''] after:[background:radial-gradient(circle_at_100%_100%,transparent_calc(var(--fillet)_-_1.25px),var(--color-neutral-200)_calc(var(--fillet)_-_0.75px),var(--color-neutral-200)_calc(var(--fillet)_-_0.25px),var(--color-neutral-50)_calc(var(--fillet)_+_0.25px))]",
                     '[&_svg:not([class*=size-])]:size-3.5 [&_svg]:shrink-0',
                     noticeTones[shown?.tone ?? 'neutral'],
-                    'transition-[translate,opacity] duration-200 ease-out-strong motion-reduce:translate-y-0 motion-reduce:transition-[opacity]',
+                    'transition-[translate,opacity] duration-200 ease-out-strong motion-reduce:translate-y-0 motion-reduce:transition-opacity',
                     open ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0',
                 )}
                 data-open={open || undefined}

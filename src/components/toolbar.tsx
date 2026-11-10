@@ -12,10 +12,11 @@ const toolbarVariants = cva(
     {
         variants: {
             variant: {
-                inline: 'h-[34px] overflow-hidden rounded-control',
+                inline: 'h-control overflow-hidden rounded-control',
                 // The field row's 38px: items stretch to the 30px left inside a 3px inset and the hairline. It
                 // keeps the inline bar's corner, not the dock's pill, so both variants follow the theme's corners.
-                floating: 'h-[38px] gap-0.5 rounded-control p-[3px]',
+                // The inset is fixed px, not the spacing unit, so the items' corner calc below stays true.
+                floating: 'h-control-lg gap-0.5 rounded-control p-[3px]',
             },
         },
         defaultVariants: { variant: 'inline' },
@@ -37,7 +38,7 @@ const toolbarButtonVariants = cva(
                 // height, but the hover sits 2px inside it, the same shape as the chip.
                 inline: [
                     'relative isolate gap-1.5 border-neutral-200 not-last:border-r px-3 focus-visible:-outline-offset-2',
-                    'before:absolute before:inset-0.5 before:-z-10 before:rounded-[calc(var(--radius-control)-3px)] before:transition-colors before:duration-150 hover:before:bg-neutral-950/5',
+                    'before:absolute before:inset-[2px] before:-z-10 before:rounded-[calc(var(--radius-control)-3px)] before:transition-colors before:duration-150 hover:before:bg-neutral-950/5',
                 ],
                 // The bar's radius minus its 3px inset and 1px border, so the curves stay concentric.
                 floating:
@@ -94,12 +95,12 @@ type ToolbarChipProps = ComponentProps<'span'> & {
 };
 
 const toolbarChipVariants = cva(
-    'inline-flex select-none items-center gap-1.5 whitespace-nowrap bg-primary-500/20 font-medium text-primary-700 text-xxs [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+    'inline-flex select-none items-center gap-1.5 whitespace-nowrap bg-primary-500/20 font-medium text-primary-800 text-xxs [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
     {
         variants: {
             variant: {
                 // Inset 2px inside a 1px border, so the bar's radius minus 3px keeps it concentric.
-                inline: 'm-0.5 rounded-[calc(var(--radius-control)-3px)] px-2',
+                inline: 'm-[2px] rounded-[calc(var(--radius-control)-3px)] px-2',
                 // The bar's own 3px inset already holds it, so it takes the buttons' size and corner.
                 floating: 'rounded-[calc(var(--radius-control)-4px)] px-2.5',
             },

@@ -128,7 +128,7 @@ export const DropZone = ({
             className={cn(
                 'flex flex-wrap items-center gap-x-3 gap-y-4 rounded-item border border-dashed p-4 transition-[background-color,border-color] duration-150 motion-reduce:transition-none',
                 invalid ? 'border-error-500' : 'border-neutral-300',
-                'data-dragging:border-neutral-500 data-dragging:bg-neutral-950/[0.03]',
+                'data-dragging:border-neutral-500 data-dragging:bg-neutral-950/3',
                 'data-disabled:opacity-50',
                 className,
             )}
@@ -248,7 +248,7 @@ export const DropZoneFile = ({
                         <span
                             className={cn(
                                 'shrink-0 tabular-nums',
-                                status === 'error' ? 'text-error-600' : 'text-neutral-500',
+                                status === 'error' ? 'text-error-600' : 'text-neutral-600',
                             )}
                         >
                             {meta}

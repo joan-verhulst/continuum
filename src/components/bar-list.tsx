@@ -29,8 +29,8 @@ const numberFormat = new Intl.NumberFormat('en-GB');
 export const barListRowVariants = cva(
     [
         // The control row's 34px, the height of a nav item and a button.
-        'relative isolate flex h-[34px] w-full min-w-0 items-center gap-2 overflow-hidden rounded-item text-left text-xs',
-        'bg-neutral-950/[0.03] px-2.5',
+        'relative isolate flex h-control w-full min-w-0 items-center gap-2 overflow-hidden rounded-item text-left text-xs',
+        'bg-neutral-950/3 px-2.5',
         '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
     ],
     {
@@ -41,7 +41,7 @@ export const barListRowVariants = cva(
                     'cursor-pointer transition-[background-color,color] duration-150 hover:bg-neutral-950/5',
                     // A row used as a filter toggle: the wash alone barely moves over the track, so a
                     // pressed row takes the coloured selection and a medium label.
-                    'aria-pressed:bg-tint aria-pressed:hover:bg-tint aria-pressed:[&_[data-slot=bar-list-label]]:font-medium aria-pressed:[&_[data-slot=bar-list-label]]:text-tint-fg',
+                    'aria-pressed:bg-tint aria-pressed:hover:bg-tint aria-pressed:**:data-[slot=bar-list-label]:font-medium aria-pressed:**:data-[slot=bar-list-label]:text-tint-fg',
                     'aria-disabled:pointer-events-none aria-disabled:opacity-50 disabled:pointer-events-none disabled:opacity-50',
                     focusRing,
                 ],
@@ -58,7 +58,7 @@ export const barListFillVariants = cva(
         variants: {
             tone: {
                 // Translucent neutral-950 rather than a ramp step, so the bar reads on any surface and in dark mode.
-                neutral: 'bg-neutral-950/[0.07]',
+                neutral: 'bg-neutral-950/7',
                 chart: 'bg-chart-1/20',
             },
         },
@@ -148,7 +148,7 @@ export const BarList = ({
                       aria-controls={listId}
                       aria-expanded={expanded}
                       className={cn(
-                          'h-[29px] cursor-pointer self-start rounded-item px-2 font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-800',
+                          'h-segment cursor-pointer self-start rounded-item px-2 font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-800',
                           focusRing,
                       )}
                       data-slot="bar-list-more"
@@ -181,7 +181,7 @@ export const BarList = ({
                     </span>
                     {valueLabel && (
                         <span
-                            className="shrink-0 font-normal text-neutral-500"
+                            className="shrink-0 font-normal text-neutral-600"
                             data-slot="bar-list-value-label"
                         >
                             {valueLabel}
@@ -191,7 +191,7 @@ export const BarList = ({
             )}
             {items.length === 0 ? (
                 <p
-                    className="flex h-[34px] items-center rounded-item bg-neutral-950/[0.03] px-2.5 text-neutral-500 text-xs"
+                    className="flex h-control items-center rounded-item bg-neutral-950/3 px-2.5 text-neutral-600 text-xs"
                     data-slot="bar-list-empty"
                 >
                     {empty}

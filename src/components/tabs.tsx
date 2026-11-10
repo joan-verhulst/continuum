@@ -60,10 +60,10 @@ export const TabsList = ({
 
 const triggerVariants: Record<TabsVariant, string> = {
     // A control row tall with the item radius, like a nav item: a pill tab sits on the page, not in a track.
-    pill: 'h-[34px] rounded-item px-3 text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-950 data-active:bg-tint data-active:text-tint-fg',
+    pill: 'h-control rounded-item px-3 text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-950 data-active:bg-tint data-active:text-tint-fg',
     // Set edge to edge, so the underline spans the tab, and 44px tall, so the label has room above the line.
     // It hangs 1px over the hairline, so the 2px underline sits on the line, not above it.
-    line: "-mb-px relative h-11 rounded-sm px-3 text-neutral-600 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-neutral-950 after:opacity-0 after:transition-opacity after:duration-150 after:content-[''] hover:text-neutral-950 data-active:text-neutral-950 data-active:after:opacity-100",
+    line: "-mb-px relative h-tab rounded-chip px-3 text-neutral-600 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-neutral-950 after:opacity-0 after:transition-opacity after:duration-150 after:content-[''] hover:text-neutral-950 data-active:text-neutral-950 data-active:after:opacity-100",
 };
 
 /**
