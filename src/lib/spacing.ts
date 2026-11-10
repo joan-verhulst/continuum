@@ -12,7 +12,7 @@
  *   line's own size), tight for a pair that belongs together and loose between blocks, growing with
  *   the lines either side: × (1 + β·log₂ lines).
  *
- * Kept free of imports so a script can load it on its own (the fix-padding skill runs it with Node).
+ * Kept free of imports so a script can load it on its own (the continuum-fix-padding skill runs it with Node).
  */
 
 export type SpacingParams = {

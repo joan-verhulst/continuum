@@ -1,6 +1,6 @@
 ---
-name: fix-padding
-description: Works out and fixes the padding and gaps of a component, screen or page with Continuum's spacing formula, so spacing follows what each box holds (its type size, how much text, the boxes inside it) and always lands on a Tailwind spacing class, never an arbitrary value. Use when asked to fix, check, tune or derive padding or spacing ("fix padding", "spacing looks off", "this card feels cramped", "too much space between the title and the description"), or invoked as /fix-padding with a file, component or page.
+name: continuum-fix-padding
+description: Works out and fixes the padding and gaps of a component, screen or page with Continuum's spacing formula, so spacing follows what each box holds (its type size, how much text, the boxes inside it) and always lands on a Tailwind spacing class, never an arbitrary value. Use when asked to fix, check, tune or derive padding or spacing ("fix padding", "spacing looks off", "this card feels cramped", "too much space between the title and the description"), or invoked as /continuum-fix-padding with a file, component or page.
 ---
 
 # Fix padding
@@ -34,12 +34,13 @@ Covers: boxes that hold content (cards, panels, sheet and dialog bodies, section
 Leave alone:
 - **Controls with a fixed height** (buttons, inputs, selects, chips, badges, tabs, nav items, menu items): their side padding is fixed per kind and their height comes from the height scale.
 - **Page-level insets** that a layout component sets (`PageContent`'s top padding, the 8px panel gutter).
+- **Widths** of panels, popups and fixed columns (the sidebar, a toast, a popover, a menu's minimum): they are fixed pixel tokens, not spacing, and never follow the spacing unit. Padding a box never changes its width class.
 - Anything the user marked as deliberate.
 
 ## Workflow
 
 1. **Read the target** (the file, component or page named). Find each box that holds content and each run of text, and note its Tailwind type class.
-2. **Map type to px** with the theme: in Continuum `text-xxs` 11, `text-xs` 13, `text-sm` 14, `text-base` 16, `text-lg` 18, `text-xl` 20, `text-2xl` 24, `text-3xl` 31, `text-4xl` 39. In another project read its `--text-*` tokens.
+2. **Map type to px** with the theme: in Continuum `text-xxs` 11, `text-xs` 13, `text-sm` 14, `text-base` 16, `text-lg` 18, `text-xl` 20, `text-2xl` 24, `text-3xl` 31 (the scale tool UI uses; the values themselves live in the Continuum skill's `references/foundations.md`). In another project read its `--text-*` tokens.
 3. **Count lines.** Measure them in the running app where you can (`Range.getClientRects()` on the text, or a screenshot at the real width). Otherwise give the text and let the script estimate about eight words to a line, and say that you estimated.
 4. **Write the box tree** as JSON and run the script from the skill's folder:
 

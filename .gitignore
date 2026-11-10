@@ -7,4 +7,4 @@ reference
 # Built by `pnpm build:skill` from src/ and playground/src/screens: never edit these by hand.
 .claude/skills/continuum-taste/assets
 .claude/skills/continuum-taste/references/screens
-.claude/skills/fix-padding/scripts/spacing.ts
+.claude/skills/continuum-fix-padding/scripts/spacing.ts

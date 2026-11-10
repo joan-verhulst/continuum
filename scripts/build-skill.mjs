@@ -5,7 +5,7 @@
  * - continuum-taste/assets/continuum: src/ (components, lib, charts, the index, the token and
  *   theme sheets) and the prebuilt dist/styles.css.
  * - continuum-taste/references/screens: the playground's screens, as examples.
- * - fix-padding/scripts/spacing.ts: the spacing formula, which its script runs with Node.
+ * - continuum-fix-padding/scripts/spacing.ts: the spacing formula, which its script runs with Node.
  *
  * These copies are gitignored; SKILL.md and the hand-written references are not. With --install
  * it also copies both skills to ~/.claude/skills, where every project can use them.
@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const skill = join(root, '.claude/skills/continuum-taste');
-const fixPadding = join(root, '.claude/skills/fix-padding');
+const fixPadding = join(root, '.claude/skills/continuum-fix-padding');
 const assets = join(skill, 'assets/continuum');
 const screens = join(skill, 'references/screens');
 
