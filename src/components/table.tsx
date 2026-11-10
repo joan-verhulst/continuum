@@ -1,19 +1,22 @@
 'use client';
 
 import { cva, type VariantProps } from 'class-variance-authority';
+import { Search } from 'lucide-react';
 import { type ComponentProps, createContext, type ReactNode, useContext } from 'react';
 import { cn } from '../lib/cn';
+import { Input, type InputProps } from './input';
 
 type TableVariant = 'ruled' | 'rows';
 
 const TableContext = createContext<TableVariant>('ruled');
 
-const tableWrapperVariants = cva('relative w-full overflow-x-auto', {
+const tableWrapperVariants = cva('relative w-full', {
     variants: {
         variant: {
             // The control's corner, as the inputs and filters above a table have: a table is
             // data beside them, not a second panel, and a panel's corner made it the steepest thing on the page.
-            ruled: 'rounded-control border border-neutral-200 bg-neutral-50',
+            // The frame clips to its corner; the scroller inside it is square.
+            ruled: 'overflow-hidden rounded-control border border-neutral-200 bg-neutral-50',
             rows: '',
         },
     },
@@ -34,6 +37,8 @@ const tableVariants = cva('w-full text-xs', {
 export type TableProps = ComponentProps<'table'> &
     VariantProps<typeof tableVariants> & {
         wrapperClassName?: string;
+        /** A `TableToolbar`, and under it a `TableConditions` row while any apply, inside the frame above the column head. */
+        toolbar?: ReactNode;
     };
 
 /**
@@ -41,7 +46,7 @@ export type TableProps = ComponentProps<'table'> &
  * phases and the invoice lines: hairline rows in a bordered frame. `rows` is the
  * analytics overview's top pages and regions: every row a separate rounded fill.
  */
-export const Table = ({ variant, className, wrapperClassName, ...props }: TableProps) => {
+export const Table = ({ variant, className, wrapperClassName, toolbar, ...props }: TableProps) => {
     const value = variant ?? 'ruled';
 
     return (
@@ -50,16 +55,77 @@ export const Table = ({ variant, className, wrapperClassName, ...props }: TableP
                 className={cn(tableWrapperVariants({ variant: value }), wrapperClassName)}
                 data-slot="table-wrapper"
             >
-                <table
-                    className={cn(tableVariants({ variant: value }), className)}
-                    data-slot="table"
-                    data-variant={value}
-                    {...props}
-                />
+                {/* The bar stays put in the frame while a wide table scrolls sideways under it. */}
+                {toolbar}
+                <div className="w-full overflow-x-auto" data-slot="table-scroller">
+                    <table
+                        className={cn(tableVariants({ variant: value }), className)}
+                        data-slot="table"
+                        data-variant={value}
+                        {...props}
+                    />
+                </div>
             </div>
         </TableContext.Provider>
     );
 };
+
+/**
+ * The table's own bar, inside its frame above the column head: what narrows this table sits on
+ * this table. The control row's 34 in 6px of room, ruled off like the head; it wraps when its
+ * filters outgrow one line, and the head below never moves. Pass it to `Table`'s `toolbar`.
+ */
+export const TableToolbar = ({ className, ...props }: ComponentProps<'div'>) => (
+    <div
+        className={cn(
+            'flex min-h-tab flex-wrap items-center gap-x-3 gap-y-2 border-neutral-200 border-b px-1.5 py-1.5',
+            className,
+        )}
+        data-slot="table-toolbar"
+        {...props}
+    />
+);
+
+export type TableSearchProps = Omit<InputProps, 'size' | 'variant' | 'leadingIcon'>;
+
+/**
+ * The table's search: a small outlined input with a leading 16px search icon.
+ * 256 wide, and it gives way before the filters do.
+ */
+export const TableSearch = ({ className, ...props }: TableSearchProps) => (
+    <Input
+        className={cn('w-search shrink', className)}
+        leadingIcon={<Search strokeWidth={2} />}
+        size="sm"
+        {...props}
+    />
+);
+
+/**
+ * The applied conditions, in a row of their own under the bar, so narrowing reads apart from
+ * finding. Only while a condition applies, and then the button that adds one sits at its right end;
+ * with none, that button waits in the bar. Ruled off like the bar, and it wraps when the conditions
+ * outgrow one line.
+ */
+export const TableConditions = ({ className, ...props }: ComponentProps<'div'>) => (
+    <div
+        className={cn(
+            'flex min-h-tab flex-wrap items-center gap-2 border-neutral-200 border-b px-1.5 py-1.5',
+            className,
+        )}
+        data-slot="table-conditions"
+        {...props}
+    />
+);
+
+/** The far end of the bar or the conditions row: the selects, a filter menu, or the button that adds a condition. */
+export const TableToolbarEnd = ({ className, ...props }: ComponentProps<'div'>) => (
+    <div
+        className={cn('ml-auto flex min-w-0 flex-wrap items-center justify-end gap-2', className)}
+        data-slot="table-toolbar-end"
+        {...props}
+    />
+);
 
 export const TableHeader = ({ className, ...props }: ComponentProps<'thead'>) => (
     <thead className={className} data-slot="table-header" {...props} />
@@ -69,10 +135,18 @@ export const TableBody = ({ className, ...props }: ComponentProps<'tbody'>) => (
     <tbody className={className} data-slot="table-body" {...props} />
 );
 
-/** Totals row of the invoice lines: the same rule, on the header's muted fill. */
+/**
+ * The sums under the lines: an optional head row of `TableHead`s naming the columns they sit in (a
+ * slimmer band of the header's fill), then a row per sum on the surface with no rules between them,
+ * the label muted. The total comes last, its cells given a top hairline by the caller.
+ */
 export const TableFooter = ({ className, ...props }: ComponentProps<'tfoot'>) => (
     <tfoot
-        className={cn('[&_td]:bg-neutral-100 [&_th]:bg-neutral-100', className)}
+        className={cn(
+            '[&_td]:border-b-0 [&_th]:h-auto [&_th]:py-2',
+            '[&_td:first-child]:text-neutral-700',
+            className,
+        )}
         data-slot="table-footer"
         {...props}
     />
@@ -84,7 +158,7 @@ const tableRowVariants = cva('', {
             // A plain <tr>, so the caller marks selection: data-selected, or data-state="selected" as
             // before the move to Base UI and in shadcn tables. Both keep working. Selection is the
             // selected wash, and hover leaves a selected row as it is rather than paling it.
-            ruled: 'transition-colors duration-150 data-selected:bg-selected data-[state=selected]:bg-selected [tbody>&]:not-data-selected:hover:bg-neutral-950/[0.03]',
+            ruled: 'transition-colors duration-150 data-selected:bg-selected data-[state=selected]:bg-selected [tbody>&]:not-data-selected:hover:bg-neutral-950/3',
             rows: '',
         },
     },
@@ -117,7 +191,7 @@ const alignClass = ({ align, numeric }: CellAlignProps) =>
 const tableHeadVariants = cva('whitespace-nowrap font-normal text-xs', {
     variants: {
         variant: {
-            ruled: 'h-[41px] border-neutral-200 border-b bg-neutral-100 p-3 text-neutral-600',
+            ruled: 'h-table-row border-neutral-200 border-b bg-neutral-100 p-3 text-neutral-600',
             rows: 'px-3 py-0.5 text-neutral-700',
         },
     },
@@ -145,9 +219,9 @@ export const TableHead = ({ align, numeric, className, ...props }: TableHeadProp
 const tableCellVariants = cva('text-xs', {
     variants: {
         variant: {
-            ruled: 'h-[41px] border-neutral-200 border-b p-3 font-medium text-neutral-900',
+            ruled: 'h-table-row border-neutral-200 border-b p-3 font-medium text-neutral-900',
             // A translucent fill, so the rows read on the surface and on the canvas alike.
-            rows: 'h-[34px] bg-neutral-950/[0.04] px-3 py-2 font-normal text-neutral-600 first:rounded-l-control last:rounded-r-control first:text-neutral-800',
+            rows: 'h-control bg-neutral-950/4 px-3 py-2 font-normal text-neutral-600 first:rounded-l-control last:rounded-r-control first:text-neutral-800',
         },
     },
 });
@@ -187,11 +261,11 @@ export const TableGroupRow = ({
 }: TableGroupRowProps) => (
     <tr className={className} data-slot="table-group-row" {...props}>
         <td
-            className="h-[34px] border-neutral-200 border-b bg-neutral-100 px-3 py-2 text-left font-normal text-neutral-700 text-xs"
+            className="h-control border-neutral-200 border-b bg-neutral-100 px-3 py-2 text-left font-normal text-neutral-700 text-xs"
             colSpan={colSpan}
         >
             {children}
-            {hint != null && <span className="ml-1 text-neutral-500 text-xxs">({hint})</span>}
+            {hint != null && <span className="ml-1 text-neutral-600 text-xxs">({hint})</span>}
         </td>
     </tr>
 );
