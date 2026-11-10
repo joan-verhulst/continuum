@@ -24,35 +24,37 @@ import {
 } from 'continuum';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
-import { useStageContainer } from '../../layout';
-import { AppScene, type Entry, type InUse, icon, OpenDialog, previewIcon } from '../kit';
+import {
+    AppScene,
+    type Entry,
+    type InUse,
+    icon,
+    OpenDialog,
+    previewIcon,
+    useHeldOpen,
+} from '../kit';
 
 /*
- * Overlays are shown open: on a stage, the overlay is portalled into the stage and held
- * open there, scrim and all, so the component itself is on show rather than its trigger.
- * Off a stage, the trigger opens it as it would in a product.
+ * Overlays are shown open: the overlay is portalled into the stage and opens there, scrim and
+ * all, so the component itself is on show rather than its trigger. Its own controls still close
+ * it, and the trigger opens it again, as in a product.
  */
 
 const DialogPreview = () => {
     const [name, setName] = useState('Northwind Q3 review');
-    const [open, setOpen] = useState(false);
-    const stage = useStageContainer();
+    const { stage, open, onOpenChange } = useHeldOpen();
 
     return (
         <div className="flex flex-col items-center gap-3">
-            <Dialog
-                modal={stage ? false : undefined}
-                onOpenChange={setOpen}
-                open={stage ? true : open}
-            >
+            <Dialog modal={false} onOpenChange={onOpenChange} open={open}>
                 <DialogTrigger render={<Button variant="secondary" />}>
                     <Pencil {...previewIcon} /> Rename report
                 </DialogTrigger>
                 <DialogContent
-                    className={stage ? 'w-[min(420px,calc(100%-32px))]' : undefined}
+                    className="w-[min(420px,calc(100%-32px))]"
                     container={stage}
-                    finalFocus={stage ? false : undefined}
-                    initialFocus={stage ? false : undefined}
+                    finalFocus={false}
+                    initialFocus={false}
                 >
                     <DialogHeader>
                         <DialogTitle>Rename report</DialogTitle>
@@ -68,7 +70,7 @@ const DialogPreview = () => {
                                 const value = new FormData(event.currentTarget).get('name');
                                 if (typeof value === 'string' && value.trim())
                                     setName(value.trim());
-                                setOpen(false);
+                                onOpenChange(false);
                             }}
                         >
                             <Field>
@@ -85,7 +87,7 @@ const DialogPreview = () => {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            {!stage && <span className="max-w-56 truncate text-neutral-500 text-xxs">{name}</span>}
+            <span className="max-w-56 truncate text-neutral-600 text-xxs">{name}</span>
         </div>
     );
 };
@@ -107,9 +109,12 @@ const DeleteReport = () => {
             footer={
                 <>
                     <DialogClose render={<Button variant="secondary" />}>Cancel</DialogClose>
-                    <Button disabled={name.trim() !== 'Northwind Q3 review'}>
+                    <DialogClose
+                        disabled={name.trim() !== 'Northwind Q3 review'}
+                        render={<Button />}
+                    >
                         <Trash2 {...icon} /> Delete report
-                    </Button>
+                    </DialogClose>
                 </>
             }
             title="Delete report"

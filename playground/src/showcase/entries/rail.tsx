@@ -51,7 +51,7 @@ const RailPreview = ({ knobs }: PreviewProps) => {
     const [active, setActive] = useState('analytics');
     const [expanded, setExpanded] = useState(Boolean(knobs.expanded));
 
-    // The knob opens and closes it; the toggle inside still does too.
+    // The knob opens and closes it, the width easing as it does in use; the toggle inside still does too.
     useEffect(() => setExpanded(Boolean(knobs.expanded)), [knobs.expanded]);
 
     const item = (id: string, label: string, glyph: ReactNode) => (
@@ -81,7 +81,7 @@ export const entry: Entry = {
     category: 'frame',
     description:
         'The main navigation as a floating island: icons, or icons and labels when expanded.',
-    hero: 'min-h-[420px]',
+    hero: 'min-h-105',
     knobs: railKnobs,
     Preview: RailPreview,
 };
@@ -139,7 +139,7 @@ const ReportsWithRail = () => {
             // Clear of the rail: its 24px inset, its width and a gutter, wider while it is open.
             className={cn(
                 'transition-[padding] duration-300 ease-out-strong',
-                expanded ? 'pl-[280px]' : 'pl-28',
+                expanded ? 'pl-70' : 'pl-28',
             )}
             description="Weekly and monthly reports, shared with your team."
             nav="none"
@@ -189,7 +189,7 @@ const ReportsWithRail = () => {
                             <p className="font-medium text-neutral-950 text-xs">{report.name}</p>
                             <p className="text-neutral-600 text-xs">{report.about}</p>
                         </div>
-                        <p className="text-neutral-500 text-xxs">{report.meta}</p>
+                        <p className="text-neutral-600 text-xxs">{report.meta}</p>
                     </Card>
                 ))}
             </div>

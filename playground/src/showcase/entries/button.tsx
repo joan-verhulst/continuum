@@ -22,16 +22,24 @@ const buttonKnobs: Knob[] = [
     {
         id: 'size',
         label: 'Size',
-        options: [o('md', 'md · 34px'), o('lg', 'lg · 38px'), o('icon', 'Icon')],
+        options: [
+            o('md', 'md · 34px'),
+            o('lg', 'lg · 38px'),
+            o('icon', 'Icon · 34px'),
+            o('icon-sm', 'Small icon · 28px'),
+        ],
         default: 'md',
     },
     {
         id: 'icon',
         label: 'Icon',
         options: [o('none', 'None'), o('leading', 'Leading'), o('trailing', 'Trailing')],
-        default: 'leading',
+        // An action's icon trails its label ("New report +"); a leading icon is for navigation.
+        default: 'trailing',
+        when: values => values.size !== 'icon' && values.size !== 'icon-sm',
     },
     { id: 'pill', label: 'Pill', switch: true, default: false },
+    { id: 'loading', label: 'Loading', switch: true, default: false },
     { id: 'disabled', label: 'Disabled', switch: true, default: false },
 ];
 
@@ -39,13 +47,14 @@ const ButtonPreview = ({ knobs }: PreviewProps) => {
     const variant = knobs.variant as 'primary' | 'secondary' | 'ghost' | 'tint';
     const shape = knobs.pill ? 'pill' : undefined;
 
-    if (knobs.size === 'icon') {
+    if (knobs.size === 'icon' || knobs.size === 'icon-sm') {
         return (
             <Button
                 aria-label="New report"
                 disabled={Boolean(knobs.disabled)}
+                loading={Boolean(knobs.loading)}
                 shape={shape}
-                size="icon"
+                size={knobs.size}
                 variant={variant}
             >
                 <Plus {...previewIcon} />
@@ -56,13 +65,14 @@ const ButtonPreview = ({ knobs }: PreviewProps) => {
     return (
         <Button
             disabled={Boolean(knobs.disabled)}
+            loading={Boolean(knobs.loading)}
             shape={shape}
             size={knobs.size === 'lg' ? 'lg' : undefined}
             variant={variant}
         >
             {knobs.icon === 'leading' && <Plus {...previewIcon} />}
             New report
-            {knobs.icon === 'trailing' && <ArrowRight {...previewIcon} />}
+            {knobs.icon === 'trailing' && <Plus {...previewIcon} />}
         </Button>
     );
 };
@@ -71,7 +81,7 @@ export const entry: Entry = {
     id: 'button',
     name: 'Button',
     category: 'actions',
-    description: 'Primary, secondary and ghost in two heights, plus icon buttons.',
+    description: 'Primary, secondary, ghost and tint in two heights, plus icon buttons.',
     knobs: buttonKnobs,
     Preview: ButtonPreview,
 };
@@ -98,7 +108,7 @@ const EmptyReports = () => (
                     <Upload {...icon} /> Import
                 </Button>
                 <Button>
-                    <Plus {...icon} /> New report
+                    New report <Plus {...icon} />
                 </Button>
             </div>
             <Button variant="ghost">

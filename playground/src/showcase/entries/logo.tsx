@@ -20,7 +20,7 @@ export const entry: Entry = {
 const SignIn = () => (
     <AppWindow className="items-center gap-8 pt-16" nav="none">
         <ContinuumLogo size={32} />
-        <Card className="w-[380px] gap-6 p-8">
+        <Card className="w-95 gap-6 p-8">
             <div className="flex flex-col gap-1.5">
                 <h1 className="font-medium text-neutral-950 text-xl">Sign in</h1>
                 <p className="text-neutral-600 text-sm">

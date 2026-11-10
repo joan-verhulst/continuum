@@ -10,6 +10,9 @@ import {
     DropdownMenuSearch,
     DropdownMenuSeparator,
     DropdownMenuShortcut,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
     DropdownMenuTrigger,
     Table,
     TableBody,
@@ -25,6 +28,7 @@ import {
     Ellipsis,
     EllipsisVertical,
     FileText,
+    Folder,
     FolderInput,
     type LucideIcon,
     Pencil,
@@ -50,7 +54,6 @@ const actions: Action[] = [
     { label: 'Rename', Icon: Pencil, shortcut: 'R' },
     { label: 'Duplicate', Icon: Copy, shortcut: '⌘D' },
     { label: 'Share', Icon: Share2 },
-    { label: 'Move to', Icon: FolderInput },
     { label: 'Download', Icon: Download },
     { label: 'Archive', Icon: Archive },
 ];
@@ -60,15 +63,21 @@ const menuKnobs: Knob[] = [
     { id: 'label', label: 'Label', switch: true, default: true },
 ];
 
+const folders = ['Board packs', 'Quarterly', 'Shared with clients'];
+
 const MenuPreview = ({ knobs }: PreviewProps) => {
     const [last, setLast] = useState<string>();
     const [query, setQuery] = useState('');
     const stage = useStageContainer();
+    // A tile is a still, held open; on the page it opens held open too, but closes and reopens.
+    const tile = Boolean(stage?.inert);
+    const [open, setOpen] = useState(true);
     const search = Boolean(knobs.search);
     const matches = (label: string) =>
         !search || label.toLowerCase().includes(query.trim().toLowerCase());
     // Without a search the menu keeps to its first few actions, as a short menu would.
     const shown = (search ? actions : actions.slice(0, 2)).filter(action => matches(action.label));
+    const showMove = matches('Move to');
     const showDelete = matches('Delete');
 
     return (
@@ -76,13 +85,22 @@ const MenuPreview = ({ knobs }: PreviewProps) => {
         <div
             className={cn(
                 'flex flex-col items-center gap-3',
-                stage && (search ? 'pb-80' : 'pb-44'),
+                stage && (search ? 'pb-80' : 'pb-52'),
             )}
         >
+            {/* Above the trigger, where the open menu never covers it. */}
+            {!tile && (
+                <span aria-live="polite" className="text-neutral-600 text-xxs">
+                    {last ?? 'Pick an action'}
+                </span>
+            )}
             <DropdownMenu
                 modal={stage ? false : undefined}
-                onOpenChange={open => open || setQuery('')}
-                open={stage ? true : undefined}
+                onOpenChange={next => {
+                    setOpen(next);
+                    if (!next) setQuery('');
+                }}
+                open={tile ? true : stage ? open : undefined}
             >
                 <DropdownMenuTrigger render={<Button variant="secondary" />}>
                     Actions <Ellipsis {...previewIcon} />
@@ -103,20 +121,36 @@ const MenuPreview = ({ knobs }: PreviewProps) => {
                             {shortcut && <DropdownMenuShortcut>{shortcut}</DropdownMenuShortcut>}
                         </DropdownMenuItem>
                     ))}
+                    {showMove && (
+                        <DropdownMenuSub>
+                            <DropdownMenuSubTrigger icon={<FolderInput {...previewIcon} />}>
+                                Move to
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent className="w-52" container={stage}>
+                                {folders.map(folder => (
+                                    <DropdownMenuItem
+                                        key={folder}
+                                        onClick={() => setLast(`Moved to ${folder}`)}
+                                    >
+                                        <Folder {...previewIcon} /> {folder}
+                                    </DropdownMenuItem>
+                                ))}
+                            </DropdownMenuSubContent>
+                        </DropdownMenuSub>
+                    )}
                     {showDelete && (
                         <>
-                            {shown.length > 0 && <DropdownMenuSeparator />}
-                            <DropdownMenuItem onClick={() => setLast('Delete')} variant="danger">
+                            {(shown.length > 0 || showMove) && <DropdownMenuSeparator />}
+                            <DropdownMenuItem onClick={() => setLast('Deleted')} variant="danger">
                                 <Trash2 {...previewIcon} /> Delete
                             </DropdownMenuItem>
                         </>
                     )}
-                    {shown.length === 0 && !showDelete && (
+                    {shown.length === 0 && !showMove && !showDelete && (
                         <DropdownMenuEmpty>No action matches “{query}”</DropdownMenuEmpty>
                     )}
                 </DropdownMenuContent>
             </DropdownMenu>
-            {!stage && <span className="text-neutral-500 text-xxs">{last ?? 'Open it'}</span>}
         </div>
     );
 };
@@ -126,7 +160,7 @@ export const entry: Entry = {
     name: 'Dropdown menu',
     category: 'actions',
     description: 'Row actions with shortcuts, submenus and a danger item; a search for a long one.',
-    hero: 'min-h-80',
+    hero: 'min-h-90',
     knobs: menuKnobs,
     Preview: MenuPreview,
 };

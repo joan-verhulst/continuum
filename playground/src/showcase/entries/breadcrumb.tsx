@@ -69,7 +69,7 @@ const BreadcrumbPreview = ({ knobs }: PreviewProps) => {
 
     return (
         // A bar's width, so a long page name has something to truncate against.
-        <Breadcrumb className="w-[440px] max-w-full">
+        <Breadcrumb className="w-110 max-w-full">
             <BreadcrumbList size={knobs.size === 'lg' ? 'lg' : 'md'}>
                 {knobs.home && (
                     <>

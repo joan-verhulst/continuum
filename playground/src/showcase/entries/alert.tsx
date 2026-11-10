@@ -71,7 +71,7 @@ const AlertPreview = ({ knobs }: PreviewProps) => {
     ) : (
         <Alert
             action={knobs.action && <Button variant="secondary">{text.action}</Button>}
-            className={knobs.width === 'narrow' ? 'w-80' : 'w-[480px]'}
+            className={knobs.width === 'narrow' ? 'w-80' : 'w-120'}
             onDismiss={knobs.dismiss ? () => setDismissed(true) : undefined}
             title={text.title}
             tone={tone}

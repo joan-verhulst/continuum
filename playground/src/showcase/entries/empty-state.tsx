@@ -39,7 +39,7 @@ const EmptyStatePreview = ({ knobs }: PreviewProps) =>
     knobs.kind === 'filtered' ? (
         <EmptyState
             action={knobs.action && <Button variant="secondary">Clear filters</Button>}
-            className="w-[460px]"
+            className="w-115"
             description="No invoices are overdue and owned by Bram Jansen."
             icon={knobs.icon && <Search {...previewIcon} />}
             title="Nothing matches these filters"
@@ -53,7 +53,7 @@ const EmptyStatePreview = ({ knobs }: PreviewProps) =>
                     </Button>
                 )
             }
-            className="w-[460px]"
+            className="w-115"
             description="Invoices you send show up here, with when they are due and who has paid."
             icon={knobs.icon && <FileText {...previewIcon} />}
             title="No invoices yet"

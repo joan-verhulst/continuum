@@ -36,7 +36,12 @@ const ToolbarPreview = ({ knobs }: PreviewProps) => {
                     <Check {...previewIcon} /> Accept
                 </ToolbarButton>
             </Toolbar>
-            <span className="text-neutral-500 text-xxs">{last ?? 'Inline over a selection'}</span>
+            <span className="text-neutral-600 text-xxs">
+                {last ??
+                    (knobs.variant === 'floating'
+                        ? 'Floating at the foot, over a selection'
+                        : 'Inline over a focused block')}
+            </span>
         </div>
     );
 };
@@ -78,7 +83,7 @@ const ReportDraft = () => {
             title="Northwind Q3 review"
             trail={['Reports', 'Northwind Q3 review']}
         >
-            <article className="flex max-w-[600px] flex-col gap-4 text-neutral-800 text-sm leading-relaxed">
+            <article className="flex max-w-150 flex-col gap-4 text-neutral-800 text-sm leading-relaxed">
                 <h2 className="pt-2 font-medium text-base text-neutral-950">Traffic</h2>
                 <p>
                     Sessions held steady through the quarter at around 12,000 a week, with the

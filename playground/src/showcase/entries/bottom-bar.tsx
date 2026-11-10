@@ -50,7 +50,7 @@ const BottomBarPreview = ({ knobs }: PreviewProps) => {
 
     return (
         // More sections than the bar's width scroll, with a chevron at the end that has more.
-        <BottomBar className={many ? 'max-w-[440px]' : undefined}>
+        <BottomBar className={many ? 'max-w-110' : undefined}>
             <Dock aria-label="Campaign" defaultValue="audience" shape={shape}>
                 {sections.map(({ id, label, Icon }) => (
                     <DockItem key={id} value={id}>

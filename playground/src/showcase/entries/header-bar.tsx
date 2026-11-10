@@ -16,7 +16,7 @@ import {
     usePageHistory,
 } from 'continuum';
 import { FileText, Link2 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type Entry, type InUse, icon, type Knob, o, type PreviewProps, previewIcon } from '../kit';
 
 const headerBarKnobs: Knob[] = [
@@ -42,19 +42,34 @@ const headerBarKnobs: Knob[] = [
 
 const HeaderBarPreview = ({ knobs }: PreviewProps) => {
     const { notice, show, clear } = useNotice();
+    const settle = useRef<number | undefined>(undefined);
 
-    // The knob holds a notice open; Save plays the real sequence, saving then saved.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: follows the knob only
-    useEffect(() => {
+    // The notice the knob names, held open until the knob changes.
+    const hold = () => {
         if (knobs.notice === 'saving') show('Saving…', { icon: <Spinner size="sm" />, timeout: 0 });
         else if (knobs.notice === 'saved') show('Saved', { timeout: 0 });
         else clear();
-    }, [knobs.notice]);
+    };
+
+    // Save and Copy link play the real sequence, then the knob's notice comes back.
+    const play = (message: string) => {
+        window.clearTimeout(settle.current);
+        show(message, { timeout: 0 });
+        settle.current = window.setTimeout(hold, 1800);
+    };
 
     const save = () => {
+        window.clearTimeout(settle.current);
         show('Saving…', { icon: <Spinner size="sm" />, timeout: 0 });
-        window.setTimeout(() => show('Saved'), 900);
+        settle.current = window.setTimeout(() => play('Saved'), 900);
     };
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: follows the knob only
+    useEffect(() => {
+        hold();
+        // A save still under way gives way to the knob's next notice, or to leaving the page.
+        return () => window.clearTimeout(settle.current);
+    }, [knobs.notice]);
 
     // A few pages to move between: a crumb or a report visits one, the arrows walk the history.
     const history = usePageHistory<string[]>([['Reports'], ['Reports', 'Northwind Q3 review']]);
@@ -62,7 +77,7 @@ const HeaderBarPreview = ({ knobs }: PreviewProps) => {
 
     return (
         // The top of a panel: its corners, its surface, and the page under the bar.
-        <div className="w-[540px] overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50">
+        <div className="w-135 overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50">
             <HeaderBar>
                 <HeaderBarStart>
                     {knobs.leading !== 'none' && (
@@ -96,7 +111,7 @@ const HeaderBarPreview = ({ knobs }: PreviewProps) => {
                 {knobs.actions !== '0' && (
                     <HeaderBarActions>
                         {knobs.actions === '2' && (
-                            <Button onClick={() => show('Link copied')} variant="secondary">
+                            <Button onClick={() => play('Link copied')} variant="secondary">
                                 <Link2 {...previewIcon} /> Copy link
                             </Button>
                         )}
@@ -127,9 +142,9 @@ const HeaderBarPreview = ({ knobs }: PreviewProps) => {
                 </ul>
             ) : (
                 <div className="flex flex-col gap-2 px-6 pt-14 pb-8">
-                    <div className="h-3 w-40 rounded-chip bg-neutral-950/[0.06]" />
-                    <div className="h-2.5 w-72 rounded-chip bg-neutral-950/[0.04]" />
-                    <div className="h-2.5 w-60 rounded-chip bg-neutral-950/[0.04]" />
+                    <div className="h-3 w-40 rounded-chip bg-neutral-950/6" />
+                    <div className="h-2.5 w-72 rounded-chip bg-neutral-950/4" />
+                    <div className="h-2.5 w-60 rounded-chip bg-neutral-950/4" />
                 </div>
             )}
         </div>
@@ -194,7 +209,7 @@ const EditReport = () => {
                 <Notice {...notice} />
             </HeaderBar>
             <form
-                className="mx-auto flex max-w-[560px] flex-col gap-3 px-6 pt-14 pb-10"
+                className="mx-auto flex max-w-140 flex-col gap-3 px-6 pt-14 pb-10"
                 onSubmit={event => {
                     event.preventDefault();
                     save();

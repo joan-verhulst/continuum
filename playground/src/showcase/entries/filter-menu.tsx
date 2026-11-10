@@ -23,7 +23,6 @@ import {
 } from 'continuum';
 import { CircleCheck, Plus, UserRound } from 'lucide-react';
 import { useState } from 'react';
-import { useStageContainer } from '../../layout';
 import {
     AppScene,
     type Entry,
@@ -32,6 +31,7 @@ import {
     type Knob,
     type PreviewProps,
     previewIcon,
+    useHeldOpen,
 } from '../kit';
 
 const invoiceFilters = [
@@ -74,7 +74,7 @@ const filterMenuKnobs: Knob[] = [
 
 const FilterMenuPreview = ({ knobs }: PreviewProps) => {
     const [values, setValues] = useState<FilterValues>({ status: ['Due soon', 'Overdue'] });
-    const stage = useStageContainer();
+    const { stage, open, onOpenChange } = useHeldOpen();
     const count = countFilters(values);
     // A tile is a still: one group, and the button and its menu centred together.
     const tile = Boolean(stage?.inert);
@@ -85,12 +85,12 @@ const FilterMenuPreview = ({ knobs }: PreviewProps) => {
         <div
             className={cn(
                 'flex',
-                tile ? 'w-60 justify-start pb-36' : 'w-[520px] justify-center',
+                tile ? 'w-60 justify-start pb-36' : 'w-130 justify-center',
                 stage && !tile && 'pb-72',
             )}
         >
             <FilterBar onClear={knobs.chips && count > 0 ? () => setValues({}) : undefined}>
-                <FilterMenu modal={stage ? false : undefined} open={stage ? true : undefined}>
+                <FilterMenu modal={false} onOpenChange={onOpenChange} open={open}>
                     <FilterMenuTrigger count={count} />
                     <FilterMenuContent container={stage}>
                         {groups.map(group => (
@@ -147,7 +147,7 @@ export const entry: Entry = {
     name: 'Filter menu',
     category: 'filtering',
     description: 'Grouped checkbox filters that turn into chips, with Clear all.',
-    hero: 'min-h-[440px]',
+    hero: 'min-h-110',
     knobs: filterMenuKnobs,
     Preview: FilterMenuPreview,
 };
@@ -239,7 +239,7 @@ const statusTone: Record<string, 'success' | 'warning' | 'error'> = {
 };
 
 const FilteredInvoices = () => {
-    const stage = useStageContainer();
+    const { stage, open, onOpenChange } = useHeldOpen();
     const [values, setValues] = useState<FilterValues>({ status: ['Due soon', 'Overdue'] });
     const count = countFilters(values);
     const rows = filteredInvoices.filter(invoice =>
@@ -252,7 +252,7 @@ const FilteredInvoices = () => {
         <div className="flex flex-col gap-4">
             <div className="flex items-center justify-between gap-4">
                 <FilterBar>
-                    <FilterMenu modal={false} open>
+                    <FilterMenu modal={false} onOpenChange={onOpenChange} open={open}>
                         <FilterMenuTrigger count={count} />
                         <FilterMenuContent container={stage}>
                             {filterGroups.map(group => (

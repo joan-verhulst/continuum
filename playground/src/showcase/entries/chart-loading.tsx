@@ -13,12 +13,12 @@ import { chartMargin } from '../../screens/shared';
 import { AppWindow, type Entry, type InUse, icon } from '../kit';
 
 const ChartLoadingPreview = () => (
-    <AreaChartLoading className="h-[152px] w-full" label="Loading" margin={chartMargin} />
+    <AreaChartLoading className="h-38 w-full" label="Loading" margin={chartMargin} />
 );
 
 export const entry: Entry = {
     id: 'chart-loading',
-    name: 'Chart loading',
+    name: 'Area chart loading',
     category: 'charts',
     description: 'A skeleton line with a shimmer while the data is on its way.',
     stageClassName: 'items-stretch',
@@ -47,10 +47,10 @@ const SessionsLoading = () => (
         <Card layout="chart">
             <CardHeader>
                 <CardTitle>Sessions over time</CardTitle>
-                <span className="text-neutral-500 text-xs">Fetching 12 months of data…</span>
+                <span className="text-neutral-600 text-xs">Fetching 12 months of data…</span>
             </CardHeader>
             <AreaChartLoading
-                className="h-[240px] w-full"
+                className="h-60 w-full"
                 label="Loading sessions"
                 margin={chartMargin}
             />

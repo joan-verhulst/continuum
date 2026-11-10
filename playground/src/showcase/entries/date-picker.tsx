@@ -19,12 +19,40 @@ import {
     TableRow,
 } from 'continuum';
 import { History, Plus } from 'lucide-react';
-import { AppScene, DialogActions, type Entry, type InUse, icon, OpenDialog } from '../kit';
+import {
+    AppScene,
+    DialogActions,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    OpenDialog,
+    opts,
+    type PreviewProps,
+    sizes,
+} from '../kit';
 
-const DatePickerPreview = () => (
-    <Field className="w-56">
+const datePickerKnobs: Knob[] = [
+    { id: 'size', label: 'Size', options: sizes, default: 'md' },
+    { id: 'value', label: 'Value', options: opts('picked', 'empty'), default: 'picked' },
+    { id: 'invalid', label: 'Invalid', switch: true, default: false },
+    { id: 'disabled', label: 'Disabled', switch: true, default: false },
+];
+
+const DatePickerPreview = ({ knobs }: PreviewProps) => (
+    <Field
+        className="w-56"
+        disabled={Boolean(knobs.disabled)}
+        invalid={Boolean(knobs.invalid)}
+        // A new value for the knob is a new picker, so its own pick never outlives the knob.
+        key={String(knobs.value)}
+    >
         <FieldLabel>Start date</FieldLabel>
-        <DatePicker defaultValue={new Date(2026, 10, 2)} />
+        <DatePicker
+            defaultValue={knobs.value === 'picked' ? new Date(2026, 10, 2) : undefined}
+            size={knobs.size as 'sm' | 'md'}
+        />
+        {knobs.invalid && <FieldHelper>Pick a date after the contract starts.</FieldHelper>}
     </Field>
 );
 
@@ -33,6 +61,7 @@ export const entry: Entry = {
     name: 'Date picker',
     category: 'inputs',
     description: 'An input-like trigger that opens a calendar.',
+    knobs: datePickerKnobs,
     Preview: DatePickerPreview,
 };
 

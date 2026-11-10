@@ -13,9 +13,6 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-    Tabs,
-    TabsList,
-    TabsTrigger,
     Textarea,
 } from 'continuum';
 import { UserPlus } from 'lucide-react';
@@ -84,46 +81,36 @@ const members = [
     },
 ];
 
-// The settings page the invite was opened from.
+// The members page the invite was opened from, one page of Settings with nothing over its list.
 const MemberList = () => (
-    <div className="flex flex-col gap-6">
-        <Tabs defaultValue="members">
-            <TabsList>
-                <TabsTrigger value="general">General</TabsTrigger>
-                <TabsTrigger value="members">Members</TabsTrigger>
-                <TabsTrigger value="billing">Billing</TabsTrigger>
-                <TabsTrigger value="integrations">Integrations</TabsTrigger>
-            </TabsList>
-        </Tabs>
-        <Table>
-            <TableHeader>
-                <TableRow>
-                    <TableHead>Member</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead className="text-right">Last active</TableHead>
+    <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHead>Member</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead className="text-right">Last active</TableHead>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            {members.map(member => (
+                <TableRow key={member.email}>
+                    <TableCell>
+                        <span className="flex items-center gap-2.5">
+                            <Avatar fallback={member.initials} shape="round" size={24} />
+                            <span className="text-neutral-950">{member.name}</span>
+                            <span className="font-normal text-neutral-600">{member.email}</span>
+                        </span>
+                    </TableCell>
+                    <TableCell>
+                        <Badge>{member.role}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right font-normal text-neutral-600">
+                        {member.seen}
+                    </TableCell>
                 </TableRow>
-            </TableHeader>
-            <TableBody>
-                {members.map(member => (
-                    <TableRow key={member.email}>
-                        <TableCell>
-                            <span className="flex items-center gap-2.5">
-                                <Avatar fallback={member.initials} shape="round" size={24} />
-                                <span className="text-neutral-950">{member.name}</span>
-                                <span className="font-normal text-neutral-500">{member.email}</span>
-                            </span>
-                        </TableCell>
-                        <TableCell>
-                            <Badge>{member.role}</Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-normal text-neutral-600">
-                            {member.seen}
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
-    </div>
+            ))}
+        </TableBody>
+    </Table>
 );
 
 const InviteTeammate = () => (
@@ -151,8 +138,8 @@ const MembersWithInvite = () => (
         page={{
             place: 'settings',
             trail: ['Settings', 'Members'],
-            title: 'Settings',
-            description: 'The workspace, its members and how it bills.',
+            title: 'Members',
+            description: 'Everyone in the Acme workspace and what they can do.',
             actions: (
                 <Button>
                     <UserPlus {...icon} /> Invite

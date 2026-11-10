@@ -28,8 +28,13 @@ const progressKnobs: Knob[] = [
         options: [o('sm', 'sm · 4px'), o('md', 'md · 8px')],
         default: 'sm',
     },
-    { id: 'value', label: 'Show the value', switch: true, default: true },
-    { id: 'caption', label: 'Caption', switch: true, default: false },
+    // The label row's right holds one thing: a caption wins over the value, so they are one choice.
+    {
+        id: 'end',
+        label: 'Beside the label',
+        options: [o('value', 'Value'), o('caption', 'Caption'), o('none', 'Nothing')],
+        default: 'value',
+    },
 ];
 
 const ProgressPreview = ({ knobs }: PreviewProps) => {
@@ -38,7 +43,7 @@ const ProgressPreview = ({ knobs }: PreviewProps) => {
     return (
         <Progress
             caption={
-                knobs.caption
+                knobs.end === 'caption'
                     ? done
                         ? 'Done'
                         : knobs.state === 'indeterminate'
@@ -54,7 +59,7 @@ const ProgressPreview = ({ knobs }: PreviewProps) => {
                       ? 'Preparing export'
                       : 'Uploading 3 files'
             }
-            showValue={Boolean(knobs.value) && knobs.state !== 'indeterminate'}
+            showValue={knobs.end === 'value' && knobs.state !== 'indeterminate'}
             size={knobs.size === 'md' ? 'md' : 'sm'}
             tone={done ? 'success' : undefined}
             value={done ? 100 : knobs.state === 'indeterminate' ? null : 64}
@@ -151,7 +156,7 @@ const UploadFiles = () => (
                                 <span className="truncate font-medium text-neutral-950">
                                     {file.name}
                                 </span>
-                                <span className="shrink-0 text-neutral-500">{file.size}</span>
+                                <span className="shrink-0 text-neutral-600">{file.size}</span>
                             </div>
                             <Progress
                                 aria-label={`${file.name} upload`}

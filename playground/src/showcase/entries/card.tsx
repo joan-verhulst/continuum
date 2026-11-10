@@ -9,17 +9,50 @@ import {
     CardValue,
 } from 'continuum';
 import { ArrowRight, CalendarDays, ChevronDown } from 'lucide-react';
-import { AppWindow, type Entry, type InUse, icon } from '../kit';
+import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';
 
-const CardPreview = () => (
-    <Card className="w-64">
+const cardKnobs: Knob[] = [
+    {
+        id: 'layout',
+        label: 'Layout',
+        options: [o('default', 'Default · 16'), o('list', 'List · 20')],
+        default: 'default',
+    },
+    {
+        id: 'value',
+        label: 'Value',
+        options: [o('md', 'md · 18'), o('lg', 'lg · 24'), o('xl', 'xl · 31')],
+        default: 'xl',
+    },
+    { id: 'delta', label: 'Delta', switch: true, default: true },
+];
+
+const visitorsLastWeek = [
+    { day: 'Monday', share: '41%' },
+    { day: 'Tuesday', share: '39%' },
+    { day: 'Wednesday', share: '36%' },
+];
+
+// The list layout pads by 20 for the rows it holds, so it shows three of them under the figure.
+const CardPreview = ({ knobs }: PreviewProps) => (
+    <Card className="w-64" layout={knobs.layout as 'default' | 'list'}>
         <CardHeader>
             <CardTitle>Returning visitors</CardTitle>
             <CardFigure>
-                <CardValue size="xl">38%</CardValue>
-                <CardDelta trend="down">−2.4%</CardDelta>
+                <CardValue size={knobs.value as 'md' | 'lg' | 'xl'}>38%</CardValue>
+                {knobs.delta && <CardDelta trend="down">−2.4%</CardDelta>}
             </CardFigure>
         </CardHeader>
+        {knobs.layout === 'list' && (
+            <ul className="flex flex-col gap-2 text-xs">
+                {visitorsLastWeek.map(row => (
+                    <li className="flex justify-between gap-3" key={row.day}>
+                        <span className="text-neutral-600">{row.day}</span>
+                        <span className="text-neutral-950 tabular-nums">{row.share}</span>
+                    </li>
+                ))}
+            </ul>
+        )}
     </Card>
 );
 
@@ -28,6 +61,7 @@ export const entry: Entry = {
     name: 'Card',
     category: 'content',
     description: 'Title, figure and delta; told apart by the hairline alone.',
+    knobs: cardKnobs,
     Preview: CardPreview,
 };
 

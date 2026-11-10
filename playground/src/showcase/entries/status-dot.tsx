@@ -31,14 +31,33 @@ const statusDotKnobs: Knob[] = [
     },
     { id: 'pulse', label: 'Pulse', switch: true, default: false },
     { id: 'text', label: 'Beside text', switch: true, default: true },
-    { id: 'count', label: 'As a live count', switch: true, default: false },
+    // Drawn under the dot rather than instead of it, so the dot's own knobs keep their effect.
+    {
+        id: 'count',
+        label: 'Live count under it',
+        options: [o('none', 'None'), o('live', '129 live'), o('zero', 'At zero')],
+        default: 'none',
+    },
 ];
 
 const StatusDotPreview = ({ knobs }: PreviewProps) => {
     const tone = knobs.tone as Tone;
+    const count =
+        knobs.count === 'live' ? (
+            <LiveCount count={129} />
+        ) : knobs.count === 'zero' ? (
+            <LiveCount count={0} />
+        ) : null;
 
-    if (knobs.count) return <LiveCount count={129} />;
+    return (
+        <div className="flex flex-col items-center gap-4">
+            <StatusDotAlone knobs={knobs} tone={tone} />
+            {count}
+        </div>
+    );
+};
 
+const StatusDotAlone = ({ knobs, tone }: PreviewProps & { tone: Tone }) => {
     const dot = (
         <StatusDot
             label={knobs.text ? undefined : dotText[tone]}

@@ -5,13 +5,16 @@ import {
     Button,
     DescriptionItem,
     DescriptionList,
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
+    DialogDescription,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
 } from 'continuum';
-import { Download, Send } from 'lucide-react';
-import { AppWindow, type Entry, type InUse, icon } from '../kit';
+import { Download } from 'lucide-react';
+import { AppScene, DialogActions, type Entry, type InUse, icon, OpenDialog } from '../kit';
 
 const DescriptionPreview = () => (
     <DescriptionList className="w-full max-w-72">
@@ -36,68 +39,112 @@ export const entry: Entry = {
     Preview: DescriptionPreview,
 };
 
-const InvoiceDetail = () => (
-    <AppWindow
-        actions={
-            <>
+const overdue = [
+    {
+        number: 'INV-0139',
+        client: 'Lumen Labs',
+        amount: '€760.00',
+        due: '2 Oct',
+        status: 'Overdue',
+    },
+    {
+        number: 'INV-0142',
+        client: 'Acme Corp',
+        amount: '€4,120.00',
+        due: '26 Oct',
+        status: 'Due soon',
+    },
+    {
+        number: 'INV-0134',
+        client: 'Umbrella Health',
+        amount: '€2,340.00',
+        due: '21 Oct',
+        status: 'Overdue',
+    },
+    {
+        number: 'INV-0129',
+        client: 'Stark Logistics',
+        amount: '€5,400.00',
+        due: '14 Oct',
+        status: 'Overdue',
+    },
+] as const;
+
+// The invoices the reminder was asked for from: one row's reminder is being confirmed.
+const OverdueInvoices = () => (
+    <Table>
+        <TableHeader>
+            <TableRow>
+                <TableHead>Invoice</TableHead>
+                <TableHead>Client</TableHead>
+                <TableHead>Due</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
+                <TableHead className="text-right">Status</TableHead>
+            </TableRow>
+        </TableHeader>
+        <TableBody>
+            {overdue.map(row => (
+                <TableRow key={row.number}>
+                    <TableCell className="text-neutral-950">{row.number}</TableCell>
+                    <TableCell className="font-normal text-neutral-700">{row.client}</TableCell>
+                    <TableCell className="font-normal text-neutral-600">{row.due}</TableCell>
+                    <TableCell className="text-right tabular-nums">{row.amount}</TableCell>
+                    <TableCell className="text-right">
+                        <Badge tone={row.status === 'Overdue' ? 'error' : 'warning'}>
+                            {row.status}
+                        </Badge>
+                    </TableCell>
+                </TableRow>
+            ))}
+        </TableBody>
+    </Table>
+);
+
+// The facts the reminder carries, in the box, so they are checked before it goes.
+const SendReminder = () => (
+    <OpenDialog footer={<DialogActions action="Send reminder" />} title="Send a reminder">
+        <DialogDescription>
+            Lumen Labs gets this by email, with the invoice attached as a PDF.
+        </DialogDescription>
+        <DescriptionList>
+            <DescriptionItem term="Invoice">INV-0139</DescriptionItem>
+            <DescriptionItem term="Amount">€760.00</DescriptionItem>
+            <DescriptionItem term="Due">
+                <Badge tone="error">Overdue by 9 days</Badge>
+            </DescriptionItem>
+            <DescriptionItem term="To">billing@lumenlabs.io</DescriptionItem>
+            <DescriptionItem term="Owner">
+                <span className="flex items-center gap-2">
+                    <Avatar fallback="DV" shape="round" size={24} />
+                    Daan Visser
+                </span>
+            </DescriptionItem>
+        </DescriptionList>
+    </OpenDialog>
+);
+
+const InvoicesWithReminder = () => (
+    <AppScene
+        page={{
+            place: 'invoices',
+            trail: ['Invoices'],
+            title: 'Invoices',
+            description: 'Four waiting on payment, three of them past due.',
+            actions: (
                 <Button variant="secondary">
-                    <Download {...icon} /> Download PDF
+                    Export <Download {...icon} />
                 </Button>
-                <Button>
-                    <Send {...icon} /> Send reminder
-                </Button>
-            </>
-        }
-        description={
-            <span className="inline-flex items-center gap-2">
-                Acme Corp · sent 12 October
-                <Badge tone="warning">Due soon</Badge>
-            </span>
-        }
-        place="invoices"
-        title="INV-0142"
-        trail={['Invoices', 'INV-0142']}
+            ),
+            children: <OverdueInvoices />,
+        }}
     >
-        <Tabs defaultValue="details">
-            <TabsList>
-                <TabsTrigger value="details">Details</TabsTrigger>
-                <TabsTrigger value="items">Line items</TabsTrigger>
-                <TabsTrigger value="payments">Payments</TabsTrigger>
-            </TabsList>
-            <TabsContent className="grid grid-cols-2 gap-6 pt-4" value="details">
-                <div className="flex flex-col gap-3">
-                    <h2 className="font-medium text-neutral-950 text-xs">Invoice</h2>
-                    <DescriptionList>
-                        <DescriptionItem term="Amount">€4,120.00</DescriptionItem>
-                        <DescriptionItem term="Issued">12 October 2026</DescriptionItem>
-                        <DescriptionItem term="Due">26 October 2026</DescriptionItem>
-                        <DescriptionItem term="Terms">Net 14</DescriptionItem>
-                        <DescriptionItem term="Reference">PO-88213</DescriptionItem>
-                    </DescriptionList>
-                </div>
-                <div className="flex flex-col gap-3">
-                    <h2 className="font-medium text-neutral-950 text-xs">Billed to</h2>
-                    <DescriptionList>
-                        <DescriptionItem term="Company">Acme Corp</DescriptionItem>
-                        <DescriptionItem term="Contact">finance@acme.com</DescriptionItem>
-                        <DescriptionItem term="VAT number">NL 8541.22.019.B01</DescriptionItem>
-                        <DescriptionItem term="Payment">Bank transfer</DescriptionItem>
-                        <DescriptionItem term="Owners">
-                            <AvatarStack>
-                                <Avatar fallback="MC" shape="round" size={24} />
-                                <Avatar fallback="LO" shape="round" size={24} />
-                            </AvatarStack>
-                        </DescriptionItem>
-                    </DescriptionList>
-                </div>
-            </TabsContent>
-        </Tabs>
-    </AppWindow>
+        <SendReminder />
+    </AppScene>
 );
 
 export const inUse: InUse = {
-    title: 'An invoice',
-    note: 'The facts of one invoice on its detail page, a term beside each value, in two ruled lists.',
-    app: true,
-    render: () => <InvoiceDetail />,
+    title: 'Send a reminder',
+    note: 'The facts a reminder carries, a term beside each value in a bordered box, checked in the dialog before it goes.',
+    bare: true,
+    render: () => <InvoicesWithReminder />,
 };

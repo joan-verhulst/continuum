@@ -13,7 +13,14 @@ const blockSliderKnobs: Knob[] = [
     { id: 'info', label: 'Label inside', switch: true, default: true },
     { id: 'range', label: 'Range', switch: true, default: false },
     { id: 'marks', label: 'Dividers', switch: true, default: false },
-    { id: 'snap', label: 'Snap to dividers', switch: true, default: false },
+    // Snapping needs dividers to snap to, so it shows once they are on.
+    {
+        id: 'snap',
+        label: 'Snap to dividers',
+        switch: true,
+        default: false,
+        when: values => Boolean(values.marks),
+    },
     { id: 'disabled', label: 'Disabled', switch: true, default: false },
 ];
 
@@ -30,8 +37,8 @@ const BlockSliderPreview = ({ knobs }: PreviewProps) => {
             format={values => `${values.join(' – ')}px`}
             size={knobs.size as 'sm' | 'md' | 'lg'}
             label={knobs.info ? (isRange ? 'Column width' : 'Narrowest column') : undefined}
-            marks={knobs.marks || knobs.snap ? 8 : undefined}
-            snap={Boolean(knobs.snap)}
+            marks={knobs.marks ? 8 : undefined}
+            snap={Boolean(knobs.marks && knobs.snap)}
             max={120}
             min={32}
             onValueChange={isRange ? setRange : setValue}
@@ -86,12 +93,12 @@ const InvoiceSheet = ({ values }: { values: Record<DesignId, number> }) => (
         </div>
         <div className="flex justify-between gap-6" style={{ marginTop: values.gap }}>
             <span className="flex flex-col gap-0.5">
-                <span className="text-neutral-500">Billed to</span>
+                <span className="text-neutral-600">Billed to</span>
                 <span className="text-neutral-950">Northwind Traders</span>
                 <span className="text-neutral-600">accounts@northwind.com</span>
             </span>
             <span className="flex flex-col items-end gap-0.5">
-                <span className="text-neutral-500">Due</span>
+                <span className="text-neutral-600">Due</span>
                 <span className="text-neutral-950">1 December 2026</span>
             </span>
         </div>

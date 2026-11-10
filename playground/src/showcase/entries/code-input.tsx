@@ -1,17 +1,51 @@
 import { Button, Card, CodeInput, Field, FieldHelper, FieldLabel, SidebarLogo } from 'continuum';
 import { ArrowLeft, Boxes } from 'lucide-react';
-import { useState } from 'react';
-import { AppWindow, type Entry, type InUse, icon } from '../kit';
+import { useEffect, useState } from 'react';
+import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';
 
-const CodeInputPreview = () => {
-    const [code, setCode] = useState('');
+const codeInputKnobs: Knob[] = [
+    {
+        id: 'size',
+        label: 'Size',
+        options: [o('md', 'md · 38px'), o('lg', 'lg · 52px')],
+        default: 'md',
+    },
+    {
+        id: 'code',
+        label: 'Code',
+        options: [o('empty', 'Empty'), o('half', 'Half typed'), o('full', 'Full')],
+        default: 'empty',
+    },
+    { id: 'invalid', label: 'Invalid', switch: true, default: false },
+    { id: 'mask', label: 'Masked', switch: true, default: false },
+];
+
+// The code each knob value stands for; a knob's value is never empty, so the empty code has a name.
+const typed: Record<string, string> = { empty: '', half: '482', full: '482913' };
+
+const CodeInputPreview = ({ knobs }: PreviewProps) => {
+    const [code, setCode] = useState(typed[String(knobs.code)] ?? '');
+    const invalid = Boolean(knobs.invalid);
+
+    // The knob sets the code; typing still changes it, as it would on the page.
+    useEffect(() => setCode(typed[String(knobs.code)] ?? ''), [knobs.code]);
 
     return (
-        <Field>
+        <Field invalid={invalid}>
             <FieldLabel>Verification code</FieldLabel>
-            <CodeInput onValueChange={setCode} value={code} />
+            <CodeInput
+                mask={Boolean(knobs.mask)}
+                onValueChange={setCode}
+                shake
+                size={knobs.size as 'md' | 'lg'}
+                value={code}
+            />
             <FieldHelper>
-                {code.length === 6 ? 'Checking the code…' : 'Sent to your email.'}
+                {invalid
+                    ? 'That code has expired. Ask for a new one.'
+                    : code.length === 6
+                      ? 'Checking the code…'
+                      : 'Sent to your email.'}
             </FieldHelper>
         </Field>
     );
@@ -22,6 +56,7 @@ export const entry: Entry = {
     name: 'Code input',
     category: 'inputs',
     description: 'Boxes for a sign-in code, with paste and autofill.',
+    knobs: codeInputKnobs,
     Preview: CodeInputPreview,
 };
 
@@ -31,7 +66,7 @@ const CheckEmail = () => {
 
     return (
         <AppWindow className="items-center justify-center bg-neutral-100 px-10 pt-0" nav="none">
-            <Card className="w-[400px] gap-6 p-8">
+            <Card className="w-100 gap-6 p-8">
                 <div className="flex flex-col items-start gap-4">
                     <SidebarLogo className="-ml-1.5">
                         <Boxes {...icon} />

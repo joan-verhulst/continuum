@@ -41,7 +41,7 @@ const commandKnobs: Knob[] = [
 
 const CommandMenuPreview = ({ knobs }: PreviewProps) => {
     const stage = useStageContainer();
-    const [query, setQuery] = useState('');
+    const [query, setQuery] = useState(String(knobs.query));
     const [ran, setRan] = useState<string>();
 
     useEffect(() => setQuery(String(knobs.query)), [knobs.query]);
@@ -122,7 +122,7 @@ export const entry: Entry = {
     name: 'Command menu',
     category: 'navigation',
     description: 'Search and run anything from the keyboard, with ⌘K.',
-    hero: 'min-h-[460px]',
+    hero: 'min-h-115',
     stageClassName: 'items-start',
     knobs: commandKnobs,
     Preview: CommandMenuPreview,

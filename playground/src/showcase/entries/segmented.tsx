@@ -94,7 +94,7 @@ const CustomerList = () => {
                     {statuses.map(filter => (
                         <SegmentedControlItem key={filter} value={filter}>
                             {filter}
-                            <span className="text-neutral-500 tabular-nums">{count(filter)}</span>
+                            <span className="text-neutral-600 tabular-nums">{count(filter)}</span>
                         </SegmentedControlItem>
                     ))}
                 </SegmentedControl>

@@ -1,8 +1,17 @@
 import { Button, Checkbox, OptionList, OptionRow, RadioGroup, RadioGroupItem } from 'continuum';
 import { FileText, PieChart, PieChart as PieIcon, Table2 } from 'lucide-react';
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { SectionHead } from '../../screens/workspace';
-import { AppWindow, type Entry, type InUse, icon, previewIcon } from '../kit';
+import {
+    AppWindow,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    o,
+    type PreviewProps,
+    previewIcon,
+} from '../kit';
 
 const reportSections = [
     {
@@ -25,31 +34,69 @@ const reportSections = [
     },
 ];
 
-const OptionRowPreview = () => {
+const optionRowKnobs: Knob[] = [
+    {
+        id: 'control',
+        label: 'Control',
+        options: [o('checkbox', 'Checkbox · several'), o('radio', 'Radio · one')],
+        default: 'checkbox',
+    },
+    { id: 'icon', label: 'Icon tile', switch: true, default: true },
+    { id: 'description', label: 'Description', switch: true, default: true },
+    { id: 'disabled', label: 'Second one disabled', switch: true, default: false },
+];
+
+const OptionRowPreview = ({ knobs }: PreviewProps) => {
     const [picked, setPicked] = useState(['summary']);
+    const [one, setOne] = useState('summary');
+    const rows = reportSections.slice(0, 2);
+
+    const row = (section: (typeof reportSections)[number], control: ReactNode) => (
+        <OptionRow
+            control={control}
+            description={knobs.description ? section.description : undefined}
+            icon={knobs.icon ? section.icon : undefined}
+            key={section.id}
+            label={section.label}
+        />
+    );
+    const disabled = (index: number) => Boolean(knobs.disabled) && index === 1;
+
+    if (knobs.control === 'radio') {
+        return (
+            <RadioGroup
+                aria-label="Report"
+                className="w-full max-w-80"
+                onValueChange={value => setOne(String(value))}
+                value={one}
+            >
+                <OptionList>
+                    {rows.map((section, i) =>
+                        row(section, <RadioGroupItem disabled={disabled(i)} value={section.id} />),
+                    )}
+                </OptionList>
+            </RadioGroup>
+        );
+    }
 
     return (
         <OptionList className="w-full max-w-80">
-            {reportSections.slice(0, 2).map(section => (
-                <OptionRow
-                    control={
-                        <Checkbox
-                            checked={picked.includes(section.id)}
-                            onCheckedChange={checked =>
-                                setPicked(current =>
-                                    checked === true
-                                        ? [...current, section.id]
-                                        : current.filter(id => id !== section.id),
-                                )
-                            }
-                        />
-                    }
-                    description={section.description}
-                    icon={section.icon}
-                    key={section.id}
-                    label={section.label}
-                />
-            ))}
+            {rows.map((section, i) =>
+                row(
+                    section,
+                    <Checkbox
+                        checked={picked.includes(section.id)}
+                        disabled={disabled(i)}
+                        onCheckedChange={checked =>
+                            setPicked(current =>
+                                checked === true
+                                    ? [...current, section.id]
+                                    : current.filter(id => id !== section.id),
+                            )
+                        }
+                    />,
+                ),
+            )}
         </OptionList>
     );
 };
@@ -59,6 +106,7 @@ export const entry: Entry = {
     name: 'Option row',
     category: 'forms',
     description: 'A bordered row that toggles the control it holds.',
+    knobs: optionRowKnobs,
     Preview: OptionRowPreview,
 };
 

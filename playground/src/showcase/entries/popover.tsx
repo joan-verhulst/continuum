@@ -141,7 +141,7 @@ const cell = (column: Column, row: (typeof invoices)[number]) => {
         return (
             <span className="flex flex-col gap-0.5">
                 <span className="font-medium text-neutral-950">{row.client}</span>
-                <span className="text-neutral-500 text-xxs">{row.number}</span>
+                <span className="text-neutral-600 text-xxs">{row.number}</span>
             </span>
         );
     if (column === 'Status') return <Badge tone={invoiceTone[row.status]}>{row.status}</Badge>;
@@ -161,7 +161,7 @@ const InvoicesWithColumns = () => {
             <div className="flex items-center justify-between gap-4">
                 <Input
                     aria-label="Search invoices"
-                    className="w-64"
+                    className="w-search"
                     leadingIcon={<Search {...icon} />}
                     placeholder="Search invoices"
                     size="sm"

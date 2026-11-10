@@ -1,6 +1,6 @@
-import { Button, Input, Kbd, SettingGroup, SettingRow } from 'continuum';
+import { Button, Card, Field, FieldHelper, FieldLabel, Input, Kbd } from 'continuum';
 import { AtSign, Globe, Hash, Search } from 'lucide-react';
-import { SectionHead } from '../../screens/workspace';
+import { useState } from 'react';
 import {
     AppWindow,
     type Entry,
@@ -15,6 +15,12 @@ import {
 
 const inputKnobs: Knob[] = [
     { id: 'size', label: 'Size', options: sizes, default: 'md' },
+    {
+        id: 'variant',
+        label: 'Variant',
+        options: [o('outline', 'Outline'), o('plain', 'Plain · no box')],
+        default: 'outline',
+    },
     {
         id: 'state',
         label: 'State',
@@ -41,6 +47,7 @@ const InputPreview = ({ knobs }: PreviewProps) => (
         placeholder="Search reports"
         size={knobs.size === 'sm' ? 'sm' : 'md'}
         trailing={knobs.trailing ? <Kbd>⌘K</Kbd> : undefined}
+        variant={knobs.variant === 'plain' ? 'plain' : 'outline'}
     />
 );
 
@@ -48,103 +55,69 @@ export const entry: Entry = {
     id: 'input',
     name: 'Input',
     category: 'inputs',
-    description: 'Two heights, with icons and a trailing slot inside the box.',
+    description:
+        'Two heights, with icons and a trailing slot inside the box; plain inside a container.',
     knobs: inputKnobs,
     Preview: InputPreview,
 };
 
-// Settings, General: a row per setting, its input at the end.
-const WorkspaceSettings = () => (
-    <AppWindow
-        actions={<Button>Save changes</Button>}
-        className="gap-10"
-        description="How the workspace shows up for the team and for customers."
-        nav="rail"
-        place="settings"
-        title="Settings"
-        width="default"
-    >
-        <section className="flex flex-col gap-5">
-            <SectionHead title="Workspace" />
-            <SettingGroup aria-label="Workspace">
-                <SettingRow
-                    control={<Input className="w-72" defaultValue="Acme Inc." size="sm" />}
-                    description="Shown on invoices and in every email to customers."
-                    title="Name"
-                />
-                <SettingRow
-                    control={
-                        <Input
-                            aria-invalid
-                            className="w-72"
-                            defaultValue="acme inc"
-                            leadingIcon={<Globe {...icon} />}
-                            size="sm"
-                            trailing={<span className="text-neutral-500 text-xs">.acme.app</span>}
-                        />
-                    }
-                    description={
-                        <span className="text-error-600">
-                            Letters, numbers and dashes only, such as acme-inc.
-                        </span>
-                    }
-                    title="Address"
-                />
-                <SettingRow
-                    control={
-                        <Input
-                            className="w-72"
-                            leadingIcon={<AtSign {...icon} />}
-                            placeholder="finance@company.com"
-                            size="sm"
-                        />
-                    }
-                    description="Where invoices and receipts go; the owner’s email when empty."
-                    title="Billing email"
-                />
-                <SettingRow
-                    control={
-                        <Input
-                            className="w-72"
-                            defaultValue="NL859623145B01"
-                            leadingIcon={<Hash {...icon} />}
-                            size="sm"
-                        />
-                    }
-                    description="Printed on every invoice, for customers in the EU."
-                    title="VAT number"
-                />
-            </SettingGroup>
-        </section>
-        <section className="flex flex-col gap-5">
-            <SectionHead title="Invoices" />
-            <SettingGroup aria-label="Invoices">
-                <SettingRow
-                    control={<Input className="w-72" defaultValue="INV-2025-" size="sm" />}
-                    description="Put before each invoice’s number; the count carries on."
-                    title="Number prefix"
-                />
-                <SettingRow
-                    control={
-                        <Input
-                            className="w-72"
-                            defaultValue="30"
-                            inputMode="numeric"
-                            size="sm"
-                            trailing={<span className="text-neutral-500 text-xs">days</span>}
-                        />
-                    }
-                    description="How long a customer has to pay, from the day it is sent."
-                    title="Payment terms"
-                />
-            </SettingGroup>
-        </section>
-    </AppWindow>
-);
+const addressPattern = /^[a-z0-9-]+$/;
+
+// Settings, General: the plain values are fields stacked in their card, as in a form.
+const WorkspaceSettings = () => {
+    const [address, setAddress] = useState('acme inc');
+    const invalid = !addressPattern.test(address);
+
+    return (
+        <AppWindow
+            description="How the workspace shows up for the team and for customers."
+            nav="rail"
+            place="settings"
+            title="Workspace"
+            width="narrow"
+        >
+            <Card className="gap-5" layout="list">
+                <Field>
+                    <FieldLabel>Name</FieldLabel>
+                    <Input defaultValue="Acme Inc." />
+                    <FieldHelper>Shown on invoices and in every email to customers.</FieldHelper>
+                </Field>
+                <Field invalid={invalid}>
+                    <FieldLabel>Address</FieldLabel>
+                    <Input
+                        leadingIcon={<Globe {...icon} />}
+                        onChange={event => setAddress(event.target.value)}
+                        trailing={<span className="text-neutral-600 text-xs">.acme.app</span>}
+                        value={address}
+                    />
+                    <FieldHelper>
+                        {invalid
+                            ? 'Letters, numbers and dashes only, such as acme-inc.'
+                            : 'The address the team signs in at.'}
+                    </FieldHelper>
+                </Field>
+                <Field>
+                    <FieldLabel>Billing email</FieldLabel>
+                    <Input leadingIcon={<AtSign {...icon} />} placeholder="finance@company.com" />
+                    <FieldHelper>
+                        Where invoices and receipts go; the owner’s email when empty.
+                    </FieldHelper>
+                </Field>
+                <Field>
+                    <FieldLabel>VAT number</FieldLabel>
+                    <Input defaultValue="NL859623145B01" leadingIcon={<Hash {...icon} />} />
+                </Field>
+                <Button className="self-end" disabled={invalid}>
+                    Save changes
+                </Button>
+            </Card>
+        </AppWindow>
+    );
+};
 
 export const inUse: InUse = {
     title: 'Workspace settings',
-    note: 'Inputs at the end of setting rows: a plain one, one with an icon and a suffix that is invalid, an empty one.',
+    note: 'The workspace’s plain values as fields in their card: one with an icon and a suffix that is invalid until it is fixed, an empty one.',
     app: true,
     render: () => <WorkspaceSettings />,
 };

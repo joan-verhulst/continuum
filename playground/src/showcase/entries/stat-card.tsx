@@ -6,20 +6,42 @@ import {
     SegmentedControlItem,
     StatCard,
 } from 'continuum';
-import { AppWindow, type Entry, type InUse } from '../kit';
+import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 
-const StatCardPreview = () => (
-    <div className="grid w-full max-w-md grid-cols-2 gap-3">
-        <StatCard delta="+12.4%" label="Sessions" value="12,480" />
-        <StatCard delta="−3.1%" label="Bounce rate" trend="down" value="41.2%" />
-    </div>
-);
+const statCardKnobs: Knob[] = [
+    {
+        id: 'trend',
+        label: 'Change of the second',
+        options: [o('up', 'Up'), o('down', 'Down'), o('neutral', 'Flat')],
+        default: 'down',
+    },
+    { id: 'delta', label: 'Change', switch: true, default: true },
+];
+
+const deltas = { up: '+3.1%', down: '−3.1%', neutral: '0.0%' } as const;
+
+const StatCardPreview = ({ knobs }: PreviewProps) => {
+    const trend = knobs.trend === 'up' || knobs.trend === 'neutral' ? knobs.trend : 'down';
+
+    return (
+        <div className="grid w-full max-w-md grid-cols-2 gap-3">
+            <StatCard delta={knobs.delta ? '+12.4%' : undefined} label="Sessions" value="12,480" />
+            <StatCard
+                delta={knobs.delta ? deltas[trend] : undefined}
+                label="Bounce rate"
+                trend={trend}
+                value="41.2%"
+            />
+        </div>
+    );
+};
 
 export const entry: Entry = {
     id: 'stat-card',
     name: 'Stat card',
     category: 'content',
-    description: 'A KPI with its delta on one baseline.',
+    description: 'A key figure, with its change in a badge under it.',
+    knobs: statCardKnobs,
     Preview: StatCardPreview,
 };
 

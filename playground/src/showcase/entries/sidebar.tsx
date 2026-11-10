@@ -42,7 +42,7 @@ const NavPreview = () => {
 
     return (
         // On a piece of the canvas, as a sidebar sits on it, rather than loose on the surface.
-        <div className="flex w-64 flex-col gap-0.5 rounded-item bg-neutral-100 p-2">
+        <div className="flex w-sidebar flex-col gap-0.5 rounded-item bg-neutral-100 p-2">
             {navItems.map(item => (
                 <NavItem
                     active={item.id === active}
@@ -79,10 +79,11 @@ const NavPreview = () => {
 
 export const entry: Entry = {
     id: 'sidebar',
-    name: 'Sidebar and nav items',
+    // Named for what the preview draws; the whole sidebar is the piece under In use.
+    name: 'Nav items and groups',
     category: 'frame',
-    description: 'Nav items and projects that fold open to their pages.',
-    hero: 'min-h-[420px]',
+    description: 'The sidebar’s rows: its places, and projects that fold open to their pages.',
+    hero: 'min-h-105',
     Preview: NavPreview,
 };
 
@@ -90,7 +91,7 @@ const SidebarNav = () => {
     const [active, setActive] = useState('home');
 
     return (
-        <Sidebar className="h-[500px] w-64">
+        <Sidebar className="h-125 w-sidebar">
             <SidebarHeader>
                 <SidebarLogo>
                     <BarChart3 {...icon} />

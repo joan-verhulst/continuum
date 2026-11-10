@@ -29,13 +29,13 @@ const skeletonKnobs: Knob[] = [
 ];
 
 const SkeletonPreview = ({ knobs }: PreviewProps) => (
-    <div aria-busy className="w-[360px]">
+    <div aria-busy className="w-90">
         <span className="sr-only">Loading</span>
         {knobs.shape === 'card' ? (
             <div className="flex flex-col gap-4 rounded-card border border-neutral-200 p-5">
                 <Skeleton className="h-3.5 w-24 rounded-chip" />
                 <Skeleton className="h-7 w-32" />
-                <Skeleton className="h-[88px] w-full" />
+                <Skeleton className="h-22 w-full" />
             </div>
         ) : knobs.shape === 'text' ? (
             <div className="flex flex-col gap-3">
@@ -51,7 +51,7 @@ const SkeletonPreview = ({ knobs }: PreviewProps) => (
                             <Skeleton className="h-2.5 w-2/5 rounded-chip" />
                             <Skeleton className="h-2.5 w-3/5 rounded-chip" />
                         </div>
-                        <Skeleton className="h-[22px] w-14 rounded-chip" />
+                        <Skeleton className="h-5.5 w-14 rounded-chip" />
                     </div>
                 ))}
             </div>
@@ -118,7 +118,7 @@ const LoadingCustomers = () => {
                                         <Skeleton className="h-2.5 w-16 rounded-chip" />
                                     </TableCell>
                                     <TableCell>
-                                        <Skeleton className="h-[22px] w-14 rounded-chip" />
+                                        <Skeleton className="h-5.5 w-14 rounded-chip" />
                                     </TableCell>
                                     <TableCell numeric>
                                         <Skeleton className="ml-auto h-2.5 w-14 rounded-chip" />

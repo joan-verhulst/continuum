@@ -3,11 +3,15 @@ import {
     Badge,
     Button,
     Combobox,
+    ComboboxChip,
+    ComboboxChips,
+    ComboboxChipsInput,
     ComboboxContent,
     ComboboxEmpty,
     ComboboxInput,
     ComboboxItem,
     ComboboxList,
+    ComboboxValue,
     DialogDescription,
     Field,
     FieldLabel,
@@ -19,16 +23,19 @@ import {
     TableRow,
 } from 'continuum';
 import { Plus, UserRound } from 'lucide-react';
-import { useState } from 'react';
-import { useStageContainer } from '../../layout';
 import {
     AppScene,
     DialogActions,
     type Entry,
     type InUse,
     icon,
+    type Knob,
     OpenDialog,
+    o,
+    type PreviewProps,
     previewIcon,
+    sizes,
+    useHeldOpen,
 } from '../kit';
 
 const owners = [
@@ -40,37 +47,92 @@ const owners = [
     'Femke Smit',
 ];
 
-const ComboboxPreview = () => {
-    const [open, setOpen] = useState(false);
-    const stage = useStageContainer();
+const comboboxKnobs: Knob[] = [
+    {
+        id: 'pick',
+        label: 'Picks',
+        options: [o('one', 'One value'), o('several', 'Several, as chips')],
+        default: 'one',
+    },
+    { id: 'size', label: 'Size', options: sizes, default: 'sm' },
+    {
+        id: 'clear',
+        label: 'Clear button',
+        switch: true,
+        default: false,
+        when: values => values.pick === 'one',
+    },
+];
+
+const OwnerList = () => (
+    <>
+        <ComboboxEmpty />
+        <ComboboxList>
+            {(item: string) => (
+                <ComboboxItem key={item} value={item}>
+                    {item}
+                </ComboboxItem>
+            )}
+        </ComboboxList>
+    </>
+);
+
+// Open on the stage to show its list; picking a name, Escape or a click away closes it, the box reopens it.
+const ComboboxPreview = ({ knobs }: PreviewProps) => {
+    const { stage, open, onOpenChange } = useHeldOpen();
+    const size = knobs.size as 'sm' | 'md';
 
     return (
-        <div className={stage ? 'pb-56' : 'contents'}>
-            <Combobox
-                defaultValue="Eva Bakker"
-                items={owners}
-                modal={stage ? false : undefined}
-                onOpenChange={setOpen}
-                open={stage ? true : open}
-            >
-                <ComboboxInput
-                    aria-label="Account owner"
-                    className="w-56"
-                    leadingIcon={<UserRound {...previewIcon} />}
-                    placeholder="Search people"
-                    size="sm"
-                />
-                <ComboboxContent container={stage}>
-                    <ComboboxEmpty />
-                    <ComboboxList>
-                        {(item: string) => (
-                            <ComboboxItem key={item} value={item}>
-                                {item}
-                            </ComboboxItem>
-                        )}
-                    </ComboboxList>
-                </ComboboxContent>
-            </Combobox>
+        <div className="pb-56">
+            {knobs.pick === 'several' ? (
+                <Combobox
+                    defaultValue={['Eva Bakker', 'Bram Jansen']}
+                    items={owners}
+                    modal={false}
+                    multiple
+                    onOpenChange={onOpenChange}
+                    open={open}
+                >
+                    <ComboboxChips className="w-72" size={size}>
+                        <ComboboxValue>
+                            {(values: string[]) => (
+                                <>
+                                    {values.map(item => (
+                                        <ComboboxChip key={item}>{item}</ComboboxChip>
+                                    ))}
+                                    <ComboboxChipsInput
+                                        aria-label="Account owners"
+                                        placeholder={values.length ? '' : 'Search people'}
+                                    />
+                                </>
+                            )}
+                        </ComboboxValue>
+                    </ComboboxChips>
+                    <ComboboxContent container={stage}>
+                        <OwnerList />
+                    </ComboboxContent>
+                </Combobox>
+            ) : (
+                <Combobox
+                    defaultValue="Eva Bakker"
+                    items={owners}
+                    modal={false}
+                    onOpenChange={onOpenChange}
+                    open={open}
+                >
+                    <ComboboxInput
+                        aria-label="Account owner"
+                        className="w-56"
+                        leadingIcon={<UserRound {...previewIcon} />}
+                        placeholder="Search people"
+                        showClear={Boolean(knobs.clear)}
+                        size={size}
+                    />
+                    <ComboboxContent container={stage}>
+                        <OwnerList />
+                    </ComboboxContent>
+                </Combobox>
+            )}
         </div>
     );
 };
@@ -79,9 +141,10 @@ export const entry: Entry = {
     id: 'combobox',
     name: 'Combobox',
     category: 'inputs',
-    description: 'A select you type into, for long lists.',
+    description: 'A select you type into, for long lists; several values become chips.',
     // Taller than a tile, so the tile keeps the top in view and lets the rest run off.
     stageClassName: 'items-start',
+    knobs: comboboxKnobs,
     Preview: ComboboxPreview,
 };
 
@@ -184,7 +247,7 @@ const InvoiceQueue = () => (
                                 {row.owner}
                             </span>
                         ) : (
-                            <span className="font-normal text-neutral-500">Unassigned</span>
+                            <span className="font-normal text-neutral-600">Unassigned</span>
                         )}
                     </TableCell>
                     <TableCell className="font-normal text-neutral-600">{row.due}</TableCell>
@@ -201,7 +264,7 @@ const InvoiceQueue = () => (
 );
 
 const AssignOwner = () => {
-    const stage = useStageContainer();
+    const { stage, open, onOpenChange } = useHeldOpen();
 
     return (
         <OpenDialog footer={<DialogActions action="Assign" />} title="Assign INV-0142">
@@ -210,7 +273,13 @@ const AssignOwner = () => {
             </DialogDescription>
             <Field>
                 <FieldLabel>Owner</FieldLabel>
-                <Combobox defaultValue="Eva Bakker" items={ownersInUse} modal={false} open>
+                <Combobox
+                    defaultValue="Eva Bakker"
+                    items={ownersInUse}
+                    modal={false}
+                    onOpenChange={onOpenChange}
+                    open={open}
+                >
                     <ComboboxInput
                         leadingIcon={<UserRound {...icon} />}
                         placeholder="Search people"

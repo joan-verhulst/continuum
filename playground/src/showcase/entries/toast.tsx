@@ -9,7 +9,7 @@ import {
     ToastProvider,
     useToast,
 } from 'continuum';
-import { Archive, ArrowUpRight, FileDown, FileText, Link2, Plus, RotateCw } from 'lucide-react';
+import { Archive, ArrowUpRight, FileDown, FileText, Plus, RotateCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useStageContainer } from '../../layout';
 import {
@@ -38,11 +38,12 @@ const toastKnobs: Knob[] = [
 
 // What happened (the tab), the thing it happened to (the card) and a line about it.
 const toastText = {
+    // A small action's confirmation ("Link copied") is a Notice; a toast tells of work that runs on.
     neutral: {
-        title: 'Link copied',
+        title: 'Export started',
         thing: 'Northwind Q3 review',
-        meta: 'Anyone in the workspace can open it',
-        action: 'Open',
+        meta: '12 pages as PDF · we’ll email you a link',
+        action: 'Open exports',
     },
     success: {
         title: 'Report archived',
@@ -61,9 +62,9 @@ const toastText = {
 // The same toasts with far too much to say, to show where the card wraps and where it stops.
 const longText = {
     neutral: {
-        title: 'Link copied to your clipboard and shared with the Northwind workspace',
+        title: 'Export started, with every chart, table and comment in the report included',
         thing: 'Northwind Q3 review · revenue, retention and the board summary for the third quarter',
-        meta: 'Anyone in the workspace can open it, comment on it and copy it into their own reports, until you turn the link off in the report’s sharing settings.',
+        meta: 'Twelve pages as a PDF with the charts at print size. It can take a few minutes; we’ll email you a link when it is ready, and it waits under Exports for thirty days.',
     },
     success: {
         title: 'Report archived and removed from every dashboard it was pinned to',
@@ -83,36 +84,81 @@ const actionIcons = {
     error: <RotateCw {...icon} />,
 };
 
-/** Raises one toast that stays while the knobs describe it, and another from the button. */
+// What each action does here, in a word under the button, since there is nothing behind it to undo.
+const actionResults = {
+    neutral: 'Opened the exports',
+    success: 'Undone: the report is back',
+    error: 'Retried: archived',
+};
+
+/**
+ * Raises one toast that stays while the knobs describe it, and another from the button that leaves
+ * on its timer. Closing the held one leaves the button to bring it back.
+ */
 const ToastTrigger = ({ knobs }: PreviewProps) => {
     const toast = useToast();
+    const [held, setHeld] = useState<string>();
+    const [result, setResult] = useState<string>();
     const type = knobs.type === 'neutral' || knobs.type === 'error' ? knobs.type : 'success';
     const text = { ...toastText[type], ...(knobs.length === 'long' ? longText[type] : {}) };
     // The card names the thing with a line about it; the tab, when there is one, says what happened.
-    const show = (timeout?: number) =>
-        toast.add({
+    const show = (timeout?: number) => {
+        const id: string = toast.add({
             title: text.thing,
             description: knobs.description ? text.meta : undefined,
             type: type === 'neutral' ? undefined : type,
             timeout,
-            actionProps: knobs.action ? { children: text.action } : undefined,
+            actionProps: knobs.action
+                ? {
+                      children: text.action,
+                      onClick: () => {
+                          setResult(actionResults[type]);
+                          toast.close(id);
+                      },
+                  }
+                : undefined,
             data: {
                 tab: knobs.tab ? text.title : undefined,
-                icon: type === 'neutral' ? <Link2 {...icon} /> : undefined,
+                icon: type === 'neutral' ? <FileDown {...icon} /> : undefined,
                 actionIcon: actionIcons[type],
             },
         });
+        return id;
+    };
+
+    const hold = () => {
+        setResult(undefined);
+        setHeld(show(0));
+    };
 
     // biome-ignore lint/correctness/useExhaustiveDependencies: a new toast for each change of the knobs
     useEffect(() => {
         const id = show(0);
+        setHeld(id);
+        setResult(undefined);
         return () => toast.close(id);
     }, [knobs.type, knobs.length, knobs.tab, knobs.description, knobs.action]);
 
+    // Closed, leaving, or pushed out of the pile by newer ones: either way no longer there to read.
+    const showing = toast.toasts.some(
+        item => item.id === held && item.transitionStatus !== 'ending' && !item.limited,
+    );
+
     return (
-        <Button onClick={() => show()} variant="secondary">
-            Show another
-        </Button>
+        <div className="flex flex-col items-center gap-3">
+            {showing ? (
+                <Button onClick={() => show()} variant="secondary">
+                    Show another
+                </Button>
+            ) : (
+                <Button onClick={hold} variant="secondary">
+                    Show it again
+                </Button>
+            )}
+            <span aria-live="polite" className="text-neutral-600 text-xxs">
+                {result ?? (showing ? 'Held open while the knobs describe it' : 'Closed')}
+            </span>
+        </div>
     );
 };
 
@@ -121,7 +167,7 @@ const ToastPreview = ({ knobs }: PreviewProps) => {
 
     return (
         <ToastProvider container={stage}>
-            <div className="pb-16">
+            <div className="pb-20">
                 <ToastTrigger knobs={knobs} />
             </div>
         </ToastProvider>
@@ -154,11 +200,12 @@ const ReportRows = () => {
     useEffect(() => {
         const first = archivable[0];
         if (!first) return;
-        const exported = toast.add({
+        const exported: string = toast.add({
             title: 'Exporting the board pack',
             description: '38 pages · we’ll email you a link',
             timeout: 0,
-            actionProps: { children: 'Open exports' },
+            // There is no exports page in the piece; the toast has done its work once it is followed.
+            actionProps: { children: 'Open exports', onClick: () => toast.close(exported) },
             data: { icon: <FileDown {...icon} />, actionIcon: <ArrowUpRight {...icon} /> },
         });
         const id = toast.add({

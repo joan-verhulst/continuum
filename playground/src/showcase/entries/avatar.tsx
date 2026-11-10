@@ -17,21 +17,37 @@ import {
     type InUse,
     icon,
     type Knob,
+    type KnobValues,
     o,
     opts,
     type PreviewProps,
 } from '../kit';
 
+// A stack is people at 24, round, so its shape and size are not the knobs' to change.
+const single = (values: KnobValues) => !values.stack;
+
 const avatarKnobs: Knob[] = [
-    { id: 'shape', label: 'Shape', options: opts('round', 'square'), default: 'round' },
-    { id: 'size', label: 'Size', options: [o('24', '24px'), o('32', '32px')], default: '32' },
+    {
+        id: 'shape',
+        label: 'Shape',
+        options: opts('round', 'square'),
+        default: 'round',
+        when: single,
+    },
+    {
+        id: 'size',
+        label: 'Size',
+        options: [o('24', '24px'), o('32', '32px'), o('36', '36px')],
+        default: '32',
+        when: single,
+    },
     { id: 'initials', label: 'Initials', switch: true, default: true },
-    { id: 'stack', label: 'Stack of six, max 4', switch: true, default: false },
+    { id: 'stack', label: 'Stack of six, three shown', switch: true, default: false },
 ];
 
 const AvatarPreview = ({ knobs }: PreviewProps) => {
     const shape = knobs.shape === 'square' ? 'square' : 'round';
-    const size = knobs.size === '24' ? 24 : 32;
+    const size = Number(knobs.size) as 24 | 32 | 36;
 
     if (knobs.stack) {
         return (
@@ -40,8 +56,8 @@ const AvatarPreview = ({ knobs }: PreviewProps) => {
                     <Avatar
                         fallback={knobs.initials ? initials : undefined}
                         key={initials}
-                        shape={shape}
-                        size={size}
+                        shape="round"
+                        size={24}
                     />
                 ))}
             </AvatarStack>

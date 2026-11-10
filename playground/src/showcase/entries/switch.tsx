@@ -33,7 +33,10 @@ const switchKnobs: Knob[] = [
 const SwitchPreview = ({ knobs }: PreviewProps) => {
     const [on, setOn] = useState(true);
 
-    useEffect(() => setOn(Boolean(knobs.on)), [knobs.on]);
+    // Any knob's change sets it back to what the On knob says, so the two never disagree for long;
+    // kept as state rather than remounted, so the knob still travels when On changes.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: follows every knob, not only On
+    useEffect(() => setOn(Boolean(knobs.on)), [knobs.on, knobs.label, knobs.disabled]);
 
     const control = (
         <Switch

@@ -112,21 +112,21 @@ const ReportEditor = () => {
                             </TooltipContent>
                         </Tooltip>
                     ))}
-                    <span className="ml-auto pr-2 text-neutral-500 text-xxs">Saved</span>
+                    <span className="ml-auto pr-2 text-neutral-600 text-xxs">Saved</span>
                 </div>
                 <div className="flex flex-col gap-3 px-8 pt-8 pb-10">
                     <h2 className="font-medium text-base text-neutral-950">Summary</h2>
-                    <p className="max-w-[640px] text-neutral-700 text-xs leading-relaxed">
+                    <p className="max-w-160 text-neutral-700 text-xs leading-relaxed">
                         Sessions held steady through the quarter at 12,480 a week, and the pricing
                         page brought most of the new sign-ups. Northwind Traders moved to Enterprise
                         in August, which accounts for a third of the growth in recurring revenue.
                     </p>
-                    <p className="max-w-[640px] text-neutral-700 text-xs leading-relaxed">
+                    <p className="max-w-160 text-neutral-700 text-xs leading-relaxed">
                         The bounce rate rose in August, mostly on mobile, after the new checkout
                         went live. It came back down once the payment step was split in two.
                     </p>
                     <h2 className="pt-4 font-medium text-base text-neutral-950">Next quarter</h2>
-                    <p className="max-w-[640px] text-neutral-700 text-xs leading-relaxed">
+                    <p className="max-w-160 text-neutral-700 text-xs leading-relaxed">
                         Three renewals are due before January: Umbrella Health, Stark Logistics and
                         Globex.
                     </p>

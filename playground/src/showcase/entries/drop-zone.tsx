@@ -102,12 +102,13 @@ const DropZonePreview = ({ knobs }: PreviewProps) => {
     const shown = invalid ? [...files, rejectedUpload] : files;
 
     return (
-        <div className="flex w-[420px] flex-col gap-4">
+        <div className="flex w-105 flex-col gap-4">
             <DropZone
                 accept=".csv,.xlsx"
                 aria-invalid={invalid || undefined}
-                // The knob holds the drag-over look; a real drag sets the same attribute.
-                data-dragging={knobs.state === 'dragging' || undefined}
+                // The knob holds the drag-over look. Passed only then: the zone spreads its props
+                // after its own attribute, so an undefined here would hide a real drag.
+                {...(knobs.state === 'dragging' && { 'data-dragging': true })}
                 description={
                     invalid
                         ? 'Only CSV and XLSX files can be imported'

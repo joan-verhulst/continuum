@@ -108,7 +108,7 @@ const ChipPreview = ({ knobs }: PreviewProps) => {
                     </Button>
                 )}
             </div>
-            <span className="text-neutral-500 text-xxs">
+            <span className="text-neutral-600 text-xxs">
                 {last ?? 'Click a chip or its action'}
             </span>
         </div>

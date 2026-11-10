@@ -1,7 +1,27 @@
-import { Avatar, Badge, PopoverItem, PopoverItemIndicator, PopoverItemShortcut } from 'continuum';
+import {
+    Avatar,
+    Badge,
+    Button,
+    Popover,
+    PopoverContent,
+    PopoverItem,
+    PopoverItemIndicator,
+    PopoverItemShortcut,
+    PopoverTrigger,
+} from 'continuum';
 import { Check, ChevronRight, Mail, Star, Trash2, UserRound, Users } from 'lucide-react';
 import { useState } from 'react';
-import { type Entry, type Knob, o, type PreviewProps, previewIcon } from '../kit';
+import { useStageContainer } from '../../layout';
+import {
+    AppScene,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    o,
+    type PreviewProps,
+    previewIcon,
+} from '../kit';
 
 const popoverItemKnobs: Knob[] = [
     {
@@ -198,4 +218,88 @@ export const entry: Entry = {
     description: 'The row every popup list is made of: options, actions, filters and commands.',
     knobs: popoverItemKnobs,
     Preview: PopoverItemPreview,
+};
+
+const members = [
+    { name: 'Anna de Vries', email: 'anna@acme.com', initials: 'AV', role: 'Owner', open: 12 },
+    { name: 'Bram Jansen', email: 'bram@acme.com', initials: 'BJ', role: 'Admin', open: 4 },
+    { name: 'Chloé Martin', email: 'chloe@acme.com', initials: 'CM', role: 'Member', open: 31 },
+    { name: 'Noah Patel', email: 'noah@acme.com', initials: 'NP', role: 'Member', open: 7 },
+];
+
+const AssignOwner = () => {
+    const stage = useStageContainer();
+    const [owner, setOwner] = useState('Bram Jansen');
+    const [pointed, setPointed] = useState<string>();
+    const current = members.find(member => member.name === owner);
+
+    return (
+        <Popover modal={false} open>
+            <PopoverTrigger render={<Button variant="secondary" />}>
+                <Avatar fallback={current?.initials ?? '?'} size={24} />
+                {owner}
+            </PopoverTrigger>
+            <PopoverContent
+                align="end"
+                className="w-80 gap-1 p-1"
+                container={stage}
+                finalFocus={false}
+                initialFocus={false}
+            >
+                <p className="px-3 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs">
+                    Who follows up on this invoice
+                </p>
+                <div className="flex flex-col gap-1" onPointerLeave={() => setPointed(undefined)}>
+                    {members.map(member => (
+                        <PopoverItem
+                            aria-pressed={member.name === owner}
+                            data-highlighted={member.name === pointed || undefined}
+                            description={member.email}
+                            key={member.name}
+                            leading={<Avatar fallback={member.initials} shape="round" size={32} />}
+                            meta={<Badge>{member.role}</Badge>}
+                            onClick={() => setOwner(member.name)}
+                            onBlur={() => setPointed(undefined)}
+                            onFocus={() => setPointed(member.name)}
+                            onPointerEnter={() => setPointed(member.name)}
+                            // A button each, so the rows take the keyboard as well as the pointer.
+                            render={<button className="w-full text-left" type="button" />}
+                            trailing={
+                                member.name === owner ? (
+                                    <Check {...icon} />
+                                ) : (
+                                    <span className="tabular-nums">{member.open} open</span>
+                                )
+                            }
+                        >
+                            {member.name}
+                        </PopoverItem>
+                    ))}
+                </div>
+            </PopoverContent>
+        </Popover>
+    );
+};
+
+export const inUse: InUse = {
+    title: 'Assign an owner',
+    note: 'The owner picker on an invoice: each row a person with their role, email and open invoices, the owner ticked.',
+    bare: true,
+    render: () => (
+        <AppScene
+            page={{
+                nav: 'top',
+                place: 'invoices',
+                title: 'INV-0142',
+                description: 'Acme Corp · €4,120.00 · due 26 October.',
+                actions: <AssignOwner />,
+                children: (
+                    <p className="max-w-150 text-neutral-700 text-sm leading-relaxed">
+                        Sent on 12 October; viewed twice since. A reminder goes out three days
+                        before it is due, unless it is paid first.
+                    </p>
+                ),
+            }}
+        />
+    ),
 };

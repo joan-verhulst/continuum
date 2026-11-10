@@ -18,22 +18,70 @@ import {
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { customers, formatEuro } from '../../screens/workspace';
-import { AppWindow, type Entry, type InUse, icon } from '../kit';
+import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';
 
-const PaginationPreview = () => {
-    const [page, setPage] = useState(4);
+const paginationKnobs: Knob[] = [
+    {
+        id: 'pages',
+        label: 'Pages',
+        options: [o('5', '5'), o('12', '12'), o('100', '100')],
+        default: '12',
+    },
+    {
+        id: 'siblings',
+        label: 'Pages beside the current',
+        options: [o('1', 'One'), o('2', 'Two')],
+        default: '1',
+        // Five pages all show, so there is nothing for it to change.
+        when: values => values.pages !== '5',
+    },
+    { id: 'results', label: 'Results', switch: true, default: true },
+    { id: 'end', label: 'Rows per page', switch: true, default: false },
+];
+
+const perPage = 10;
+
+const PaginationDemo = ({ knobs }: PreviewProps) => {
+    const pageCount = Number(knobs.pages);
+    const [page, setPage] = useState(Math.min(4, pageCount));
+    const total = pageCount * perPage - 4;
+    const first = (page - 1) * perPage + 1;
 
     return (
         <div className="w-full overflow-x-auto">
             <Pagination
-                className="min-w-[520px]"
+                className="min-w-150"
+                end={
+                    knobs.end ? (
+                        <Select defaultValue="10">
+                            <SelectTrigger aria-label="Rows per page" size="sm">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent align="end">
+                                <SelectItem value="10">10 rows</SelectItem>
+                                <SelectItem value="25">25 rows</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    ) : undefined
+                }
                 onPageChange={setPage}
                 page={page}
-                pageCount={12}
+                pageCount={pageCount}
+                results={
+                    knobs.results
+                        ? `${first}–${Math.min(first + perPage - 1, total)} of ${total}`
+                        : undefined
+                }
+                siblings={Number(knobs.siblings)}
             />
         </div>
     );
 };
+
+// A change of the page count starts again from page 4, or the last page when there are fewer.
+const PaginationPreview = ({ knobs }: PreviewProps) => (
+    <PaginationDemo key={String(knobs.pages)} knobs={knobs} />
+);
 
 export const entry: Entry = {
     id: 'pagination',
@@ -41,6 +89,7 @@ export const entry: Entry = {
     category: 'navigation',
     description: 'The same number of slots on every page.',
     span: 2,
+    knobs: paginationKnobs,
     Preview: PaginationPreview,
 };
 

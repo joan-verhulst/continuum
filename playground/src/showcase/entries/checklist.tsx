@@ -37,14 +37,14 @@ const checklistKnobs: Knob[] = [
 ];
 
 const ChecklistPreview = ({ knobs }: PreviewProps) => {
-    const [done, setDone] = useState(1);
+    const [done, setDone] = useState(Number(knobs.done));
 
     useEffect(() => setDone(Number(knobs.done)), [knobs.done]);
 
     return (
         <Checklist
             action={done === setupSteps.length && <Button variant="ghost">Dismiss</Button>}
-            className="w-[380px]"
+            className="w-95"
             completed={done}
             title="Get started"
             total={setupSteps.length}
@@ -69,10 +69,10 @@ const ChecklistPreview = ({ knobs }: PreviewProps) => {
 
 export const entry: Entry = {
     id: 'checklist',
-    name: 'Setup checklist',
+    name: 'Checklist',
     category: 'status',
     description: 'Onboarding steps that tick off, with overall progress.',
-    hero: 'min-h-[480px]',
+    hero: 'min-h-120',
     knobs: checklistKnobs,
     // Taller than a tile, so the tile keeps the top in view and lets the rest run off.
     stageClassName: 'items-start',
@@ -109,7 +109,7 @@ const GetStarted = () => {
 
     return (
         <AppWindow
-            className="mx-auto w-full max-w-[720px] px-0"
+            className="mx-auto w-full max-w-180 px-0"
             description="A few steps and your first invoice is on its way."
             nav="top"
             place="overview"

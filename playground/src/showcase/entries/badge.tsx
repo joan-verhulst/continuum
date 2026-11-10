@@ -9,7 +9,18 @@ import {
     TableHeader,
     TableRow,
 } from 'continuum';
-import { Download, Plus, TrendingDown, TrendingUp } from 'lucide-react';
+import {
+    CalendarClock,
+    CircleAlert,
+    CircleCheck,
+    Clock,
+    Download,
+    Pencil,
+    Plus,
+    TrendingDown,
+    TrendingUp,
+} from 'lucide-react';
+import type { ReactNode } from 'react';
 import {
     AppWindow,
     type Entry,
@@ -31,7 +42,14 @@ const badgeKnobs: Knob[] = [
         default: 'soft',
     },
     { id: 'tone', label: 'Tone', options: opts(...tones), default: 'success' },
-    { id: 'icon', label: 'Icon', switch: true, default: true },
+    // A soft status and a delta pill take a 12 icon; a dot draws its own marker and a count has none.
+    {
+        id: 'icon',
+        label: 'Icon',
+        switch: true,
+        default: false,
+        when: values => values.variant === 'soft' || values.variant === 'pill',
+    },
 ];
 
 const badgeText: Record<Tone, string> = {
@@ -42,15 +60,29 @@ const badgeText: Record<Tone, string> = {
     primary: 'Scheduled',
 };
 
+const statusGlyph: Record<Tone, ReactNode> = {
+    neutral: <Pencil {...previewIcon} />,
+    success: <CircleCheck {...previewIcon} />,
+    warning: <Clock {...previewIcon} />,
+    error: <CircleAlert {...previewIcon} />,
+    primary: <CalendarClock {...previewIcon} />,
+};
+
 const BadgePreview = ({ knobs }: PreviewProps) => {
     const tone = knobs.tone as Tone;
     const variant = knobs.variant as 'soft' | 'pill' | 'dot' | 'count';
     const glyph =
-        tone === 'error' ? <TrendingDown {...previewIcon} /> : <TrendingUp {...previewIcon} />;
+        variant === 'soft' ? (
+            statusGlyph[tone]
+        ) : tone === 'error' ? (
+            <TrendingDown {...previewIcon} />
+        ) : (
+            <TrendingUp {...previewIcon} />
+        );
 
     return (
         <Badge
-            icon={variant === 'pill' && knobs.icon ? glyph : undefined}
+            icon={(variant === 'soft' || variant === 'pill') && knobs.icon ? glyph : undefined}
             tone={tone}
             variant={variant}
         >

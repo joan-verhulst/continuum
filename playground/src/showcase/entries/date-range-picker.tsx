@@ -9,14 +9,36 @@ import {
     StatCard,
 } from 'continuum';
 import { ArrowLeftRight, Download } from 'lucide-react';
-import { AppWindow, type Entry, type InUse, icon } from '../kit';
+import {
+    AppWindow,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    opts,
+    type PreviewProps,
+    sizes,
+} from '../kit';
 
-const DateRangePickerPreview = () => (
+const dateRangeKnobs: Knob[] = [
+    { id: 'size', label: 'Size', options: sizes, default: 'md' },
+    { id: 'icon', label: 'Icon', options: opts('leading', 'trailing'), default: 'trailing' },
+    { id: 'presets', label: 'Presets', switch: true, default: true },
+    { id: 'invalid', label: 'Invalid', switch: true, default: false },
+    { id: 'disabled', label: 'Disabled', switch: true, default: false },
+];
+
+// Opened, the presets show at the panel's left; the knob takes them away.
+const DateRangePickerPreview = ({ knobs }: PreviewProps) => (
     <DateRangePicker
+        aria-invalid={knobs.invalid ? true : undefined}
         aria-label="Report period"
         className="w-64"
         defaultValue={{ from: new Date(2026, 9, 12), to: new Date(2026, 9, 26) }}
-        icon="trailing"
+        disabled={Boolean(knobs.disabled)}
+        icon={knobs.icon as 'leading' | 'trailing'}
+        presets={knobs.presets ? undefined : false}
+        size={knobs.size as 'sm' | 'md'}
     />
 );
 
@@ -25,6 +47,7 @@ export const entry: Entry = {
     name: 'Date range picker',
     category: 'inputs',
     description: 'Two months with presets, for report ranges.',
+    knobs: dateRangeKnobs,
     Preview: DateRangePickerPreview,
 };
 

@@ -18,7 +18,7 @@ import { AppWindow, type Entry, type InUse } from '../kit';
 const FunnelPreview = () => (
     <div className="w-full overflow-x-auto">
         <FunnelChart
-            className="min-w-[640px]"
+            className="min-w-160"
             data={[
                 { label: '/cart', value: 8420 },
                 { label: '/checkout', value: 5110 },

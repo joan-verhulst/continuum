@@ -3,6 +3,8 @@ import {
     ActivityList,
     Badge,
     Button,
+    Card,
+    CardTitle,
     Sheet,
     SheetBody,
     SheetContent,
@@ -17,7 +19,6 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-    ValueField,
 } from 'continuum';
 import {
     CircleCheck,
@@ -31,6 +32,7 @@ import {
     Send,
     SendHorizontal,
 } from 'lucide-react';
+import { useState } from 'react';
 import { useStageContainer } from '../../layout';
 import { AppScene, type Entry, type InUse, icon, previewIcon } from '../kit';
 
@@ -90,6 +92,8 @@ const SheetPreview = () => {
     const stage = useStageContainer();
     // A tile is a still: it shows the page the sheet sits beside, and only as much sheet as fits.
     const tile = Boolean(stage?.inert);
+    // On the page it opens held open, but its × closes it and the trigger brings it back.
+    const [open, setOpen] = useState(true);
 
     return (
         // On a stage the trigger stands in the middle of the room the sheet leaves, as the page would.
@@ -102,7 +106,10 @@ const SheetPreview = () => {
                       : 'contents'
             }
         >
-            <Sheet open={stage ? true : undefined}>
+            <Sheet
+                onOpenChange={tile ? undefined : setOpen}
+                open={tile ? true : stage ? open : undefined}
+            >
                 {tile ? (
                     <div className="flex w-[28%] flex-col gap-3">
                         <Skeleton className="h-3 w-3/4" />
@@ -158,7 +165,7 @@ export const entry: Entry = {
     category: 'overlays',
     description: 'A non-modal side sheet over the page.',
     // Tall enough for the whole history, so the open sheet does not stop mid-list.
-    hero: 'min-h-[600px]',
+    hero: 'min-h-150',
     Preview: SheetPreview,
 };
 
@@ -193,6 +200,13 @@ const history = [
     },
 ] as const;
 
+const invoiceFacts = [
+    { term: 'Amount', value: '€4,120.00' },
+    { term: 'Issued', value: '12 Oct 2026' },
+    { term: 'Due', value: '26 Oct 2026' },
+    { term: 'Paid', value: 'Today, 09:12' },
+];
+
 const lineItems = [
     { item: 'Enterprise plan, October', quantity: '1', amount: '€3,200.00' },
     { item: 'Additional seats', quantity: '12', amount: '€720.00' },
@@ -206,7 +220,7 @@ const HistorySheet = () => {
         <Sheet open>
             <SheetContent
                 // Below the top nav, as a sheet area would set it: the nav's 56px and its 16px gap.
-                className="top-[72px] w-[380px]"
+                className="top-18 w-95"
                 container={stage}
                 finalFocus={false}
                 initialFocus={false}
@@ -253,12 +267,20 @@ const InvoiceWithHistory = () => (
             ),
             children: (
                 <>
-                    <div className="grid grid-cols-4 gap-3">
-                        <ValueField label="Amount" value="€4,120.00" />
-                        <ValueField label="Issued" value="12 Oct 2026" />
-                        <ValueField label="Due" value="26 Oct 2026" />
-                        <ValueField label="Paid" value="Today, 09:12" />
-                    </div>
+                    {/* The invoice's facts, each label over its value, as a detail page's are. */}
+                    <Card layout="list">
+                        <CardTitle>Details</CardTitle>
+                        <dl className="grid grid-cols-3 gap-x-6 gap-y-5">
+                            {invoiceFacts.map(fact => (
+                                <div className="flex min-w-0 flex-col gap-1.5" key={fact.term}>
+                                    <dt className="text-neutral-600 text-xs">{fact.term}</dt>
+                                    <dd className="font-medium text-neutral-950 text-xs tabular-nums">
+                                        {fact.value}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
+                    </Card>
                     <Table>
                         <TableHeader>
                             <TableRow>

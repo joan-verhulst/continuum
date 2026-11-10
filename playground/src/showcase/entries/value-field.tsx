@@ -1,80 +1,134 @@
-import { Badge, Button, Tabs, TabsList, TabsTrigger, ValueField } from 'continuum';
-import { Pencil, Plus } from 'lucide-react';
-import { SectionHead } from '../../screens/workspace';
-import { AppWindow, type Entry, type InUse, icon } from '../kit';
+import {
+    Button,
+    DialogClose,
+    DialogDescription,
+    Field,
+    FieldHelper,
+    FieldLabel,
+    Input,
+    StatCard,
+    ValueField,
+} from 'continuum';
+import { Plus } from 'lucide-react';
+import {
+    AppScene,
+    type AppWindowProps,
+    type Entry,
+    type InUse,
+    icon,
+    type Knob,
+    OpenDialog,
+    o,
+    type PreviewProps,
+    sizes,
+} from '../kit';
 
-const ValueFieldPreview = () => (
-    <div className="grid w-full max-w-72 grid-cols-2 gap-3">
-        <ValueField copyable label="Entry page" value="/home" />
-        <ValueField label="Source" value={null} />
-    </div>
-);
+// Both variants are drawn, the wells over a vital, so each knob has something to change.
+const valueFieldKnobs: Knob[] = [
+    { id: 'size', label: 'Size of the wells', options: sizes, default: 'md' },
+    {
+        id: 'tone',
+        label: 'Status of the vital',
+        options: [o('success', 'Success'), o('warning', 'Warning'), o('error', 'Error')],
+        default: 'success',
+    },
+    { id: 'copyable', label: 'Copy button', switch: true, default: true },
+    { id: 'empty', label: 'Second well empty', switch: true, default: true },
+];
+
+const vitals = {
+    success: 'Delivered',
+    warning: 'Retrying',
+    error: 'Failing',
+} as const;
+
+const ValueFieldPreview = ({ knobs }: PreviewProps) => {
+    const tone = knobs.tone === 'warning' || knobs.tone === 'error' ? knobs.tone : 'success';
+    const size = knobs.size === 'sm' ? 'sm' : 'md';
+
+    return (
+        <div className="flex w-full max-w-80 flex-col gap-4">
+            <div className="grid grid-cols-2 gap-3">
+                <ValueField
+                    copyable={Boolean(knobs.copyable)}
+                    label="Endpoint ID"
+                    size={size}
+                    value="we_3k29f81ab"
+                />
+                <ValueField
+                    copyable={Boolean(knobs.copyable) && !knobs.empty}
+                    label="Retries"
+                    size={size}
+                    value={knobs.empty ? null : '2'}
+                />
+            </div>
+            <ValueField label="Last delivery" tone={tone} value={vitals[tone]} variant="vital" />
+        </div>
+    );
+};
 
 export const entry: Entry = {
     id: 'value-field',
     name: 'Value field',
     category: 'forms',
-    description: 'A read-only value in a well, with copy.',
+    description: 'A read-only value in a form, in a well with copy, or a reading with its status.',
+    knobs: valueFieldKnobs,
     Preview: ValueFieldPreview,
 };
 
-const CustomerBilling = () => (
-    <AppWindow
-        actions={
+// The webhooks the dialog adds to, behind it.
+const webhooksPage: AppWindowProps = {
+    actions: (
+        <Button>
+            <Plus {...icon} /> Add endpoint
+        </Button>
+    ),
+    description: 'Where Acme sends events as they happen.',
+    nav: 'sidebar',
+    place: 'settings',
+    title: 'Webhooks',
+    trail: ['Settings', 'Webhooks'],
+    children: (
+        <div className="grid grid-cols-3 gap-4">
+            <StatCard delta="+4.1%" label="Events this week" value="18,204" />
+            <StatCard delta="−0.2%" label="Failed deliveries" trend="down" value="0.4%" />
+            <StatCard delta="0 ms" label="Median response" trend="neutral" value="182 ms" />
+        </div>
+    ),
+};
+
+const EditEndpoint = () => (
+    <OpenDialog
+        footer={
             <>
-                <Button variant="secondary">
-                    <Pencil {...icon} /> Edit details
-                </Button>
-                <Button>
-                    <Plus {...icon} /> New invoice
-                </Button>
+                <DialogClose render={<Button variant="secondary" />}>Cancel</DialogClose>
+                <Button>Save endpoint</Button>
             </>
         }
-        description={
-            <span className="inline-flex items-center gap-2">
-                northwind.com · Enterprise plan
-                <Badge tone="success">Active</Badge>
-            </span>
-        }
-        place="customers"
-        title="Northwind Traders"
-        trail={['Customers', 'Northwind Traders']}
+        title="Edit endpoint"
+        width={480}
     >
-        <Tabs defaultValue="billing">
-            <TabsList>
-                <TabsTrigger value="overview">Overview</TabsTrigger>
-                <TabsTrigger value="invoices">Invoices</TabsTrigger>
-                <TabsTrigger value="contacts">Contacts</TabsTrigger>
-                <TabsTrigger value="billing">Billing</TabsTrigger>
-            </TabsList>
-        </Tabs>
-        <section className="flex flex-col gap-5">
-            <SectionHead
-                description="What goes on every invoice to Northwind; copy any of it into a payment or a reply."
-                title="Billing details"
-            />
-            <div className="grid grid-cols-2 gap-4">
-                <ValueField copyable label="Customer ID" value="cus_8f2a91c4" />
-                <ValueField copyable label="VAT number" value="GB 284 9917 06" />
-                <ValueField copyable label="Billing email" value="accounts@northwind.com" />
-                <ValueField copyable label="IBAN" value="GB29 NWBK 6016 1331 9268 19" />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-                <ValueField
-                    label="Card on file"
-                    tone="success"
-                    value="Visa ending 4242"
-                    variant="vital"
-                />
-                <ValueField label="Last payment" value="€4,800.00 on 1 October" variant="vital" />
-            </div>
-        </section>
-    </AppWindow>
+        <DialogDescription>
+            Events for new and paid invoices are sent here, signed with the secret below.
+        </DialogDescription>
+        <Field>
+            <FieldLabel>Endpoint URL</FieldLabel>
+            <Input defaultValue="https://hooks.northwind.com/acme" />
+            <FieldHelper>Must answer within 10 seconds.</FieldHelper>
+        </Field>
+        <ValueField copyable label="Endpoint ID" value="we_3k29f81ab" />
+        <ValueField copyable label="Signing secret" value="whsec_9f2c…a71d" />
+        <ValueField label="Last delivery" tone="success" value="200 OK" variant="vital" />
+    </OpenDialog>
 );
 
 export const inUse: InUse = {
-    title: 'Billing details',
-    note: 'A customer’s billing facts as values to read and copy, and two vitals under them.',
-    app: true,
-    render: () => <CustomerBilling />,
+    title: 'Edit a webhook',
+    note: 'In the endpoint’s form, what cannot be edited: its ID and secret to copy, and how its last delivery went.',
+    bare: true,
+    render: () => (
+        <AppScene page={webhooksPage}>
+            <EditEndpoint />
+        </AppScene>
+    ),
 };

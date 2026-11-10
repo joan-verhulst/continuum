@@ -19,8 +19,13 @@ const meterKnobs: Knob[] = [
         options: [o('sm', 'sm · 4px'), o('md', 'md · 8px')],
         default: 'sm',
     },
-    { id: 'value', label: 'Show the value', switch: true, default: false },
-    { id: 'caption', label: 'Caption', switch: true, default: true },
+    // The label row's right holds one thing: a caption wins over the value, so they are one choice.
+    {
+        id: 'end',
+        label: 'Beside the label',
+        options: [o('caption', 'Caption'), o('value', 'Value'), o('none', 'Nothing')],
+        default: 'caption',
+    },
 ];
 
 const MeterPreview = ({ knobs }: PreviewProps) => {
@@ -29,11 +34,11 @@ const MeterPreview = ({ knobs }: PreviewProps) => {
 
     return (
         <Meter
-            caption={knobs.caption ? 'Resets in 10 days' : undefined}
+            caption={knobs.end === 'caption' ? 'Resets in 10 days' : undefined}
             className="w-full max-w-72"
             label="Credit usage"
             max={10000}
-            showValue={Boolean(knobs.value)}
+            showValue={knobs.end === 'value'}
             size={knobs.size === 'md' ? 'md' : 'sm'}
             tone={tone === 'action' ? undefined : tone}
             value={value}

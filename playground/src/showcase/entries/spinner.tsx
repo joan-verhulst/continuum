@@ -24,10 +24,10 @@ const spinnerKnobs: Knob[] = [
     {
         id: 'size',
         label: 'Size',
-        options: [o('md', 'md · 34px'), o('lg', 'lg · 38px')],
+        // An icon button is a size of its own, so it is one of the sizes rather than a switch over them.
+        options: [o('md', 'md · 34px'), o('lg', 'lg · 38px'), o('icon', 'Icon · 34px')],
         default: 'md',
     },
-    { id: 'icon', label: 'Icon button', switch: true, default: false },
     { id: 'loading', label: 'Busy', switch: true, default: true },
 ];
 
@@ -46,13 +46,13 @@ const SpinnerPreview = ({ knobs }: PreviewProps) => {
     const variant =
         knobs.variant === 'secondary' || knobs.variant === 'ghost' ? knobs.variant : 'primary';
 
-    return knobs.icon ? (
+    return knobs.size === 'icon' ? (
         <Button
             aria-label="Refresh"
             loading={busy}
             onClick={() => setBusy(true)}
             size="icon"
-            variant={variant === 'primary' ? 'secondary' : variant}
+            variant={variant}
         >
             <History {...previewIcon} />
         </Button>
@@ -147,7 +147,7 @@ const PublishReport = () => {
             <ValueField copyable label="Link" value="acme.app/r/northwind-q3" />
             {state === 'done' && (
                 <p className="flex items-center gap-1.5 text-neutral-600 text-xs">
-                    <CircleCheck className="size-4 text-success-600" {...icon} /> Published just now
+                    <CircleCheck className="size-4 text-success-700" {...icon} /> Published just now
                 </p>
             )}
         </OpenDialog>

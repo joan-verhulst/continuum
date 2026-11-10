@@ -3,16 +3,16 @@ import { AppWindow, type Entry, type InUse } from '../kit';
 
 const BarListPreview = () => (
     <BarList className="w-full max-w-80" limit={3} title="Top pages" valueLabel="Visitors">
-        <BarListItem href="#about" value={3312}>
+        <BarListItem href="#" value={3312}>
             /about
         </BarListItem>
-        <BarListItem href="#pricing" value={2840}>
+        <BarListItem href="#" value={2840}>
             /pricing
         </BarListItem>
-        <BarListItem href="#contact" value={1204}>
+        <BarListItem href="#" value={1204}>
             /contact
         </BarListItem>
-        <BarListItem href="#careers" value={64}>
+        <BarListItem href="#" value={64}>
             /careers
         </BarListItem>
     </BarList>
@@ -44,22 +44,22 @@ const Traffic = () => (
         <div className="grid grid-cols-3 gap-4">
             <Card layout="list">
                 <BarList limit={5} title="Top pages" valueLabel="Visitors">
-                    <BarListItem href="#pricing" value={4120}>
+                    <BarListItem href="#" value={4120}>
                         /pricing
                     </BarListItem>
-                    <BarListItem href="#home" value={3312}>
+                    <BarListItem href="#" value={3312}>
                         /
                     </BarListItem>
-                    <BarListItem href="#review" value={2840}>
+                    <BarListItem href="#" value={2840}>
                         /blog/q3-review
                     </BarListItem>
-                    <BarListItem href="#contact" value={1204}>
+                    <BarListItem href="#" value={1204}>
                         /contact
                     </BarListItem>
-                    <BarListItem href="#docs" value={860}>
+                    <BarListItem href="#" value={860}>
                         /docs/invoices
                     </BarListItem>
-                    <BarListItem href="#careers" value={64}>
+                    <BarListItem href="#" value={64}>
                         /careers
                     </BarListItem>
                 </BarList>

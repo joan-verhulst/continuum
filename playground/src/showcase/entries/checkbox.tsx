@@ -39,7 +39,9 @@ const checkboxKnobs: Knob[] = [
 ];
 
 const CheckboxPreview = ({ knobs }: PreviewProps) => {
-    const [checked, setChecked] = useState<boolean | 'indeterminate'>(true);
+    const [checked, setChecked] = useState<boolean | 'indeterminate'>(
+        knobs.state === 'mixed' ? 'indeterminate' : knobs.state === 'checked',
+    );
 
     // The knob sets the state; a click still toggles it, as it would in a form.
     useEffect(() => {
@@ -88,7 +90,7 @@ const SelectCustomers = () => {
                     </Button>
                 </>
             }
-            description="1,284 companies on a paid plan or a trial."
+            description="The companies on a plan or a trial, and the ones that have left."
             overlay={
                 picked.length > 0 && (
                     <BottomBar floating>

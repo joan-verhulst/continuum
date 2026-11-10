@@ -2,8 +2,8 @@ import {
     Avatar,
     Badge,
     Button,
-    DescriptionItem,
-    DescriptionList,
+    Card,
+    CardTitle,
     StatCard,
     Table,
     TableBody,
@@ -18,7 +18,7 @@ import {
     TabsTrigger,
     type TabsVariant,
 } from 'continuum';
-import { FileText, History, LayoutList, ListChecks, Pencil, Plus } from 'lucide-react';
+import { FileText, LayoutList, ListChecks, Pencil, Plus } from 'lucide-react';
 import {
     AppWindow,
     type Entry,
@@ -35,7 +35,7 @@ const tabsKnobs: Knob[] = [
     { id: 'icons', label: 'Icons', switch: true, default: false },
     { id: 'count', label: 'Count', switch: true, default: false },
     { id: 'content', label: 'Content', switch: true, default: true },
-    { id: 'disabled', label: 'One disabled', switch: true, default: false },
+    { id: 'disabled', label: 'Sources disabled', switch: true, default: false },
 ];
 
 const TabsPreview = ({ knobs }: PreviewProps) => (
@@ -50,16 +50,11 @@ const TabsPreview = ({ knobs }: PreviewProps) => (
                 Findings
                 {knobs.count && <TabsCount>12</TabsCount>}
             </TabsTrigger>
-            <TabsTrigger value="sources">
+            {/* The knob disables a tab that is there already, rather than adding one. */}
+            <TabsTrigger disabled={Boolean(knobs.disabled)} value="sources">
                 {knobs.icons && <FileText {...previewIcon} />}
                 Sources
             </TabsTrigger>
-            {knobs.disabled && (
-                <TabsTrigger disabled value="history">
-                    {knobs.icons && <History {...previewIcon} />}
-                    History
-                </TabsTrigger>
-            )}
         </TabsList>
         {knobs.content && (
             <>
@@ -134,11 +129,24 @@ const CustomerDetail = () => (
                     <StatCard delta="+12" label="Seats in use" value="86 of 100" />
                     <StatCard delta="+6" label="Invoices this year" value="24" />
                 </div>
-                <DescriptionList>
-                    <DescriptionItem term="Owner">Maya Chen</DescriptionItem>
-                    <DescriptionItem term="Billing email">finance@northwind.com</DescriptionItem>
-                    <DescriptionItem term="Renews">1 March 2027</DescriptionItem>
-                </DescriptionList>
+                {/* The facts as a detail page has them: each label over its value, in a list card. */}
+                <Card layout="list">
+                    <CardTitle>Details</CardTitle>
+                    <dl className="grid grid-cols-3 gap-x-6 gap-y-5">
+                        {[
+                            ['Owner', 'Maya Chen'],
+                            ['Billing email', 'finance@northwind.com'],
+                            ['Renews', '1 March 2027'],
+                        ].map(([term, value]) => (
+                            <div className="flex min-w-0 flex-col gap-1.5" key={term}>
+                                <dt className="text-neutral-600 text-xs">{term}</dt>
+                                <dd className="truncate font-medium text-neutral-950 text-xs">
+                                    {value}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                </Card>
             </TabsContent>
             <TabsContent value="invoices">
                 <Table>
@@ -176,7 +184,7 @@ const CustomerDetail = () => (
                             <span className="font-medium text-neutral-950">{event.who}</span>{' '}
                             {event.what}
                         </span>
-                        <span className="text-neutral-500">{event.when}</span>
+                        <span className="text-neutral-600">{event.when}</span>
                     </p>
                 ))}
             </TabsContent>
