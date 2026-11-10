@@ -34,6 +34,8 @@ type PreviewTileProps = {
     description: ReactNode;
     href: string;
     onOpen: () => void;
+    /** The tile's element id, so a page can scroll back to it. */
+    id?: string;
     /** Classes for the tile in its grid, such as a column span. */
     className?: string;
     /** Classes for the stage the preview sits on. */
@@ -52,15 +54,17 @@ export const PreviewTile = ({
     description,
     href,
     onOpen,
+    id,
     className,
     stageClassName,
     children,
 }: PreviewTileProps) => (
     <Card
         className={cn(
-            'group/tile relative min-w-0 gap-0 overflow-hidden p-0 transition-[border-color] duration-150 hover:border-neutral-300',
+            'group/tile relative min-w-0 scroll-mt-6 gap-0 overflow-hidden p-0 transition-[border-color] duration-150 hover:border-neutral-300',
             className,
         )}
+        id={id}
     >
         <div className="flex items-center justify-between px-4 pt-3">{badge}</div>
         <Stage className={cn('h-64 min-h-0 rounded-none border-0 p-6', stageClassName)} inert>
@@ -73,7 +77,7 @@ export const PreviewTile = ({
          */}
         <a
             className={cn(
-                'm-1.5 flex min-w-0 items-center gap-3 rounded-(--well) bg-neutral-950/[0.03] px-[max(10px,var(--well))] py-3 [--well:calc(var(--radius-card)-6px)] after:absolute after:inset-0 after:content-[""]',
+                'm-1.5 flex min-w-0 items-center gap-3 rounded-(--well) bg-neutral-950/3 px-[max(10px,var(--well))] py-3 [--well:calc(var(--radius-card)-6px)] after:absolute after:inset-0 after:content-[""]',
                 focusRing,
                 'focus-visible:-outline-offset-2',
             )}
@@ -85,7 +89,7 @@ export const PreviewTile = ({
         >
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                 <span className="truncate font-medium text-neutral-950 text-xs">{name}</span>
-                <span className="truncate text-neutral-500 text-xxs">{description}</span>
+                <span className="truncate text-neutral-600 text-xxs">{description}</span>
             </span>
             <ArrowRight
                 aria-hidden
@@ -111,13 +115,19 @@ type KnobStageProps = {
  */
 export const KnobStage = ({ knobs, className, compact, render }: KnobStageProps) => {
     const [values, setValues] = useState(() => knobDefaults(knobs));
+    // A preview keeps state of its own (a box ticked, a dialog closed) that can drift from the
+    // knobs; once it is touched, Reset draws it afresh from the defaults.
+    const [touched, setTouched] = useState(false);
+    const [drawn, setDrawn] = useState(0);
+    const defaults = knobDefaults(knobs);
+    const changed = touched || (knobs ?? []).some(knob => values[knob.id] !== defaults[knob.id]);
 
     return (
         <Stage
             className={cn(
                 'items-stretch p-0',
                 // Compact, the panel and the subject share one grid cell: the stage is as tall as the taller.
-                compact ? 'grid min-h-0 grid-cols-1 justify-normal' : knobs && 'min-h-[440px]',
+                compact ? 'grid min-h-0 grid-cols-1 justify-normal' : knobs && 'min-h-110',
                 className,
             )}
         >
@@ -128,17 +138,28 @@ export const KnobStage = ({ knobs, className, compact, render }: KnobStageProps)
                             ? 'relative top-auto left-auto m-4 self-start justify-self-start [grid-area:1/1]'
                             : undefined
                     }
+                    changed={changed}
                     knobs={knobs}
                     onChange={(id, value) => setValues(current => ({ ...current, [id]: value }))}
-                    onReset={() => setValues(knobDefaults(knobs))}
+                    onReset={() => {
+                        setValues(knobDefaults(knobs));
+                        setTouched(false);
+                        setDrawn(count => count + 1);
+                    }}
                     values={values}
                 />
             )}
+            {/* Events from an overlay portalled out of the subject still bubble here through React. */}
             <div
                 className={cn(
-                    'flex min-w-0 flex-1 items-center justify-center p-10 [&>*]:max-w-full',
+                    // The subject never runs past the stage, but at no specificity (`:where`), so a
+                    // preview's own max width (`max-w-80`) still wins and keeps it off the panel.
+                    'flex min-w-0 flex-1 items-center justify-center p-10 [:where(&>*)]:min-w-0 [:where(&>*)]:max-w-full',
                     compact && 'py-12 [grid-area:1/1]',
                 )}
+                key={drawn}
+                onKeyDownCapture={() => setTouched(true)}
+                onPointerDownCapture={() => setTouched(true)}
             >
                 {render(values)}
             </div>
@@ -179,6 +200,8 @@ export const Neighbours = ({
 type KnobPanelProps = {
     knobs: readonly Knob[];
     values: KnobValues;
+    /** Whether Reset has anything to undo: a knob moved, or the preview touched. */
+    changed: boolean;
     onChange: (id: string, value: string | boolean) => void;
     onReset: () => void;
     className?: string;
@@ -194,11 +217,11 @@ const fitsSegments = (options: readonly { label: string }[]) =>
  * segmented control when its options fit, a select when they do not; a yes or no is a switch.
  * It overlays the stage and takes no room from the preview.
  */
-const KnobPanel = ({ knobs, values, onChange, onReset, className }: KnobPanelProps) => {
-    const defaults = knobDefaults(knobs);
-    const changed = knobs.some(knob => values[knob.id] !== defaults[knob.id]);
-    const choices = knobs.filter(knob => !('switch' in knob));
-    const switches = knobs.filter(knob => 'switch' in knob);
+const KnobPanel = ({ knobs, values, changed, onChange, onReset, className }: KnobPanelProps) => {
+    // A knob the others make meaningless (an icon on an icon-only button) leaves the panel.
+    const live = knobs.filter(knob => !knob.when || knob.when(values));
+    const choices = live.filter(knob => !('switch' in knob));
+    const switches = live.filter(knob => 'switch' in knob);
 
     return (
         <fieldset

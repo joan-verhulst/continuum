@@ -38,7 +38,7 @@ import { type Category, categories, type Entry, knobDefaults } from './kit';
 const icon = { strokeWidth: 2 } as const;
 
 const startBadge: Record<GapStart, { label: string; tone: 'primary' | 'success' | 'neutral' }> = {
-    recipe: { label: 'Recipe written', tone: 'primary' },
+    recipe: { label: 'Recipe in patterns', tone: 'primary' },
     compose: { label: 'Compose existing', tone: 'success' },
     new: { label: 'New component', tone: 'neutral' },
 };
@@ -47,6 +47,17 @@ const matches = (query: string, ...fields: string[]) =>
     fields.some(field => field.toLowerCase().includes(query));
 
 const categoryLabel = (id: Category) => categories.find(entry => entry.id === id)?.label ?? id;
+
+/*
+ * What the grid was showing when a component was opened: the gaps switch and the tile last opened.
+ * Kept outside the grid, so coming back finds the grid as it was left, scrolled to that tile. The
+ * search lives in the app's state, one query with the sidebar's.
+ */
+const gridMemory: { showGaps: boolean; opened?: string } = {
+    showGaps: false,
+};
+
+const tileId = (id: string) => `c-${id}`;
 
 type ComponentsProps = {
     state: AppState;
@@ -57,7 +68,13 @@ type ComponentsProps = {
 export const Components = ({ state, onChange }: ComponentsProps) => {
     const entry = entries.find(item => item.id === state.component);
     const { setIndex, setActive } = usePageIndex();
-    const open = useCallback((id?: string) => onChange({ component: id }), [onChange]);
+    const open = useCallback(
+        (id?: string) => {
+            if (id) gridMemory.opened = id;
+            onChange({ component: id });
+        },
+        [onChange],
+    );
 
     // The sidebar lists every component; picking one opens its page.
     useEffect(() => {
@@ -82,19 +99,38 @@ export const Components = ({ state, onChange }: ComponentsProps) => {
     return entry ? (
         <ComponentPage entry={entry} key={entry.id} onOpen={open} />
     ) : (
-        <ComponentsGrid onOpen={open} state={state} />
+        <ComponentsGrid onOpen={open} onSearch={search => onChange({ search })} state={state} />
     );
 };
 
 type GridProps = {
     state: AppState;
     onOpen: (id?: string) => void;
+    /** The search changed; the sidebar's list follows it. */
+    onSearch: (search: string) => void;
 };
 
-const ComponentsGrid = ({ state, onOpen }: GridProps) => {
-    const [query, setQuery] = useState('');
-    const [showGaps, setShowGaps] = useState(false);
+const ComponentsGrid = ({ state, onOpen, onSearch: setQuery }: GridProps) => {
+    const query = state.search ?? '';
+    const [showGaps, setShowGaps] = useState(gridMemory.showGaps);
     const q = query.trim().toLowerCase();
+
+    useEffect(() => {
+        gridMemory.showGaps = showGaps;
+    }, [showGaps]);
+
+    // Back from a component, the tile it was opened from is where the eye left it. A frame later,
+    // since the shell sends every new page to its top after this runs; once only, so the grid
+    // reached again from another page starts at its top.
+    useEffect(() => {
+        const opened = gridMemory.opened;
+        if (!opened) return;
+        const frame = requestAnimationFrame(() => {
+            gridMemory.opened = undefined;
+            document.getElementById(tileId(opened))?.scrollIntoView({ block: 'center' });
+        });
+        return () => cancelAnimationFrame(frame);
+    }, []);
 
     const shown = entries.filter(entry => matches(q, entry.name, entry.description));
     const missing = showGaps
@@ -123,7 +159,7 @@ const ComponentsGrid = ({ state, onOpen }: GridProps) => {
                         <Count label="Not built yet" value={gaps.length} />
                     </dl>
                 }
-                description="Every component, live, in the theme previewed from the pill at the foot. Open one for its variants and states."
+                description="Every component, live, in the theme of the project picked at the top of the sidebar. Open one for its variants and states."
                 title="Components"
             />
             {groups.length > 1 && (
@@ -131,7 +167,7 @@ const ComponentsGrid = ({ state, onOpen }: GridProps) => {
                     <Dock
                         aria-label="Categories"
                         // Thirteen categories would run the width of the page; a few at a time, with chevrons.
-                        className="max-w-[560px]"
+                        className="max-w-140"
                         onValueChange={scrollToSection}
                         value={current ?? sectionIds[0]}
                     >
@@ -186,7 +222,7 @@ const ComponentsGrid = ({ state, onOpen }: GridProps) => {
 
                 {missing.length > 0 && (
                     <Section
-                        description="Components a product library usually carries that Continuum does not have yet, and where each would start: a recipe already written in the skill’s guide, parts that exist and only need composing, or a new component."
+                        description="Components a product library usually carries that Continuum does not have yet, and where each would start: a recipe already written in the skill’s patterns (patterns.md), parts that exist and only need composing, or a new component."
                         id="s-missing"
                         title={
                             <span className="flex items-center gap-2.5">
@@ -235,7 +271,7 @@ type TileProps = {
 
 /** A component's live preview as a tile; the whole tile opens its page. */
 const Tile = ({
-    entry: { name, description, span, stageClassName, category, knobs, Preview },
+    entry: { id, name, description, span, stageClassName, category, knobs, Preview },
     href,
     onOpen,
 }: TileProps) => (
@@ -244,6 +280,7 @@ const Tile = ({
         className={cn(span === 2 && 'md:col-span-2', span === 3 && 'md:col-span-2 xl:col-span-3')}
         description={description}
         href={href}
+        id={tileId(id)}
         name={name}
         onOpen={onOpen}
         stageClassName={stageClassName}

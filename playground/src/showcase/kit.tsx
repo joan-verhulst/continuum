@@ -8,6 +8,7 @@ import {
     AppPanel,
     AppShell,
     Button,
+    type ChatMessageStatus,
     cn,
     Dialog,
     DialogBody,
@@ -29,7 +30,7 @@ import {
     TopNavLinks,
 } from 'continuum';
 import { Boxes, Settings } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Stage, useStageContainer } from '../layout';
 import { PageHead, type Place, places, Trail, WorkspaceSidebar } from '../screens/workspace';
 
@@ -62,11 +63,21 @@ export type Category = (typeof categories)[number]['id'];
 
 export type KnobOption = { value: string; label: string };
 
-export type Knob =
-    | { id: string; label: string; options: readonly KnobOption[]; default: string }
-    | { id: string; label: string; switch: true; default: boolean };
-
 export type KnobValues = Record<string, string | boolean>;
+
+type KnobBase = {
+    id: string;
+    label: string;
+    /**
+     * Whether the knob means anything for the other knobs' values; left out, it always does.
+     * A knob another one makes meaningless leaves the panel rather than sit there dead.
+     */
+    when?: (values: KnobValues) => boolean;
+};
+
+export type Knob =
+    | (KnobBase & { options: readonly KnobOption[]; default: string })
+    | (KnobBase & { switch: true; default: boolean });
 
 export type PreviewProps = { knobs: KnobValues };
 
@@ -113,6 +124,11 @@ export const Labelled = ({ children, label }: { children: ReactNode; label: stri
 
 export const icon = { strokeWidth: 2 } as const;
 
+/** A small photo stand-in for image attachments: a dusk sky over two hills, drawn inline. */
+export const sampleImage = `data:image/svg+xml,${encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><defs><linearGradient id="s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1e2a4a"/><stop offset="1" stop-color="#c97b5a"/></linearGradient></defs><rect width="80" height="80" fill="url(#s)"/><circle cx="54" cy="34" r="8" fill="#f3d9a4"/><path d="M0 62 Q20 44 40 58 T80 52 V80 H0Z" fill="#2b3550"/><path d="M0 70 Q30 58 56 68 T80 66 V80 H0Z" fill="#161c2c"/></svg>',
+)}`;
+
 /*
  * Components in use: one small, real piece of a product per component, built so
  * that component is the thing on show. Form controls sit in the dialog they would
@@ -131,6 +147,51 @@ export type InUse = {
     /** Draws its own 16:9 stage (a scene with something open), so no frame is put round it. */
     bare?: boolean;
     render: () => ReactNode;
+};
+
+/* ---------- Sending: a message walks its delivery states, or fails and is retried ---------- */
+
+export type Sent = { id: number; text: string; status: ChatMessageStatus };
+
+// When each state lands after the send, in ms: a quick tick, then the far side's two.
+const walk: [number, ChatMessageStatus][] = [
+    [500, 'sent'],
+    [1300, 'delivered'],
+    [2400, 'read'],
+];
+
+/**
+ * The current user's sent messages, each walking sending → sent → delivered → read, or failing
+ * once (as a dropped connection would) when `fails`; a retry goes through.
+ */
+export const useSending = (fails = false) => {
+    const [sent, setSent] = useState<Sent[]>([]);
+    const timers = useRef<number[]>([]);
+    const next = useRef(0);
+
+    useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+    const set = (id: number, status: ChatMessageStatus) =>
+        setSent(current => current.map(m => (m.id === id ? { ...m, status } : m)));
+
+    const deliver = (id: number, fail: boolean) => {
+        set(id, 'sending');
+        const steps: [number, ChatMessageStatus][] = fail ? [[900, 'failed']] : walk;
+        for (const [at, status] of steps) {
+            timers.current.push(window.setTimeout(() => set(id, status), at));
+        }
+    };
+
+    const send = (text: string) => {
+        next.current += 1;
+        const id = next.current;
+        setSent(current => [...current, { id, text, status: 'sending' }]);
+        deliver(id, fails);
+    };
+
+    const retry = (id: number) => deliver(id, false);
+
+    return { sent, send, retry };
 };
 
 /* ---------- The app: one product every piece is a page of ---------- */
@@ -289,7 +350,30 @@ export const AppWindow = ({
 /* ---------- Scenes: a stage with something held open on it ---------- */
 
 export const Scene = ({ className, children }: { className?: string; children: ReactNode }) => (
-    <Stage className={cn('aspect-video min-h-[440px] w-full', className)}>{children}</Stage>
+    <Stage className={cn('aspect-video min-h-110 w-full', className)}>{children}</Stage>
+);
+
+/**
+ * An overlay on a stage: open from the start, so the page shows it, but closed by its own
+ * controls and opened again by its trigger, so it still answers. It waits for the stage, so it
+ * never opens on the page behind it first.
+ */
+export const useHeldOpen = () => {
+    const stage = useStageContainer();
+    const [open, setOpen] = useState(true);
+
+    return { stage, open: open && stage !== null, onOpenChange: setOpen };
+};
+
+/** Brings back an overlay that was closed and has no trigger on the stage, at the stage's foot. */
+export const Reopen = ({ label, onClick }: { label: ReactNode; onClick: () => void }) => (
+    <Button
+        className="absolute bottom-6 left-1/2 z-10 -translate-x-1/2"
+        onClick={onClick}
+        variant="secondary"
+    >
+        {label}
+    </Button>
 );
 
 export type OpenDialogProps = {
@@ -300,32 +384,41 @@ export type OpenDialogProps = {
     children: ReactNode;
 };
 
-/** A dialog held open, scrim and all, on the stage it is drawn on. */
+/**
+ * A dialog held open, scrim and all, on the stage it is drawn on. Its Cancel, × and action close
+ * it, as they would in the product, and a button at the stage's foot opens it again.
+ */
 export const OpenDialog = ({ title, width = 440, footer, children }: OpenDialogProps) => {
-    const stage = useStageContainer();
+    const { stage, open, onOpenChange } = useHeldOpen();
 
     return (
-        <Dialog modal={false} open>
-            <DialogContent
-                container={stage}
-                finalFocus={false}
-                initialFocus={false}
-                style={{ width: `min(${width}px, calc(100% - 32px))` }}
-            >
-                <DialogHeader>
-                    <DialogTitle>{title}</DialogTitle>
-                </DialogHeader>
-                <DialogBody>{children}</DialogBody>
-                {footer && <DialogFooter>{footer}</DialogFooter>}
-            </DialogContent>
-        </Dialog>
+        <>
+            <Dialog modal={false} onOpenChange={onOpenChange} open={open}>
+                <DialogContent
+                    container={stage}
+                    finalFocus={false}
+                    initialFocus={false}
+                    style={{ width: `min(${width}px, calc(100% - 32px))` }}
+                >
+                    <DialogHeader>
+                        <DialogTitle>{title}</DialogTitle>
+                    </DialogHeader>
+                    <DialogBody>{children}</DialogBody>
+                    {footer && <DialogFooter>{footer}</DialogFooter>}
+                </DialogContent>
+            </Dialog>
+            {stage && !open && <Reopen label={title} onClick={() => onOpenChange(true)} />}
+        </>
     );
 };
 
+/** Cancel and the dialog's action; both close it, the action as though it had done its work. */
 export const DialogActions = ({ action, disabled }: { action: ReactNode; disabled?: boolean }) => (
     <>
         <DialogClose render={<Button variant="secondary" />}>Cancel</DialogClose>
-        <Button disabled={disabled}>{action}</Button>
+        <DialogClose disabled={disabled} render={<Button />}>
+            {action}
+        </DialogClose>
     </>
 );
 

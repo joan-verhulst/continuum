@@ -2,7 +2,7 @@ import type { Category } from './kit';
 
 /**
  * How far a missing component is from existing: a recipe already written in the
- * skill's designing-new guide, a composition of parts that exist, or new work.
+ * skill's patterns (`references/patterns.md`), a composition of parts that exist, or new work.
  */
 export type GapStart = 'recipe' | 'compose' | 'new';
 

@@ -11,8 +11,14 @@ import * as breadcrumb from './breadcrumb';
 import * as button from './button';
 import * as card from './card';
 import * as chartLoading from './chart-loading';
-import * as chat from './chat';
+import * as chatAttachment from './chat-attachment';
 import * as chatComposer from './chat-composer';
+import * as chatMessage from './chat-message';
+import * as chatPrompt from './chat-prompt';
+import * as chatReference from './chat-reference';
+import * as chatSuggestions from './chat-suggestions';
+import * as chatThread from './chat-thread';
+import * as chatTyping from './chat-typing';
 import * as checkbox from './checkbox';
 import * as checklist from './checklist';
 import * as chip from './chip';
@@ -26,6 +32,7 @@ import * as dialog from './dialog';
 import * as dropZone from './drop-zone';
 import * as emptyState from './empty-state';
 import * as field from './field';
+import * as filterCondition from './filter-condition';
 import * as filterMenu from './filter-menu';
 import * as funnelChart from './funnel-chart';
 import * as headerBar from './header-bar';
@@ -50,6 +57,8 @@ import * as select from './select';
 import * as settingRow from './setting-row';
 import * as sheet from './sheet';
 import * as sidebar from './sidebar';
+import * as sidebarLevels from './sidebar-levels';
+import * as sidebarSwitcher from './sidebar-switcher';
 import * as skeleton from './skeleton';
 import * as slider from './slider';
 import * as spinner from './spinner';
@@ -68,6 +77,8 @@ import * as valueField from './value-field';
 /** Every component, in the order the grid shows them. */
 export const entries: Entry[] = [
     sidebar.entry,
+    sidebarSwitcher.entry,
+    sidebarLevels.entry,
     topNav.entry,
     rail.entry,
     headerBar.entry,
@@ -99,6 +110,7 @@ export const entries: Entry[] = [
     optionRow.entry,
     settingRow.entry,
     valueField.entry,
+    filterCondition.entry,
     filterMenu.entry,
     chip.entry,
     dialog.entry,
@@ -130,8 +142,14 @@ export const entries: Entry[] = [
     pieChart.entry,
     funnelChart.entry,
     chartLoading.entry,
-    chat.entry,
+    chatThread.entry,
+    chatMessage.entry,
+    chatReference.entry,
+    chatAttachment.entry,
+    chatTyping.entry,
     chatComposer.entry,
+    chatSuggestions.entry,
+    chatPrompt.entry,
 ];
 
 /** The one piece each component is shown in, by its id. */
@@ -160,9 +178,13 @@ export const inUse: Record<string, InUse> = {
     'value-field': valueField.inUse,
     'drop-zone': dropZone.inUse,
     'stepper': stepper.inUse,
+    'filter-condition': filterCondition.inUse,
     'filter-menu': filterMenu.inUse,
     'sidebar': sidebar.inUse,
+    'sidebar-switcher': sidebarSwitcher.inUse,
+    'sidebar-levels': sidebarLevels.inUse,
     'rail': rail.inUse,
+    'top-nav': topNav.inUse,
     'tabs': tabs.inUse,
     'breadcrumb': breadcrumb.inUse,
     'header-bar': headerBar.inUse,
@@ -173,6 +195,7 @@ export const inUse: Record<string, InUse> = {
     'sheet': sheet.inUse,
     'menu': menu.inUse,
     'popover': popover.inUse,
+    'popover-item': popoverItem.inUse,
     'tooltip': tooltip.inUse,
     'info-tip': infoTip.inUse,
     'stat-card': statCard.inUse,
@@ -191,13 +214,20 @@ export const inUse: Record<string, InUse> = {
     'meter': meter.inUse,
     'status-dot': statusDot.inUse,
     'alert': alert.inUse,
+    'notice': notice.inUse,
     'toast': toast.inUse,
     'empty-state': emptyState.inUse,
     'skeleton': skeleton.inUse,
     'spinner': spinner.inUse,
     'checklist': checklist.inUse,
-    'chat': chat.inUse,
+    'chat-thread': chatThread.inUse,
+    'chat-message': chatMessage.inUse,
+    'chat-reference': chatReference.inUse,
+    'chat-attachment': chatAttachment.inUse,
+    'chat-suggestions': chatSuggestions.inUse,
+    'chat-typing': chatTyping.inUse,
     'chat-composer': chatComposer.inUse,
+    'chat-prompt': chatPrompt.inUse,
 };
 
 export const inUseOf = (id: string): InUse | undefined => inUse[id];
