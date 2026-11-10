@@ -58,8 +58,15 @@ export const FilterMenuTrigger = ({
         <ListFilter strokeWidth={2} />
         {children}
         {count > 0 && (
-            // Pulled in so the count sits as close to the edge as the icon does on the other side.
-            <Badge className="-mr-1.5 ml-0.5 h-5 min-w-5" variant="count">
+            // Pulled in so the count sits as close to the edge as the icon does on the other side. On
+            // the primary fill it takes the fill's own text colour, as the neutral badge would vanish.
+            <Badge
+                className={cn(
+                    '-mr-1.5 ml-0.5 h-5 min-w-5',
+                    variant === 'primary' && 'bg-on-action/20 text-on-action',
+                )}
+                variant="count"
+            >
                 {count}
             </Badge>
         )}
@@ -74,7 +81,7 @@ export const FilterMenuContent = ({
 }: DropdownMenuContentProps) => (
     <DropdownMenuContent
         align={align}
-        className={cn('w-60', className)}
+        className={cn('w-filter-menu', className)}
         data-slot="filter-menu-content"
         {...props}
     />
@@ -131,13 +138,27 @@ export const FilterMenuItem = ({
 
 export type FilterMenuClearProps = Omit<DropdownMenuItemProps, 'children'> & {
     children?: ReactNode;
+    /** Values picked across the groups, as the trigger counts them; at 0 the item is disabled. */
+    count?: number;
 };
 
-/** "Clear all" at the foot of the menu, under a full-width rule; disabled while nothing is picked. */
-export const FilterMenuClear = ({ children = 'Clear all', ...props }: FilterMenuClearProps) => (
+/**
+ * "Clear all" at the foot of the menu, under a full-width rule; disabled while nothing is picked.
+ * Pass the trigger's `count` and it disables itself; an explicit `disabled` still wins.
+ */
+export const FilterMenuClear = ({
+    children = 'Clear all',
+    count,
+    disabled,
+    ...props
+}: FilterMenuClearProps) => (
     <>
         <DropdownMenuSeparator />
-        <DropdownMenuItem data-slot="filter-menu-clear" {...props}>
+        <DropdownMenuItem
+            data-slot="filter-menu-clear"
+            disabled={disabled ?? (count !== undefined && count === 0)}
+            {...props}
+        >
             {children}
         </DropdownMenuItem>
     </>

@@ -28,7 +28,8 @@ const CloseButton = ({ className }: { className?: string }) => (
 /*
  * Layers: a sheet floats beside the page at z-40, and a modal dialog at z-50 above it, so a dialog opened
  * while a non-modal sheet is open dims the sheet too. Menus and tooltips share z-50 and, being portalled
- * after the dialog, open above it.
+ * after the dialog, open above it. Toasts stand a layer higher still (z-60), so one raised while a dialog
+ * is open is not hidden under its scrim.
  */
 const SHEET_LAYER = 'z-40';
 const DIALOG_LAYER = 'z-50';
@@ -66,7 +67,7 @@ export const DialogContent = ({ className, container, ...props }: DialogContentP
             {/* Centred with margins rather than a transform, so the entry transition can own translate. */}
             <DialogPrimitive.Popup
                 className={cn(
-                    'fixed inset-0 m-auto flex h-fit max-h-[calc(100dvh-32px)] w-[min(480px,calc(100vw-32px))] flex-col overflow-hidden rounded-card border border-neutral-200 bg-neutral-50 shadow-sheet outline-none',
+                    'fixed inset-0 m-auto flex h-fit max-h-[calc(100dvh-32px)] w-[min(var(--spacing-dialog),calc(100vw-32px))] flex-col overflow-hidden rounded-card border border-neutral-200 bg-neutral-50 shadow-sheet outline-none',
                     'transition-[opacity,translate] duration-200 ease-out-strong data-ending-style:translate-y-2 data-starting-style:translate-y-2 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
                     DIALOG_LAYER,
                     className,
@@ -85,7 +86,7 @@ export const DialogContent = ({ className, container, ...props }: DialogContentP
 export const DialogHeader = ({ className, children, ...props }: ComponentProps<'div'>) => (
     <div
         className={cn(
-            'flex h-[52px] shrink-0 items-center justify-between gap-4 border-neutral-200 border-b pr-[11px] pl-5',
+            'flex h-bar shrink-0 items-center justify-between gap-4 border-neutral-200 border-b pr-2.75 pl-5',
             className,
         )}
         data-slot="dialog-header"
@@ -97,7 +98,7 @@ export const DialogHeader = ({ className, children, ...props }: ComponentProps<'
             aria-label="Close"
             render={
                 <Button
-                    className="size-[30px] rounded-control"
+                    className="size-[calc(var(--spacing-bar)-22px)] rounded-control"
                     size="icon-sm"
                     variant="secondary"
                 />
@@ -147,7 +148,7 @@ export const DialogBody = ({ className, ...props }: ComponentProps<'div'>) => (
 export const DialogFooter = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
         className={cn(
-            'flex h-[52px] shrink-0 items-center justify-end gap-2 border-neutral-200 border-t px-[11px]',
+            'flex h-bar shrink-0 items-center justify-end gap-2 border-neutral-200 border-t px-2.75',
             className,
         )}
         data-slot="dialog-footer"
@@ -284,7 +285,7 @@ export const SheetContent = ({ className, style, container, ...props }: SheetCon
                 <DialogPrimitive.Popup
                     // The surface and the panel radius, like the AppPanel it floats beside, so it follows every theme.
                     className={cn(
-                        'fixed top-4 right-4 bottom-4 flex w-[min(512px,calc(100vw-32px))] flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 shadow-sheet outline-none',
+                        'fixed top-4 right-4 bottom-4 flex w-[min(var(--spacing-sheet),calc(100vw-32px))] flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 shadow-sheet outline-none',
                         'transition-[opacity,translate] duration-200 ease-out-strong data-ending-style:translate-x-4 data-starting-style:translate-x-4 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
                         SHEET_LAYER,
                         className,
@@ -311,7 +312,7 @@ type SheetHeaderProps = ComponentProps<'div'> & {
 export const SheetHeader = ({ icon, className, children, ...props }: SheetHeaderProps) => (
     <div
         className={cn(
-            'flex h-[52px] shrink-0 items-center gap-2 border-neutral-200 border-b pr-1.5 pl-4 [&>svg:not([class*=size-])]:size-4 [&>svg]:shrink-0 [&>svg]:text-neutral-950',
+            'flex h-bar shrink-0 items-center gap-2 border-neutral-200 border-b pr-1.5 pl-4 [&>svg:not([class*=size-])]:size-4 [&>svg]:shrink-0 [&>svg]:text-neutral-950',
             className,
         )}
         data-slot="sheet-header"
@@ -320,7 +321,7 @@ export const SheetHeader = ({ icon, className, children, ...props }: SheetHeader
         {icon}
         {children}
         {/* A 36px target rather than icon-sm's, sized to the 52px header. */}
-        <CloseButton className="ml-auto size-9" />
+        <CloseButton className="ml-auto size-option" />
     </div>
 );
 

@@ -1,7 +1,7 @@
 'use client';
 
-import type { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
-import { Search } from 'lucide-react';
+import { Dialog as DialogPrimitive } from '@base-ui/react/dialog';
+import { Search, X } from 'lucide-react';
 import {
     type ComponentProps,
     createContext,
@@ -17,6 +17,7 @@ import {
     useState,
 } from 'react';
 import { cn } from '../lib/cn';
+import { Button } from './button';
 import { Dialog, DialogContent, type DialogContentProps } from './dialog';
 import { PopoverItem } from './popover-item';
 
@@ -92,6 +93,13 @@ export const CommandMenu = ({
         [onQueryChange],
     );
 
+    // Opened through `open` (a shortcut, a button elsewhere), it never hears onOpenChange, so the
+    // search is cleared here as well.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: runs as the menu opens, not as the query changes
+    useLayoutEffect(() => {
+        if (open && queryProp === undefined) setOwnQuery('');
+    }, [open]);
+
     return (
         <Dialog
             onOpenChange={(next, details) => {
@@ -118,7 +126,10 @@ export const CommandMenuContent = ({
 }: DialogContentProps) => (
     <DialogContent
         aria-label={label}
-        className={cn('mt-[16vh] mb-auto w-[min(560px,calc(100%-32px))]', className)}
+        className={cn(
+            'mt-[16vh] mb-auto w-[min(var(--spacing-command),calc(100%-32px))]',
+            className,
+        )}
         data-slot="command-menu-content"
         {...props}
     />
@@ -135,11 +146,17 @@ const visibleItems = (list: HTMLElement | null) =>
 export type CommandMenuInputProps = Omit<ComponentProps<'input'>, 'value' | 'onChange'> & {
     /** Trailing in the search row, such as an Esc key. */
     trailing?: ReactNode;
+    /** The close button's name for screen readers. */
+    closeLabel?: string;
 };
 
-/** The search: no box, a 16px icon, the text at 14px, ruled off from the list full width. */
+/**
+ * The search: no box, a 16px icon, the text at 14px, ruled off from the list full width. On a touch
+ * screen, with no Esc key to press, it ends in the dialog header's close button.
+ */
 export const CommandMenuInput = ({
     trailing,
+    closeLabel = 'Close',
     className,
     placeholder = 'Search or run a command',
     onKeyDown,
@@ -173,7 +190,7 @@ export const CommandMenuInput = ({
 
     return (
         <div
-            className="flex h-[52px] shrink-0 items-center gap-2.5 border-neutral-200 border-b px-4 text-neutral-500 [&_svg]:size-4 [&_svg]:shrink-0"
+            className="flex h-bar shrink-0 items-center gap-2.5 border-neutral-200 border-b px-4 text-neutral-500 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0"
             data-slot="command-menu-search"
         >
             <Search aria-hidden strokeWidth={2} />
@@ -184,7 +201,7 @@ export const CommandMenuInput = ({
                 aria-expanded
                 autoComplete="off"
                 className={cn(
-                    'h-full min-w-0 flex-1 bg-transparent text-neutral-950 text-sm outline-none placeholder:text-neutral-500',
+                    'h-full min-w-0 flex-1 bg-transparent text-neutral-950 text-sm outline-none placeholder:text-neutral-600',
                     className,
                 )}
                 data-slot="command-menu-input"
@@ -197,6 +214,20 @@ export const CommandMenuInput = ({
                 {...props}
             />
             {trailing}
+            {/* A fine pointer has Esc and the scrim; a finger needs something to tap. It sits the
+                dialog header's 11px from the edge. */}
+            <DialogPrimitive.Close
+                aria-label={closeLabel}
+                render={
+                    <Button
+                        className="-mr-1.25 pointer-fine:hidden size-[calc(var(--spacing-bar)-22px)] rounded-control"
+                        size="icon-sm"
+                        variant="secondary"
+                    />
+                }
+            >
+                <X className="size-3.5" strokeWidth={2} />
+            </DialogPrimitive.Close>
         </div>
     );
 };
@@ -256,10 +287,7 @@ export const CommandMenuGroup = ({
         // biome-ignore lint/a11y/useSemanticElements: a group of options in a listbox, which a fieldset is not
         <div
             aria-labelledby={labelId}
-            className={cn(
-                'flex not-has-[[data-slot=command-menu-item]]:hidden flex-col',
-                className,
-            )}
+            className={cn('flex not-has-data-[slot=command-menu-item]:hidden flex-col', className)}
             data-slot="command-menu-group"
             role="group"
             {...props}
@@ -358,7 +386,7 @@ export const CommandMenuEmpty = ({ className, children, ...props }: ComponentPro
 export const CommandMenuFooter = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
         className={cn(
-            'flex h-10 shrink-0 items-center gap-4 border-neutral-200 border-t px-4 text-neutral-500 text-xxs',
+            'flex h-row shrink-0 items-center gap-4 border-neutral-200 border-t px-4 text-neutral-600 text-xxs',
             className,
         )}
         data-slot="command-menu-footer"

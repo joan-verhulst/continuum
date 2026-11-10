@@ -1,7 +1,7 @@
 'use client';
 
 import { Toast as ToastPrimitive } from '@base-ui/react/toast';
-import { ArrowRight, CircleAlert, CircleCheck, Undo2, X } from 'lucide-react';
+import { ArrowRight, CircleAlert, CircleCheck, Info, TriangleAlert, Undo2, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { focusRing } from './button';
@@ -19,6 +19,12 @@ export type ToastProviderProps = {
     /** Classes for the stack; lift it with `bottom-*` where a bottom bar sits below. */
     viewportClassName?: string;
 };
+
+/*
+ * A layer above dialogs, menus and tooltips (z-50): a toast raised while a dialog is open reports on
+ * what the dialog did, so it stands over the scrim rather than under it.
+ */
+const TOAST_LAYER = 'z-60';
 
 /**
  * Holds the toasts for everything inside it and draws them in the bottom right corner, across the
@@ -40,7 +46,8 @@ export const ToastProvider = ({
                 <ToastPrimitive.Viewport
                     className={cn(
                         // The toasts stand on its foot, so it needs a width but no height.
-                        'fixed right-6 bottom-6 z-50 w-[360px] outline-none max-sm:inset-x-4 max-sm:bottom-4 max-sm:w-auto',
+                        'fixed right-6 bottom-6 w-toast outline-none max-sm:inset-x-4 max-sm:bottom-4 max-sm:w-auto',
+                        TOAST_LAYER,
                         viewportClassName,
                     )}
                     data-slot="toast-viewport"
@@ -55,14 +62,20 @@ export const ToastProvider = ({
 /** The toast manager: `add`, `close`, `update` and `promise`, and the toasts showing now. */
 export const useToast = ToastPrimitive.useToastManager;
 
+// The tones and glyphs of an Alert, so a toast of a type reads as an alert of that tone would.
 const typeIcons: Record<string, ReactNode> = {
+    primary: <Info strokeWidth={2} />,
     success: <CircleCheck strokeWidth={2} />,
+    warning: <TriangleAlert strokeWidth={2} />,
     error: <CircleAlert strokeWidth={2} />,
 };
 
-// The well takes the badge's two steps of one ramp: its 500 at 20% under the glyph at 700.
+// The well takes the badge's wash, its 500 at 20%, under the glyph at 700: a glyph needs 3:1 on
+// it, which 700 reaches in every tone, where the badge's words need 4.5:1 and take 800.
 const wellTones: Record<string, string> = {
+    primary: 'bg-primary-500/20 text-primary-700',
     success: 'bg-success-500/20 text-success-700',
+    warning: 'bg-warning-500/20 text-warning-700',
     error: 'bg-error-500/20 text-error-700',
     neutral: 'bg-neutral-500/20 text-neutral-700',
 };
@@ -76,8 +89,13 @@ export type ToastData = {
     tab?: string;
     /** A 16px icon, or a 36px picture of the thing, for the well, where a `type` has none of its own. */
     icon?: ReactNode;
-    /** The action's icon; an undo arrow for "Undo", an arrow for anything else. Its label names it. */
+    /** The action's icon; an undo arrow for an `undo` action, an arrow for anything else. Its label names it. */
     actionIcon?: ReactNode;
+    /**
+     * The action takes back what the toast reports, so it draws the undo arrow whatever its label
+     * says ("Restore", "Ongedaan maken"). Left out, an action labelled "Undo" still counts as one.
+     */
+    undo?: boolean;
 };
 /*
  * The pile, from the variables Base UI sets on each toast. Collapsed, a toast behind the front one
@@ -114,7 +132,7 @@ const surfaceClass = 'border border-neutral-200 bg-neutral-50 text-neutral-950 t
 
 // A 36px square on the card: the ×, and the action when there is no tab to hold it.
 const squareClass = cn(
-    'inline-flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-item text-neutral-600 transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-950 [&_svg]:size-4',
+    'inline-flex size-option shrink-0 cursor-pointer items-center justify-center rounded-item text-neutral-600 transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-950 [&_svg]:size-4',
     focusRing,
     faceClass,
 );
@@ -144,7 +162,7 @@ const ToastActionIcon = ({ toast, inTab }: { toast: ListedToast; inTab: boolean 
                         className={
                             inTab
                                 ? cn(
-                                      '-my-0.5 inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-sm text-neutral-950 transition-colors duration-150 hover:text-neutral-600 [&_svg]:size-3.5',
+                                      '-my-0.5 inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-chip text-neutral-950 transition-colors duration-150 hover:text-neutral-600 [&_svg]:size-3.5',
                                       focusRing,
                                       faceClass,
                                   )
@@ -154,7 +172,7 @@ const ToastActionIcon = ({ toast, inTab }: { toast: ListedToast; inTab: boolean 
                         type="button"
                     >
                         {toast.data?.actionIcon ??
-                            (label === 'Undo' ? (
+                            ((toast.data?.undo ?? label === 'Undo') ? (
                                 <Undo2 strokeWidth={2} />
                             ) : (
                                 <ArrowRight strokeWidth={2} />
@@ -162,7 +180,7 @@ const ToastActionIcon = ({ toast, inTab }: { toast: ListedToast; inTab: boolean 
                     </button>
                 }
             />
-            <TooltipContent>{label}</TooltipContent>
+            <TooltipContent positionerClassName={TOAST_LAYER}>{label}</TooltipContent>
         </Tooltip>
     );
 };
@@ -207,10 +225,14 @@ const ToastList = () => {
                         >
                             <span className={cn('truncate', faceClass)}>{tab}</span>
                             <ToastActionIcon inTab toast={toast} />
-                            {/* The foot curves into the card, the hairline running along it. */}
+                            {/*
+                             * The foot curves into the card, the hairline running along it. It is
+                             * sized from the tab's corner (12px at the default 10px), so it squares
+                             * off with the theme's corners and keeps a 1px line at any size.
+                             */}
                             <svg
                                 aria-hidden="true"
-                                className="absolute bottom-0 left-[calc(100%+1px)] size-3 overflow-visible"
+                                className="absolute bottom-0 left-[calc(100%+1px)] size-[calc(var(--radius-item)*1.2)] overflow-visible"
                                 viewBox="0 0 12 12"
                             >
                                 <path
@@ -220,6 +242,7 @@ const ToastList = () => {
                                 <path
                                     className="fill-none stroke-neutral-200"
                                     d="M-0.5 -0.5A12 12 0 0 0 11.5 11.5"
+                                    vectorEffect="non-scaling-stroke"
                                 />
                             </svg>
                         </span>
@@ -237,7 +260,7 @@ const ToastList = () => {
                         {icon && (
                             <span
                                 className={cn(
-                                    'flex size-9 shrink-0 items-center justify-center overflow-hidden rounded-item [&_svg:not([class*=size-])]:size-4',
+                                    'flex size-option shrink-0 items-center justify-center overflow-hidden rounded-item [&_svg:not([class*=size-])]:size-4',
                                     wellTones[toast.type ?? 'neutral'] ?? wellTones.neutral,
                                     faceClass,
                                 )}
@@ -249,7 +272,7 @@ const ToastList = () => {
                         <span
                             className={cn(
                                 // Two lines beside the 36px well; more text grows it.
-                                'flex min-h-9 min-w-0 flex-1 flex-col justify-center py-0.5 pr-1',
+                                'flex min-h-option min-w-0 flex-1 flex-col justify-center py-0.5 pr-1',
                                 wordy ? 'gap-1.5' : 'gap-0.5',
                                 icon && 'ml-2.5',
                                 faceClass,
