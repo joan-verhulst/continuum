@@ -318,7 +318,6 @@ export const ChatPrompt = ({
                                     onStop?.();
                                     nodeRef.current?.focus();
                                 }}
-                                shape="pill"
                                 size="icon-sm"
                                 type="button"
                                 variant="primary"
@@ -334,7 +333,6 @@ export const ChatPrompt = ({
                                 aria-label={sendLabel}
                                 data-slot="chat-prompt-send"
                                 disabled={!canSend}
-                                shape="pill"
                                 size="icon-sm"
                                 type="submit"
                                 variant="primary"

@@ -918,7 +918,7 @@ support, an assistant, comments. **Not for** a history (ActivityList) or a log (
 - **Prompt**: where a question to an assistant is written. A box whose corner nests round the buttons
   (`chip` + the padding: 14 at `lg`, 12 at `md`), hairline, surface: the textarea on top (borderless, `neutral-900`, placeholder `neutral-600`, "Ask anything…"),
   a foot under it: an optional menu at the left (a mode or model, a ghost 28 button), at the right a ghost 28
-  attach (a 16 plus) and send, a round 28 button in the action colour with a 16 arrow-up, 4 apart; the text 2
+  attach (a 16 plus) and send, a 28 button in the action colour with a 16 arrow-up, all three on the `chip` corner so they read as one set (never a round send beside a square attach), 4 apart; the text 2
   above the foot. Attaching takes the composer's props with the same meaning: `onAttach(files)` and `accept` open
   the file picker, `onAdd` is called instead, `attachMenu` opens a menu, `attach` replaces the button. What waits
   to go (`attachments`, a ChatAttachments row) sits inside the box, above the text; a question can be sent with
