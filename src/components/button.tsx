@@ -3,7 +3,7 @@
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
 import { cva, type VariantProps } from 'class-variance-authority';
-import { Children, isValidElement, type ReactNode } from 'react';
+import { Children, isValidElement, type MouseEvent, type ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { Spinner } from './spinner';
 
@@ -26,7 +26,7 @@ export const buttonVariants = cva(
                     'hover:bg-action-hover hover:[background-image:none]',
                 ],
                 secondary:
-                    'border border-neutral-200 text-neutral-950 hover:border-neutral-300 hover:text-neutral-700',
+                    'border border-neutral-200 bg-neutral-100 text-neutral-950 hover:border-neutral-300 hover:bg-neutral-200',
                 ghost: 'text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-800',
                 // For AI actions beside the primary one: the theme's wash, no shadow. Hover mixes the
                 // wash towards its own text colour, so it deepens in every theme and in dark mode.
@@ -35,11 +35,11 @@ export const buttonVariants = cva(
             size: {
                 // The control row: level with a small input, select or segmented control beside it.
                 // An icon's end sits a step tighter than a label's, so the whole reads centred.
-                md: 'h-[34px] rounded-control px-4 data-[icon=both]:px-3 data-[icon=leading]:pl-3 data-[icon=trailing]:pr-3',
+                md: 'h-control rounded-control px-4 data-[icon=both]:px-3 data-[icon=leading]:pl-3 data-[icon=trailing]:pr-3',
                 // The field row: level with a medium input, and the height of the dock's action.
-                lg: 'h-[38px] rounded-control px-4',
-                icon: 'size-[34px] rounded-control',
-                'icon-sm': 'size-7 rounded-chip',
+                lg: 'h-control-lg rounded-control px-4',
+                icon: 'size-control rounded-control',
+                'icon-sm': 'size-control-sm rounded-chip',
             },
             shape: {
                 default: '',
@@ -94,6 +94,15 @@ export const Button = ({
 }: ButtonProps) => {
     const iconOnly = size === 'icon' || size === 'icon-sm';
 
+    // While loading, a click, Enter or Space does nothing and a submit button sends no form; the
+    // button keeps focus, so the keyboard does not lose its place while the work finishes.
+    const holdOff = (
+        event: MouseEvent<HTMLButtonElement> & { preventBaseUIHandler?: () => void },
+    ) => {
+        event.preventDefault();
+        event.preventBaseUIHandler?.();
+    };
+
     return useRender({
         defaultTagName: 'button',
         render,
@@ -128,6 +137,8 @@ export const Button = ({
                 ),
             },
             props,
+            // Merged last, so its handler runs before the caller's and stops it.
+            loading ? { onClick: holdOff } : undefined,
         ),
     });
 };

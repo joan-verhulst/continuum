@@ -19,29 +19,47 @@ export const inputVariants = cva(
         variants: {
             size: {
                 // The control row (level with a button) and the field row (level with a large one).
-                sm: 'h-[34px] rounded-control px-3',
-                md: 'h-[38px] rounded-control px-3',
+                sm: 'h-control rounded-control px-3',
+                md: 'h-control-lg rounded-control px-3',
+            },
+            variant: {
+                outline: '',
+                /*
+                 * No box: the search inside a container (a table's bar, a menu) is an icon and the
+                 * text. It keeps the shared ring round where the box would be, so a keyboard still
+                 * sees where it is.
+                 */
+                plain: 'border-transparent px-0',
             },
             invalid: {
                 true: 'border-error-500 [&_svg]:text-error-500',
                 false: '',
             },
             disabled: {
-                true: 'cursor-not-allowed [&_svg]:text-neutral-300',
+                // As every control: the whole box at half strength, its colours and border kept.
+                true: 'cursor-not-allowed opacity-50',
                 false: '',
             },
         },
         compoundVariants: [
             {
+                variant: 'outline',
                 invalid: false,
                 disabled: false,
                 className:
                     'border-neutral-200 hover:border-neutral-300 has-[input:focus]:border-neutral-300 [&_svg]:text-neutral-600',
             },
-            { invalid: false, disabled: true, className: 'border-neutral-200' },
+            {
+                variant: 'outline',
+                invalid: false,
+                disabled: true,
+                className: 'border-neutral-200 [&_svg]:text-neutral-600',
+            },
+            { variant: 'plain', invalid: false, className: '[&_svg]:text-neutral-600' },
         ],
         defaultVariants: {
             size: 'md',
+            variant: 'outline',
             invalid: false,
             disabled: false,
         },
@@ -50,13 +68,13 @@ export const inputVariants = cva(
 
 /*
  * Value and placeholder colours shared with Textarea. The library's "selected"
- * state is the value in neutral-900; disabled placeholders stay a step above the
- * spec's neutral-200, which disappears on a theme with white surfaces.
+ * state is the value in neutral-900. Disabled keeps these colours: the box around
+ * them is dimmed to half strength, as every disabled control is.
  */
 export const inputTextClass = [
-    'font-medium text-neutral-900 text-xs placeholder:text-neutral-500',
+    'font-medium text-neutral-900 text-xs placeholder:text-neutral-600',
     'aria-invalid:placeholder:text-error-300',
-    'disabled:cursor-not-allowed disabled:text-neutral-400 disabled:placeholder:text-neutral-300',
+    'disabled:cursor-not-allowed',
 ];
 
 export type InputProps = Omit<ComponentProps<'input'>, 'size'> &
@@ -70,6 +88,7 @@ export type InputProps = Omit<ComponentProps<'input'>, 'size'> &
 /** Inputs from the library ("input small/medium") and the report-generator forms. */
 export const Input = ({
     size,
+    variant,
     leadingIcon,
     trailing,
     className,
@@ -90,7 +109,10 @@ export const Input = ({
 
     return (
         <div
-            className={cn(inputVariants({ size, invalid, disabled: isDisabled }), className)}
+            className={cn(
+                inputVariants({ size, variant, invalid, disabled: isDisabled }),
+                className,
+            )}
             data-disabled={isDisabled || undefined}
             data-invalid={invalid || undefined}
             data-slot="input"
@@ -100,7 +122,7 @@ export const Input = ({
                 className={cn(
                     'h-full min-w-0 flex-1 bg-transparent outline-none',
                     inputTextClass,
-                    !invalid && !isDisabled && 'group-hover/input:placeholder:text-neutral-600',
+                    !invalid && !isDisabled && 'group-hover/input:placeholder:text-neutral-700',
                     inputClassName,
                 )}
                 data-slot="input-control"

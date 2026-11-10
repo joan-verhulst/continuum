@@ -27,7 +27,9 @@ export const OptionRow = ({
     <label
         className={cn(
             'flex cursor-pointer items-center justify-between gap-3 rounded-item border border-neutral-200 py-2 pr-3 pl-2 transition-[border-color] duration-150',
-            'hover:border-neutral-300 has-disabled:cursor-not-allowed has-disabled:opacity-50',
+            // The control inside carries the disabled state: its hidden input, or Base UI's data attribute.
+            'not-has-disabled:not-has-data-disabled:hover:border-neutral-300',
+            'has-data-disabled:cursor-not-allowed has-disabled:cursor-not-allowed has-data-disabled:opacity-50 has-disabled:opacity-50',
             !icon && 'p-3',
             className,
         )}

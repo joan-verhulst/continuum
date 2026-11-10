@@ -128,13 +128,15 @@ export const FieldHelper = ({ className, id, ...props }: ComponentProps<'p'>) =>
             className={cn(
                 'font-normal text-xs transition-[color] duration-150',
                 field?.invalid
-                    ? 'text-error-500'
+                    ? 'text-error-600'
                     : field?.disabled
                       ? 'text-neutral-400'
                       : [
-                            'text-neutral-500',
-                            'group-has-[[data-slot=input]:hover,[data-slot=textarea]:hover]/field:text-neutral-600',
-                            'group-has-[[data-slot=input]:focus-within,[data-slot=textarea]:focus]/field:text-neutral-900',
+                            'text-neutral-600',
+                            // Whichever box-drawn control the field holds, the helper follows it alike.
+                            'group-has-[:is([data-slot=input],[data-slot=textarea],[data-slot=select-trigger],[data-slot=combobox-input],[data-slot=combobox-chips],[data-slot=date-picker-trigger],[data-slot=code-input]):hover]/field:text-neutral-700',
+                            // Focus wins over a hover at the same time, as it does on the box.
+                            'group-focus-within/field:text-neutral-900!',
                         ],
                 className,
             )}

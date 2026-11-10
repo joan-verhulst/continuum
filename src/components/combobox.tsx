@@ -7,17 +7,30 @@ import type { ReactNode } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
 import { focusRing } from './button';
 import { chipClass, chipRemoveClass } from './chip';
-import { useFieldControl } from './field';
+import { useField, useFieldControl } from './field';
 import { inputTextClass, inputVariants } from './input';
 import { PopoverItem } from './popover-item';
 import { ThemeScope } from './theme';
 
 /*
  * A text input that filters a list, built from the same parts as Input (the box) and Select (the
- * panel), so the two read as one family. Root is passed through untouched: it renders no element and
- * its value types are generic, which a wrapper would flatten.
+ * panel), so the two read as one family. Root renders no element; it is wrapped only so a disabled
+ * Field reaches it, since its disabled state is what keeps the clear button, the chevron and each
+ * chip's × out of reach. The wrapper keeps Root's generic value types.
  */
-export const Combobox = ComboboxPrimitive.Root;
+export const Combobox = <Value, Multiple extends boolean | undefined = false, Item = Value>({
+    disabled,
+    ...props
+}: ComboboxPrimitive.Root.Props<Value, Multiple, Item>) => {
+    const field = useField();
+
+    return (
+        <ComboboxPrimitive.Root<Value, Multiple, Item>
+            disabled={disabled ?? field?.disabled}
+            {...(props as ComboboxPrimitive.Root.Props<Value, Multiple, Item>)}
+        />
+    );
+};
 
 /** Filters items by their label, with the locale's collation; pass its `contains` to `filter`. */
 export const useComboboxFilter = ComboboxPrimitive.useFilter;
@@ -41,6 +54,10 @@ export type ComboboxInputProps = Omit<ComboboxPrimitive.Input.Props, 'size' | 'c
         showTrigger?: boolean;
         /** A clear button, shown in place of the chevron once there is a value. */
         showClear?: boolean;
+        /** The clear button's accessible name; "Clear" by default. */
+        clearLabel?: string;
+        /** The chevron's accessible name; "Show options" by default. */
+        triggerLabel?: string;
         /** Classes for the bordered box. */
         className?: string;
         /** Classes for the native input. */
@@ -57,6 +74,8 @@ export const ComboboxInput = ({
     leadingIcon,
     showTrigger = true,
     showClear = false,
+    clearLabel = 'Clear',
+    triggerLabel = 'Show options',
     className,
     inputClassName,
     id,
@@ -95,7 +114,7 @@ export const ComboboxInput = ({
                         inputTextClass,
                         !invalid &&
                             !state.disabled &&
-                            'group-hover/input:placeholder:text-neutral-600',
+                            'group-hover/input:placeholder:text-neutral-700',
                         inputClassName,
                     )
                 }
@@ -105,7 +124,7 @@ export const ComboboxInput = ({
             />
             {showClear && (
                 <ComboboxPrimitive.Clear
-                    aria-label="Clear"
+                    aria-label={clearLabel}
                     className={cn(inlineButtonClass)}
                     data-slot="combobox-clear"
                 >
@@ -114,7 +133,7 @@ export const ComboboxInput = ({
             )}
             {showTrigger && (
                 <ComboboxPrimitive.Trigger
-                    aria-label="Show options"
+                    aria-label={triggerLabel}
                     // Clear only mounts with a value; one trailing control at a time keeps the box calm.
                     className={cn(
                         inlineButtonClass,
@@ -131,12 +150,16 @@ export const ComboboxInput = ({
 
 /*
  * Chips sit in a box of the input's own height: (38 − 2 − 25) / 2 leaves 5.5px around a 25px chip
- * at md, 3.5px at sm. The left inset matches it once a chip is there, so the chip's pill nests in
- * the box's corner rather than floating at the text inset.
+ * at md, 3.5px at sm. The md inset is worked out from the heights, since the chip follows the small
+ * control and not the large one at every item size. The left inset matches it once a chip is there,
+ * so the chip's pill nests in the box's corner rather than floating at the text inset.
  */
 const chipsSizeClass = {
-    sm: 'h-auto min-h-[34px] py-[3.5px] has-data-[slot=combobox-chip]:pl-[3.5px]',
-    md: 'h-auto min-h-[38px] py-[5.5px] has-data-[slot=combobox-chip]:pl-[5.5px]',
+    sm: 'h-auto min-h-control py-[3.5px] has-data-[slot=combobox-chip]:pl-[3.5px]',
+    md: [
+        'h-auto min-h-control-lg py-[calc((var(--spacing-control-lg)_-_2px_-_var(--spacing-chip))/2)]',
+        'has-data-[slot=combobox-chip]:pl-[calc((var(--spacing-control-lg)_-_2px_-_var(--spacing-chip))/2)]',
+    ].join(' '),
 } as const;
 
 export type ComboboxChipsProps = Omit<ComboboxPrimitive.Chips.Props, 'className'> &
@@ -163,7 +186,8 @@ export const ComboboxChips = ({
                 inputVariants({ size, invalid }),
                 'flex-wrap gap-1.5',
                 chipsSizeClass[size ?? 'md'],
-                'has-data-disabled:cursor-not-allowed',
+                // The disabled state lives on the root, so the box reads it from its input.
+                'has-[input:disabled]:cursor-not-allowed has-[input:disabled]:border-neutral-200 has-[input:disabled]:opacity-50',
                 className,
             )}
             data-invalid={invalid || undefined}
@@ -193,9 +217,9 @@ export const ComboboxChipsInput = ({
     return (
         <ComboboxPrimitive.Input
             className={cn(
-                'h-[25px] min-w-16 flex-1 bg-transparent outline-none',
+                'h-chip min-w-16 flex-1 bg-transparent outline-none',
                 inputTextClass,
-                !invalid && 'group-hover/input:placeholder:text-neutral-600',
+                !invalid && 'not-disabled:group-hover/input:placeholder:text-neutral-700',
                 className,
             )}
             data-slot="combobox-chips-input"
@@ -228,7 +252,8 @@ export const ComboboxChip = ({
     ...props
 }: ComboboxChipProps) => (
     <ComboboxPrimitive.Chip
-        className={cn(chipClass, 'min-w-0 data-disabled:opacity-50', focusRing, className)}
+        // A disabled chip is only ever in a disabled box, which already dims it.
+        className={cn(chipClass, 'min-w-0', focusRing, className)}
         data-slot="combobox-chip"
         {...props}
     >
@@ -345,7 +370,7 @@ export const ComboboxEmpty = ({
 }: WithClassName<ComboboxPrimitive.Empty.Props>) => (
     <ComboboxPrimitive.Empty
         className={cn(
-            'not-empty:m-1 not-empty:flex not-empty:h-9 not-empty:items-center not-empty:px-2 font-normal text-neutral-500 text-xs',
+            'not-empty:m-1 not-empty:flex not-empty:h-option not-empty:items-center not-empty:px-2 font-normal text-neutral-600 text-xs',
             className,
         )}
         data-slot="combobox-empty"

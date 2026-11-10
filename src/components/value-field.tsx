@@ -13,12 +13,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
  * bordered, so a fact never looks like something to type into.
  */
 export const valueFieldWellVariants = cva(
-    'flex w-full min-w-0 items-center gap-2 bg-neutral-950/[0.04] font-normal text-neutral-900 text-xs',
+    'flex w-full min-w-0 items-center gap-2 bg-neutral-950/4 font-normal text-neutral-900 text-xs',
     {
         variants: {
             size: {
-                sm: 'h-[34px] rounded-control px-3',
-                md: 'h-[38px] rounded-control px-3',
+                sm: 'h-control rounded-control px-3',
+                md: 'h-control-lg rounded-control px-3',
             },
             copyable: {
                 // The copy button sits inset in the well, so the well's right padding becomes that inset.
@@ -26,9 +26,15 @@ export const valueFieldWellVariants = cva(
                 false: '',
             },
         },
+        // The inset is the well's height less the 28px button, halved, so it matches the inset above
+        // and below at every size scale, and the button's corner calc below uses the same sum.
         compoundVariants: [
             { size: 'sm', copyable: true, className: 'pr-[3px]' },
-            { size: 'md', copyable: true, className: 'pr-[5px]' },
+            {
+                size: 'md',
+                copyable: true,
+                className: 'pr-[calc((var(--spacing-control-lg)-var(--spacing-control-sm))/2)]',
+            },
         ],
         defaultVariants: { size: 'md', copyable: false },
     },
@@ -36,13 +42,13 @@ export const valueFieldWellVariants = cva(
 
 /* A bordered pill row for a single reading, such as a web vital: label left, status and value right. */
 export const valueFieldVitalVariants = cva([
-    'flex h-[29px] w-full min-w-0 items-center justify-between gap-3 rounded-pill border border-neutral-200 px-3 text-xs',
+    'flex h-segment w-full min-w-0 items-center justify-between gap-3 rounded-pill border border-neutral-200 px-3 text-xs',
 ]);
 
 // The copy button is 28px, so its corner is the well's corner less the inset that centres it.
 const copyButtonRadius = {
     sm: 'rounded-[calc(var(--radius-control)-3px)]',
-    md: 'rounded-[calc(var(--radius-control)-5px)]',
+    md: 'rounded-[calc(var(--radius-control)-(var(--spacing-control-lg)-var(--spacing-control-sm))/2)]',
 } as const;
 
 const isEmpty = (value: ReactNode) =>
@@ -62,6 +68,9 @@ export type ValueFieldProps = Omit<ComponentProps<'div'>, 'children' | 'onCopy'>
         /** The text copied; defaults to the value when it is a string or number. */
         copyValue?: string;
         onCopy?: (text: string) => void;
+        /** The copy button's name and tooltip, and what it says once it has copied. */
+        copyLabel?: string;
+        copiedLabel?: string;
         /** Vital only: the colour of the dot before the value; leave it out for no dot. */
         tone?: StatusDotTone;
     };
@@ -76,13 +85,15 @@ export const ValueField = ({
     copyable = false,
     copyValue,
     onCopy,
+    copyLabel = 'Copy',
+    copiedLabel = 'Copied',
     tone,
     className,
     ...props
 }: ValueFieldProps) => {
     const labelId = useId();
     const empty = isEmpty(value);
-    const shown = empty ? <span className="text-neutral-500">{emptyText}</span> : value;
+    const shown = empty ? <span className="text-neutral-600">{emptyText}</span> : value;
 
     if (variant === 'vital') {
         return (
@@ -144,6 +155,8 @@ export const ValueField = ({
                 {copyable && (
                     <CopyButton
                         className={copyButtonRadius[resolvedSize]}
+                        copiedLabel={copiedLabel}
+                        copyLabel={copyLabel}
                         describedBy={labelId}
                         disabled={!canCopy}
                         onCopy={onCopy}
@@ -162,9 +175,19 @@ type CopyButtonProps = {
     /** The field's label, so "Copy" is announced with what it copies. */
     describedBy: string;
     onCopy?: (text: string) => void;
+    copyLabel: string;
+    copiedLabel: string;
 };
 
-const CopyButton = ({ text, disabled, className, describedBy, onCopy }: CopyButtonProps) => {
+const CopyButton = ({
+    text,
+    disabled,
+    className,
+    describedBy,
+    onCopy,
+    copyLabel,
+    copiedLabel,
+}: CopyButtonProps) => {
     const [copied, setCopied] = useState(false);
     const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
@@ -190,7 +213,7 @@ const CopyButton = ({ text, disabled, className, describedBy, onCopy }: CopyButt
                     render={
                         <Button
                             aria-describedby={describedBy}
-                            aria-label={copied ? 'Copied' : 'Copy'}
+                            aria-label={copied ? copiedLabel : copyLabel}
                             className={className}
                             data-copied={copied || undefined}
                             disabled={disabled}
@@ -206,11 +229,11 @@ const CopyButton = ({ text, disabled, className, describedBy, onCopy }: CopyButt
                         <Check className={cn(!copied && 'scale-[0.8] opacity-0')} strokeWidth={2} />
                     </span>
                 </TooltipTrigger>
-                <TooltipContent>{copied ? 'Copied' : 'Copy'}</TooltipContent>
+                <TooltipContent>{copied ? copiedLabel : copyLabel}</TooltipContent>
             </Tooltip>
             {/* The tooltip is visual only, so the confirmation is announced separately. */}
             <span aria-live="polite" className="sr-only">
-                {copied ? 'Copied to clipboard' : ''}
+                {copied ? copiedLabel : ''}
             </span>
         </>
     );

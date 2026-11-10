@@ -25,18 +25,30 @@ export type StepperMarker = 'number' | 'dot' | 'icon' | 'line';
 /** In a row: the text centred under its marker, or beside it. */
 export type StepperLayout = 'centered' | 'inline';
 
+/** What a screen reader hears after each label: a step's status, and that it needs attention. */
+export type StepperStatusLabels = Record<StepStatus | 'invalid', string>;
+
+const defaultStatusLabels: StepperStatusLabels = {
+    done: 'done',
+    current: 'current step',
+    upcoming: 'not started',
+    invalid: 'needs attention',
+};
+
 type StepperContextValue = {
     orientation: Orientation;
     layout: StepperLayout;
     marker: StepperMarker;
     value?: number;
     onValueChange?: (step: number) => void;
+    statusLabels: StepperStatusLabels;
 };
 
 const StepperContext = createContext<StepperContextValue>({
     orientation: 'horizontal',
     layout: 'inline',
     marker: 'number',
+    statusLabels: defaultStatusLabels,
 });
 
 // The marker's size drives the rule's geometry, so every marker lines up the same way.
@@ -58,6 +70,8 @@ export type StepperProps = ComponentProps<'ol'> & {
     value?: number;
     /** Makes every done step a button that goes back to it. */
     onValueChange?: (step: number) => void;
+    /** The status words read after each label, for another language; any left out keep the English. */
+    statusLabels?: Partial<StepperStatusLabels>;
 };
 
 /**
@@ -72,6 +86,7 @@ export const Stepper = ({
     marker = 'number',
     value,
     onValueChange,
+    statusLabels,
     className,
     style,
     ...props
@@ -79,7 +94,16 @@ export const Stepper = ({
     const horizontal = orientation === 'horizontal';
 
     return (
-        <StepperContext.Provider value={{ orientation, layout, marker, value, onValueChange }}>
+        <StepperContext.Provider
+            value={{
+                orientation,
+                layout,
+                marker,
+                value,
+                onValueChange,
+                statusLabels: { ...defaultStatusLabels, ...statusLabels },
+            }}
+        >
             <ol
                 className={cn(
                     'flex min-w-0',
@@ -122,8 +146,8 @@ export const stepMarkerVariants = cva(
     {
         variants: {
             marker: {
-                number: 'size-[22px] rounded-pill [&_svg]:size-3.5',
-                dot: 'size-[22px] rounded-pill [&_svg]:size-3.5',
+                number: 'size-5.5 rounded-pill [&_svg]:size-3.5',
+                dot: 'size-5.5 rounded-pill [&_svg]:size-3.5',
                 icon: 'size-8 rounded-control [&_svg]:size-4',
             },
             status: {
@@ -151,10 +175,12 @@ export const stepMarkerVariants = cva(
                 className: 'border-neutral-300 bg-neutral-50 text-neutral-950',
             },
             {
+                // The numeral or icon stays ink: the action colour is only promised to read under
+                // on-action, not as text on the surface, so it marks the step with the hairline.
                 marker: ['number', 'icon'],
                 status: 'current',
                 invalid: false,
-                className: 'border-action bg-neutral-50 text-action',
+                className: 'border-action bg-neutral-50 text-neutral-950',
             },
             {
                 marker: 'dot',
@@ -166,7 +192,7 @@ export const stepMarkerVariants = cva(
                 marker: 'number',
                 status: 'upcoming',
                 invalid: false,
-                className: 'border-neutral-300 bg-neutral-50 text-neutral-500',
+                className: 'border-neutral-300 bg-neutral-50 text-neutral-600',
             },
             {
                 marker: 'dot',
@@ -184,12 +210,6 @@ export const stepMarkerVariants = cva(
         defaultVariants: { marker: 'number', status: 'upcoming', invalid: false },
     },
 );
-
-const statusText: Record<StepStatus, string> = {
-    done: 'done',
-    current: 'current step',
-    upcoming: 'not started',
-};
 
 export type StepperItemProps = Omit<ComponentProps<'li'>, 'title' | 'onClick'> & {
     /** The step's number, shown in a `number` marker until it is done. */
@@ -225,7 +245,8 @@ export const StepperItem = ({
     children,
     ...props
 }: StepperItemProps) => {
-    const { orientation, layout, marker, value, onValueChange } = useContext(StepperContext);
+    const { orientation, layout, marker, value, onValueChange, statusLabels } =
+        useContext(StepperContext);
     const horizontal = orientation === 'horizontal';
     const line = marker === 'line';
     const centered = horizontal && !line && layout === 'centered';
@@ -251,7 +272,9 @@ export const StepperItem = ({
                 'flex min-w-0 flex-col',
                 centered && 'w-full items-center px-2 text-center',
                 // Beside a column's marker, the first line centres on it.
-                !horizontal && !line && 'gap-0.5 pt-[calc((var(--marker)-16.25px)/2)]',
+                !horizontal &&
+                    !line &&
+                    'gap-0.5 pt-[calc((var(--marker)-var(--text-xs--line-height))/2)]',
                 // Clear of the bar, which runs the whole step at the column's edge.
                 !horizontal && line && 'gap-0.5 py-1 pl-4',
                 collapse,
@@ -267,15 +290,15 @@ export const StepperItem = ({
             >
                 {label}
                 <span className="sr-only">
-                    , {statusText[status]}
-                    {invalid && ', needs attention'}
+                    , {statusLabels[status]}
+                    {invalid && `, ${statusLabels.invalid}`}
                 </span>
             </span>
             {description && (
                 <span
                     className={cn(
                         'max-w-full',
-                        invalid ? 'text-error-600' : 'text-neutral-500',
+                        invalid ? 'text-error-600' : 'text-neutral-600',
                         horizontal ? 'truncate text-xxs' : 'text-xs',
                         // Before any label truncates, the other steps let go of their descriptions.
                         horizontal && status !== 'current' && !invalid && '@max-xl/stepper:hidden',
@@ -426,7 +449,7 @@ export const StepperItem = ({
                             : horizontal
                               ? 'h-px min-w-6 flex-1'
                               : // From under the current step's halo to the next marker.
-                                'absolute top-[calc(var(--marker)+7px)] bottom-[7px] left-[calc(var(--marker)/2-0.5px)] w-px',
+                                'absolute top-[calc(var(--marker)+7px)] bottom-1.75 left-[calc(var(--marker)/2-0.5px)] w-px',
                     )}
                     data-slot="stepper-connector"
                 />

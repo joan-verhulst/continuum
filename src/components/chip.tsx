@@ -24,8 +24,8 @@ export const chipVariants = cva(
                 outline: 'border border-neutral-200 text-neutral-950',
             },
             size: {
-                sm: 'h-[25px] px-2 [&_svg:not([class*=size-])]:size-3',
-                md: 'h-[29px] px-2.5 [&_svg:not([class*=size-])]:size-4',
+                sm: 'h-chip px-2 [&_svg:not([class*=size-])]:size-3',
+                md: 'h-segment px-2.5 [&_svg:not([class*=size-])]:size-4',
             },
         },
         defaultVariants: { variant: 'soft', size: 'sm' },
@@ -45,8 +45,11 @@ export const chipClass = chipVariants();
 export const chipRemoveClass =
     'relative z-10 -m-1 inline-flex cursor-pointer items-center justify-center rounded-full p-1 transition-colors duration-150 hover:text-neutral-950 [&_svg]:size-3!';
 
-// The chip's text label, for an action's default name ("Remove Country is Netherlands").
-const ChipLabelContext = createContext<string | undefined>(undefined);
+/*
+ * The chip's text label, for an action's default name ("Remove Country is Netherlands"), and
+ * whether it is disabled, so its action is out of reach by keyboard as well as by pointer.
+ */
+const ChipContext = createContext<{ label?: string; disabled?: boolean }>({});
 
 export type ChipProps = Omit<ComponentProps<'span'>, 'onClick'> &
     VariantProps<typeof chipVariants> & {
@@ -82,7 +85,9 @@ export const Chip = ({
     );
 
     return (
-        <ChipLabelContext.Provider value={typeof children === 'string' ? children : undefined}>
+        <ChipContext.Provider
+            value={{ label: typeof children === 'string' ? children : undefined, disabled }}
+        >
             <span
                 className={cn(
                     chipVariants({ variant, size }),
@@ -114,7 +119,7 @@ export const Chip = ({
                 )}
                 {action}
             </span>
-        </ChipLabelContext.Provider>
+        </ChipContext.Provider>
     );
 };
 
@@ -124,14 +129,15 @@ export type ChipActionProps = Omit<ComponentProps<'button'>, 'type'> & {
 };
 
 /** The action at a chip's end. An × that removes the chip unless given another icon. */
-export const ChipAction = ({ label, className, children, ...props }: ChipActionProps) => {
-    const chipLabel = useContext(ChipLabelContext);
+export const ChipAction = ({ label, disabled, className, children, ...props }: ChipActionProps) => {
+    const chip = useContext(ChipContext);
 
     return (
         <button
-            aria-label={label ?? (chipLabel ? `Remove ${chipLabel}` : 'Remove')}
+            aria-label={label ?? (chip.label ? `Remove ${chip.label}` : 'Remove')}
             className={cn(chipRemoveClass, focusRing, className)}
             data-slot="chip-action"
+            disabled={disabled ?? chip.disabled}
             type="button"
             {...props}
         >

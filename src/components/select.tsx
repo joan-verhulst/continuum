@@ -79,7 +79,8 @@ export const SelectValue = (props: SelectPrimitive.Value.Props) => (
 export const selectTriggerVariants = cva(
     [
         'inline-flex shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-control border font-medium text-neutral-950 text-xs transition-[border-color,color] duration-150',
-        'data-placeholder:text-neutral-500 data-placeholder:hover:text-neutral-700',
+        // The placeholder answers the pointer as an Input's does: neutral-600, then neutral-700.
+        'data-placeholder:text-neutral-600 not-data-disabled:data-placeholder:hover:text-neutral-700',
         // Base UI may keep a disabled trigger focusable, so the attribute is the reliable hook.
         'disabled:cursor-not-allowed disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:opacity-50',
         '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
@@ -89,12 +90,14 @@ export const selectTriggerVariants = cva(
         variants: {
             size: {
                 // The same two rows as Input, so a select and a text field sit level.
-                sm: 'h-[34px] px-3',
-                md: 'h-[38px] px-3',
+                sm: 'h-control px-3',
+                md: 'h-control-lg px-3',
             },
             invalid: {
-                true: 'border-error-500',
-                false: 'border-neutral-200 hover:border-neutral-300 data-popup-open:border-neutral-200',
+                // Its icons turn with the border, as an Input's do.
+                true: 'border-error-500 [&_svg]:text-error-500',
+                // Open, it stays outlined like an Input with focus or an open DatePicker.
+                false: 'border-neutral-200 not-data-disabled:hover:border-neutral-300 data-popup-open:border-neutral-300',
             },
         },
         defaultVariants: {

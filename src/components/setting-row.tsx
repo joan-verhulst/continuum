@@ -32,6 +32,12 @@ export type SettingRowProps = Omit<ComponentProps<'div'>, 'title'> & {
     disabled?: boolean;
     /** The id the form control in the slot takes; generated when left out. */
     controlId?: string;
+    /**
+     * The row depends on the one above it (a setting that only matters while its parent is on). In
+     * a SettingGroup it sits with that parent, 16 below it, with no hairline between. Disabling it
+     * while the parent is off is the caller's, through `disabled`.
+     */
+    dependent?: boolean;
 };
 
 /**
@@ -45,6 +51,7 @@ export const SettingRow = ({
     labelControl = true,
     disabled: disabledProp = false,
     controlId,
+    dependent = false,
     className,
     ...props
 }: SettingRowProps) => {
@@ -77,9 +84,10 @@ export const SettingRow = ({
         <div
             className={cn(
                 // 38px holds a medium select without the row growing when its control changes.
-                'flex min-h-[38px] items-center justify-between gap-4',
+                'flex min-h-control-lg items-center justify-between gap-4',
                 className,
             )}
+            data-dependent={dependent || undefined}
             data-disabled={disabled || undefined}
             data-slot="setting-row"
             {...props}
@@ -115,9 +123,17 @@ export const SettingRow = ({
                 )}
             </div>
             {control && (
-                <div className="flex shrink-0 items-center gap-2" data-slot="setting-row-control">
+                /*
+                 * A fieldset, so a disabled row reaches an action button in the slot as well: it does
+                 * not read the Field context a form control does.
+                 */
+                <fieldset
+                    className="flex min-w-0 shrink-0 items-center gap-2"
+                    data-slot="setting-row-control"
+                    disabled={disabled || undefined}
+                >
                     {control}
-                </div>
+                </fieldset>
             )}
         </div>
     );
@@ -136,8 +152,11 @@ export type SettingGroupProps = Omit<ComponentProps<'fieldset'>, 'title'> & {
 };
 
 /**
- * Setting rows under an optional quiet title, kept apart by space rather than dividers, so a group
- * reads as one list on whatever surface it sits on.
+ * Setting rows under an optional quiet title, 16 apart, each divided from the next by a hairline at
+ * the content's width: closeness alone never groups. A `dependent` row sits with the row above it,
+ * 16 below and with no hairline between, so the pair reads as one setting. Several dependents take
+ * an eyebrow naming what they belong to; mark that eyebrow `data-dependent` too, so it stays with
+ * the parent.
  */
 export const SettingGroup = ({
     title,
@@ -160,14 +179,21 @@ export const SettingGroup = ({
         >
             {title && (
                 <p
-                    className="font-normal text-neutral-500 text-xs"
+                    className="font-normal text-neutral-600 text-xs"
                     data-slot="setting-group-title"
                     id={titleId}
                 >
                     {title}
                 </p>
             )}
-            <div className="flex flex-col gap-4" data-slot="setting-group-rows">
+            <div
+                className={cn(
+                    'flex flex-col gap-4',
+                    // A hairline 16 above every row after the first, unless it depends on the one before.
+                    '[&>*+*:not([data-dependent])]:border-neutral-200 [&>*+*:not([data-dependent])]:border-t [&>*+*:not([data-dependent])]:pt-4',
+                )}
+                data-slot="setting-group-rows"
+            >
                 <SettingGroupDisabledContext.Provider value={disabled}>
                     {children}
                 </SettingGroupDisabledContext.Provider>

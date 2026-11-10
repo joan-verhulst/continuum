@@ -31,15 +31,16 @@ export const codeInputSlotVariants = cva(
     {
         variants: {
             size: {
-                md: 'h-[38px] w-[38px] rounded-control text-sm',
-                lg: 'h-[52px] w-[48px] rounded-control text-lg',
+                md: 'h-control-lg w-control-lg rounded-control text-sm',
+                lg: 'h-bar w-control-xl rounded-control text-lg',
             },
             invalid: {
-                true: 'border-error-500 text-error-500',
+                true: 'border-error-500 text-error-600',
                 false: '',
             },
             disabled: {
-                true: 'border-neutral-200 text-neutral-400',
+                // The row is dimmed to half strength, as every disabled control is; the box keeps its colours.
+                true: 'border-neutral-200 text-neutral-900',
                 false: '',
             },
             active: {
@@ -312,7 +313,7 @@ export const CodeInput = ({
             className={cn(
                 'group/code-input relative inline-flex w-fit',
                 gapBySize[size ?? 'md'],
-                isDisabled && 'cursor-not-allowed',
+                isDisabled && 'cursor-not-allowed opacity-50',
                 className,
             )}
             data-complete={value.length === length || undefined}
