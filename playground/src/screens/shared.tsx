@@ -31,7 +31,28 @@ import {
     MessagesSquare,
     Plus,
 } from 'lucide-react';
-import { Fragment, type ReactNode, useState } from 'react';
+import { createContext, Fragment, type ReactNode, useContext, useState } from 'react';
+
+/** The screens of the one generic app, by the ids Patterns opens them by. */
+export type ScreenId = 'dashboard' | 'list' | 'detail' | 'form' | 'settings' | 'agent' | 'sign-in';
+
+export type ScreenNav = {
+    /** Opens another screen of the app, and for the detail the customer it shows. */
+    open: (id: ScreenId, customer?: string) => void;
+    /** The customer the detail shows, once a row has opened it. */
+    customer?: string;
+};
+
+/*
+ * How one screen of the app opens another. Patterns provides it round a screen it shows live, so
+ * the sidebar, the rows and the breadcrumb lead where they say; in a tile or on Home there is none,
+ * and every link stays where it is.
+ */
+const ScreenNavContext = createContext<ScreenNav>({ open: () => undefined });
+
+export const ScreenNavProvider = ScreenNavContext.Provider;
+
+export const useScreenNav = () => useContext(ScreenNavContext);
 
 const railItems = [
     { id: 'dashboards', label: 'Dashboards', icon: <LayoutGrid strokeWidth={2} /> },
@@ -73,7 +94,7 @@ const AnalyticsRail = ({ initial }: { initial: string }) => {
  * Sticky, with the fade the screens draw so content slides out beneath it.
  */
 export const AnalyticsTopBar = ({ trail }: { trail: string[] }) => (
-    <div className="sticky top-0 z-10 flex h-[54px] shrink-0 items-center justify-between gap-4 bg-linear-to-b from-60% from-neutral-50 to-transparent">
+    <div className="sticky top-0 z-10 flex h-13.5 shrink-0 items-center justify-between gap-4 bg-linear-to-b from-60% from-neutral-50 to-transparent">
         <Breadcrumb>
             <BreadcrumbList>
                 <BreadcrumbItem>
@@ -118,7 +139,7 @@ export const AnalyticsPage = ({
     /** A `<BottomBar floating>`; this frame is its positioned parent. */
     bottomBar?: ReactNode;
 }) => (
-    <div className="relative h-full min-w-[1200px] bg-neutral-50">
+    <div className="relative h-full min-w-300 bg-neutral-50">
         <AnalyticsRail initial={rail} />
         <div className="h-full overflow-y-auto">
             <div
@@ -251,7 +272,7 @@ export const AccountFooter = ({
     <SidebarFooter>
         <SidebarAccount avatar={avatar} name={name} plan={plan} />
         <Button aria-label="Notifications" size="icon" variant="ghost">
-            <Bell className="size-[18px]" strokeWidth={2} />
+            <Bell className="size-4.5" strokeWidth={2} />
         </Button>
     </SidebarFooter>
 );
@@ -277,7 +298,7 @@ export const SectionTitle = ({
     /** Sets the description at 16px, as the report generator draws it. */
     lead?: boolean;
 }) => (
-    <div className={cn('flex max-w-[500px] flex-col', lead ? 'gap-2' : 'gap-1.5')}>
+    <div className={cn('flex max-w-125 flex-col', lead ? 'gap-2' : 'gap-1.5')}>
         <Tag className={cn('font-medium text-neutral-950', titleSizes[size])}>{title}</Tag>
         {description && (
             <p className={cn('text-neutral-600', lead ? 'text-base' : 'text-sm')}>{description}</p>

@@ -2,7 +2,6 @@ import {
     BottomBar,
     Card,
     Dock,
-    DockAction,
     DockItem,
     SegmentedControl,
     SegmentedControlItem,
@@ -18,7 +17,7 @@ import {
     XAxis,
     YAxis,
 } from 'continuum/charts';
-import { ListFilter, UserCheck, UserPlus, Users } from 'lucide-react';
+import { UserCheck, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
 import {
     AnalyticsPage,
@@ -29,54 +28,97 @@ import {
     seriesRows,
 } from './shared';
 
-const segments: Record<string, FunnelStage[]> = {
-    all: [
-        { label: '/pricing', value: 1840 },
-        { label: '/checkout', value: 1426 },
-        { label: '/checkout/step-2', value: 557 },
-        { label: '/checkout/complete', value: 483 },
-    ],
-    new: [
-        { label: '/pricing', value: 1212 },
-        { label: '/checkout', value: 874 },
-        { label: '/checkout/step-2', value: 301 },
-        { label: '/checkout/complete', value: 254 },
-    ],
-    returning: [
-        { label: '/pricing', value: 628 },
-        { label: '/checkout', value: 552 },
-        { label: '/checkout/step-2', value: 256 },
-        { label: '/checkout/complete', value: 229 },
-    ],
-};
+type Segment = 'all' | 'new' | 'returning';
 
 // Eight weeks starting Monday 31 August 2026; the axis names them W1 to W8.
 const firstWeek = new Date(2026, 7, 31);
 const WEEK = 7 * 24 * 60 * 60 * 1000;
-const entered = [310, 342, 298, 365, 380, 352, 401, 388];
-const completed = [118, 136, 121, 150, 162, 149, 171, 159];
-const weeks = entered.map((value, i) => ({
-    date: new Date(firstWeek.getTime() + i * WEEK),
-    entered: value,
-    completed: completed[i] ?? 0,
-}));
+
+// Visitors who reached /pricing and who reached /checkout/complete, per week. All visitors are the
+// new and the returning together, so every figure on the page is worked out from these.
+const weekly = {
+    new: {
+        entered: [188, 205, 180, 220, 229, 212, 242, 236],
+        completed: [62, 71, 64, 79, 85, 78, 90, 83],
+    },
+    returning: {
+        entered: [122, 137, 118, 145, 151, 140, 159, 152],
+        completed: [56, 65, 57, 71, 77, 71, 81, 76],
+    },
+};
+
+const series = (segment: Segment, key: 'entered' | 'completed') =>
+    segment === 'all'
+        ? weekly.new[key].map((value, i) => value + (weekly.returning[key][i] ?? 0))
+        : weekly[segment][key];
+
+// Where the two middle steps fall between those who entered and those who completed, the same for
+// either segment, so the steps of all visitors are the two segments' together.
+const CHECKOUT = 0.62;
+const STEP_2 = 0.07;
+
+// The median time from /pricing to /checkout/complete; all visitors sit between the two segments.
+const timeToComplete: Record<Segment, string> = {
+    all: '1m 44s',
+    new: '2m 06s',
+    returning: '1m 21s',
+};
+
+const sum = (values: number[]) => values.reduce((total, value) => total + value, 0);
+const count = new Intl.NumberFormat('en-GB');
+const percent = (value: number) => `${value.toFixed(1)}%`;
+
+/** The funnel, its figures and the weekly rate for one segment over the last `weeks` weeks. */
+const funnelFor = (segment: Segment, weeks: number) => {
+    const entered = series(segment, 'entered').slice(-weeks);
+    const completed = series(segment, 'completed').slice(-weeks);
+    const total = sum(entered);
+    const done = sum(completed);
+    const stages: FunnelStage[] = [
+        { label: '/pricing', value: total },
+        { label: '/checkout', value: Math.round(done + (total - done) * CHECKOUT) },
+        { label: '/checkout/step-2', value: Math.round(done + (total - done) * STEP_2) },
+        { label: '/checkout/complete', value: done },
+    ];
+    // The step that loses the largest share of the visitors who reached the one before it.
+    const drops = stages.slice(1).map((stage, i) => ({
+        label: stage.label,
+        share: 1 - stage.value / (stages[i]?.value ?? 1),
+    }));
+    const biggest = drops.reduce((a, b) => (b.share > a.share ? b : a));
+    const rows = entered.map((value, i) => ({
+        date: new Date(firstWeek.getTime() + (8 - weeks + i) * WEEK),
+        rate: Math.round(((completed[i] ?? 0) / value) * 1000) / 10,
+    }));
+    return { total, done, stages, biggest, rows };
+};
+
 const formatWeek = (date: Date) =>
     `W${Math.round((date.getTime() - firstWeek.getTime()) / WEEK) + 1}`;
-const weekSeries = [
-    { key: 'entered', label: 'Entered', color: 'var(--color-chart-5)' },
-    { key: 'completed', label: 'Completed', color: 'var(--color-chart-2)' },
-];
+const rateSeries = [{ key: 'rate', label: 'Completion rate', color: 'var(--color-chart-2)' }];
 
 /** Checkout funnel (Eyes, 2026): KPI cards, the funnel, and completion over time. */
 export const CheckoutFunnel = () => {
-    const [segment, setSegment] = useState('all');
+    const [segment, setSegment] = useState<Segment>('all');
     const [range, setRange] = useState('8w');
+
+    // The range picks the weeks the whole page covers: the cards, the funnel and the chart.
+    const weeks = range === '4w' ? 4 : 8;
+    const { total, done, stages, biggest, rows } = funnelFor(segment, weeks);
+    const latest = rows.at(-1)?.rate ?? 0;
+    const change = latest - (rows.at(-2)?.rate ?? latest);
 
     return (
         <AnalyticsPage
             bottomBar={
                 <BottomBar floating>
-                    <Dock aria-label="Visitor segment" onValueChange={setSegment} value={segment}>
+                    <Dock
+                        aria-label="Visitor segment"
+                        onValueChange={next => {
+                            if (next) setSegment(next as Segment);
+                        }}
+                        value={segment}
+                    >
                         <DockItem value="all">
                             <Users strokeWidth={2} />
                             All visitors
@@ -90,78 +132,65 @@ export const CheckoutFunnel = () => {
                             Returning
                         </DockItem>
                     </Dock>
-                    <DockAction aria-label="Filters, 2 applied">
-                        <ListFilter strokeWidth={2} />
-                        (2)
-                    </DockAction>
                 </BottomBar>
             }
-            rail="dashboards"
+            rail="analytics"
         >
             <AnalyticsTopBar trail={['Analytics', 'Funnels', 'Checkout funnel']} />
 
-            <div className="mt-20 mb-6">
-                <PageTitle>Funnels / Checkout funnel</PageTitle>
+            <div className="mt-20 mb-6 flex items-end justify-between gap-4">
+                <PageTitle>Checkout funnel</PageTitle>
+                <SegmentedControl
+                    aria-label="Range"
+                    onValueChange={next => {
+                        if (next) setRange(next);
+                    }}
+                    value={range}
+                >
+                    <SegmentedControlItem value="4w">4 weeks</SegmentedControlItem>
+                    <SegmentedControlItem value="8w">8 weeks</SegmentedControlItem>
+                </SegmentedControl>
             </div>
 
             <div className="flex flex-col gap-4">
-                <div className="grid grid-cols-4 gap-4">
-                    <StatCard delta="+12%" label="Total entered" value="2,980" />
-                    <StatCard delta="+12%" label="Completed" value="41%" />
-                    <StatCard delta="+12%" label="Completion rate" value="51%" />
-                    <StatCard
-                        delta="-4%"
-                        label="Avg time to complete"
-                        trend="down"
-                        value="1m 48s"
-                    />
+                <div className="grid grid-cols-3 gap-4">
+                    <StatCard label="Entered" value={count.format(total)} />
+                    <StatCard label="Completed" value={count.format(done)} />
+                    <StatCard label="Completion rate" value={percent((done / total) * 100)} />
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                     <StatCard
-                        delta="+18%"
+                        delta={`${Math.round(biggest.share * 100)}% leave`}
                         label="Biggest drop-off"
                         trend="down"
-                        value="/checkout/step-2"
+                        value={biggest.label}
                     />
-                    <StatCard
-                        delta="-6%"
-                        label="vs previous period"
-                        trend="down"
-                        value="−5.1% overall completion"
-                    />
+                    <StatCard label="Median time to complete" value={timeToComplete[segment]} />
                 </div>
             </div>
 
-            <FunnelChart className="mt-8" data={segments[segment] ?? []} style={{ height: 384 }} />
+            <FunnelChart className="mt-8" data={stages} style={{ height: 384 }} />
 
             <Card className="mt-8 gap-8 p-5 pb-8">
-                <div className="flex items-start justify-between gap-4">
-                    <ChartCardHeader
-                        delta="+10.7% last mo"
-                        size="lg"
-                        title="Completion rate over time"
-                        value="2.9k"
-                    />
-                    <SegmentedControl aria-label="Range" onValueChange={setRange} value={range}>
-                        <SegmentedControlItem value="4w">4 weeks</SegmentedControlItem>
-                        <SegmentedControlItem value="8w">8 weeks</SegmentedControlItem>
-                        <SegmentedControlItem value="12m">12 months</SegmentedControlItem>
-                    </SegmentedControl>
-                </div>
-                <div aria-label="Funnel entries and completions per week" role="img">
+                <ChartCardHeader
+                    delta={`${change >= 0 ? '+' : '−'}${Math.abs(change).toFixed(1)} pts on the week before`}
+                    size="lg"
+                    title="Completion rate, last week"
+                    trend={change >= 0 ? 'up' : 'down'}
+                    value={percent(latest)}
+                />
+                <div aria-label="Completion rate per week" role="img">
                     <AreaChart
-                        data={weeks}
+                        data={rows}
                         formatXLabel={formatWeek}
                         margin={chartMargin}
                         style={{ height: 260 }}
                     >
                         <Grid />
-                        {weekSeries.map(series => (
-                            <Area dataKey={series.key} fill={series.color} key={series.key} />
-                        ))}
-                        <XAxis numTicks={weeks.length} />
-                        <YAxis />
-                        <ChartTooltip rows={seriesRows(weekSeries)} />
+                        <Area dataKey="rate" fill="var(--color-chart-2)" />
+                        <XAxis numTicks={rows.length} />
+                        <YAxis formatValue={value => `${value}%`} />
+                        <ChartTooltip rows={seriesRows(rateSeries, percent)} />
                     </AreaChart>
                 </div>
             </Card>

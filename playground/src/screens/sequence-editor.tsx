@@ -13,6 +13,14 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
     Button,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
     Dock,
     DockAction,
     DockItem,
@@ -96,6 +104,23 @@ const projects = [
     { id: 'refresh', icon: '🌿', label: 'Brand refresh initiative' },
 ];
 
+// The campaign's other facets, each a view in the dock; the emails are the sequence itself.
+const facets: Record<string, { title: string; description: string }> = {
+    eligibility: {
+        title: 'Eligibility',
+        description: 'Who may enter the campaign, and what takes a contact out of it again.',
+    },
+    audience: {
+        title: 'Audience',
+        description:
+            'The lists and segments the campaign sends to, in the three countries it runs in.',
+    },
+    settings: {
+        title: 'Settings',
+        description: 'The sender, the reply-to address and the hours emails may go out.',
+    },
+};
+
 const SequenceSidebar = () => (
     <Sidebar>
         <SidebarHeader>
@@ -105,15 +130,12 @@ const SequenceSidebar = () => (
             <SidebarToggle />
         </SidebarHeader>
         <SidebarGroup aria-label="Sequences">
-            {/* The call to action sits a step apart from the list below it. */}
-            <NavItem icon={<Plus strokeWidth={2} />} variant="primary">
-                New sequence
-            </NavItem>
             <NavItem icon={<ListTree strokeWidth={2} />}>All sequences</NavItem>
-            <NavItem active icon={<Timer strokeWidth={2} />}>
-                Active campaigns
+            <NavItem icon={<Timer strokeWidth={2} />}>Active campaigns</NavItem>
+            {/* The campaign on the page has not started, so it is filed under the drafts. */}
+            <NavItem active icon={<FileClock strokeWidth={2} />}>
+                Drafts
             </NavItem>
-            <NavItem icon={<FileClock strokeWidth={2} />}>Drafts</NavItem>
             <NavItem icon={<Star strokeWidth={2} />}>Templates</NavItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Projects" label="Projects">
@@ -186,6 +208,10 @@ const EmailActions = ({ name, onDelete }: { name: string; onDelete: () => void }
 /** Email sequence editor (Indigo, 2024): grouped, draggable phases and a floating action bar. */
 export const SequenceEditor = () => {
     const [phases, setPhases] = useState(initialPhases);
+    const [view, setView] = useState('emails');
+    // The email waiting on its delete confirmation, if any.
+    const [deleting, setDeleting] = useState<Email>();
+    const facet = facets[view];
 
     const nextId = () => Math.max(0, ...phases.flatMap(p => p.emails.map(e => e.id))) + 1;
 
@@ -215,7 +241,7 @@ export const SequenceEditor = () => {
         );
 
     return (
-        <AppShell className="h-full min-h-0 min-w-[1280px]">
+        <AppShell className="h-full min-h-0 min-w-7xl">
             <SequenceSidebar />
             <AppPanel>
                 <HeaderBar>
@@ -228,7 +254,7 @@ export const SequenceEditor = () => {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
-                                <BreadcrumbLink href="#">Email campaigns</BreadcrumbLink>
+                                <BreadcrumbLink href="#">Drafts</BreadcrumbLink>
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
@@ -249,107 +275,129 @@ export const SequenceEditor = () => {
                             <h1 className="font-medium text-lg text-neutral-950">
                                 Q1 growth campaign
                             </h1>
-                            <Badge icon={<Info strokeWidth={2} />}>Inactive</Badge>
+                            <Badge icon={<Info strokeWidth={2} />}>Draft</Badge>
                         </div>
 
-                        <div className="mt-12 flex items-start justify-between gap-6">
-                            <SectionTitle
-                                description="Build the sequence by adding emails and grouping them into phases. Emails in a phase go out in order at the set interval. Drag to reorder."
-                                title="Email sequencing"
-                            />
-                            <Button onClick={addEmail}>
-                                Add email
-                                <Plus strokeWidth={2} />
-                            </Button>
-                        </div>
+                        {facet && (
+                            <div className="mt-12">
+                                <SectionTitle description={facet.description} title={facet.title} />
+                            </div>
+                        )}
 
-                        <Table wrapperClassName="mt-8">
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead className="w-10">
-                                        <span className="sr-only">Reorder</span>
-                                    </TableHead>
-                                    <TableHead className="w-10">#</TableHead>
-                                    <TableHead className="w-40">Delay</TableHead>
-                                    <TableHead>Email name</TableHead>
-                                    <TableHead className="w-40">Template</TableHead>
-                                    <TableHead className="w-40">Click rate</TableHead>
-                                    <TableHead className="w-40">Open rate</TableHead>
-                                    <TableHead className="w-11">
-                                        <span className="sr-only">Actions</span>
-                                    </TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {phases.map(phase => (
-                                    <Fragment key={phase.id}>
-                                        <TableGroupRow hint={phase.interval}>
-                                            {phase.interval && (
+                        {view === 'emails' && (
+                            <>
+                                <div className="mt-12 flex items-start justify-between gap-6">
+                                    <SectionTitle
+                                        description="Build the sequence by adding emails and grouping them into phases. Emails in a phase go out in order at the set interval. Drag to reorder."
+                                        title="Email sequencing"
+                                    />
+                                    {/* Secondary: the page's one primary is Start campaign, in the dock. */}
+                                    <Button onClick={addEmail} variant="secondary">
+                                        Add email
+                                        <Plus strokeWidth={2} />
+                                    </Button>
+                                </div>
+
+                                <Table wrapperClassName="mt-8">
+                                    <TableHeader>
+                                        <TableRow>
+                                            <TableHead className="w-10">
+                                                <span className="sr-only">Reorder</span>
+                                            </TableHead>
+                                            <TableHead className="w-10">#</TableHead>
+                                            <TableHead className="w-40">Delay</TableHead>
+                                            <TableHead>Email name</TableHead>
+                                            <TableHead className="w-40">Template</TableHead>
+                                            <TableHead className="w-40">Click rate</TableHead>
+                                            <TableHead className="w-40">Open rate</TableHead>
+                                            <TableHead className="w-11">
+                                                <span className="sr-only">Actions</span>
+                                            </TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {phases.map(phase => (
+                                            <Fragment key={phase.id}>
+                                                <TableGroupRow hint={phase.interval}>
+                                                    {phase.interval && (
+                                                        <Button
+                                                            aria-label={`${phase.title} settings`}
+                                                            className="float-right -my-1.5 -mr-1.5"
+                                                            size="icon-sm"
+                                                            variant="ghost"
+                                                        >
+                                                            <Settings strokeWidth={2} />
+                                                        </Button>
+                                                    )}
+                                                    {!phase.interval && (
+                                                        <Info
+                                                            className="mr-1.5 inline size-3 align-[-1px]"
+                                                            strokeWidth={2}
+                                                        />
+                                                    )}
+                                                    {phase.title}
+                                                </TableGroupRow>
+                                                {phase.emails.map((email, i) => (
+                                                    <TableRow key={email.id}>
+                                                        <TableCell className="cursor-grab text-neutral-600">
+                                                            <GripHorizontal
+                                                                aria-hidden
+                                                                className="size-4"
+                                                                strokeWidth={2}
+                                                            />
+                                                        </TableCell>
+                                                        <TableCell className="tabular-nums">
+                                                            {phase.interval ? i + 1 : ''}
+                                                        </TableCell>
+                                                        <TableCell>{email.delay}</TableCell>
+                                                        <TableCell>{email.name}</TableCell>
+                                                        <TableCell className="text-neutral-700">
+                                                            Template
+                                                        </TableCell>
+                                                        <TableCell>N/A</TableCell>
+                                                        <TableCell>N/A</TableCell>
+                                                        <TableCell className="py-0" align="right">
+                                                            <EmailActions
+                                                                name={email.name}
+                                                                onDelete={() => setDeleting(email)}
+                                                            />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </Fragment>
+                                        ))}
+                                        <TableRow>
+                                            <TableCell className="py-1" colSpan={8}>
                                                 <Button
-                                                    aria-label={`${phase.title} settings`}
-                                                    className="float-right -my-1.5 -mr-1.5"
-                                                    size="icon-sm"
+                                                    className="-ml-2 px-2 text-neutral-950"
+                                                    onClick={addPhase}
                                                     variant="ghost"
                                                 >
-                                                    <Settings strokeWidth={2} />
+                                                    <Plus strokeWidth={2} />
+                                                    Add phase
                                                 </Button>
-                                            )}
-                                            {!phase.interval && (
-                                                <Info
-                                                    className="mr-1.5 inline size-3 align-[-1px]"
-                                                    strokeWidth={2}
-                                                />
-                                            )}
-                                            {phase.title}
-                                        </TableGroupRow>
-                                        {phase.emails.map((email, i) => (
-                                            <TableRow key={email.id}>
-                                                <TableCell className="cursor-grab text-neutral-600">
-                                                    <GripHorizontal
-                                                        aria-hidden
-                                                        className="size-4"
-                                                        strokeWidth={2}
-                                                    />
-                                                </TableCell>
-                                                <TableCell className="tabular-nums">
-                                                    {phase.interval ? i + 1 : ''}
-                                                </TableCell>
-                                                <TableCell>{email.delay}</TableCell>
-                                                <TableCell>{email.name}</TableCell>
-                                                <TableCell className="text-neutral-700">
-                                                    Template
-                                                </TableCell>
-                                                <TableCell>N/A</TableCell>
-                                                <TableCell>N/A</TableCell>
-                                                <TableCell className="py-0" align="right">
-                                                    <EmailActions
-                                                        name={email.name}
-                                                        onDelete={() => removeEmail(email.id)}
-                                                    />
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </Fragment>
-                                ))}
-                                <TableRow>
-                                    <TableCell className="py-1" colSpan={8}>
-                                        <Button
-                                            className="-ml-2 px-2 text-neutral-950"
-                                            onClick={addPhase}
-                                            variant="ghost"
-                                        >
-                                            <Plus strokeWidth={2} />
-                                            Add phase
-                                        </Button>
-                                    </TableCell>
-                                </TableRow>
-                            </TableBody>
-                        </Table>
+                                            </TableCell>
+                                        </TableRow>
+                                    </TableBody>
+                                </Table>
+                            </>
+                        )}
                     </PageContent>
                 </div>
 
                 <BottomBar floating>
-                    <Dock aria-label="Campaign">
+                    {/* The campaign's facets; the sequence is the one shown. */}
+                    <Dock
+                        aria-label="Campaign"
+                        onValueChange={next => {
+                            if (next) setView(next);
+                        }}
+                        value={view}
+                    >
+                        <DockItem value="emails">
+                            <Mail strokeWidth={2} />
+                            Emails
+                        </DockItem>
                         <DockItem value="eligibility">
                             <ToggleLeft strokeWidth={2} />
                             Eligibility
@@ -368,6 +416,37 @@ export const SequenceEditor = () => {
                         <Rocket strokeWidth={2} />
                     </DockAction>
                 </BottomBar>
+                <Dialog
+                    onOpenChange={open => {
+                        if (!open) setDeleting(undefined);
+                    }}
+                    open={Boolean(deleting)}
+                >
+                    <DialogContent className="w-[min(420px,calc(100vw-32px))]">
+                        <DialogHeader>
+                            <DialogTitle>Delete {deleting?.name}?</DialogTitle>
+                        </DialogHeader>
+                        <DialogBody>
+                            <DialogDescription>
+                                The email leaves the sequence, and the emails after it in its phase
+                                move up.
+                            </DialogDescription>
+                        </DialogBody>
+                        <DialogFooter>
+                            <DialogClose render={<Button variant="secondary" />}>
+                                Cancel
+                            </DialogClose>
+                            <Button
+                                onClick={() => {
+                                    if (deleting) removeEmail(deleting.id);
+                                    setDeleting(undefined);
+                                }}
+                            >
+                                Delete email
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </AppPanel>
         </AppShell>
     );

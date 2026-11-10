@@ -19,17 +19,29 @@ import {
 } from 'continuum';
 import { Building2, Rocket, Sparkles } from 'lucide-react';
 import { useState } from 'react';
-import { PageHead, SectionHead, Workspace } from './workspace';
+import { useScreenNav } from './shared';
+import { owners, PageHead, plans, SectionHead, Workspace } from './workspace';
 
 const icon = { strokeWidth: 2 } as const;
 
-/** A form: three short sections, each its title then its fields, and one action at the end. */
+const planIcons = {
+    Starter: <Rocket {...icon} />,
+    Pro: <Sparkles {...icon} />,
+    Enterprise: <Building2 {...icon} />,
+};
+
+/** A form: four short sections, each its title then its fields, and one action at the end. */
 export const NewCustomer = () => {
-    const [plan, setPlan] = useState('pro');
+    const nav = useScreenNav();
+    const [plan, setPlan] = useState('Pro');
     const [welcome, setWelcome] = useState(true);
 
     return (
-        <Workspace place="customers" trail={['Customers', 'New customer']} width="narrow">
+        <Workspace
+            place="customers"
+            trail={[{ label: 'Customers', to: 'list' }, 'New customer']}
+            width="narrow"
+        >
             <PageHead
                 description="Add a company, pick its plan and who looks after it."
                 title="New customer"
@@ -75,6 +87,22 @@ export const NewCustomer = () => {
                         </Select>
                     </Field>
                     <Field>
+                        <FieldLabel>Owner</FieldLabel>
+                        <Select defaultValue="Maya Chen">
+                            <SelectTrigger>
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {owners.map(owner => (
+                                    <SelectItem key={owner.name} value={owner.name}>
+                                        {owner.name}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <FieldHelper>Who looks after the account from here.</FieldHelper>
+                    </Field>
+                    <Field>
                         <FieldLabel>Notes</FieldLabel>
                         <Textarea placeholder="Anything the team should know" rows={3} />
                     </Field>
@@ -87,29 +115,24 @@ export const NewCustomer = () => {
                     title="Plan"
                 />
                 <RadioGroup aria-label="Plan" onValueChange={setPlan} value={plan}>
-                    <OptionRow
-                        control={<RadioGroupItem value="starter" />}
-                        description="€29 a month, for a team of up to five"
-                        icon={<Rocket {...icon} />}
-                        label="Starter"
-                    />
-                    <OptionRow
-                        control={<RadioGroupItem value="pro" />}
-                        description="€99 a month, with reports and an API"
-                        icon={<Sparkles {...icon} />}
-                        label={
-                            <span className="flex items-center gap-2">
-                                Pro
-                                <Badge tone="primary">Most picked</Badge>
-                            </span>
-                        }
-                    />
-                    <OptionRow
-                        control={<RadioGroupItem value="enterprise" />}
-                        description="A price per seat, single sign-on and a contract"
-                        icon={<Building2 {...icon} />}
-                        label="Enterprise"
-                    />
+                    {plans.map(item => (
+                        <OptionRow
+                            control={<RadioGroupItem value={item.id} />}
+                            description={`${item.price}, ${item.terms}`}
+                            icon={planIcons[item.id]}
+                            key={item.id}
+                            label={
+                                item.id === 'Pro' ? (
+                                    <span className="flex items-center gap-2">
+                                        Pro
+                                        <Badge tone="primary">Most picked</Badge>
+                                    </span>
+                                ) : (
+                                    item.id
+                                )
+                            }
+                        />
+                    ))}
                 </RadioGroup>
             </section>
 
@@ -140,16 +163,32 @@ export const NewCustomer = () => {
                         <FieldHelper>Leave it empty for a company outside the EU.</FieldHelper>
                     </Field>
                 </div>
-                <SettingRow
-                    control={<Switch checked={welcome} onCheckedChange={setWelcome} />}
-                    description="A short email with a link to sign in and set a password."
-                    title="Send a welcome email"
+            </section>
+
+            {/* The first person to sign in, and the email that lets them: a section of its own, not billing's. */}
+            <section className="flex flex-col gap-5">
+                <SectionHead
+                    description="The person at the company who signs in first and invites the rest."
+                    title="First user"
                 />
+                <div className="flex flex-col gap-5">
+                    <Field>
+                        <FieldLabel>Their email</FieldLabel>
+                        <Input placeholder="name@company.com" type="email" />
+                    </Field>
+                    <SettingRow
+                        control={<Switch checked={welcome} onCheckedChange={setWelcome} />}
+                        description="Sent to the address above, with a link to sign in and set a password."
+                        title="Send a welcome email"
+                    />
+                </div>
             </section>
 
             <div className="flex justify-end gap-2">
-                <Button variant="secondary">Cancel</Button>
-                <Button>Create customer</Button>
+                <Button onClick={() => nav.open('list')} variant="secondary">
+                    Cancel
+                </Button>
+                <Button onClick={() => nav.open('list')}>Create customer</Button>
             </div>
         </Workspace>
     );

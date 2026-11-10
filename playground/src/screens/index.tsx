@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Agent } from './agent';
 import { CustomerDetail } from './customer';
 import { Customers } from './customers';
 import { NewCustomer } from './new-customer';
@@ -15,9 +16,10 @@ export type Screen = {
 };
 
 /**
- * Six generic screens of one app, built from the system alone. They follow the
- * playground's mode and the theme previewed from the pill, every colour, corner
- * and font of them.
+ * Seven generic screens of one app, built from the system alone. They follow the
+ * playground's mode and the theme of the current project, every colour, corner
+ * and font of them. Shown live, they lead into each other: the sidebar, a row,
+ * the breadcrumb and a form's actions open the screen they name.
  */
 export const screens: Screen[] = [
     {
@@ -30,28 +32,36 @@ export const screens: Screen[] = [
         id: 'list',
         title: 'List',
         description:
-            'Search and filters over a ruled table, rows to select, and pages at the foot.',
+            'Search and filters over a ruled table, views in the dock, rows to select, and pages at the foot.',
         render: () => <Customers />,
     },
     {
         id: 'detail',
         title: 'Detail',
         description:
-            'One record: what it is, what to do with it, its numbers, what happened and its facts.',
+            'One record: what it is, what to do with it, its facets in tabs, and its history in a sheet.',
         render: () => <CustomerDetail />,
     },
     {
         id: 'form',
         title: 'Form',
-        description: 'Three short sections of fields, a choice of plan, and one action at the end.',
+        description:
+            'The company, its plan, billing and first user in short sections, and one action at the end.',
         render: () => <NewCustomer />,
     },
     {
         id: 'settings',
         title: 'Settings',
         description:
-            'A row per setting with its control at the end, grouped, and the plan in a card.',
+            'The areas in the dock, a card per group with a row per setting, and the plan in force under Billing.',
         render: () => <Settings />,
+    },
+    {
+        id: 'agent',
+        title: 'Agent',
+        description:
+            'A large prompt with the recent chats under it; a question turns the page into the conversation, the reply written out as it comes.',
+        render: () => <Agent />,
     },
     {
         id: 'sign-in',

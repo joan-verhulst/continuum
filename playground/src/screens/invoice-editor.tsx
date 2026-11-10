@@ -16,11 +16,20 @@ import {
     cn,
     DescriptionItem,
     DescriptionList,
+    Dialog,
+    DialogBody,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
     focusRing,
     HeaderBar,
     Kbd,
     NavGroup,
     NavItem,
+    Notice,
     PageContent,
     Sheet,
     SheetArea,
@@ -41,6 +50,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
+    useNotice,
 } from 'continuum';
 import {
     ArrowLeft,
@@ -153,9 +163,6 @@ const InvoiceSidebar = () => (
             <SidebarToggle />
         </SidebarHeader>
         <SidebarGroup aria-label="Payments">
-            <NavItem icon={<Plus strokeWidth={2} />} variant="primary">
-                New invoice
-            </NavItem>
             <NavItem icon={<House strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
                 Home
             </NavItem>
@@ -207,9 +214,19 @@ const InvoiceSidebar = () => (
 export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
     const [historyOpen, setHistoryOpen] = useState(sheet);
     const [lines, setLines] = useState(initialLines);
+    // The line waiting on its delete confirmation, if any.
+    const [deleting, setDeleting] = useState<Line>();
+    const { notice, show } = useNotice();
 
-    const subtotal = lines.reduce((sum, line) => sum + line.qty * line.price, 0);
-    const total = subtotal * (1 + TAX) * (1 - DISCOUNT);
+    const subtotal = lines.reduce((sum, line) => sum + line.qty * line.price * (1 + TAX), 0);
+    const discount = subtotal * DISCOUNT;
+    const total = subtotal - discount;
+    // The sums under the lines: what the lines come to, the fees, the discount. The total follows.
+    const summary = [
+        { label: 'Subtotal', rate: null, usd: subtotal },
+        { label: 'Fees', rate: null, usd: 0 },
+        { label: 'Discount', rate: `${DISCOUNT * 100}%`, usd: -discount },
+    ];
 
     const addLine = () =>
         setLines(current => [
@@ -224,7 +241,7 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
         ]);
 
     return (
-        <AppShell className="h-full min-h-0 min-w-[1280px]">
+        <AppShell className="h-full min-h-0 min-w-7xl">
             <InvoiceSidebar />
             <AppPanel>
                 <HeaderBar className="pl-0">
@@ -246,11 +263,11 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbLink href="#">Payments</BreadcrumbLink>
+                                    <BreadcrumbLink href="#">Invoices</BreadcrumbLink>
                                 </BreadcrumbItem>
                                 <BreadcrumbSeparator />
                                 <BreadcrumbItem>
-                                    <BreadcrumbPage>Batch #12345</BreadcrumbPage>
+                                    <BreadcrumbPage>INV-0412</BreadcrumbPage>
                                 </BreadcrumbItem>
                             </BreadcrumbList>
                         </Breadcrumb>
@@ -263,22 +280,32 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                         <History strokeWidth={2} />
                         Status history
                     </Button>
+                    <Notice {...notice} />
                 </HeaderBar>
 
                 <SheetArea className="min-h-0 flex-1 overflow-auto">
                     <PageContent className="flex flex-col gap-8 pb-16" width="wide">
-                        <div className="flex max-w-[560px] flex-col gap-2">
-                            <h1 className="font-medium text-lg text-neutral-950">
-                                Edit invoice INV-0412
-                            </h1>
-                            <p className="text-neutral-600 text-xs">
-                                Follow the invoice from draft to payment. Every change to its
-                                details or lines is logged in the status history.
-                            </p>
+                        {/* An object being edited keeps its actions in the title row; a save shows as a notice. */}
+                        <div className="flex items-start justify-between gap-6">
+                            <div className="flex max-w-140 flex-col gap-2">
+                                <h1 className="font-medium text-lg text-neutral-950">
+                                    Edit invoice INV-0412
+                                </h1>
+                                <p className="text-neutral-600 text-xs">
+                                    Follow the invoice from draft to payment. Every change to its
+                                    details or lines is logged in the status history.
+                                </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
+                                <Button onClick={() => setLines(initialLines)} variant="secondary">
+                                    Discard changes
+                                </Button>
+                                <Button onClick={() => show('Saved')}>Save invoice</Button>
+                            </div>
                         </div>
 
                         <div className="flex items-center justify-between gap-4 rounded-panel border border-neutral-200 p-4 font-normal text-xs">
-                            <span className="text-neutral-500">Invoice created</span>
+                            <span className="text-neutral-600">Invoice created</span>
                             <span className="text-neutral-950">09/03/2025</span>
                         </div>
 
@@ -304,7 +331,7 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                         View status history
                                     </button>
                                 </DescriptionItem>
-                                <DescriptionItem className="min-h-[90px]" term="Rejection message">
+                                <DescriptionItem className="min-h-22.5" term="Rejection message">
                                     The breakdown of the development work is not detailed enough.
                                     Please list each service separately with its hours, and adjust
                                     the due date to the end of the month.
@@ -317,7 +344,7 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                 </DescriptionItem>
                                 <DescriptionItem term="Due date">11/03/2025</DescriptionItem>
                                 <DescriptionItem term="Currency">
-                                    <Badge>EUR</Badge>
+                                    <Badge>USD</Badge>
                                 </DescriptionItem>
                                 <DescriptionItem term="Discount">10%</DescriptionItem>
                             </DescriptionList>
@@ -331,11 +358,11 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                         <TableHead className="w-10">
                                             <span className="sr-only">Reorder</span>
                                         </TableHead>
-                                        <TableHead className="w-28">Item</TableHead>
+                                        <TableHead className="w-64">Item</TableHead>
                                         <TableHead>Description</TableHead>
-                                        <TableHead className="w-16">Qty</TableHead>
+                                        <TableHead className="w-16 text-center">Qty</TableHead>
                                         <TableHead className="w-32">Unit price</TableHead>
-                                        <TableHead className="w-20">Tax</TableHead>
+                                        <TableHead className="w-32">Tax</TableHead>
                                         <TableHead className="w-32">
                                             <span className="flex items-center gap-2">
                                                 Total <Badge>USD</Badge>
@@ -347,7 +374,7 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                             </span>
                                         </TableHead>
                                         <TableHead className="w-14">
-                                            <span className="sr-only">Actions</span>
+                                            <span className="sr-only">Delete</span>
                                         </TableHead>
                                     </TableRow>
                                 </TableHeader>
@@ -367,7 +394,7 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                                 <TableCell className="truncate">
                                                     {line.description}
                                                 </TableCell>
-                                                <TableCell numeric align="left">
+                                                <TableCell className="text-center" numeric>
                                                     {line.qty}
                                                 </TableCell>
                                                 <TableCell numeric align="left">
@@ -386,13 +413,7 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                                     <Button
                                                         aria-label={`Delete ${line.item}`}
                                                         className="text-error-500 hover:text-error-600"
-                                                        onClick={() =>
-                                                            setLines(current =>
-                                                                current.filter(
-                                                                    l => l.id !== line.id,
-                                                                ),
-                                                            )
-                                                        }
+                                                        onClick={() => setDeleting(line)}
                                                         size="icon-sm"
                                                         variant="ghost"
                                                     >
@@ -403,9 +424,9 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                         );
                                     })}
                                     <TableRow>
-                                        <TableCell className="py-1" colSpan={9}>
+                                        <TableCell className="py-2" colSpan={9}>
                                             <Button
-                                                className="-ml-2 px-2 text-neutral-950"
+                                                className="-ml-2 gap-3 px-2 text-neutral-950"
                                                 onClick={addLine}
                                                 variant="ghost"
                                             >
@@ -417,11 +438,43 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                                 </TableBody>
                                 <TableFooter>
                                     <TableRow>
-                                        <TableCell className="text-neutral-600" colSpan={5}>
-                                            {lines.length} {lines.length === 1 ? 'line' : 'lines'}
-                                        </TableCell>
-                                        <TableCell numeric align="left">
-                                            −{DISCOUNT * 100}%
+                                        <TableHead colSpan={5}>
+                                            <span className="sr-only">Summary</span>
+                                        </TableHead>
+                                        <TableHead>Discount</TableHead>
+                                        <TableHead>
+                                            <span className="flex items-center gap-2">
+                                                Total <Badge>USD</Badge>
+                                            </span>
+                                        </TableHead>
+                                        <TableHead>
+                                            <span className="flex items-center gap-2">
+                                                Total <Badge>EUR</Badge>
+                                            </span>
+                                        </TableHead>
+                                        <TableHead />
+                                    </TableRow>
+                                    {summary.map(row => (
+                                        <TableRow key={row.label}>
+                                            <TableCell className="pl-4" colSpan={5}>
+                                                {row.label}
+                                            </TableCell>
+                                            <TableCell numeric align="left">
+                                                {row.rate}
+                                            </TableCell>
+                                            <TableCell numeric align="left">
+                                                {usd.format(row.usd)}
+                                            </TableCell>
+                                            <TableCell numeric align="left">
+                                                {eur.format(row.usd * EUR_PER_USD)}
+                                            </TableCell>
+                                            <TableCell />
+                                        </TableRow>
+                                    ))}
+                                    {/* The total, set off from the sums above by a hairline. */}
+                                    <TableRow className="[&>td]:border-neutral-200 [&>td]:border-t [&>td]:pt-3 [&>td]:pb-4">
+                                        <TableCell className="pl-4" colSpan={6}>
+                                            Total
                                         </TableCell>
                                         <TableCell numeric align="left">
                                             {usd.format(total)}
@@ -463,6 +516,38 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                         </SheetContent>
                     </Sheet>
                 </SheetArea>
+                <Dialog
+                    onOpenChange={open => {
+                        if (!open) setDeleting(undefined);
+                    }}
+                    open={Boolean(deleting)}
+                >
+                    <DialogContent className="w-[min(420px,calc(100vw-32px))]">
+                        <DialogHeader>
+                            <DialogTitle>Delete line {deleting?.item}?</DialogTitle>
+                        </DialogHeader>
+                        <DialogBody>
+                            <DialogDescription>
+                                The line and its amount come off the invoice once it is saved.
+                            </DialogDescription>
+                        </DialogBody>
+                        <DialogFooter>
+                            <DialogClose render={<Button variant="secondary" />}>
+                                Cancel
+                            </DialogClose>
+                            <Button
+                                onClick={() => {
+                                    setLines(current =>
+                                        current.filter(line => line.id !== deleting?.id),
+                                    );
+                                    setDeleting(undefined);
+                                }}
+                            >
+                                Delete line
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </AppPanel>
         </AppShell>
     );

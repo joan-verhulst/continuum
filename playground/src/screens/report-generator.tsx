@@ -13,11 +13,12 @@ import {
     Button,
     Card,
     Checkbox,
-    Chip,
+    DateRangePicker,
+    type DateRangeValue,
+    defaultDateRangePresets,
     Field,
     FieldLabel,
     HeaderBar,
-    Input,
     Kbd,
     NavGroup,
     NavItem,
@@ -47,9 +48,7 @@ import {
     Layers,
     LifeBuoy,
     MousePointerClick,
-    Plus,
     Share2,
-    Sparkles,
     TrendingUp,
     Users,
 } from 'lucide-react';
@@ -89,11 +88,9 @@ const platforms: { id: string; label: string; stats: Stat[] }[] = [
     { id: 'stories', label: 'Stories', stats: social },
 ];
 
-const suggestions = {
-    'Current month': 'October 1, 2025 – October 31, 2025',
-    'Previous month': 'September 1, 2025 – September 30, 2025',
-    'Last 90 days': 'July 23, 2025 – October 20, 2025',
-};
+// A report covers last month unless another period is picked.
+const lastMonth = (): DateRangeValue | undefined =>
+    defaultDateRangePresets.find(preset => preset.label === 'Last month')?.range();
 
 const clients = [
     { id: 'fern', icon: '🪴', label: 'Fern & Field' },
@@ -110,9 +107,6 @@ const ReportSidebar = () => (
             <SidebarToggle />
         </SidebarHeader>
         <SidebarGroup aria-label="Main">
-            <NavItem icon={<Plus strokeWidth={2} />} variant="primary">
-                New report
-            </NavItem>
             <NavItem icon={<Gauge strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
                 Home
             </NavItem>
@@ -169,7 +163,7 @@ const ReportSidebar = () => (
 
 /** Report generator (Lime, 2025): a centred form of period, statistics and trend filter. */
 export const ReportGenerator = () => {
-    const [dates, setDates] = useState(suggestions['Current month']);
+    const [dates, setDates] = useState(lastMonth);
     const [platform, setPlatform] = useState('general');
     const [checked, setChecked] = useState<Record<string, boolean>>(() =>
         Object.fromEntries(general.map(stat => [`general:${stat.id}`, true])),
@@ -179,7 +173,7 @@ export const ReportGenerator = () => {
     const current = platforms.find(p => p.id === platform) ?? platforms[0];
 
     return (
-        <AppShell className="h-full min-h-0 min-w-[1280px]">
+        <AppShell className="h-full min-h-0 min-w-7xl">
             <ReportSidebar />
             <AppPanel>
                 <HeaderBar>
@@ -196,6 +190,10 @@ export const ReportGenerator = () => {
                             </BreadcrumbItem>
                             <BreadcrumbSeparator />
                             <BreadcrumbItem>
+                                <BreadcrumbLink href="#">Copper Kettle Café</BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
                                 <BreadcrumbPage>Generate report</BreadcrumbPage>
                             </BreadcrumbItem>
                         </BreadcrumbList>
@@ -203,7 +201,7 @@ export const ReportGenerator = () => {
                 </HeaderBar>
 
                 <div className="min-h-0 flex-1 overflow-auto">
-                    <PageContent className="pb-24">
+                    <PageContent className="pb-24" width="narrow">
                         <form
                             className="flex flex-col gap-12"
                             onSubmit={event => event.preventDefault()}
@@ -213,7 +211,7 @@ export const ReportGenerator = () => {
                                 as="h1"
                                 lead
                                 size="lg"
-                                title="Generate report for Acme Corp"
+                                title="Generate report for Copper Kettle Café"
                             />
 
                             <section className="flex flex-col gap-6">
@@ -222,32 +220,11 @@ export const ReportGenerator = () => {
                                     description="Set the period the report covers. Only data from within this period is included."
                                     title="Select period"
                                 />
-                                <div className="flex flex-col gap-3">
-                                    <Field>
-                                        <FieldLabel>Dates</FieldLabel>
-                                        <Input
-                                            leadingIcon={<Calendar strokeWidth={2} />}
-                                            onChange={event => setDates(event.target.value)}
-                                            value={dates}
-                                        />
-                                    </Field>
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        <span className="mr-2 flex items-center gap-1.5 text-neutral-600 text-xs">
-                                            <Sparkles className="size-4" strokeWidth={2} />
-                                            Suggestions:
-                                        </span>
-                                        {Object.entries(suggestions).map(([label, value]) => (
-                                            <Chip
-                                                size="md"
-                                                variant="outline"
-                                                key={label}
-                                                onClick={() => setDates(value)}
-                                            >
-                                                {label}
-                                            </Chip>
-                                        ))}
-                                    </div>
-                                </div>
+                                {/* A period is a range picker, its quick ranges listed beside the calendar. */}
+                                <Field>
+                                    <FieldLabel>Dates</FieldLabel>
+                                    <DateRangePicker onValueChange={setDates} value={dates} />
+                                </Field>
                             </section>
 
                             <section className="flex flex-col gap-6">
