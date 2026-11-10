@@ -1,13 +1,19 @@
 import {
+    chartHarmonies,
     createThemeVariables,
     defaultThemeOptions,
+    drawnType,
+    drawnUnit,
     hexToOklch,
+    rampSteps,
     type ThemeMode,
     type ThemeOptions,
+    themeChartSeries,
+    themeFontFamilies,
 } from 'continuum';
 import themeCss from 'continuum/theme.css?raw';
 import tokensCss from 'continuum/tokens.css?raw';
-import { isPreviewing, matchPreset } from './presets';
+import { heightChoices, isPreviewing, typeChoices, unitChoices } from './presets';
 
 /*
  * What the builder hands a project: the whole look as a Tailwind v4 theme in Tailwind's own
@@ -17,21 +23,17 @@ import { isPreviewing, matchPreset } from './presets';
  */
 
 export type ThemeExport = {
-    /** What a person calls it: the preset's name, Brand, or Continuum for the default. */
+    /** What a person calls it: the project's name, or Continuum for the default theme. */
     label: string;
-    /** The builder's options with the corner scale. */
+    /** The project's theme, its corner scale included. */
     options: ThemeOptions;
     mode: ThemeMode;
 };
 
-export const exportTheme = (theme: ThemeOptions, radius: number, mode: ThemeMode): ThemeExport => {
-    if (!isPreviewing(theme, radius)) return { label: 'Continuum', options: {}, mode };
-    return {
-        label: matchPreset(theme, radius)?.label ?? 'Brand',
-        options: { ...theme, ...(radius === 1 ? {} : { radius }) },
-        mode,
-    };
-};
+export const exportTheme = (theme: ThemeOptions, label: string, mode: ThemeMode): ThemeExport =>
+    isPreviewing(theme)
+        ? { label, options: theme, mode }
+        : { label: 'Continuum', options: {}, mode };
 
 /* ---------- Reading the library's stylesheets ---------- */
 
@@ -123,6 +125,18 @@ const resolve = (value: string, values: Declarations, depth = 0): string => {
 
 const round = (value: number, digits: number) => Number(value.toFixed(digits));
 
+/**
+ * Every token's value as a theme writes it for one mode, each var() followed to the value it reads:
+ * what an element in the theme is painted with. Unknown names give undefined.
+ */
+export const themeToken = (options: ThemeOptions, mode: ThemeMode) => {
+    const values = scope(options, mode);
+    return (name: string) => {
+        const value = values.get(name);
+        return value === undefined ? undefined : resolve(value, values);
+    };
+};
+
 /** Sums the radii out to pixels and turns relative colours into plain ones, so the file reads as values. */
 const tidy = (value: string) =>
     value
@@ -135,6 +149,11 @@ const tidy = (value: string) =>
             /calc\(([\d.]+)px \* ([\d.]+)\)/g,
             (_, raw, scale) => `${round(Number(raw) * Number(scale), 2)}px`,
         )
+        // A height drawn from another (a control less its padding) sums out once that one is pixels.
+        .replace(
+            /calc\(([\d.]+)px ([+-]) ([\d.]+)px\)/g,
+            (_, a, sign, b) => `${round(Number(a) + (sign === '-' ? -1 : 1) * Number(b), 2)}px`,
+        )
         .replace(/oklch\(from (#[0-9a-f]{6}) l c calc\(h \+ (\d+)\)\)/gi, (match, hex, turn) => {
             const colour = hexToOklch(hex);
             return colour
@@ -144,21 +163,18 @@ const tidy = (value: string) =>
 
 /* ---------- app.css ---------- */
 
-const fontPackages: Record<string, string> = {
-    geist: '@fontsource-variable/geist',
-    inter: '@fontsource-variable/inter',
-};
+const fontPackages: Record<string, string> = Object.fromEntries(
+    Object.entries(themeFontFamilies).map(([id, font]) => [id, font.package]),
+);
 
-const fontNames: Record<string, string> = {
-    geist: 'Geist',
-    inter: 'Inter',
-    system: 'the system UI font',
-};
+const fontNames: Record<string, string> = Object.fromEntries(
+    Object.entries(themeFontFamilies).map(([id, font]) => [id, font.family]),
+);
 
 const fontOf = (options: ThemeOptions) => options.font ?? defaultThemeOptions.font;
 
 /** Tailwind turns these namespaces into utilities; anything else is a plain variable. */
-const utility = /^--(color|font|text|radius|shadow|container|spacing|ease|tracking)-/;
+const utility = /^--((color|font|text|radius|shadow|container|spacing|ease|tracking)-|spacing$)/;
 
 const declare = (name: string, value: string) => `    ${name}: ${value};`;
 
@@ -166,6 +182,11 @@ const declare = (name: string, value: string) => `    ${name}: ${value};`;
  * The look as a Tailwind v4 entry: Continuum's tokens under Tailwind's names, resolved to
  * values for the theme, light in the theme and dark wherever data-mode="dark" is set.
  */
+/** The fixed size grid from theme.css, copied as it is: a project's own utilities need it too. */
+const fixedSizes = (
+    /\/\* sizes: start \*\/\n([\s\S]*?)\/\* sizes: end \*\//.exec(themeCss)?.[1] ?? ''
+).trim();
+
 export const tailwindEntry = (theme: ThemeExport) => {
     const light = scope(theme.options, 'light');
     const dark = scope(theme.options, 'dark');
@@ -200,7 +221,10 @@ export const tailwindEntry = (theme: ThemeExport) => {
             ...tokensWhere(name => name === '--font-sans'),
             ...fixedWhere(name => name === '--font-mono'),
         ],
-        fixedWhere(name => name.startsWith('--text-')),
+        [
+            ...fixedWhere(name => name === '--text-*'),
+            ...tokensWhere(name => name.startsWith('--text-')),
+        ],
         fixedWhere(name => name.startsWith('--font-weight-')),
         fixedWhere(name => name.startsWith('--tracking-')),
         [
@@ -215,8 +239,8 @@ export const tailwindEntry = (theme: ThemeExport) => {
         ],
         fixedWhere(name => name.startsWith('--ease-')),
         [
-            '    /* The 4px grid: p-1 is 4px, gap-3 12px. */',
-            declare('--spacing', '4px'),
+            '    /* The spacing unit: p-1 is one unit, gap-3 three. Control heights and panel widths do not follow it. */',
+            declare('--spacing', read(light, '--spacing')),
             ...tokensWhere(name => name.startsWith('--spacing-')),
         ],
         [
@@ -257,6 +281,8 @@ ${publicNames
 ${changed.map(name => declare(name, read(dark, name))).join('\n')}
 }
 
+${fixedSizes}
+
 @layer base {
     body,
     [data-mode] {
@@ -274,12 +300,56 @@ ${changed.map(name => declare(name, read(dark, name))).join('\n')}
 
 /* ---------- DESIGN.md ---------- */
 
+/**
+ * How the harmony finds series 2 to 4, in words, with the geometry it was worked within: its
+ * spread, custom hues as clockwise turns of the primary's, and the steps held by hand.
+ */
+const dataHarmonyInWords = (options: ThemeOptions, harmony: string) => {
+    const info = chartHarmonies.find(item => item.id === options.chartHarmony);
+    const turns = options.chartHarmony === 'custom' ? options.chartTurns : undefined;
+    const clockwise = (turn: number) => `+${Math.round(((turn % 360) + 360) % 360)}°`;
+    const hues =
+        turns?.length === 3
+            ? `custom hues at ${inWords(turns.map(clockwise))} (turns of the primary's hue on the oklch wheel)`
+            : info?.spread && options.chartSpread !== undefined
+              ? `${harmony} hues, ${
+                    info.spread.name === 'width'
+                        ? `a rectangle ${options.chartSpread}° wide`
+                        : `${options.chartSpread}° spread`
+                },`
+              : `${options.chartHarmony === 'custom' ? 'auto' : harmony} hues`;
+    // A held step is kept per hue; the series it lands on is the one the search ordered it into.
+    const series = themeChartSeries(options);
+    const held = (options.chartHarmony && options.chartHarmony !== 'auto' ? [0, 1, 2] : []).flatMap(
+        i => {
+            const step = options.chartSteps?.[series?.members[i] ?? i];
+            return typeof step === 'number' ? [`series ${i + 2} at the ${rampSteps[step]}`] : [];
+        },
+    );
+    return held.length
+        ? `${hues} complete the set: ${inWords(held)}, held by hand (a step lighter in dark); the rest each at the step that keeps neighbours apart for every reader`
+        : `${hues} complete the set, each at the step that keeps neighbours apart for every reader`;
+};
+
+/** A list in words: "a", "a and b", "a, b and c". */
+const inWords = (items: readonly string[]) =>
+    items.length < 2 ? (items[0] ?? '') : `${items.slice(0, -1).join(', ')} and ${items.at(-1)}`;
+
 /** The theme's choices in words, one row each. */
 const themeRows = (options: ThemeOptions): [string, string][] => {
     const action = options.action ?? defaultThemeOptions.action;
     const neutral = options.neutral ?? defaultThemeOptions.neutral;
     const radius = options.radius ?? 1;
     const font = fontOf(options);
+    const type = options.type ?? drawnType;
+
+    const size = options.size ?? 1;
+    const unit = options.unit ?? drawnUnit;
+    const named = (choices: readonly { value: number; label: string }[], value: number) =>
+        choices.find(choice => choice.value === value)?.label.toLowerCase();
+    const harmony = (
+        chartHarmonies.find(item => item.id === (options.chartHarmony ?? 'auto'))?.label ?? 'Auto'
+    ).toLowerCase();
     const shine = {
         flat: 'flat',
         lit: 'lit: a top highlight and a ring on the action',
@@ -290,8 +360,14 @@ const themeRows = (options: ThemeOptions): [string, string][] => {
         [
             'Accent',
             options.accent
-                ? `\`${options.accent}\`, the primary ramp's 500; its other ten steps are built from it`
+                ? `\`${options.accent}\`, the primary ramp's ${options.accentStep ?? defaultThemeOptions.accentStep}; its other ten steps are built from it the way Tailwind builds its palette`
                 : "none: the primary ramp is Continuum's indigo, `#3939e5`, kept for information and the assistant",
+        ],
+        [
+            'Gamut',
+            (options.gamut ?? defaultThemeOptions.gamut) === 'p3'
+                ? "Display P3, as Tailwind's palette: the ramps are `oklch()` values, and a screen that cannot show one shows the nearest it can"
+                : 'sRGB: every colour is one every screen shows',
         ],
         [
             'Action',
@@ -302,6 +378,18 @@ const themeRows = (options: ThemeOptions): [string, string][] => {
         ['Shine', shine[options.actionStyle ?? defaultThemeOptions.actionStyle]],
         ['Font', fontNames[font] ?? `\`${font}\``],
         ['Corners', radius === 1 ? 'as drawn' : `${Math.round(radius * 100)}% of the drawn radii`],
+        [
+            'Type',
+            `${named(typeChoices, type) ?? 'own'}: ${type}px base, every size on the scale following it, rounded to whole pixels`,
+        ],
+        [
+            'Padding',
+            `${named(unitChoices, unit) ?? 'own'}: a ${unit}px spacing unit, so p-3 is ${unit * 3}px; every padding, gap and margin is a multiple of it, rounded to whole pixels. Pick the classes with the padding formula as ever`,
+        ],
+        [
+            'Heights',
+            `${named(heightChoices, size) ?? 'own'}: controls ${Math.round(34 * size)} and ${Math.round(38 * size)}px, table rows ${Math.round(40 * size) + 1}px`,
+        ],
         [
             'Greys',
             neutral.tint === 0
@@ -330,8 +418,8 @@ const themeRows = (options: ThemeOptions): [string, string][] => {
             'Data colours',
             options.charts
                 ? `the theme's own set, \`chart-1\` to \`chart-5\`: ${options.charts.steps.map(hex => `\`${hex}\``).join(', ')}`
-                : options.accent
-                  ? 'the accent leads; three hues a quarter turn apart complete the set'
+                : options.accent || options.chartHarmony
+                  ? `the primary leads; ${dataHarmonyInWords(options, harmony)}, in light and in dark`
                   : 'the primary leads, then orange, aqua and yellow, in an order that keeps neighbours apart for colour-blind readers',
         ],
     ];
@@ -339,24 +427,35 @@ const themeRows = (options: ThemeOptions): [string, string][] => {
 
 /**
  * DESIGN.md: how the project is set up, what its theme is, and the rules in brief, for Claude.
- * The rules are a short form of the skill's references/rules.md, their one full statement: change both together.
+ * The rules are the short form of the skill's references/foundations.md and pages.md, their full statement: change both together.
  */
 export const designBrief = (theme: ThemeExport) => {
     const { label, options, mode } = theme;
     const font = fontPackages[fontOf(options)];
     const rows = themeRows(options).map(([row, value]) => `| ${row} | ${value} |`);
+    const type = Number((options.type ?? drawnType).toFixed(1));
+    const size = options.size ?? 1;
+    const heights = [34, 38].map(height => Math.round(height * size));
+    const unit = Math.round(options.unit ?? drawnUnit);
+    // The scale's sizes as this theme draws them, so the rules below name the project's own pixels.
+    const token = themeToken(options, 'light');
+    const text = (name: string) => Number.parseFloat(token(`--text-${name}`) ?? '') || 0;
+    // A spacing step in this theme's pixels, and a drawn corner at its scale (capped 8px above drawn, as the tokens do).
+    const step = (units: number) => Math.round(units * unit);
+    const radius = options.radius ?? 1;
+    const corner = (drawn: number) => Math.round(Math.min(drawn * radius, drawn + 8));
 
     return `# Design
 
-The UI is built with Continuum, a design system for tool UI, in the ${label === 'Continuum' ? 'default theme' : `${label} theme`}. The look is quiet, dense and precise: 13px type, hairline borders, one action colour, almost no shadow, and controls on two heights, 34 and 38px, so anything beside anything lines up.
+The UI is built with Continuum, a design system for tool UI, in the ${label === 'Continuum' ? 'default theme' : `${label} theme`}. The look is quiet, dense and precise: ${type}px type, hairline borders, one action colour, almost no shadow, and controls on two heights, ${heights[0]} and ${heights[1]}px, so anything beside anything lines up.
 
-Use the \`continuum-taste\` skill for any UI work when it is installed: it holds the components, the full rules and reference screens. This file holds what is particular to this project and the rules in brief, so they hold without it.
+Use the \`continuum-taste\` skill for any UI work when it is installed: it holds the parts, the full values and page anatomy, and reference screens. This file holds what is particular to this project and the rules in brief, so they hold without it.
 
 The values live in \`src/app.css\`; this file is how to use them. Write the utility (\`bg-neutral-50\`, \`rounded-card\`), never the value behind it.
 
 ## Setup
 
-- \`src/app.css\` is the Tailwind entry and the whole theme, in Tailwind's own names: the colour ramps and roles, the font, the type scale, the radii, the shadows, the 4px spacing grid and the content widths. It puts these in place of Tailwind's palette, type, radii and shadows, so Tailwind's defaults (\`bg-gray-100\`, \`rounded-lg\`) do not exist here.
+- \`src/app.css\` is the Tailwind entry and the whole theme, in Tailwind's own names: the colour ramps and roles, the font, the type scale, the radii, the shadows, the ${unit}px spacing grid, the content widths and the fixed widths of panels and popups. It puts these in place of Tailwind's palette, type, radii and shadows, so Tailwind's defaults (\`bg-gray-100\`, \`rounded-lg\`) do not exist here.
 - The components live in \`src/components/continuum/\`, copied from the skill's \`assets/continuum/\` with its folders as they are. They read the names \`app.css\` sets, so leave out the copied \`styles/\` folder: \`app.css\` takes its place. Import components from its \`index.ts\` and charts from \`charts/index.ts\`. In a new project, scaffold Vite, React 19, TypeScript and Tailwind v4 first.
 - The app sits inside \`<Theme mode="${mode}">\`. Dark mode is \`mode="dark"\`: the same theme with every ramp reversed, from the \`[data-mode="dark"]\` block in \`app.css\`. Everything styled sits inside the \`Theme\`; portalled parts open it again on their own.
 - Dependencies: \`@base-ui/react class-variance-authority clsx tailwind-merge lucide-react react-day-picker\`${font ? `, and \`${font}\`, imported in the entry script` : ''}. Charts also need visx, d3 and motion; the skill lists them.
@@ -371,48 +470,56 @@ To change the look, change the values in \`app.css\`, and their dark counterpart
 
 ## Rules
 
+The short form. The full statement, in units, is the skill's \`references/foundations.md\` (the values) and \`references/pages.md\` (the composition); \`components.md\` and \`patterns.md\` say which part does what.
+
 ### Colour
 
-- Only tokens: the \`neutral\`, \`primary\`, \`success\`, \`warning\` and \`error\` ramps, steps 50 to 950. Never hex values, \`bg-white\` or \`dark:\` variants: dark mode flips every ramp, so \`neutral-50\` is the surface in both.
-- By step: \`neutral-50\` the surface (panels, cards, dialogs), \`neutral-100\` the canvas behind the panel, \`neutral-200\` every hairline, \`neutral-500\` placeholders and hints, \`neutral-600\` secondary text and icons, \`neutral-950\` primary text.
-- One action colour, \`bg-action text-on-action\`, for the primary button, checked controls and the active rail item. One primary action per view, and nothing decorative.
-- Selection is a wash, not a colour: \`bg-neutral-950/5\` on hover, \`bg-selected\` (a step stronger) on what is current, selected or open, \`bg-tint text-tint-fg\` where it should be coloured.
-- Status colours only in badges, deltas, icon tiles and invalid states, as two colours from one ramp: \`bg-success-500/20 text-success-700\`. Never a solid \`-100\` fill, never an outline.
+- Only roles: the \`neutral\`, \`primary\`, \`success\`, \`warning\` and \`error\` ramps, steps 50 to 950. Never hex values, \`bg-white\` or \`dark:\` variants: dark mode flips every ramp, so \`neutral-50\` is the surface in both.
+- By step: \`neutral-50\` the surface (panels, cards, dialogs, inputs), \`neutral-100\` the canvas behind the panel and muted fills inside a bordered container, \`neutral-200\` every hairline, \`neutral-500\` an unchecked box's border and quiet icons, \`neutral-600\` secondary text, placeholders, hints and icons, \`neutral-950\` primary text. Text that is read never sits on \`neutral-500\`: it misses 4.5:1.
+- One action colour, \`bg-action text-on-action\`, for the primary button, checked controls, the active rail item and the selected dock item. One primary action per view, and nothing decorative.
+- Selection is a wash, not a colour: \`bg-neutral-950/5\` on hover (a table row \`/3\`), \`bg-selected\` (7%) on what is current, selected or open, \`bg-tint text-tint-fg\` where it should be coloured.
+- Status colours only in badges, deltas, dots, icon tiles and invalid states, as two colours from one ramp: \`bg-success-500/20 text-success-800\`, the 800 for every tone. A rising delta is \`text-success-800\`, a falling one \`text-error-600\`. Never a solid \`-100\` fill, never an outline, never a coloured row.
 - Data takes \`chart-1\` to \`chart-5\` for steps in order, the \`chart-series-*\` set for independent series. Label what a colour marks: never colour alone.
 
 ### Type
 
-- \`text-xs\` (13px) is the base; \`text-xxs\` for badges, counts and hints; \`text-sm\` for dialog titles; input values stay \`text-xs\`. Larger only for headline numbers and page titles.
-- Two weights, \`font-normal\` and \`font-medium\`. No semibold or bold, no all caps.
+- \`text-xs\` (${text('xs')}px) is the base, for body, controls, input values, labels and cells; \`text-xxs\` (${text('xxs')}) for badges, counts and meta; \`text-sm\` (${text('sm')}) for overlay titles and a page's description line; \`text-base\` (${text('base')}) section titles; \`text-lg\` (${text('lg')}) KPI values; \`text-2xl\` (${text('2xl')}) page titles. Line height 1.25 and tracking 0.32px come with the classes.
+- Two weights, \`font-normal\` and \`font-medium\`. No semibold or bold, no all caps. Sentence case; buttons are verb + object.
 - Hierarchy through colour and weight, not size: labels quiet in \`neutral-600\`, data loud in \`neutral-950\` at medium.
 - Numbers \`tabular-nums\`, right-aligned in tables. Text that overflows truncates; it does not wrap or grow the control.
 
 ### Surfaces
 
-- Hairlines over shadows: a card is \`border border-neutral-200\` on the page's own colour. \`shadow-float\` only on what floats (menus, popovers, the dock), \`shadow-sheet\` on dialogs and sheets.
-- Space, not dividers, between sections and groups. A divider only between the rows of a bordered list or table, and full width in dialogs, sheets and menus. No card inside a card, no card round a header.
+- Hairlines over shadows: a card is \`border border-neutral-200\` on the page's own colour. \`shadow-float\` only on what floats (menus, popovers, the dock, toolbars), \`shadow-sheet\` on dialogs and sheets.
+- Space, not dividers, between sections and groups. A divider only between the rows of a bordered list or table, and full width in dialogs, sheets and menus. No card inside a card (except a highlighted item inside a group), no card round a header.
+- The radii nest, each smaller than what holds it: \`rounded-panel\` (${corner(20)}), \`rounded-card\` (${corner(16)}), \`rounded-control\` (${corner(12)}), \`rounded-item\` (${corner(10)}), \`rounded-chip\` (${corner(6)}); dock and pills round. Something inset in a rounded container takes its radius less the inset: \`rounded-[calc(var(--radius-item)-2px)]\` in a \`p-0.5\` track. Never \`rounded-md\` or \`rounded-lg\`, which do not exist here.
 
-### Layout
+### Pages
 
-- The shell: \`AppShell\` on the \`neutral-100\` canvas, the \`Sidebar\` straight on it, an \`AppPanel\` inset 8px, a 54px \`HeaderBar\` with the page's breadcrumb, then a centred \`PageContent\` column. A page starts 96px below the header bar, 128px on a large screen; \`PageContent\` sets it, so never pass a smaller top padding.
-- The column is as wide as the content is dense: \`max-w-content-narrow\` for making or editing one thing (its fields stacked), \`max-w-content\` for settings, overviews and details, \`max-w-content-wide\` for a table of several columns, \`max-w-content-dense\` for a very dense one. Never edge to edge unless asked.
-- An item from a list opens on its own page, with the breadcrumb back; never a pane docked beside the list. Every page has its breadcrumb.
-- Controls sit on 34px (buttons, small inputs, nav items) or 38px (fields, large buttons, the dock), nothing between.
-- Space on the 4px grid, and tight: \`gap-1.5\` to \`gap-2\` inside controls, \`gap-12\` between page sections.
-- Padding in boxes that hold content, and the gaps between texts, are derived, not picked: a box pads by its type size averaged over its lines (\`0.75 × size × (1 + 0.6·log₂ lines)\`), a box of boxes at least 1.5× its children, the gap between boxes 1.1× their padding, and the gap between two texts by the text after it, 0.25× for a pair (header and subheader, label and value) and 1.5× between blocks. Snap every result to a Tailwind step (\`p-6\`, \`gap-1.5\`), never an arbitrary value. The \`fix-padding\` skill works it out and applies it.
+- The shell: \`AppShell\` on the \`neutral-100\` canvas, the \`Sidebar\` (256) straight on it, an \`AppPanel\` inset 8px, a ${Math.round(54 * size)}px \`HeaderBar\` with the page's breadcrumb, then a centred \`PageContent\` column ${step(24)}px below it (${step(32)} on a large screen); never pass a smaller top padding. The sidebar holds places, not a create button; a product with several workspaces switches them with a \`SidebarSwitcher\` under the sidebar's header; every page has its breadcrumb.
+- Width by kind: \`max-w-content-narrow\` (640) for making or editing one thing and for settings, \`max-w-content\` (896) for an overview, a detail or a document, \`max-w-content-wide\` (1080) for a table of several columns, \`max-w-content-dense\` (1280) for a very dense one. Never edge to edge unless asked.
+- A panel, popup or fixed column takes its width token, in pixels whatever the spacing unit: \`w-sidebar\` (256), \`w-rail\` and \`w-rail-open\`, \`w-popover\` (288), \`min-w-menu\` (160), \`w-toast\` (360), \`max-w-tooltip\` (256), \`w-search\` (256), \`max-w-measure\` (480) for a quiet message. Never a numeric width such as \`w-64\` for these: it follows the spacing unit.
+- The page head: a ${text('2xl')} medium title, a ${text('sm')} \`neutral-600\` line \`gap-1.5\` below it, the page's own actions at its right; \`gap-10\` (${step(10)}) to the first section. A section: a ${text('base')} medium title over a ${text('xs')} line, \`gap-5\` (${step(5)}) to its content; sections \`gap-10\` apart, never divided.
+- **Overview**: the period in the head; the leading figure as a chart card; stat cards (label, ${text('lg')} value, delta pill) that never repeat it; then breakdowns in list cards. No create action.
+- **Index**: a toolbar (search, segmented control, selects or a Filter button) that never moves; applied filters as removable chips in a row below it; a ruled \`Table\`; \`Pagination\`; the list's views and its one primary action in the floating \`Dock\` at the panel's foot, never as tabs above the table. A row opens the item's own page; never a pane beside the list.
+- **Detail**: one column, never split. The title row (avatar, name, status badge, meta line, actions right), line \`Tabs\` for facets (pill tabs only in a tight spot inside a card or dialog), stat cards, facts as label-over-value pairs in a card grid, the rest; history in a \`Sheet\`.
+- **Create or edit**: fields stacked one per row \`gap-5\` apart in sections \`gap-10\` apart, the primary at the end. While editing an existing object it moves up: into the \`Dock\` as its action when the editor has facets (its views), otherwise into the title row. Never wider than 640.
+- **Settings**: one \`Card layout="list"\` per group under a quiet \`SettingGroup\` title, cards \`gap-6\` apart; \`SettingRow\`s with **one control per setting** (a \`Switch\` to turn on, a \`Select indicator="right"\` to pick, a \`Button\` to do); rows divided by a hairline at the card's content width (a \`Separator\` between rows), a dependent setting sharing its parent's space between hairlines (no rule between them, disabled while the parent is off; an eyebrow over several dependents), never closeness alone; the settings areas in the floating dock.
+- **Assistant**: empty, a large \`ChatPrompt\` in a \`max-w-conversation\` (720) column with the recent chats under it as quiet rows (the title, its age at the right); once asked, a \`ChatThread\` in that column and the prompt (\`size="md"\`) docked at the panel's foot. The chat is the trail's last crumb, a \`BreadcrumbMenu\` with New chat and the recent ones.
+- Controls sit on ${heights[0]}px (buttons, small inputs, nav items) or ${heights[1]}px (fields, large buttons, the dock), nothing between: \`h-control\` and \`h-control-lg\`, never a height in pixels.
 
-### Radius
+### Spacing
 
-- The radii nest, each smaller than what holds it: \`rounded-panel\`, \`rounded-card\`, \`rounded-control\`, \`rounded-item\`, \`rounded-chip\`. Never Tailwind's \`rounded-md\` or \`rounded-lg\`, which do not exist here.
-- Something inset in a rounded container takes its radius less the inset: \`rounded-[calc(var(--radius-item)-2px)]\` in a \`p-0.5\` track.
+- The ${unit}px grid, and tight: \`gap-0.5\` between nav items, \`gap-1.5\` to \`gap-2\` inside controls, \`gap-4\` between rows and cards, \`gap-5\` from a section head to its content, \`gap-10\` between sections.
+- A control's side padding is fixed by kind (\`px-4\` on a button, \`px-3\` on an input or a menu row, \`px-2.5\` on a nav row, \`px-2\` on a chip, \`px-1.5\` on a badge). Padding in boxes that hold content, and the gaps between texts, are derived, not picked: a box pads by its type size averaged over its lines (\`0.75 × size × (1 + 0.6·log₂ lines)\`), a box of boxes at least 1.5× its children, the gap between boxes 1.1× their padding, the gap between two texts by the text after it, 0.25× for a pair and 1.5× between blocks. Snap every result to a Tailwind step, never an arbitrary value. The \`continuum-fix-padding\` skill works it out and applies it.
 
 ### Icons and motion
 
 - \`lucide-react\` at \`strokeWidth={2}\`: 16px, 12px in badges and chips, in the colour of the text.
-- Colour changes take \`duration-150\` on the properties named, never \`transition-all\`. Entries take \`duration-200 ease-out-strong\` from \`opacity-0\` and a small move or scale. Nothing over 250ms, nothing bouncy, and \`motion-reduce:transition-none\`.
+- Colour changes take \`duration-150\` on the properties named, never \`transition-all\`. Entries take \`duration-200 ease-out-strong\` from \`opacity-0\` and a small move or scale. A control's response stays at or under 250ms; a large surface entering or changing size (the rail's width, a toast, a sheet) may take up to 400ms. Nothing bouncy, and \`motion-reduce:transition-none\`.
 
 ## Before finishing
 
-Components first; only tokens; hairlines, not shadows; space, not dividers; width by density; heights on 34 or 38; two weights; one action colour; a visible focus ring; everything inside the \`Theme\`. Look at every screen, in light and in dark, before calling it done.
+Components first; only roles; hairlines, not shadows; space, not dividers; width by kind; one column on a detail, a form and settings; views in the dock; heights on ${heights[0]} or ${heights[1]}; two weights; one action colour and one primary action; a visible focus ring; everything inside the \`Theme\`. Look at every screen, in light and in dark, before calling it done.
 `;
 };
