@@ -24,28 +24,6 @@
     --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
 
     --text-*: initial;
-    --text-xxs: 11px;
-    --text-xxs--line-height: 13.75px;
-    --text-xs: 13px;
-    --text-xs--line-height: 16.25px;
-    --text-sm: 14px;
-    --text-sm--line-height: 17.5px;
-    --text-base: 16px;
-    --text-base--line-height: 20px;
-    --text-lg: 18px;
-    --text-lg--line-height: 22.5px;
-    --text-xl: 20px;
-    --text-xl--line-height: 25px;
-    --text-2xl: 24px;
-    --text-2xl--line-height: 30px;
-    --text-3xl: 31px;
-    --text-3xl--line-height: 38.75px;
-    --text-4xl: 39px;
-    --text-4xl--line-height: 48.75px;
-    --text-5xl: 48px;
-    --text-5xl--line-height: 60px;
-    --text-6xl: 61px;
-    --text-6xl--line-height: 76.25px;
 
     --font-weight-*: initial;
     --font-weight-normal: 400;
@@ -158,6 +136,7 @@
 
     --shadow-float: var(--shadow-float);
     --shadow-sheet: var(--shadow-sheet);
+    --shadow-composer: var(--shadow-composer);
     --shadow-action: var(--shadow-action);
 
     /* max-w-content-narrow · max-w-content · max-w-content-wide · max-w-content-dense */
@@ -166,4 +145,178 @@
     --container-content-wide: var(--container-content-wide);
     --container-content-dense: var(--container-content-dense);
     --spacing-content-inset: var(--spacing-content-inset);
+
+    /*
+     * Fixed widths, in pixels whatever the spacing unit: w-sidebar · w-rail · w-rail-open ·
+     * w-popover · min-w-menu · min-w-menu-wide · w-filter-menu · w-toast · w-dialog · w-sheet ·
+     * w-command · max-w-tooltip ·
+     * min-w-chart-tooltip · w-search · w-presets · max-w-measure · max-w-measure-narrow · max-w-conversation.
+     */
+    --spacing-sidebar: var(--spacing-sidebar);
+    --spacing-rail: var(--spacing-rail);
+    --spacing-rail-open: var(--spacing-rail-open);
+    --spacing-popover: var(--spacing-popover);
+    --spacing-menu: var(--spacing-menu);
+    --spacing-menu-wide: var(--spacing-menu-wide);
+    --spacing-filter-menu: var(--spacing-filter-menu);
+    --spacing-toast: var(--spacing-toast);
+    --spacing-dialog: var(--spacing-dialog);
+    --spacing-sheet: var(--spacing-sheet);
+    --spacing-command: var(--spacing-command);
+    --spacing-tooltip: var(--spacing-tooltip);
+    --spacing-chart-tooltip: var(--spacing-chart-tooltip);
+    --spacing-search: var(--spacing-search);
+    --spacing-presets: var(--spacing-presets);
+    --spacing-measure: var(--spacing-measure);
+    --spacing-measure-narrow: var(--spacing-measure-narrow);
+    --spacing-conversation: var(--spacing-conversation);
+
+    /*
+     * Heights, times the theme's item size: h-control, size-control, min-h-control, w-control.
+     * chip 25 · control-sm 28 · segment 29 · cell 32 · control 34 · option 36 · control-lg 38 ·
+     * row 40 · table-row 41 · tab 44 · control-xl 48 · bar 52 · header 54 · nav 56, as drawn.
+     */
+    --spacing-chip: var(--spacing-chip);
+    --spacing-control-sm: var(--spacing-control-sm);
+    --spacing-segment: var(--spacing-segment);
+    --spacing-cell: var(--spacing-cell);
+    --spacing-control: var(--spacing-control);
+    --spacing-option: var(--spacing-option);
+    --spacing-control-lg: var(--spacing-control-lg);
+    --spacing-row: var(--spacing-row);
+    --spacing-table-row: var(--spacing-table-row);
+    --spacing-tab: var(--spacing-tab);
+    --spacing-control-xl: var(--spacing-control-xl);
+    --spacing-bar: var(--spacing-bar);
+    --spacing-header: var(--spacing-header);
+    --spacing-nav: var(--spacing-nav);
+    --spacing-0\.25: var(--spacing-0\.25);
+    --spacing-0\.5: var(--spacing-0\.5);
+    --spacing-0\.75: var(--spacing-0\.75);
+    --spacing-1\.25: var(--spacing-1\.25);
+    --spacing-1\.5: var(--spacing-1\.5);
+    --spacing-1\.75: var(--spacing-1\.75);
+    --spacing-2\.25: var(--spacing-2\.25);
+    --spacing-2\.5: var(--spacing-2\.5);
+    --spacing-2\.75: var(--spacing-2\.75);
+    --spacing-3\.25: var(--spacing-3\.25);
+    --spacing-3\.5: var(--spacing-3\.5);
+    --spacing-3\.75: var(--spacing-3\.75);
+    --spacing-4\.25: var(--spacing-4\.25);
+    --spacing-4\.5: var(--spacing-4\.5);
+    --spacing-4\.75: var(--spacing-4\.75);
+    --spacing-5\.25: var(--spacing-5\.25);
+    --spacing-5\.5: var(--spacing-5\.5);
+    --spacing-5\.75: var(--spacing-5\.75);
+    --spacing-6\.25: var(--spacing-6\.25);
+    --spacing-6\.5: var(--spacing-6\.5);
+    --spacing-6\.75: var(--spacing-6\.75);
+    --spacing-7\.25: var(--spacing-7\.25);
+    --spacing-7\.5: var(--spacing-7\.5);
+    --spacing-7\.75: var(--spacing-7\.75);
+    --spacing-8\.25: var(--spacing-8\.25);
+    --spacing-8\.5: var(--spacing-8\.5);
+    --spacing-8\.75: var(--spacing-8\.75);
+    --spacing-9\.25: var(--spacing-9\.25);
+    --spacing-9\.5: var(--spacing-9\.5);
+    --spacing-9\.75: var(--spacing-9\.75);
+    --spacing-10\.25: var(--spacing-10\.25);
+    --spacing-10\.5: var(--spacing-10\.5);
+    --spacing-10\.75: var(--spacing-10\.75);
+    --spacing-11\.25: var(--spacing-11\.25);
+    --spacing-11\.5: var(--spacing-11\.5);
+    --spacing-11\.75: var(--spacing-11\.75);
+    --spacing-12\.5: var(--spacing-12\.5);
+    --spacing-13\.5: var(--spacing-13\.5);
+    --spacing-14\.5: var(--spacing-14\.5);
+    --spacing-15\.5: var(--spacing-15\.5);
+    --spacing-16\.5: var(--spacing-16\.5);
+    --spacing-17\.5: var(--spacing-17\.5);
+    --spacing-18\.5: var(--spacing-18\.5);
+    --spacing-19\.5: var(--spacing-19\.5);
+    --spacing-20\.5: var(--spacing-20\.5);
+    --spacing-21\.5: var(--spacing-21\.5);
+    --spacing-22\.5: var(--spacing-22\.5);
+    --spacing-23\.5: var(--spacing-23\.5);
+    --spacing-24\.5: var(--spacing-24\.5);
+    --spacing-25\.5: var(--spacing-25\.5);
+    --spacing-26\.5: var(--spacing-26\.5);
+    --spacing-27\.5: var(--spacing-27\.5);
+    --spacing-28\.5: var(--spacing-28\.5);
+    --spacing-29\.5: var(--spacing-29\.5);
+    --spacing-30\.5: var(--spacing-30\.5);
+    --spacing-31\.5: var(--spacing-31\.5);
+    --spacing-32\.5: var(--spacing-32\.5);
+    --spacing-33\.5: var(--spacing-33\.5);
+    --spacing-34\.5: var(--spacing-34\.5);
+    --spacing-35\.5: var(--spacing-35\.5);
+    --spacing-36\.5: var(--spacing-36\.5);
+    --spacing-37\.5: var(--spacing-37\.5);
+    --spacing-38\.5: var(--spacing-38\.5);
+    --spacing-39\.5: var(--spacing-39\.5);
+    --spacing-40\.5: var(--spacing-40\.5);
+    --spacing-41\.5: var(--spacing-41\.5);
+    --spacing-42\.5: var(--spacing-42\.5);
+    --spacing-43\.5: var(--spacing-43\.5);
+    --spacing-44\.5: var(--spacing-44\.5);
+    --spacing-45\.5: var(--spacing-45\.5);
+    --spacing-46\.5: var(--spacing-46\.5);
+    --spacing-47\.5: var(--spacing-47\.5);
+
+    /* text-xxs … text-6xl, each with its line height: set on every scope, so a theme's own sizes stay in it. */
+    --text-xxs: var(--text-xxs);
+    --text-xxs--line-height: var(--text-xxs--line-height);
+    --text-xs: var(--text-xs);
+    --text-xs--line-height: var(--text-xs--line-height);
+    --text-sm: var(--text-sm);
+    --text-sm--line-height: var(--text-sm--line-height);
+    --text-base: var(--text-base);
+    --text-base--line-height: var(--text-base--line-height);
+    --text-lg: var(--text-lg);
+    --text-lg--line-height: var(--text-lg--line-height);
+    --text-xl: var(--text-xl);
+    --text-xl--line-height: var(--text-xl--line-height);
+    --text-2xl: var(--text-2xl);
+    --text-2xl--line-height: var(--text-2xl--line-height);
+    --text-3xl: var(--text-3xl);
+    --text-3xl--line-height: var(--text-3xl--line-height);
+    --text-4xl: var(--text-4xl);
+    --text-4xl--line-height: var(--text-4xl--line-height);
+    --text-5xl: var(--text-5xl);
+    --text-5xl--line-height: var(--text-5xl--line-height);
+    --text-6xl: var(--text-6xl);
+    --text-6xl--line-height: var(--text-6xl--line-height);
 }
+
+/* sizes: start */
+/*
+ * Sizes stay on a fixed 4px grid whatever the theme's spacing unit: the unit is the room
+ * around things (padding, gaps, margins, offsets), never the size of a box, an icon or a
+ * column. Tailwind writes w-64 or size-4 as a multiple of --spacing, so a 3px unit would
+ * draw a 192px sidebar and a 12px icon whose strokes land between pixels. These rules
+ * come after Tailwind's own of the same name and win; named sizes (w-sidebar, h-control,
+ * w-full) are untouched.
+ */
+@utility w-* {
+    width: calc(4px * --value(number));
+}
+@utility h-* {
+    height: calc(4px * --value(number));
+}
+@utility size-* {
+    width: calc(4px * --value(number));
+    height: calc(4px * --value(number));
+}
+@utility min-w-* {
+    min-width: calc(4px * --value(number));
+}
+@utility max-w-* {
+    max-width: calc(4px * --value(number));
+}
+@utility min-h-* {
+    min-height: calc(4px * --value(number));
+}
+@utility max-h-* {
+    max-height: calc(4px * --value(number));
+}
+/* sizes: end */

@@ -173,7 +173,8 @@
     --shadow-segment: none;
     --color-segment-track: var(--color-neutral-50);
 
-    --color-focus: var(--color-neutral-400);
+    /* The first grey step that keeps 3:1 against the surface and the canvas */
+    --color-focus: var(--color-neutral-500);
 
     /*
      * Avatar tones: six hues at one lightness and chroma, a pale fill with a
@@ -242,6 +243,37 @@
     --font-sans: var(--font-geist, "Geist Variable"), "Geist", ui-sans-serif, system-ui, sans-serif;
 
     /*
+     * Type: each size with its line height, 1.25 times it, on a scale drawn from 13px. A theme
+     * of another size rounds every step to a pixel. Set here rather than once for the page, so
+     * a theme nested in another starts from these, not from the theme around it.
+     */
+    --text-xxs: 11px;
+    --text-xxs--line-height: 13.75px;
+    --text-xs: 13px;
+    --text-xs--line-height: 16.25px;
+    --text-sm: 14px;
+    --text-sm--line-height: 17.5px;
+    --text-base: 16px;
+    --text-base--line-height: 20px;
+    --text-lg: 18px;
+    --text-lg--line-height: 22.5px;
+    --text-xl: 20px;
+    --text-xl--line-height: 25px;
+    --text-2xl: 24px;
+    --text-2xl--line-height: 30px;
+    --text-3xl: 31px;
+    --text-3xl--line-height: 38.75px;
+    --text-4xl: 39px;
+    --text-4xl--line-height: 48.75px;
+    --text-5xl: 48px;
+    --text-5xl--line-height: 60px;
+    --text-6xl: 61px;
+    --text-6xl--line-height: 76.25px;
+
+    /* The spacing unit: p-1 is 4px, gap-3 12px. A theme sets its own, in whole pixels. */
+    --spacing: 4px;
+
+    /*
      * Radii nest: a panel holds cards, a card holds items, an item holds chips.
      * These are the raw values; the --radius-* tokens below scale them.
      */
@@ -257,6 +289,8 @@
 
     --shadow-float: 1px 1px 4px 0 rgb(20 22 23 / 0.1);
     --shadow-sheet: 0 2px 4px 0 rgb(20 22 23 / 0.1);
+    /* The chat composer's soft lift off the thread it docks under */
+    --shadow-composer: 0 4px 8px 0 rgb(20 22 23 / 0.05);
 
     /*
      * Content widths grow with density and stop short of the panel's edge:
@@ -269,6 +303,37 @@
     --container-content-wide: 1080px;
     --container-content-dense: 1280px;
     --spacing-content-inset: 128px;
+
+    /*
+     * Widths of panels, popups and fixed columns, in pixels like the content widths: a theme's
+     * spacing unit sets padding and gaps, never how wide a sidebar or a toast is drawn. They sit
+     * in Tailwind's spacing namespace, so each is w-*, min-w-* and max-w-* alike.
+     */
+    --spacing-sidebar: 256px;
+    /* The rail closed (an item and its 8px inset each side) and open */
+    --spacing-rail: 52px;
+    --spacing-rail-open: 208px;
+    --spacing-popover: 288px;
+    /* A menu's least width; the breadcrumb's menu of pages, wider */
+    --spacing-menu: 160px;
+    --spacing-menu-wide: 192px;
+    --spacing-filter-menu: 240px;
+    --spacing-toast: 360px;
+    /* The dialog, the sheet and the command menu, each held 16px inside a narrower window */
+    --spacing-dialog: 480px;
+    --spacing-sheet: 512px;
+    --spacing-command: 560px;
+    /* A tooltip's and an info tip's widest line before it wraps */
+    --spacing-tooltip: 256px;
+    --spacing-chart-tooltip: 140px;
+    /* The table's search field and the date range's column of presets */
+    --spacing-search: 256px;
+    --spacing-presets: 144px;
+    /* The widest line of a quiet message: an empty state, and an empty chat's narrower one */
+    --spacing-measure: 480px;
+    --spacing-measure-narrow: 288px;
+    /* An assistant's conversation column and its prompt */
+    --spacing-conversation: 720px;
 
     font-family: var(--font-sans);
     font-size: 13px;
@@ -352,6 +417,7 @@
     /* Deeper, so a float still lifts off a near-black surface */
     --shadow-float: 1px 1px 4px 0 rgb(0 0 0 / 0.4);
     --shadow-sheet: 0 2px 8px 0 rgb(0 0 0 / 0.5);
+    --shadow-composer: 0 4px 8px 0 rgb(0 0 0 / 0.3);
     /* Each data colour a step darker or lighter, into the band that reads on a dark surface */
     --color-chart-1: var(--continuum-p-400);
     --color-chart-2: #d95926;
@@ -370,6 +436,8 @@
  * same pill.
  */
 .continuum {
+    /* 1 on every scope; a theme or the Theme radius prop sets its own. */
+    --continuum-radius-scale: 1;
     --radius-chip: min(
         calc(var(--continuum-r-chip) * var(--continuum-radius-scale, 1)),
         calc(var(--continuum-r-chip) + 8px)
@@ -392,4 +460,118 @@
     );
     --radius-dock: calc(var(--continuum-r-dock) * var(--continuum-radius-scale, 1));
     --radius-pill: calc(var(--continuum-r-pill) * var(--continuum-radius-scale, 1));
+}
+
+/*
+ * Every fixed height is the drawn value times the item size, which a theme's
+ * --continuum-size-scale sets: 1 as drawn, under 1 for a compact look. They sit
+ * in Tailwind's spacing namespace, so each is h-*, size-*, min-h-* and w-* alike.
+ * What nests inside a control (a segment, a chip, the small icon button) is the
+ * control less its own fixed inset, so it still fits exactly at every scale. Marks
+ * drawn to a glyph (badge, kbd, checkbox, switch, dots, avatars) keep their pixels.
+ */
+.continuum {
+    /* 1 on every scope; a theme sets its own. */
+    --continuum-size-scale: 1;
+    --spacing-control: round(nearest, calc(34px * var(--continuum-size-scale, 1)), 1px);
+    --spacing-control-lg: round(nearest, calc(38px * var(--continuum-size-scale, 1)), 1px);
+    --spacing-control-xl: round(nearest, calc(48px * var(--continuum-size-scale, 1)), 1px);
+    /* The small icon button: in a control's well with 3px round it */
+    --spacing-control-sm: calc(var(--spacing-control) - 6px);
+    /* A segmented item in its track (2px inset, 1px border); the medium chip and the vital row */
+    --spacing-segment: calc(var(--spacing-control) - 5px);
+    /* The small chip, which a combobox holds 3.5px inside its box and border */
+    --spacing-chip: calc(var(--spacing-control) - 9px);
+    /* A dock item, a calendar day, a date-range preset */
+    --spacing-cell: round(nearest, calc(32px * var(--continuum-size-scale, 1)), 1px);
+    /* A row in a popup list */
+    --spacing-option: round(nearest, calc(36px * var(--continuum-size-scale, 1)), 1px);
+    /* A plain row: a description list's cells, a popup's search and footer */
+    --spacing-row: round(nearest, calc(40px * var(--continuum-size-scale, 1)), 1px);
+    /* The ruled table row: a row over its 1px rule */
+    --spacing-table-row: calc(var(--spacing-row) + 1px);
+    --spacing-tab: round(nearest, calc(44px * var(--continuum-size-scale, 1)), 1px);
+    /* Dialog and sheet headers and footers, the command menu's search */
+    --spacing-bar: round(nearest, calc(52px * var(--continuum-size-scale, 1)), 1px);
+    --spacing-header: round(nearest, calc(54px * var(--continuum-size-scale, 1)), 1px);
+    /* The sidebar header and the top nav */
+    --spacing-nav: round(nearest, calc(56px * var(--continuum-size-scale, 1)), 1px);
+
+    /*
+     * The spacing steps between whole units, each rounded to a whole pixel, so a theme's
+     * unit (3, 4 or 5px) never puts a padding, gap or margin on a half pixel. Whole steps
+     * are whole pixels already; Tailwind reads these for p-2.5, gap-0.75 and the rest.
+     */
+    --spacing-0\.25: round(nearest, calc(var(--spacing) * 0.25), 1px);
+    --spacing-0\.5: round(nearest, calc(var(--spacing) * 0.5), 1px);
+    --spacing-0\.75: round(nearest, calc(var(--spacing) * 0.75), 1px);
+    --spacing-1\.25: round(nearest, calc(var(--spacing) * 1.25), 1px);
+    --spacing-1\.5: round(nearest, calc(var(--spacing) * 1.5), 1px);
+    --spacing-1\.75: round(nearest, calc(var(--spacing) * 1.75), 1px);
+    --spacing-2\.25: round(nearest, calc(var(--spacing) * 2.25), 1px);
+    --spacing-2\.5: round(nearest, calc(var(--spacing) * 2.5), 1px);
+    --spacing-2\.75: round(nearest, calc(var(--spacing) * 2.75), 1px);
+    --spacing-3\.25: round(nearest, calc(var(--spacing) * 3.25), 1px);
+    --spacing-3\.5: round(nearest, calc(var(--spacing) * 3.5), 1px);
+    --spacing-3\.75: round(nearest, calc(var(--spacing) * 3.75), 1px);
+    --spacing-4\.25: round(nearest, calc(var(--spacing) * 4.25), 1px);
+    --spacing-4\.5: round(nearest, calc(var(--spacing) * 4.5), 1px);
+    --spacing-4\.75: round(nearest, calc(var(--spacing) * 4.75), 1px);
+    --spacing-5\.25: round(nearest, calc(var(--spacing) * 5.25), 1px);
+    --spacing-5\.5: round(nearest, calc(var(--spacing) * 5.5), 1px);
+    --spacing-5\.75: round(nearest, calc(var(--spacing) * 5.75), 1px);
+    --spacing-6\.25: round(nearest, calc(var(--spacing) * 6.25), 1px);
+    --spacing-6\.5: round(nearest, calc(var(--spacing) * 6.5), 1px);
+    --spacing-6\.75: round(nearest, calc(var(--spacing) * 6.75), 1px);
+    --spacing-7\.25: round(nearest, calc(var(--spacing) * 7.25), 1px);
+    --spacing-7\.5: round(nearest, calc(var(--spacing) * 7.5), 1px);
+    --spacing-7\.75: round(nearest, calc(var(--spacing) * 7.75), 1px);
+    --spacing-8\.25: round(nearest, calc(var(--spacing) * 8.25), 1px);
+    --spacing-8\.5: round(nearest, calc(var(--spacing) * 8.5), 1px);
+    --spacing-8\.75: round(nearest, calc(var(--spacing) * 8.75), 1px);
+    --spacing-9\.25: round(nearest, calc(var(--spacing) * 9.25), 1px);
+    --spacing-9\.5: round(nearest, calc(var(--spacing) * 9.5), 1px);
+    --spacing-9\.75: round(nearest, calc(var(--spacing) * 9.75), 1px);
+    --spacing-10\.25: round(nearest, calc(var(--spacing) * 10.25), 1px);
+    --spacing-10\.5: round(nearest, calc(var(--spacing) * 10.5), 1px);
+    --spacing-10\.75: round(nearest, calc(var(--spacing) * 10.75), 1px);
+    --spacing-11\.25: round(nearest, calc(var(--spacing) * 11.25), 1px);
+    --spacing-11\.5: round(nearest, calc(var(--spacing) * 11.5), 1px);
+    --spacing-11\.75: round(nearest, calc(var(--spacing) * 11.75), 1px);
+    --spacing-12\.5: round(nearest, calc(var(--spacing) * 12.5), 1px);
+    --spacing-13\.5: round(nearest, calc(var(--spacing) * 13.5), 1px);
+    --spacing-14\.5: round(nearest, calc(var(--spacing) * 14.5), 1px);
+    --spacing-15\.5: round(nearest, calc(var(--spacing) * 15.5), 1px);
+    --spacing-16\.5: round(nearest, calc(var(--spacing) * 16.5), 1px);
+    --spacing-17\.5: round(nearest, calc(var(--spacing) * 17.5), 1px);
+    --spacing-18\.5: round(nearest, calc(var(--spacing) * 18.5), 1px);
+    --spacing-19\.5: round(nearest, calc(var(--spacing) * 19.5), 1px);
+    --spacing-20\.5: round(nearest, calc(var(--spacing) * 20.5), 1px);
+    --spacing-21\.5: round(nearest, calc(var(--spacing) * 21.5), 1px);
+    --spacing-22\.5: round(nearest, calc(var(--spacing) * 22.5), 1px);
+    --spacing-23\.5: round(nearest, calc(var(--spacing) * 23.5), 1px);
+    --spacing-24\.5: round(nearest, calc(var(--spacing) * 24.5), 1px);
+    --spacing-25\.5: round(nearest, calc(var(--spacing) * 25.5), 1px);
+    --spacing-26\.5: round(nearest, calc(var(--spacing) * 26.5), 1px);
+    --spacing-27\.5: round(nearest, calc(var(--spacing) * 27.5), 1px);
+    --spacing-28\.5: round(nearest, calc(var(--spacing) * 28.5), 1px);
+    --spacing-29\.5: round(nearest, calc(var(--spacing) * 29.5), 1px);
+    --spacing-30\.5: round(nearest, calc(var(--spacing) * 30.5), 1px);
+    --spacing-31\.5: round(nearest, calc(var(--spacing) * 31.5), 1px);
+    --spacing-32\.5: round(nearest, calc(var(--spacing) * 32.5), 1px);
+    --spacing-33\.5: round(nearest, calc(var(--spacing) * 33.5), 1px);
+    --spacing-34\.5: round(nearest, calc(var(--spacing) * 34.5), 1px);
+    --spacing-35\.5: round(nearest, calc(var(--spacing) * 35.5), 1px);
+    --spacing-36\.5: round(nearest, calc(var(--spacing) * 36.5), 1px);
+    --spacing-37\.5: round(nearest, calc(var(--spacing) * 37.5), 1px);
+    --spacing-38\.5: round(nearest, calc(var(--spacing) * 38.5), 1px);
+    --spacing-39\.5: round(nearest, calc(var(--spacing) * 39.5), 1px);
+    --spacing-40\.5: round(nearest, calc(var(--spacing) * 40.5), 1px);
+    --spacing-41\.5: round(nearest, calc(var(--spacing) * 41.5), 1px);
+    --spacing-42\.5: round(nearest, calc(var(--spacing) * 42.5), 1px);
+    --spacing-43\.5: round(nearest, calc(var(--spacing) * 43.5), 1px);
+    --spacing-44\.5: round(nearest, calc(var(--spacing) * 44.5), 1px);
+    --spacing-45\.5: round(nearest, calc(var(--spacing) * 45.5), 1px);
+    --spacing-46\.5: round(nearest, calc(var(--spacing) * 46.5), 1px);
+    --spacing-47\.5: round(nearest, calc(var(--spacing) * 47.5), 1px);
 }
