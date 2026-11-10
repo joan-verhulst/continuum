@@ -120,6 +120,68 @@ export const PageDock = ({ children }: { children: ReactNode }) => {
     return slot ? createPortal(children, slot) : null;
 };
 
+/* ---------- Footer slot: a page puts a bar of its own at the foot of the panel ---------- */
+
+const FooterSlotContext = createContext<HTMLElement | null>(null);
+
+export const FooterSlotProvider = FooterSlotContext.Provider;
+
+/**
+ * A bar across the foot of the panel, under the page's scroll: a hairline above it, its actions at
+ * the right. It stays where it is while the page scrolls, so the buttons in it never move.
+ */
+export const PageFooter = ({
+    className,
+    children,
+}: {
+    className?: string;
+    children: ReactNode;
+}) => {
+    const slot = useContext(FooterSlotContext);
+    if (!slot) return null;
+    return createPortal(
+        <div
+            className={cn(
+                'flex min-h-bar shrink-0 items-center justify-end gap-2 border-neutral-200 border-t bg-neutral-50 px-4 sm:px-6',
+                className,
+            )}
+            data-slot="page-footer"
+        >
+            {children}
+        </div>,
+        slot,
+    );
+};
+
+/* ---------- Aside slot: a page puts a panel of its own beside the main one ---------- */
+
+const AsideSlotContext = createContext<HTMLElement | null>(null);
+
+export const AsideSlotProvider = AsideSlotContext.Provider;
+
+/**
+ * A second panel at the right of the app frame, beside the main one and the window's full height:
+ * not part of the page's column, so the page stays narrow and the panel keeps its own scroll.
+ * Hidden below the large breakpoint, where the window has no room for two panels.
+ */
+export const AsidePanel = ({ className, children, ...props }: ComponentProps<'aside'>) => {
+    const slot = useContext(AsideSlotContext);
+    if (!slot) return null;
+    return createPortal(
+        <aside
+            className={cn(
+                'relative my-2 mr-2 flex w-[min(640px,44vw)] shrink-0 flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 max-lg:hidden',
+                className,
+            )}
+            data-slot="aside-panel"
+            {...props}
+        >
+            {children}
+        </aside>,
+        slot,
+    );
+};
+
 /* ---------- Sections and specimens ---------- */
 
 type SectionProps = Omit<ComponentProps<'section'>, 'title'> & {
@@ -139,7 +201,7 @@ export const Section = ({ title, description, className, children, ...props }: S
 
 /** A tile's surface: a quiet, bordered stage with the thing centred on it. */
 export const tileClass =
-    'flex min-h-36 min-w-0 flex-col items-center justify-center gap-4 rounded-item border border-neutral-200 bg-neutral-50 p-5 [&>*]:max-w-full';
+    'flex min-h-36 min-w-0 flex-col items-center justify-center gap-4 rounded-item border border-neutral-200 bg-neutral-50 p-5 [:where(&>*)]:min-w-0 [:where(&>*)]:max-w-full';
 
 export const Note = ({ className, ...props }: ComponentProps<'p'>) => (
     <p className={cn('max-w-2xl text-neutral-600 text-xs', className)} {...props} />
@@ -218,7 +280,7 @@ export const Stage = ({ className, children, ...props }: ComponentProps<'div'>) 
     return (
         <div
             className={cn(
-                'relative isolate flex min-h-72 items-center justify-center overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 p-10 [contain:paint]',
+                'contain-[paint] relative isolate flex min-h-72 items-center justify-center overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 p-10',
                 className,
             )}
             ref={setNode}
@@ -308,21 +370,37 @@ const BAR_IDLE_MS = 2500;
 
 /**
  * A screen at the window's own size, as an app opens: over everything, unscaled, in the
- * previewed theme. Portalled to the body, so its menus and dialogs still open over it. Leaving
- * the browser's full screen (Esc) closes it, and so does the button in its bar.
+ * previewed theme. Portalled to the body, so its menus and dialogs still open over it. Esc closes
+ * it, whether it leaves the browser's full screen or the browser never granted one, and so does
+ * the button in its bar. Focus moves into it on open and back to what opened it on close.
  */
 export const FullScreen = ({ onClose, controls, children }: FullScreenProps) => {
     // Held in a ref, so a parent that re-renders with a new callback does not drop full screen.
     const close = useRef(onClose);
     close.current = onClose;
+    const layer = useRef<HTMLDivElement>(null);
     // Every spot of a screen holds something of its own, a breadcrumb, a dock, a save button, so the
     // bar keeps none of them covered for long: it shows while the pointer moves, as a player's controls do.
     const [shown, setShown] = useState(true);
     const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
     useEffect(() => {
+        const opener =
+            document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        layer.current?.focus({ preventScroll: true });
         const left = () => {
             if (!document.fullscreenElement) close.current();
+        };
+        // Esc pressed in the screen itself; in a menu or dialog open over it, that closes first.
+        const onEscape = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape' || event.defaultPrevented) return;
+            const target = event.target;
+            if (
+                target === document.body ||
+                (target instanceof Node && layer.current?.contains(target))
+            ) {
+                close.current();
+            }
         };
         const wake = () => {
             setShown(true);
@@ -333,19 +411,27 @@ export const FullScreen = ({ onClose, controls, children }: FullScreenProps) => 
         document.addEventListener('fullscreenchange', left);
         window.addEventListener('pointermove', wake);
         window.addEventListener('keydown', wake);
+        window.addEventListener('keydown', onEscape);
         return () => {
             document.removeEventListener('fullscreenchange', left);
             window.removeEventListener('pointermove', wake);
             window.removeEventListener('keydown', wake);
+            window.removeEventListener('keydown', onEscape);
             clearTimeout(timer.current);
             if (document.fullscreenElement) document.exitFullscreen().catch(() => undefined);
+            if (opener?.isConnected) opener.focus({ preventScroll: true });
         };
     }, []);
 
     return createPortal(
         <ThemeScope>
             {/* A grid, so the screen stretches to the window whatever width it asks for at least. */}
-            <div className="fixed inset-0 z-50 grid bg-neutral-100" data-slot="full-screen">
+            <div
+                className="fixed inset-0 z-50 grid bg-neutral-100 outline-none"
+                data-slot="full-screen"
+                ref={layer}
+                tabIndex={-1}
+            >
                 {children}
                 {/* Centred over the header bar's empty middle; hovered or focused, it stays. */}
                 <BottomBar

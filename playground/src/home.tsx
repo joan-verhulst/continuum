@@ -21,7 +21,7 @@ type Way = {
     title: string;
     description: string;
     icon: ReactNode;
-    /** Where it leads: a view, or the theme builder opened over the components. */
+    /** Where it leads: a view. */
     patch: Partial<AppState>;
 };
 
@@ -35,7 +35,7 @@ export const Home = ({ state, onChange }: HomeProps) => {
         {
             title: 'Foundations',
             description:
-                'Colour, type, surfaces, layout and motion: the rules every component follows.',
+                'Colour, type, surfaces, layout, padding, states and motion: the rules every component follows.',
             icon: <Palette {...icon} />,
             patch: { view: 'foundations' },
         },
@@ -52,11 +52,12 @@ export const Home = ({ state, onChange }: HomeProps) => {
             patch: { view: 'patterns' },
         },
         {
-            title: 'Theme builder',
+            title: 'Projects',
             description:
-                'An accent, how the action draws, a font and the corners, taken to a project as its Tailwind entry and a DESIGN.md for Claude.',
+                'A product and its theme: its primary, neutral and chart colours, the character of the controls and the sizes, taken to the project as its Tailwind entry and a DESIGN.md for Claude.',
             icon: <SwatchBook {...icon} />,
-            patch: { view: 'components', builder: true },
+            // As in the sidebar: the current project's theme, the list when there is none.
+            patch: { view: 'projects', project: state.current },
         },
     ];
 
@@ -93,7 +94,7 @@ export const Home = ({ state, onChange }: HomeProps) => {
                     {ways.map(way => (
                         <a
                             className={cn(
-                                'group/way flex min-w-0 items-center gap-4 border-neutral-200 border-b px-5 py-4 transition-[background-color] duration-150 last:border-b-0 hover:bg-neutral-950/[0.03]',
+                                'group/way flex min-w-0 items-center gap-4 border-neutral-200 border-b px-5 py-4 transition-[background-color] duration-150 last:border-b-0 hover:bg-neutral-950/3',
                                 focusRing,
                                 'focus-visible:-outline-offset-2',
                             )}
