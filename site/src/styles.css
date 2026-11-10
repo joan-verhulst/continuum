@@ -1,0 +1,80 @@
+@import "tailwindcss" source(none);
+@import "../../src/styles/theme.css";
+
+@source "./";
+/* The playground's screens are shown live on the page. */
+@source "../../playground/src/screens";
+/* So are the components, from the docs' own entries and the stage they sit on. */
+@source "../../playground/src/showcase";
+@source "../../playground/src/layout.tsx";
+@source "../../playground/src/theme-export.ts";
+
+/* The site sets its counters and commands in Geist Mono. */
+@theme {
+    --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/*
+ * The hero's Customize: a rim of the accent turning round its border, so the one control on the
+ * window is found. A quarter of the edge is lit; it holds still for anyone who asks for less motion.
+ * It sits in the window's chrome, outside the customized screen, so it keeps the site's amber.
+ */
+@property --rim-angle {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+}
+
+.rim-light {
+    position: relative;
+    isolation: isolate;
+}
+
+.rim-light::before,
+.rim-light::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    background: conic-gradient(
+        from var(--rim-angle),
+        transparent 0 60%,
+        var(--color-primary-500) 80%,
+        transparent 95%
+    );
+    animation: rim-turn 3.5s linear infinite;
+}
+
+/* The rim itself, cut to the border's width. */
+.rim-light::before {
+    padding: 1px;
+    mask:
+        linear-gradient(#000 0 0) content-box exclude,
+        linear-gradient(#000 0 0);
+}
+
+/* Its glow, soft and behind the button. */
+.rim-light::after {
+    z-index: -1;
+    filter: blur(6px);
+    opacity: 0.45;
+}
+
+@keyframes rim-turn {
+    to {
+        --rim-angle: 360deg;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rim-light::before,
+    .rim-light::after {
+        animation: none;
+        --rim-angle: 135deg;
+    }
+}

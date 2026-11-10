@@ -25,10 +25,11 @@
         "build:css": "node scripts/build-css.mjs",
         "build:skill": "node scripts/build-css.mjs && node scripts/build-skill.mjs",
         "install:skill": "node scripts/build-css.mjs && node scripts/build-skill.mjs --install",
-        "type-check": "tsc --noEmit && pnpm --filter playground type-check",
+        "type-check": "tsc --noEmit && pnpm --filter playground type-check && pnpm --filter site type-check",
         "lint": "biome check",
         "lint:fix": "biome check --write",
-        "check": "pnpm type-check && pnpm lint && pnpm build:skill"
+        "check": "pnpm type-check && pnpm lint && pnpm build:skill",
+        "dev:site": "pnpm --filter site dev"
     },
     "peerDependencies": {
         "react": ">=19",
