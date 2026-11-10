@@ -2,7 +2,7 @@
 
 import { Collapsible as CollapsiblePrimitive } from '@base-ui/react/collapsible';
 import { useRender } from '@base-ui/react/use-render';
-import { ChevronDown, PanelLeft } from 'lucide-react';
+import { ChevronDown, ChevronLeft, PanelLeft } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { focusRing } from './button';
@@ -43,7 +43,7 @@ export const AppPanel = ({ className, ...props }: ComponentProps<'main'>) => (
  */
 export const Sidebar = ({ className, ...props }: ComponentProps<'aside'>) => (
     <aside
-        className={cn('flex w-64 shrink-0 flex-col overflow-hidden', className)}
+        className={cn('flex w-sidebar shrink-0 flex-col overflow-hidden', className)}
         data-slot="sidebar"
         {...props}
     />
@@ -53,7 +53,7 @@ export const Sidebar = ({ className, ...props }: ComponentProps<'aside'>) => (
 export const SidebarHeader = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
         className={cn(
-            'flex h-14 shrink-0 items-center justify-between pt-3 pr-4 pb-2 pl-2',
+            'flex h-nav shrink-0 items-center justify-between pt-3 pr-4 pb-2 pl-2',
             className,
         )}
         data-slot="sidebar-header"
@@ -68,22 +68,39 @@ export const SidebarLogo = ({ className, children, ...props }: ComponentProps<'s
         data-slot="sidebar-logo"
         {...props}
     >
-        <span className="grid size-[26px] place-items-center text-neutral-950 [&_svg:not([class*=size-])]:size-4">
+        <span className="grid size-6.5 place-items-center text-neutral-950 [&_svg:not([class*=size-])]:size-4">
             {children}
         </span>
     </span>
 );
 
+type SidebarToggleProps = ComponentProps<'button'> & {
+    /**
+     * Whether the sidebar it opens and closes is open now: it sets `aria-expanded` and turns the
+     * default name from "Expand sidebar" to "Collapse sidebar". Left out, the button states neither
+     * and is named "Collapse sidebar", as a toggle in an open sidebar's header is.
+     */
+    expanded?: boolean;
+    /** Its names for screen readers while the sidebar is open and while it is closed. */
+    collapseLabel?: string;
+    expandLabel?: string;
+};
+
+/** Opens and closes the sidebar; give it `expanded` and `aria-controls` so its state is announced. */
 export const SidebarToggle = ({
     className,
     type = 'button',
-    'aria-label': label = 'Collapse sidebar',
+    expanded,
+    collapseLabel = 'Collapse sidebar',
+    expandLabel = 'Expand sidebar',
+    'aria-label': label = expanded === false ? expandLabel : collapseLabel,
     ...props
-}: ComponentProps<'button'>) => (
+}: SidebarToggleProps) => (
     <button
+        aria-expanded={expanded}
         aria-label={label}
         className={cn(
-            'grid size-[26px] cursor-pointer place-items-center rounded-chip text-neutral-300 transition-colors duration-150 hover:text-neutral-600',
+            'grid size-6.5 cursor-pointer place-items-center rounded-chip text-neutral-300 transition-colors duration-150 hover:text-neutral-600',
             focusRing,
             className,
         )}
@@ -91,7 +108,7 @@ export const SidebarToggle = ({
         type={type}
         {...props}
     >
-        <PanelLeft className="size-[18px]" strokeWidth={2} />
+        <PanelLeft className="size-4.5" strokeWidth={2} />
     </button>
 );
 
@@ -173,12 +190,12 @@ export const NavItem = ({
             'aria-current': active ? 'page' : undefined,
             className: cn(
                 navItemClasses,
-                variant === 'default' && 'h-[34px] text-neutral-950 text-xs',
-                variant === 'project' && 'h-[34px] text-neutral-950 text-sm',
+                variant === 'default' && 'h-control text-neutral-950 text-xs',
+                variant === 'project' && 'h-control text-neutral-950 text-sm',
                 variant === 'inset' &&
-                    'h-[34px] pl-8 text-neutral-700 text-sm aria-[current=page]:text-neutral-950',
+                    'h-control pl-8 text-neutral-700 text-sm aria-[current=page]:text-neutral-950',
                 variant === 'primary' &&
-                    'mb-3.5 h-[34px] bg-action text-on-action text-xs shadow-action [background-image:var(--action-gradient)] hover:bg-action-hover hover:[background-image:none]',
+                    'mb-3.5 h-control bg-action text-on-action text-xs shadow-action [background-image:var(--action-gradient)] hover:bg-action-hover hover:[background-image:none]',
                 className,
             ),
             'data-slot': 'nav-item',
@@ -197,6 +214,79 @@ export const NavItem = ({
             ),
         },
     });
+
+type SidebarLevelProps = ComponentProps<'div'> & {
+    /**
+     * The side it comes in from: `end` for a level opened from the one above it, `start` for the
+     * level returned to.
+     */
+    from?: 'start' | 'end';
+};
+
+/**
+ * One level of a sidebar that drills down: the top level's places, or the index of one of them
+ * under a `SidebarBack`. Render the level that is open; it comes in 8px from its side as it fades
+ * in, and only fades under reduced motion. Give each level a key, so a change of level enters anew.
+ */
+export const SidebarLevel = ({ from = 'end', className, ...props }: SidebarLevelProps) => (
+    <div
+        className={cn(
+            'flex min-w-0 flex-col starting:opacity-0 transition-[opacity,translate] duration-200 ease-out-strong motion-reduce:transition-none',
+            from === 'end'
+                ? 'motion-safe:starting:translate-x-2'
+                : 'motion-safe:starting:-translate-x-2',
+            className,
+        )}
+        data-slot="sidebar-level"
+        {...props}
+    />
+);
+
+/**
+ * The head of a nested level: its `SidebarBack`, then anything that works on the whole level (a
+ * search). It stays at the top while the level's list scrolls under it, on the sidebar's canvas,
+ * with a hairline at its foot; 12 above, 8 between its rows and 12 below, in a group's insets.
+ */
+export const SidebarLevelHead = ({ className, ...props }: ComponentProps<'div'>) => (
+    <div
+        className={cn(
+            'sticky top-0 z-10 flex shrink-0 flex-col gap-2 border-neutral-200 border-b bg-neutral-100 pt-3 pr-3 pb-3 pl-2',
+            className,
+        )}
+        data-slot="sidebar-level-head"
+        {...props}
+    />
+);
+
+type SidebarBackProps = Omit<ComponentProps<'button'>, 'children'> & {
+    /** The level's name, shown after the chevron: "Components". */
+    children: ReactNode;
+    /** Spoken before the name, so the button says where it goes: "Back to the menu". */
+    backLabel?: string;
+};
+
+/**
+ * The head of a nested level: a chevron back and the level's name, a nav row in medium weight.
+ * It takes the reader back to the level above; the page that is open stays.
+ */
+export const SidebarBack = ({
+    backLabel = 'Back',
+    className,
+    children,
+    type = 'button',
+    ...props
+}: SidebarBackProps) => (
+    <button
+        className={cn(navItemClasses, 'h-control font-medium text-neutral-950 text-xs', className)}
+        data-slot="sidebar-back"
+        type={type}
+        {...props}
+    >
+        <ChevronLeft aria-hidden strokeWidth={2} />
+        <span className="sr-only">{backLabel}: </span>
+        <span className="min-w-0 flex-1 truncate">{children}</span>
+    </button>
+);
 
 type NavGroupProps = Omit<ComponentProps<typeof CollapsiblePrimitive.Root>, 'className'> & {
     className?: string;
@@ -219,7 +309,7 @@ export const NavGroup = ({ icon, label, className, children, ...props }: NavGrou
         <CollapsiblePrimitive.Trigger
             className={cn(
                 navItemClasses,
-                'group h-[34px] text-neutral-700 text-sm data-panel-open:bg-selected data-panel-open:text-neutral-950',
+                'group h-control text-neutral-700 text-sm data-panel-open:bg-selected data-panel-open:text-neutral-950',
             )}
             data-slot="nav-group-trigger"
         >
@@ -237,7 +327,7 @@ export const NavGroup = ({ icon, label, className, children, ...props }: NavGrou
                 // Opens to its own height and closes back, the rows fading with it.
                 'h-(--collapsible-panel-height) overflow-hidden transition-[height,opacity] duration-200 ease-out-strong',
                 'data-ending-style:h-0 data-starting-style:h-0 data-ending-style:opacity-0 data-starting-style:opacity-0',
-                'motion-reduce:transition-[opacity]',
+                'motion-reduce:transition-opacity',
             )}
             data-slot="nav-group-content"
         >
@@ -285,7 +375,7 @@ export const SidebarAccount = ({
         )}
         <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate font-medium text-neutral-600 text-xs">{name}</span>
-            {plan && <span className="truncate font-medium text-neutral-500 text-xxs">{plan}</span>}
+            {plan && <span className="truncate font-medium text-neutral-600 text-xxs">{plan}</span>}
         </span>
     </div>
 );
