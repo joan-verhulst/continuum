@@ -50,7 +50,7 @@ export const BreadcrumbItem = ({ className, ...props }: ComponentProps<'li'>) =>
     <li
         className={cn(
             // Links keep their width; only the current page gives way when the bar is short.
-            'inline-flex shrink-0 items-center gap-2 has-[[data-slot=breadcrumb-page]]:min-w-0 has-[[data-slot=breadcrumb-page]]:shrink',
+            'inline-flex shrink-0 items-center gap-2 has-data-[slot=breadcrumb-page]:min-w-0 has-data-[slot=breadcrumb-page]:shrink',
             className,
         )}
         data-slot="breadcrumb-item"
@@ -134,7 +134,7 @@ export const BreadcrumbMenu = ({
             aria-label={label ? undefined : (ariaLabel ?? 'Show hidden pages')}
             className={cn(
                 // Pulled out by its padding, so its text lines up with the crumbs beside it.
-                '-mx-1.5 inline-flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded-chip px-1.5 text-neutral-600',
+                '-mx-1.5 inline-flex h-control-sm shrink-0 cursor-pointer items-center gap-1 rounded-chip px-1.5 text-neutral-600',
                 'transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-950',
                 'data-popup-open:bg-selected data-popup-open:text-neutral-950 [&_svg]:size-4 [&_svg]:shrink-0',
                 focusRing,
@@ -145,7 +145,7 @@ export const BreadcrumbMenu = ({
             {label ?? <Ellipsis strokeWidth={2} />}
             {label && <ChevronsUpDown className="text-neutral-400" strokeWidth={2} />}
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="start" className="min-w-48" container={container}>
+        <DropdownMenuContent align="start" className="min-w-menu-wide" container={container}>
             {children}
         </DropdownMenuContent>
     </DropdownMenu>

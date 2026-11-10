@@ -14,7 +14,7 @@ import { Notice, type NoticeProps, useNotice } from './notice';
 export const HeaderBar = ({ className, ...props }: ComponentProps<'header'>) => (
     <header
         className={cn(
-            'relative flex h-[54px] shrink-0 items-center justify-between gap-4 border-neutral-200 border-b py-2 pr-2 pl-4',
+            'relative flex h-header shrink-0 items-center justify-between gap-4 border-neutral-200 border-b py-2 pr-2 pl-4',
             className,
         )}
         data-slot="header-bar"
@@ -36,9 +36,12 @@ export type HeaderBarNavProps = Omit<ComponentProps<'div'>, 'children'> & {
     onBack?: () => void;
     /** Leave it out for a back button alone, as a detail page that returns to its list has. */
     onForward?: () => void;
-    /** Whether there is somewhere to go; the arrow dims without it. */
+    /** Whether there is somewhere to go; the arrow dims without it, or without its handler. */
     canGoBack?: boolean;
     canGoForward?: boolean;
+    /** The arrows' names for screen readers. */
+    backLabel?: string;
+    forwardLabel?: string;
 };
 
 /**
@@ -51,6 +54,8 @@ export const HeaderBarNav = ({
     onForward,
     canGoBack = true,
     canGoForward = true,
+    backLabel = 'Back',
+    forwardLabel = 'Forward',
     className,
     ...props
 }: HeaderBarNavProps) => (
@@ -67,9 +72,10 @@ export const HeaderBarNav = ({
         data-slot="header-bar-nav"
         {...props}
     >
+        {/* An arrow with nothing to call has nowhere to go, so it dims as one at the end of the history. */}
         <Button
-            aria-label="Back"
-            disabled={!canGoBack}
+            aria-label={backLabel}
+            disabled={!canGoBack || !onBack}
             onClick={onBack}
             size="icon-sm"
             variant="ghost"
@@ -78,7 +84,7 @@ export const HeaderBarNav = ({
         </Button>
         {onForward && (
             <Button
-                aria-label="Forward"
+                aria-label={forwardLabel}
                 disabled={!canGoForward}
                 onClick={onForward}
                 size="icon-sm"

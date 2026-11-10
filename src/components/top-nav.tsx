@@ -1,7 +1,7 @@
 'use client';
 
 import { useRender } from '@base-ui/react/use-render';
-import { type ComponentProps, type ReactNode, useEffect } from 'react';
+import { type ComponentProps, type ReactNode, useCallback, useEffect, useRef } from 'react';
 import { cn } from '../lib/cn';
 import { OverflowChevron, useOverflowScroll } from '../lib/overflow-scroll';
 import { focusRing } from './button';
@@ -14,7 +14,7 @@ import { navItemClasses } from './sidebar';
  */
 export const TopNav = ({ className, ...props }: ComponentProps<'header'>) => (
     <header
-        className={cn('flex h-14 shrink-0 items-center gap-6 px-4', className)}
+        className={cn('flex h-nav shrink-0 items-center gap-6 px-4', className)}
         data-slot="top-nav"
         {...props}
     />
@@ -42,7 +42,7 @@ export const TopNavBrand = ({ render, logo, className, children, ...props }: Top
             ...props,
             children: (
                 <>
-                    <span className="grid size-[26px] shrink-0 place-items-center [&_svg:not([class*=size-])]:size-4">
+                    <span className="grid size-6.5 shrink-0 place-items-center [&_svg:not([class*=size-])]:size-4">
                         {logo}
                     </span>
                     {children && <span className="hidden sm:inline">{children}</span>}
@@ -57,12 +57,28 @@ export const TopNavBrand = ({ render, logo, className, children, ...props }: Top
  */
 export const TopNavLinks = ({ className, children, ...props }: ComponentProps<'nav'>) => {
     const { ref, edges, step, reveal, style } = useOverflowScroll<HTMLDivElement>();
+    const row = useRef<HTMLDivElement | null>(null);
+    const shown = useRef<{ link: string | null; reveal?: typeof reveal }>({ link: null });
+    const setRow = useCallback(
+        (node: HTMLDivElement | null) => {
+            row.current = node;
+            ref(node);
+        },
+        [ref],
+    );
 
-    // Children change when the current section does, so this follows it.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: children stand in for the current link
+    // Brought into view only when the current section changes, as the dock does on its value, so a
+    // re-render never scrolls the row back while someone is looking along it. The links carry no
+    // value, so the current one is known by its place among them. `reveal` is new once the row has
+    // mounted, which counts as a change, so the first current link is brought into view too.
     useEffect(() => {
-        reveal('[aria-current=page]');
-    }, [children, reveal]);
+        const links = Array.from(row.current?.children ?? []);
+        const index = links.findIndex(link => link.matches('[aria-current=page]'));
+        const link = index < 0 ? null : `${index}:${links[index]?.textContent ?? ''}`;
+        if (link === shown.current.link && reveal === shown.current.reveal) return;
+        shown.current = { link, reveal };
+        if (link) reveal('[aria-current=page]');
+    });
 
     return (
         <nav
@@ -80,8 +96,8 @@ export const TopNavLinks = ({ className, children, ...props }: ComponentProps<'n
             )}
             {/* The row clips 4px over and under its links, so a focus ring keeps its room. */}
             <div
-                className="-my-1 flex min-w-0 items-center gap-0.5 overflow-x-auto py-1 [scrollbar-width:none]"
-                ref={ref}
+                className="scrollbar-none -my-1 flex min-w-0 items-center gap-0.5 overflow-x-auto py-1"
+                ref={setRow}
                 style={style}
             >
                 {children}
@@ -99,7 +115,7 @@ export const TopNavLinks = ({ className, children, ...props }: ComponentProps<'n
 };
 
 // A link's 34px and corner.
-const chevron = 'size-[34px] rounded-item';
+const chevron = 'size-control rounded-item';
 
 type TopNavLinkProps = ComponentProps<'button'> & {
     /** Swaps the button for another element, e.g. `render={<a href="/connections" />}`. */
@@ -129,7 +145,7 @@ export const TopNavLink = ({
             'aria-current': active ? 'page' : undefined,
             className: cn(
                 navItemClasses,
-                'h-[34px] w-auto shrink-0 px-3 text-neutral-600 text-xs hover:text-neutral-950 aria-[current=page]:text-neutral-950',
+                'h-control w-auto shrink-0 px-3 text-neutral-600 text-xs hover:text-neutral-950 aria-[current=page]:text-neutral-950',
                 className,
             ),
             'data-slot': 'top-nav-link',

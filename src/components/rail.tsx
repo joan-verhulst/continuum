@@ -72,9 +72,9 @@ export const Rail = ({
         <RailContext.Provider value={{ expanded, setExpanded }}>
             <nav
                 className={cn(
-                    'group/rail relative isolate flex shrink-0 flex-col gap-0.5 overflow-hidden rounded-dock border border-neutral-200 bg-neutral-50 p-2',
+                    'group/rail relative isolate flex shrink-0 flex-col gap-0.5 overflow-hidden rounded-dock border border-neutral-200 bg-neutral-50 p-[8px]',
                     'transition-[width] duration-300 ease-out-strong motion-reduce:transition-none',
-                    expanded ? 'w-52' : 'w-[52px]',
+                    expanded ? 'w-rail-open' : 'w-rail',
                     className,
                 )}
                 data-expanded={expanded || undefined}
@@ -87,7 +87,7 @@ export const Rail = ({
                     <span
                         aria-hidden
                         className={cn(
-                            'absolute inset-x-2 top-0 -z-10 rounded-item bg-action shadow-action [background-image:var(--action-gradient)]',
+                            'absolute inset-x-[8px] top-0 -z-10 rounded-item bg-action shadow-action [background-image:var(--action-gradient)]',
                             pill.moved &&
                                 'transition-[translate,height] duration-200 ease-out-strong motion-reduce:transition-none',
                         )}
@@ -111,9 +111,13 @@ export const RailSeparator = ({ className, ...props }: ComponentProps<'hr'>) => 
     />
 );
 
-// A 34px row the rail's inner width: closed, the icon sits centred in it, and open it stays put.
+/*
+ * A control-tall row the rail's inner width: closed, the icon sits centred in it, and open it stays
+ * put. The rail is a fixed 52px box, so its insets are fixed pixels too, not the spacing unit: 8px
+ * round the rows and (52 − 2 border − 16 inset − 16 icon) / 2 = 9px either side of the icon.
+ */
 const railRowClass =
-    'flex h-[34px] w-full shrink-0 cursor-pointer items-center gap-2.5 overflow-hidden rounded-item px-2.25 text-neutral-600 transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-800 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0';
+    'flex h-control w-full shrink-0 cursor-pointer items-center gap-2.5 overflow-hidden rounded-item px-[9px] text-neutral-600 transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-800 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0';
 
 // The label beside the icon: there while open, faded out and clipped while closed.
 const RailLabel = ({ children }: { children: string }) => (
@@ -189,9 +193,20 @@ export const RailItem = ({
 };
 
 /** Opens and closes the rail; usually its first row. */
-export const RailToggle = ({ className, onClick, ...props }: ComponentProps<'button'>) => {
+export const RailToggle = ({
+    className,
+    onClick,
+    collapseLabel = 'Collapse navigation',
+    expandLabel = 'Expand navigation',
+    ...props
+}: ComponentProps<'button'> & {
+    /** Its names for screen readers and the tooltip while the rail is open and while it is closed. */
+    collapseLabel?: string;
+    expandLabel?: string;
+}) => {
     const { expanded, setExpanded } = useContext(RailContext);
-    const label = expanded ? 'Collapse sidebar' : 'Expand sidebar';
+    // Named for what it holds, the app's navigation, since "rail" is the library's word, not the reader's.
+    const label = expanded ? collapseLabel : expandLabel;
 
     return (
         <Tooltip disabled={expanded}>

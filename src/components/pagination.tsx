@@ -20,9 +20,10 @@ export const PaginationButton = ({
     <button
         aria-current={current ? 'page' : undefined}
         className={cn(
-            'inline-flex size-[34px] shrink-0 cursor-pointer select-none items-center justify-center rounded-control border border-neutral-200 font-medium text-neutral-600 text-sm tabular-nums transition-[border-color,color] duration-150',
+            'inline-flex size-control shrink-0 cursor-pointer select-none items-center justify-center rounded-control border border-neutral-200 font-medium text-neutral-600 text-sm tabular-nums transition-[border-color,color] duration-150',
             'hover:border-neutral-300 hover:text-neutral-950 aria-[current=page]:text-neutral-950',
-            'disabled:pointer-events-none disabled:text-neutral-300 [&_svg]:size-4 [&_svg]:shrink-0',
+            // Disabled as every control is: half strength, no pointer.
+            'disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
             focusRing,
             className,
         )}
@@ -89,6 +90,10 @@ export type PaginationProps = Omit<ComponentProps<'nav'>, 'children' | 'results'
     results?: ReactNode;
     /** Right slot, e.g. a rows-per-page select. */
     end?: ReactNode;
+    /** The previous button's accessible name; "Previous page" by default. */
+    previousLabel?: string;
+    /** The next button's accessible name; "Next page" by default. */
+    nextLabel?: string;
 };
 
 /** The library's pagination bar: results on the left, pages centred, an optional right slot. */
@@ -99,6 +104,8 @@ export const Pagination = ({
     siblings = 1,
     results,
     end,
+    previousLabel,
+    nextLabel,
     className,
     'aria-label': label = 'Pagination',
     ...props
@@ -116,6 +123,7 @@ export const Pagination = ({
             <div className="min-w-0 font-medium text-neutral-800 text-xs">{results}</div>
             <div className="flex items-center gap-2">
                 <PaginationPrevious
+                    aria-label={previousLabel}
                     disabled={current <= 1}
                     onClick={() => onPageChange(current - 1)}
                 />
@@ -131,7 +139,7 @@ export const Pagination = ({
                     ) : (
                         <span
                             aria-hidden
-                            className="inline-flex size-[34px] items-center justify-center font-medium text-neutral-600 text-sm"
+                            className="inline-flex size-control items-center justify-center font-medium text-neutral-600 text-sm"
                             key={item}
                         >
                             …
@@ -139,6 +147,7 @@ export const Pagination = ({
                     ),
                 )}
                 <PaginationNext
+                    aria-label={nextLabel}
                     disabled={current >= count}
                     onClick={() => onPageChange(current + 1)}
                 />
