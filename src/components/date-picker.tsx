@@ -30,12 +30,24 @@ import { Popover, PopoverContent, PopoverTrigger } from './popover';
 /** A complete range: both ends are always set, a single day has `from` and `to` on the same date. */
 export type DateRangeValue = { from: Date; to: Date };
 
-const dayMonth = new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' });
-const dayMonthYear = new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-});
+/** The locale dates are written in unless a picker is given another. */
+const defaultLocale = 'en-GB';
+
+// One formatter per locale and shape, made the first time it is asked for.
+const formatters = new Map<string, Intl.DateTimeFormat>();
+const formatter = (locale: string, withYear: boolean) => {
+    const key = `${locale}|${withYear}`;
+    let found = formatters.get(key);
+    if (!found) {
+        found = new Intl.DateTimeFormat(locale, {
+            day: 'numeric',
+            month: 'short',
+            year: withYear ? 'numeric' : undefined,
+        });
+        formatters.set(key, found);
+    }
+    return found;
+};
 
 const startOfDay = (date: Date) => new Date(date.getFullYear(), date.getMonth(), date.getDate());
 const addDays = (date: Date, days: number) =>
@@ -57,15 +69,19 @@ const countDays = ({ from, to }: DateRangeValue) =>
 const toIsoDate = (date: Date) =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
 
-/** "12 Oct 2025". */
-export const formatDate = (date: Date) => dayMonthYear.format(date);
+/** "12 Oct 2025", in British English unless another locale is given. */
+export const formatDate = (date: Date, locale = defaultLocale) =>
+    formatter(locale, true).format(date);
 
 /** "12 Oct – 26 Oct 2025"; the year is written once when both ends share it. */
-export const formatDateRange = ({ from, to }: DateRangeValue) => {
-    if (isSameDay(from, to)) return dayMonthYear.format(from);
+export const formatDateRange = ({ from, to }: DateRangeValue, locale = defaultLocale) => {
+    const full = formatter(locale, true);
+    if (isSameDay(from, to)) return full.format(from);
     const start =
-        from.getFullYear() === to.getFullYear() ? dayMonth.format(from) : dayMonthYear.format(from);
-    return `${start} – ${dayMonthYear.format(to)}`;
+        from.getFullYear() === to.getFullYear()
+            ? formatter(locale, false).format(from)
+            : full.format(from);
+    return `${start} – ${full.format(to)}`;
 };
 
 /** A named range in the range picker's list, worked out when it is picked so "today" is never stale. */
@@ -248,15 +264,14 @@ const DatePickerTrigger = ({
             <span
                 className={cn(
                     'min-w-0 flex-1 truncate font-medium text-xs transition-[color] duration-150',
+                    // Disabled keeps these colours; the box is dimmed to half strength around them.
                     text
-                        ? isDisabled
-                            ? 'text-neutral-400'
-                            : 'text-neutral-900'
-                        : isDisabled
-                          ? 'text-neutral-300'
-                          : invalid
-                            ? 'text-error-300'
-                            : 'text-neutral-500 group-hover/input:text-neutral-600',
+                        ? 'text-neutral-900'
+                        : invalid
+                          ? 'text-error-300'
+                          : isDisabled
+                            ? 'text-neutral-500'
+                            : 'text-neutral-600 group-hover/input:text-neutral-700',
                 )}
                 data-slot="date-picker-value"
                 id={valueId}
@@ -290,20 +305,39 @@ type PickerBaseProps = TriggerOwnProps & {
     defaultOpen?: boolean;
     onOpenChange?: (open: boolean) => void;
     align?: ComponentProps<typeof PopoverContent>['align'];
+    /** The locale the default format writes dates in; British English ("12 Oct 2025") by default. */
+    locale?: string;
+};
+
+/** The words a DatePicker says, for a product in another language. */
+export type DatePickerLabels = {
+    /** The calendar panel's accessible name; "Choose a date". */
+    dialog?: string;
+    /** The button that empties the field; "Clear". */
+    clear?: string;
 };
 
 export type DatePickerProps = PickerBaseProps & {
     value?: Date | undefined;
     defaultValue?: Date;
     onValueChange?: (value: Date | undefined) => void;
-    /** Keeps a date chosen: clicking the chosen day again no longer clears it. */
+    /** Keeps a date chosen: the panel offers no Clear. */
     required?: boolean;
     /** Submits the date as YYYY-MM-DD under this name in a native form. */
     name?: string;
     format?: (date: Date) => string;
+    labels?: DatePickerLabels;
 };
 
-/** An Input-like trigger that opens a calendar in a popover and commits the day picked. */
+/** A footer ruled off the panel, edge to edge, as a floating container may have. */
+const footerClass =
+    'flex min-h-[calc(var(--spacing-control)+8px)] shrink-0 items-center justify-between gap-3 border-neutral-200 border-t py-1 pr-1 pl-3';
+
+/**
+ * An Input-like trigger that opens a calendar in a popover and commits the day picked. Picking the
+ * chosen day again keeps it and closes; a date that may be left empty is emptied with the panel's
+ * Clear, as in the range picker.
+ */
 export const DatePicker = (props: DatePickerProps) => {
     const {
         value: valueProp,
@@ -311,7 +345,9 @@ export const DatePicker = (props: DatePickerProps) => {
         onValueChange,
         required = false,
         name,
-        format = formatDate,
+        locale,
+        format = (date: Date) => formatDate(date, locale),
+        labels,
         placeholder = 'Select date',
         disabledDates,
         startMonth,
@@ -347,25 +383,39 @@ export const DatePicker = (props: DatePickerProps) => {
             {name && <input name={name} type="hidden" value={value ? toIsoDate(value) : ''} />}
             <PopoverContent
                 align={align}
-                aria-label="Choose a date"
-                className="w-auto"
+                aria-label={labels?.dialog ?? 'Choose a date'}
+                className="w-auto gap-0 p-0"
                 initialFocus={() => focusDay(popupRef.current)}
                 ref={popupRef}
             >
-                <Calendar
-                    defaultMonth={value}
-                    disabled={disabledDates}
-                    endMonth={endMonth}
-                    mode="single"
-                    onSelect={(next: Date | undefined) => {
-                        setValue(next);
-                        setOpen(false);
-                    }}
-                    // DayPicker then hands back the chosen day when it is clicked again, so it commits and closes.
-                    required={required}
-                    selected={value}
-                    startMonth={startMonth}
-                />
+                <div className="flex justify-center p-3">
+                    <Calendar
+                        defaultMonth={value}
+                        disabled={disabledDates}
+                        endMonth={endMonth}
+                        mode="single"
+                        onSelect={(next: Date | undefined) => {
+                            // A click on the chosen day hands back nothing; it keeps the day and closes.
+                            if (next) setValue(next);
+                            setOpen(false);
+                        }}
+                        selected={value}
+                        startMonth={startMonth}
+                    />
+                </div>
+                {value && !required && (
+                    <div className={cn(footerClass, 'justify-end')} data-slot="date-picker-footer">
+                        <Button
+                            onClick={() => {
+                                setValue(undefined);
+                                setOpen(false);
+                            }}
+                            variant="ghost"
+                        >
+                            {labels?.clear ?? 'Clear'}
+                        </Button>
+                    </div>
+                )}
             </PopoverContent>
         </Popover>
     );
@@ -376,7 +426,7 @@ export const DatePicker = (props: DatePickerProps) => {
  * -----------------------------------------------------------------------------------------------*/
 
 const presetRowClass = [
-    'flex h-8 w-full shrink-0 cursor-pointer select-none items-center whitespace-nowrap rounded-item px-2 font-medium text-neutral-700 text-xs transition-[background-color,color] duration-150',
+    'flex h-cell w-full shrink-0 cursor-pointer select-none items-center whitespace-nowrap rounded-item px-2 font-medium text-neutral-700 text-xs transition-[background-color,color] duration-150',
     'hover:bg-neutral-950/5 hover:text-neutral-800',
     'aria-pressed:bg-selected aria-pressed:text-neutral-950',
     'disabled:pointer-events-none disabled:opacity-50',
@@ -393,7 +443,31 @@ export type DateRangePickerProps = PickerBaseProps & {
     /** The longest range allowed, in days. */
     maxDays?: number;
     format?: (range: DateRangeValue) => string;
+    /**
+     * Submits the range in a native form as two YYYY-MM-DD fields, `<name>From` and `<name>To`
+     * ("periodFrom", "periodTo"), empty while no range is set.
+     */
+    name?: string;
+    labels?: DateRangePickerLabels;
 };
+
+/** The words a DateRangePicker says, for a product in another language. */
+export type DateRangePickerLabels = {
+    /** The calendar panel's accessible name; "Choose a date range". */
+    dialog?: string;
+    /** The preset list's accessible name; "Quick ranges". */
+    presets?: string;
+    /** The status before the first end is picked; "Pick the first day". */
+    pickFirst?: string;
+    /** The status once the first end is picked; "Pick the last day". */
+    pickLast?: string;
+    /** The status once a range is set; "14 days". */
+    days?: (count: number) => string;
+    /** The button that empties the field; "Clear". */
+    clear?: string;
+};
+
+const defaultDaysLabel = (count: number) => `${count} ${count === 1 ? 'day' : 'days'}`;
 
 /**
  * An Input-like trigger for a period: two months side by side on wide screens, named presets on the
@@ -406,7 +480,10 @@ export const DateRangePicker = (props: DateRangePickerProps) => {
         onValueChange,
         presets = defaultDateRangePresets,
         maxDays,
-        format = formatDateRange,
+        name,
+        labels,
+        locale,
+        format = (range: DateRangeValue) => formatDateRange(range, locale),
         placeholder = 'Select dates',
         disabledDates,
         startMonth,
@@ -454,17 +531,17 @@ export const DateRangePicker = (props: DateRangePickerProps) => {
 
     const shown: DayPickerRange | undefined = draft ?? value;
     const status = draft?.from
-        ? 'Pick the last day'
+        ? (labels?.pickLast ?? 'Pick the last day')
         : value
-          ? `${countDays(value)} ${countDays(value) === 1 ? 'day' : 'days'}`
-          : 'Pick the first day';
+          ? (labels?.days ?? defaultDaysLabel)(countDays(value))
+          : (labels?.pickFirst ?? 'Pick the first day');
 
     let presetsNode: ReactNode = null;
     if (presets && presets.length > 0) {
         presetsNode = (
             <fieldset
-                aria-label="Quick ranges"
-                className="grid min-w-0 shrink-0 grid-cols-2 gap-0.5 border-neutral-200 border-b p-1 sm:flex sm:w-36 sm:flex-col sm:border-r sm:border-b-0"
+                aria-label={labels?.presets ?? 'Quick ranges'}
+                className="grid min-w-0 shrink-0 grid-cols-2 gap-0.5 border-neutral-200 border-b p-1 sm:flex sm:w-presets sm:flex-col sm:border-r sm:border-b-0"
                 data-slot="date-range-presets"
             >
                 {presets.map(preset => {
@@ -502,9 +579,23 @@ export const DateRangePicker = (props: DateRangePickerProps) => {
                 text={value ? format(value) : undefined}
                 {...trigger}
             />
+            {name && (
+                <>
+                    <input
+                        name={`${name}From`}
+                        type="hidden"
+                        value={value ? toIsoDate(value.from) : ''}
+                    />
+                    <input
+                        name={`${name}To`}
+                        type="hidden"
+                        value={value ? toIsoDate(value.to) : ''}
+                    />
+                </>
+            )}
             <PopoverContent
                 align={align}
-                aria-label="Choose a date range"
+                aria-label={labels?.dialog ?? 'Choose a date range'}
                 className="w-auto max-w-[calc(100vw-32px)] gap-0 p-0"
                 collisionPadding={16}
                 initialFocus={() => focusDay(popupRef.current)}
@@ -544,18 +635,14 @@ export const DateRangePicker = (props: DateRangePickerProps) => {
                         />
                     </div>
                 </div>
-                {/* A floating container may rule off its footer, edge to edge. */}
-                <div
-                    className="flex min-h-[42px] shrink-0 items-center justify-between gap-3 border-neutral-200 border-t py-1 pr-1 pl-3"
-                    data-slot="date-range-footer"
-                >
+                <div className={footerClass} data-slot="date-range-footer">
                     {/* An output is a polite live region, so each step of the pick is announced. */}
-                    <output aria-live="polite" className="text-neutral-500 text-xxs">
+                    <output aria-live="polite" className="text-neutral-600 text-xxs">
                         {status}
                     </output>
                     {(value || draft) && (
                         <Button onClick={() => commit(undefined)} variant="ghost">
-                            Clear
+                            {labels?.clear ?? 'Clear'}
                         </Button>
                     )}
                 </div>

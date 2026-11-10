@@ -72,29 +72,53 @@ export const CardFigure = ({ className, ...props }: ComponentProps<'div'>) => (
     />
 );
 
+/**
+ * The way a change figure points when no trend is given: down when its text starts with a minus
+ * (a hyphen, the minus sign or an en dash), up otherwise.
+ */
+const trendOf = (figure: ReactNode): 'up' | 'down' => {
+    const text =
+        typeof figure === 'string' || typeof figure === 'number'
+            ? String(figure)
+            : Array.isArray(figure) &&
+                (typeof figure[0] === 'string' || typeof figure[0] === 'number')
+              ? String(figure[0])
+              : '';
+    return /^\s*[-−–]/.test(text) ? 'down' : 'up';
+};
+
 export type CardDeltaProps = ComponentProps<'span'> & {
+    /** Read from a leading minus when left out, so "−0.6%" is red without saying so. */
     trend?: 'up' | 'down';
 };
 
 /** Inline change figure set beside a chart card's value. */
-export const CardDelta = ({ trend = 'up', className, ...props }: CardDeltaProps) => (
-    <span
-        className={cn(
-            'font-normal text-xs',
-            trend === 'up' ? 'text-success-600' : 'text-error-600',
-            className,
-        )}
-        data-slot="card-delta"
-        data-trend={trend}
-        {...props}
-    />
-);
+export const CardDelta = ({ trend: trendProp, className, ...props }: CardDeltaProps) => {
+    const trend = trendProp ?? trendOf(props.children);
+
+    return (
+        <span
+            className={cn(
+                'font-normal text-xs',
+                // Each the first step that reads at 4.5:1: green is pale, so it takes 800 to red's 600.
+                trend === 'up' ? 'text-success-800' : 'text-error-600',
+                className,
+            )}
+            data-slot="card-delta"
+            data-trend={trend}
+            {...props}
+        />
+    );
+};
 
 export type StatCardProps = Omit<ComponentProps<'div'>, 'children'> & {
     label: ReactNode;
     value: ReactNode;
     delta?: ReactNode;
-    /** Colours the delta pill; `neutral` for changes that are neither good nor bad. */
+    /**
+     * Colours the delta pill; `neutral` for changes that are neither good nor bad. Read from a
+     * leading minus on the delta when left out.
+     */
     trend?: 'up' | 'down' | 'neutral';
 };
 
@@ -103,23 +127,27 @@ export const StatCard = ({
     label,
     value,
     delta,
-    trend = 'up',
+    trend: trendProp,
     className,
     ...props
-}: StatCardProps) => (
-    <Card className={cn('gap-3', className)} data-slot="stat-card" {...props}>
-        <div className="flex flex-col gap-1">
-            <CardTitle>{label}</CardTitle>
-            <CardValue>{value}</CardValue>
-        </div>
-        {delta !== undefined && (
-            <Badge
-                className="self-start"
-                tone={trend === 'up' ? 'success' : trend === 'down' ? 'error' : 'neutral'}
-                variant="pill"
-            >
-                {delta}
-            </Badge>
-        )}
-    </Card>
-);
+}: StatCardProps) => {
+    const trend = trendProp ?? trendOf(delta);
+
+    return (
+        <Card className={cn('gap-3', className)} data-slot="stat-card" {...props}>
+            <div className="flex flex-col gap-1">
+                <CardTitle>{label}</CardTitle>
+                <CardValue>{value}</CardValue>
+            </div>
+            {delta !== undefined && (
+                <Badge
+                    className="self-start"
+                    tone={trend === 'up' ? 'success' : trend === 'down' ? 'error' : 'neutral'}
+                    variant="pill"
+                >
+                    {delta}
+                </Badge>
+            )}
+        </Card>
+    );
+};
