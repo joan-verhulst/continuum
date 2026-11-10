@@ -8,7 +8,15 @@ export * from './components/breadcrumb';
 export * from './components/button';
 export * from './components/calendar';
 export * from './components/card';
-export * from './components/chat';
+export * from './components/chat-attachment';
+export * from './components/chat-composer';
+export * from './components/chat-event';
+export * from './components/chat-message';
+export * from './components/chat-prompt';
+export * from './components/chat-reference';
+export * from './components/chat-suggestions';
+export * from './components/chat-thread';
+export * from './components/chat-typing';
 export * from './components/checkbox';
 export * from './components/checklist';
 export * from './components/chip';
@@ -23,6 +31,7 @@ export * from './components/drop-zone';
 export * from './components/dropdown-menu';
 export * from './components/empty-state';
 export * from './components/field';
+export * from './components/filter-condition';
 export * from './components/filter-menu';
 export * from './components/header-bar';
 export * from './components/icon-tile';
@@ -44,6 +53,7 @@ export * from './components/select';
 export * from './components/separator';
 export * from './components/setting-row';
 export * from './components/sidebar';
+export * from './components/sidebar-switcher';
 export * from './components/skeleton';
 export * from './components/slider';
 export * from './components/spinner';
@@ -60,22 +70,81 @@ export * from './components/tooltip';
 export * from './components/top-nav';
 export * from './components/value-field';
 export { cn } from './lib/cn';
-export { hexToOklch, type Oklch, oklchToHex, type RampSteps } from './lib/color';
+export {
+    applyRampSteps,
+    buildGreyRamp,
+    buildRamp,
+    formatOklch,
+    type Gamut,
+    hasRampSteps,
+    hexToOklch,
+    inGamut,
+    maxChroma,
+    neutralShape,
+    type Oklch,
+    oklchToHex,
+    paletteProfile,
+    parseHex,
+    type RampChannel,
+    type RampCurveKey,
+    type RampShape,
+    type RampStep,
+    type RampStepOverride,
+    type RampSteps,
+    rampSteps,
+    rampToCss,
+    toCss,
+    toHex,
+} from './lib/color';
+export {
+    apcaContrast,
+    checkSeries,
+    deltaE,
+    luminance,
+    type SeriesCheck,
+    type SeriesCheckId,
+    seriesThresholds,
+    simulateVision,
+    type Vision,
+    wcagContrast,
+} from './lib/contrast';
 export {
     createThemeCss,
     createThemeVariables,
     defaultAccent,
+    defaultAccentSeed,
     defaultNeutral,
     defaultThemeOptions,
+    drawnType,
+    drawnUnit,
     isDefaultTheme,
     type ThemeCharts,
     type ThemeFont,
+    type ThemeFontId,
     type ThemeOptions,
     type ThemeVariables,
+    themeAccentCurves,
     themeAccentRamp,
+    themeChartSeries,
+    themeFontFamilies,
     themeFonts,
+    themeNeutralCurves,
     themeNeutralRamp,
+    typeScale,
 } from './lib/create-theme';
+export {
+    buildChartSeries,
+    type ChartGeometry,
+    type ChartHarmony,
+    type ChartHarmonyInfo,
+    type ChartSeries,
+    type ChartSpread,
+    chartHarmonies,
+    chartRamps,
+    chartSeriesSteps,
+    chartStepIn,
+    harmonyTurns,
+} from './lib/harmony';
 export {
     boxGap,
     boxPadding,
