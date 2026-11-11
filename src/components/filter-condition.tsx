@@ -5,7 +5,7 @@ import { Toolbar as ToolbarPrimitive } from '@base-ui/react/toolbar';
 import { ListFilter, X } from 'lucide-react';
 import { type ComponentProps, type ReactNode, useState } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
-import { Button, type ButtonProps, focusRing } from './button';
+import { Button, type ButtonProps, focusRing, touchTarget } from './button';
 import {
     DropdownMenu,
     DropdownMenuCheckboxItem,
@@ -122,10 +122,14 @@ export const FilterConditions = ({
 
 export type FilterConditionProps = WithClassName<ToolbarProps>;
 
-/** One condition: the inline toolbar, without the float shadow, since it sits in a bar and does not float. */
+/**
+ * One condition: the inline toolbar, without the float shadow, since it sits in a bar and does not
+ * float. Conditions wrap as whole tokens; one wider than its row on its own shrinks to the row, and
+ * its value truncates rather than the token clipping.
+ */
 export const FilterCondition = ({ className, ...props }: FilterConditionProps) => (
     <Toolbar
-        className={cn('shrink-0 shadow-none', className)}
+        className={cn('min-w-0 shadow-none', className)}
         data-slot="filter-condition"
         variant="inline"
         {...props}
@@ -241,10 +245,11 @@ export const filterValueSummary = (
     placeholder: ReactNode = 'Select',
 ) =>
     picked.length === 0 ? (
-        placeholder
+        <span className="min-w-0 truncate">{placeholder}</span>
     ) : (
         <>
-            {picked[0]}
+            {/* The first value is what gives way when the token runs out of room; the count stays. */}
+            <span className="min-w-0 truncate">{picked[0]}</span>
             {picked.length > 1 && (
                 <span className="font-normal text-neutral-600">+{picked.length - 1}</span>
             )}
@@ -273,8 +278,9 @@ export const FilterConditionValue = ({
 
     return (
         <DropdownMenu onOpenChange={open => !open && setQuery('')}>
-            <DropdownMenuTrigger render={<FilterConditionSegment />}>
-                <span className="inline-flex items-center gap-1.5">
+            {/* The one segment that may narrow, so a long value truncates before the token clips. */}
+            <DropdownMenuTrigger render={<FilterConditionSegment className="min-w-0" />}>
+                <span className="inline-flex min-w-0 items-center gap-1.5">
                     {filterValueSummary(picked, placeholder)}
                 </span>
             </DropdownMenuTrigger>
@@ -353,6 +359,8 @@ export const FilterConditionInput = ({
         <ToolbarPrimitive.Input
             className={cn(
                 'field-sizing-content min-w-16 max-w-48 border-neutral-200 not-last:border-r bg-transparent px-2.5 font-medium text-neutral-950 text-xs outline-none placeholder:text-neutral-600',
+                // 16px on touch, so iOS does not zoom the page in when the field takes focus.
+                'pointer-coarse:text-base',
                 focusRing,
                 // The bar clips overflow, so the ring sits inside the segment, as a button's does.
                 'focus-visible:-outline-offset-2',
@@ -372,7 +380,8 @@ export const FilterConditionRemove = ({
 }: ComponentProps<typeof ToolbarButton>) => (
     <ToolbarButton
         aria-label={ariaLabel}
-        className={cn('px-2 text-neutral-500', className)}
+        // A finger's 44px round the small ×, on a touch screen only; the bar's edge still clips it.
+        className={cn('px-2 text-neutral-500', touchTarget, className)}
         data-slot="filter-condition-remove"
         {...props}
     >

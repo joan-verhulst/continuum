@@ -22,18 +22,23 @@ export const Breadcrumb = ({
 }: ComponentProps<'nav'>) => <nav aria-label={ariaLabel} data-slot="breadcrumb" {...props} />;
 
 // One line, always: a trail that wraps would push the header bar's height. The page truncates first.
-export const breadcrumbListVariants = cva('flex min-w-0 items-center gap-2 text-neutral-600', {
-    variants: {
-        size: {
-            md: 'font-normal text-xs',
-            // The 2024 and 2025 product headers set the trail a size up, in medium.
-            lg: 'font-medium text-sm',
+// In a compact shell (a phone) the trail keeps only where you are and the page above it: home and
+// the crumbs before the parent hide, the last three items being the parent, its chevron and the page.
+export const breadcrumbListVariants = cva(
+    'flex min-w-0 items-center gap-2 text-neutral-600 @max-shell-compact/shell:[&>li:not(:nth-last-child(-n+3))]:hidden',
+    {
+        variants: {
+            size: {
+                md: 'font-normal text-xs',
+                // The 2024 and 2025 product headers set the trail a size up, in medium.
+                lg: 'font-medium text-sm',
+            },
+        },
+        defaultVariants: {
+            size: 'md',
         },
     },
-    defaultVariants: {
-        size: 'md',
-    },
-});
+);
 
 export type BreadcrumbListProps = ComponentProps<'ol'> &
     VariantProps<typeof breadcrumbListVariants>;

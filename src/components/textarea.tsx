@@ -25,7 +25,7 @@ export const Textarea = ({
     return (
         <textarea
             className={cn(
-                'block min-h-24 w-full resize-y rounded-control border bg-transparent px-3 py-2.5 transition-[border-color] duration-150',
+                'block min-h-24 w-full resize-y rounded-control border bg-transparent px-3 py-2.5 shadow-control transition-[border-color] duration-150',
                 inputTextClass,
                 'disabled:opacity-50',
                 focusRing,

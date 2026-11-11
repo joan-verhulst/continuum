@@ -10,7 +10,7 @@ import { chipClass, chipRemoveClass } from './chip';
 import { useField, useFieldControl } from './field';
 import { inputTextClass, inputVariants } from './input';
 import { PopoverItem } from './popover-item';
-import { ThemeScope } from './theme';
+import { ThemeScope, usePortalContainer } from './theme';
 
 /*
  * A text input that filters a list, built from the same parts as Input (the box) and Select (the
@@ -297,7 +297,7 @@ export const ComboboxContent = ({
     container,
     ...props
 }: ComboboxContentProps) => (
-    <ComboboxPrimitive.Portal container={container}>
+    <ComboboxPrimitive.Portal container={usePortalContainer(container)}>
         {/* Portalled content leaves the Theme subtree, so the theme is opened again here. */}
         <ThemeScope>
             <ComboboxPrimitive.Positioner

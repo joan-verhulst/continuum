@@ -3,7 +3,7 @@
 import { Radio as RadioPrimitive } from '@base-ui/react/radio';
 import { RadioGroup as RadioGroupPrimitive } from '@base-ui/react/radio-group';
 import { cn, type WithClassName } from '../lib/cn';
-import { focusRing } from './button';
+import { focusRing, touchTarget } from './button';
 import { FieldContext, useField, useFieldControl } from './field';
 
 /** A stack of radios; inside a Field it is named by the FieldLabel and described by the helper. */
@@ -57,9 +57,11 @@ export const RadioGroupItem = <Value,>({
     return (
         <RadioPrimitive.Root<Value>
             className={cn(
-                'inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-500 bg-transparent transition-[border-color] duration-150',
+                'inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-full border border-neutral-300 bg-transparent shadow-control transition-[border-color] duration-150',
+                // A 44px square a finger can find round the 20px ring, on a touch screen only.
+                touchTarget,
                 // The root is a span, not a button, so the disabled state comes from its data attribute.
-                'not-data-disabled:hover:border-neutral-600 data-disabled:cursor-not-allowed data-disabled:opacity-50',
+                'not-data-disabled:hover:border-neutral-400 data-disabled:cursor-not-allowed data-disabled:opacity-50',
                 '[[aria-invalid=true]_&]:border-error-500',
                 focusRing,
                 className,

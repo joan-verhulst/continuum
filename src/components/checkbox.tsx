@@ -4,7 +4,7 @@ import { Checkbox as CheckboxPrimitive } from '@base-ui/react/checkbox';
 import { Check, Minus } from 'lucide-react';
 import type { ComponentProps } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
-import { focusRing } from './button';
+import { focusRing, touchTarget } from './button';
 import { useFieldControl } from './field';
 
 type CheckboxProps = Omit<
@@ -47,10 +47,12 @@ export const Checkbox = ({
             // A mixed box reads as unticked underneath, so a click ticks it, as it did before.
             checked={checked === 'indeterminate' ? false : checked}
             className={cn(
-                'group/checkbox inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-chip border bg-transparent text-on-action transition-[background-color,border-color] duration-150',
+                'group/checkbox inline-flex size-5 shrink-0 cursor-pointer items-center justify-center rounded-chip border bg-transparent text-on-action shadow-control transition-[background-color,border-color] duration-150',
+                // A 44px square a finger can find round the 20px box, on a touch screen only.
+                touchTarget,
                 invalid
                     ? 'border-error-500'
-                    : 'border-neutral-500 not-data-disabled:hover:border-neutral-600',
+                    : 'border-neutral-300 not-data-disabled:hover:border-neutral-400',
                 'data-checked:bg-action data-indeterminate:bg-action',
                 'data-checked:[background-image:var(--action-gradient)] data-indeterminate:[background-image:var(--action-gradient)]',
                 // The root is a span, not a button, so the disabled state comes from its data attribute.

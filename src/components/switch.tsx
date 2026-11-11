@@ -7,8 +7,9 @@ import { focusRing } from './button';
 import { useFieldControl } from './field';
 
 /**
- * The library toggle (48x25 track, 21px knob). The knob takes the on-action
- * colour when checked so it stays visible on a light action track in dark mode.
+ * The library toggle (48x25 track, 21px knob). Checked, the knob takes the action's knob colour:
+ * the label's colour by default, so it stays visible on a light action track in dark mode, and
+ * the palest grey on a theme's own colour, where a knob is a shape and not a label.
  */
 export const Switch = ({
     className,
@@ -43,7 +44,7 @@ export const Switch = ({
             <SwitchPrimitive.Thumb
                 className={cn(
                     'pointer-events-none block size-5.25 rounded-full bg-neutral-50 transition-[translate,background-color] duration-200 ease-out-strong motion-reduce:transition-none',
-                    'data-checked:translate-x-[23px] data-checked:bg-on-action',
+                    'data-checked:translate-x-[23px] data-checked:bg-action-knob',
                 )}
                 data-slot="switch-thumb"
             />

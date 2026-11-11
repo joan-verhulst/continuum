@@ -146,6 +146,8 @@
     --color-action: var(--color-neutral-950);
     --color-action-hover: var(--color-neutral-900);
     --color-on-action: var(--color-neutral-50);
+    /* A switch's knob on the action fill: the label's colour unless a theme gives it its own */
+    --color-action-knob: var(--color-on-action);
     /* A lit or glossy button sets these; flat leaves them empty */
     --action-gradient: none;
     --color-action-highlight: transparent;
@@ -166,12 +168,29 @@
      */
     --color-selected: color-mix(in oklab, var(--color-neutral-950) 7%, transparent);
 
-    /* The active segment: filled with the action colour, or raised as a chip on the track */
+    /* The active segment and dock item: filled with the action colour */
     --color-segment: var(--color-action);
     --color-segment-fg: var(--color-on-action);
     --color-segment-border: transparent;
     --shadow-segment: none;
     --color-segment-track: var(--color-neutral-50);
+
+    /*
+     * The active sidebar item: the selected wash unless a theme tints it, fills it with the action
+     * colour or raises it as a card on the canvas.
+     */
+    --color-nav-active: var(--color-selected);
+    --color-nav-active-fg: var(--color-neutral-950);
+    --color-nav-active-border: transparent;
+    --shadow-nav-active: none;
+    /* The active item's gradient, for a theme whose active item is the button itself */
+    --nav-active-image: none;
+    /*
+     * The section that holds the page: a foldout whose rows include the active one. Plain, its
+     * label at full strength; its darkened guide line leads to the page.
+     */
+    --color-nav-section: transparent;
+    --color-nav-section-fg: var(--color-neutral-950);
 
     /* The first grey step that keeps 3:1 against the surface and the canvas */
     --color-focus: var(--color-neutral-500);
@@ -291,6 +310,13 @@
     --shadow-sheet: 0 2px 4px 0 rgb(20 22 23 / 0.1);
     /* The chat composer's soft lift off the thread it docks under */
     --shadow-composer: 0 4px 8px 0 rgb(20 22 23 / 0.05);
+    /*
+     * The flat surfaces' lift, none unless a theme's shadows give them one: a card, a panel and a
+     * table's frame take the first, a field, a select, a secondary button, a segmented control
+     * and a checkbox the second.
+     */
+    --shadow-card: none;
+    --shadow-control: none;
 
     /*
      * Content widths grow with density and stop short of the panel's edge:
@@ -303,6 +329,16 @@
     --container-content-wide: 1080px;
     --container-content-dense: 1280px;
     --spacing-content-inset: 128px;
+
+    /*
+     * The widths the app shell answers to, measured on the shell itself rather than the screen,
+     * so a shell shown narrow inside a page or an embed behaves as it would on a phone. Below
+     * the sidebar's width the navigation leaves the canvas for a top bar and a drawer; below
+     * the compact width the panel runs edge to edge. theme.css repeats them as numbers, since
+     * a container query cannot read a variable.
+     */
+    --container-shell-compact: 640px;
+    --container-shell-sidebar: 1024px;
 
     /*
      * Widths of panels, popups and fixed columns, in pixels like the content widths: a theme's
@@ -335,10 +371,14 @@
     /* An assistant's conversation column and its prompt */
     --spacing-conversation: 720px;
 
+    /* The type's spacing between letters and between lines; a theme sets its own */
+    --tracking-normal: 0.32px;
+    --leading-normal: 1.25;
+
     font-family: var(--font-sans);
     font-size: 13px;
-    line-height: 1.25;
-    letter-spacing: 0.32px;
+    line-height: var(--leading-normal);
+    letter-spacing: var(--tracking-normal);
     color: var(--color-neutral-950);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;

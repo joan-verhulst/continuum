@@ -127,7 +127,7 @@ export const CommandMenuContent = ({
     <DialogContent
         aria-label={label}
         className={cn(
-            'mt-[16vh] mb-auto w-[min(var(--spacing-command),calc(100%-32px))]',
+            'mt-[16cqh] mb-auto w-[min(var(--spacing-command),calc(100%-32px))]',
             className,
         )}
         data-slot="command-menu-content"
@@ -201,7 +201,8 @@ export const CommandMenuInput = ({
                 aria-expanded
                 autoComplete="off"
                 className={cn(
-                    'h-full min-w-0 flex-1 bg-transparent text-neutral-950 text-sm outline-none placeholder:text-neutral-600',
+                    // 16px on a touch screen, or iOS zooms the page in when the search takes focus.
+                    'h-full min-w-0 flex-1 bg-transparent pointer-coarse:text-base text-neutral-950 text-sm outline-none placeholder:text-neutral-600',
                     className,
                 )}
                 data-slot="command-menu-input"
@@ -256,7 +257,7 @@ export const CommandMenuList = ({ className, children, ...props }: ComponentProp
     return (
         <div
             className={cn(
-                'group/command-list flex max-h-[min(360px,50dvh)] flex-col gap-1 overflow-y-auto p-1.5',
+                'group/command-list flex max-h-[min(360px,50cqh)] flex-col gap-1 overflow-y-auto p-1.5',
                 className,
             )}
             data-slot="command-menu-list"
@@ -386,7 +387,7 @@ export const CommandMenuEmpty = ({ className, children, ...props }: ComponentPro
 export const CommandMenuFooter = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
         className={cn(
-            'flex h-row shrink-0 items-center gap-4 border-neutral-200 border-t px-4 text-neutral-600 text-xxs',
+            'flex pointer-coarse:hidden h-row shrink-0 items-center gap-4 overflow-hidden whitespace-nowrap border-neutral-200 border-t px-4 text-neutral-600 text-xxs',
             className,
         )}
         data-slot="command-menu-footer"

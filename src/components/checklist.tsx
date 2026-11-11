@@ -103,7 +103,7 @@ export const ChecklistItem = ({
                     ? 'border-transparent bg-action text-on-action [background-image:var(--action-gradient)]'
                     : current
                       ? 'border-action bg-neutral-50'
-                      : 'border-neutral-500 bg-neutral-50',
+                      : 'border-neutral-300 bg-neutral-50',
             )}
             data-slot="checklist-marker"
         >

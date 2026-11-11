@@ -14,7 +14,7 @@ import {
 } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
 import { Button } from './button';
-import { ThemeScope } from './theme';
+import { ThemeScope, usePortalContainer } from './theme';
 
 const CloseButton = ({ className }: { className?: string }) => (
     <DialogPrimitive.Close
@@ -58,7 +58,7 @@ export type DialogContentProps = WithClassName<DialogPrimitive.Popup.Props> & {
 };
 
 export const DialogContent = ({ className, container, ...props }: DialogContentProps) => (
-    <DialogPrimitive.Portal container={container}>
+    <DialogPrimitive.Portal container={usePortalContainer(container)}>
         <ThemeScope>
             <DialogPrimitive.Backdrop
                 className={cn(overlayClass, DIALOG_LAYER)}
@@ -67,7 +67,7 @@ export const DialogContent = ({ className, container, ...props }: DialogContentP
             {/* Centred with margins rather than a transform, so the entry transition can own translate. */}
             <DialogPrimitive.Popup
                 className={cn(
-                    'fixed inset-0 m-auto flex h-fit max-h-[calc(100dvh-32px)] w-[min(var(--spacing-dialog),calc(100vw-32px))] flex-col overflow-hidden rounded-card border border-neutral-200 bg-neutral-50 shadow-sheet outline-none',
+                    'fixed inset-0 m-auto flex h-fit max-h-[calc(100cqh-32px)] w-[min(var(--spacing-dialog),calc(100cqw-32px))] flex-col overflow-hidden rounded-card border border-neutral-200 bg-neutral-50 shadow-sheet outline-none',
                     'transition-[opacity,translate] duration-200 ease-out-strong data-ending-style:translate-y-2 data-starting-style:translate-y-2 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
                     DIALOG_LAYER,
                     className,
@@ -214,41 +214,56 @@ export const SheetArea = ({ ref, ...props }: ComponentProps<'div'>) => {
 const SHEET_GAP = 16;
 
 /**
- * The sheet is portalled and fixed to the viewport, so it follows its area by
- * measuring it: the area's box, cut down to whatever part of it the viewport and
- * any clipping ancestor still show, so a scrolled-away area never drags it along.
+ * The sheet is portalled and fixed, so it follows its area by measuring it: the area's
+ * box, cut down to whatever part of it the screen and any clipping ancestor still show,
+ * so a scrolled-away area never drags it along. The screen is the viewport, or the
+ * portal container when there is one (a phone drawn in a preview), whose box a fixed
+ * sheet then answers to; a container drawn scaled down is measured back at its own size.
+ * The sheet is never wider than its area, so on a phone it keeps 16px from both edges.
  */
-const useAreaInset = (node: HTMLElement | null) => {
+const useAreaInset = (node: HTMLElement | null, screen: HTMLElement | null) => {
     const [inset, setInset] = useState<CSSProperties>();
 
     useLayoutEffect(() => {
         if (!node) return;
 
         const update = () => {
-            const { clientWidth, clientHeight } = document.documentElement;
-            let { top, right, bottom } = node.getBoundingClientRect();
-            top = Math.max(top, 0);
-            right = Math.min(right, clientWidth);
-            bottom = Math.min(bottom, clientHeight);
+            const view = screen
+                ? screen.getBoundingClientRect()
+                : new DOMRect(
+                      0,
+                      0,
+                      document.documentElement.clientWidth,
+                      document.documentElement.clientHeight,
+                  );
+            const scale = screen?.offsetWidth ? view.width / screen.offsetWidth : 1;
+            let { top, right, bottom, left } = node.getBoundingClientRect();
+            top = Math.max(top, view.top);
+            right = Math.min(right, view.right);
+            bottom = Math.min(bottom, view.bottom);
+            left = Math.max(left, view.left);
             for (let parent = node.parentElement; parent; parent = parent.parentElement) {
                 if (getComputedStyle(parent).overflow === 'visible') continue;
                 const box = parent.getBoundingClientRect();
                 top = Math.max(top, box.top);
                 right = Math.min(right, box.right);
                 bottom = Math.min(bottom, box.bottom);
+                left = Math.max(left, box.left);
             }
             setInset({
-                top: top + SHEET_GAP,
-                right: clientWidth - right + SHEET_GAP,
-                bottom: clientHeight - bottom + SHEET_GAP,
+                top: (top - view.top) / scale + SHEET_GAP,
+                right: (view.right - right) / scale + SHEET_GAP,
+                bottom: (view.bottom - bottom) / scale + SHEET_GAP,
+                maxWidth: (right - left) / scale - 2 * SHEET_GAP,
                 // Too little of the area left to hold a sheet: hide it rather than squash it.
-                visibility: bottom - top < 160 ? 'hidden' : undefined,
+                visibility: (bottom - top) / scale < 160 ? 'hidden' : undefined,
             });
         };
 
         update();
         const observer = new ResizeObserver(update);
         observer.observe(node);
+        if (screen) observer.observe(screen);
         window.addEventListener('scroll', update, { capture: true, passive: true });
         window.addEventListener('resize', update);
         return () => {
@@ -256,7 +271,7 @@ const useAreaInset = (node: HTMLElement | null) => {
             window.removeEventListener('scroll', update, { capture: true });
             window.removeEventListener('resize', update);
         };
-    }, [node]);
+    }, [node, screen]);
 
     return inset;
 };
@@ -270,10 +285,11 @@ export type SheetContentProps = WithClassName<DialogPrimitive.Popup.Props> & {
 export const SheetContent = ({ className, style, container, ...props }: SheetContentProps) => {
     const modal = useContext(SheetModalContext);
     const area = useContext(SheetAreaContext);
-    const inset = useAreaInset(container ? null : area);
+    const screen = usePortalContainer() ?? null;
+    const inset = useAreaInset(container ? null : area, container ? null : screen);
 
     return (
-        <DialogPrimitive.Portal container={container}>
+        <DialogPrimitive.Portal container={container ?? screen ?? undefined}>
             <ThemeScope>
                 {/* Base UI renders the backdrop whatever the modality, so only a fully modal sheet gets the scrim; "trap-focus" leaves the page clickable. */}
                 {modal === true && (
@@ -285,7 +301,7 @@ export const SheetContent = ({ className, style, container, ...props }: SheetCon
                 <DialogPrimitive.Popup
                     // The surface and the panel radius, like the AppPanel it floats beside, so it follows every theme.
                     className={cn(
-                        'fixed top-4 right-4 bottom-4 flex w-[min(var(--spacing-sheet),calc(100vw-32px))] flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 shadow-sheet outline-none',
+                        'fixed top-4 right-4 bottom-4 flex w-[min(var(--spacing-sheet),calc(100cqw-32px))] flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 shadow-sheet outline-none',
                         'transition-[opacity,translate] duration-200 ease-out-strong data-ending-style:translate-x-4 data-starting-style:translate-x-4 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
                         SHEET_LAYER,
                         className,

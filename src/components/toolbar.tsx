@@ -5,6 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { Sparkles } from 'lucide-react';
 import { type ComponentProps, createContext, type ReactNode, useContext } from 'react';
 import { cn } from '../lib/cn';
+import { useOverflowScroll } from '../lib/overflow-scroll';
 import { focusRing } from './button';
 
 const toolbarVariants = cva(
@@ -16,12 +17,29 @@ const toolbarVariants = cva(
                 // The field row's 38px: items stretch to the 30px left inside a 3px inset and the hairline. It
                 // keeps the inline bar's corner, not the dock's pill, so both variants follow the theme's corners.
                 // The inset is fixed px, not the spacing unit, so the items' corner calc below stays true.
-                floating: 'h-control-lg gap-0.5 rounded-control p-[3px]',
+                floating: 'h-control-lg rounded-control p-[3px]',
             },
         },
         defaultVariants: { variant: 'inline' },
     },
 );
+
+/*
+ * The items sit in a row inside the bar, so a bar wider than its room scrolls sideways under its
+ * own border and shadow rather than clipping its last actions: the scrollbar hidden, the edge with
+ * more faded. A bar that fits is left exactly as it was, since the row only scrolls once it
+ * overflows.
+ */
+const toolbarRowVariants = cva('flex min-w-0 items-stretch', {
+    variants: {
+        variant: {
+            inline: '',
+            // Scrolling, the row reaches out over the inset and the hairline, so a focus ring keeps its room.
+            floating: 'gap-0.5 data-overflows:-m-[4px] data-overflows:p-[4px]',
+        },
+    },
+    defaultVariants: { variant: 'inline' },
+});
 
 const toolbarButtonVariants = cva(
     [
@@ -29,6 +47,10 @@ const toolbarButtonVariants = cva(
         'hover:text-neutral-950',
         // Base UI keeps a disabled toolbar button focusable, so it sets data-disabled rather than the disabled attribute.
         'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+        // In a compact shell a button with an icon keeps only the icon, a square on the bar's height;
+        // its label stays in the tree at no size, so a screen reader still says it. A button
+        // without an icon keeps its label, since it has nothing else to show.
+        '@max-shell-compact/shell:has-[>svg]:gap-0 @max-shell-compact/shell:has-[>svg]:px-2 @max-shell-compact/shell:has-[>svg]:text-[0px]',
         focusRing,
     ],
     {
@@ -62,16 +84,33 @@ export type ToolbarProps = Omit<ComponentProps<typeof ToolbarPrimitive.Root>, 'c
  * split by hairlines. `floating` is a bottom action bar: padded, with rounded
  * items and no dividers, at the dock's height with the inline bar's corners.
  */
-export const Toolbar = ({ variant, className, ...props }: ToolbarProps) => (
-    <ToolbarVariantContext.Provider value={variant ?? 'inline'}>
-        <ToolbarPrimitive.Root
-            className={cn(toolbarVariants({ variant }), className)}
-            data-slot="toolbar"
-            data-variant={variant ?? 'inline'}
-            {...props}
-        />
-    </ToolbarVariantContext.Provider>
-);
+export const Toolbar = ({ variant, className, children, ...props }: ToolbarProps) => {
+    const { ref, edges, style } = useOverflowScroll<HTMLDivElement>();
+
+    return (
+        <ToolbarVariantContext.Provider value={variant ?? 'inline'}>
+            <ToolbarPrimitive.Root
+                className={cn(toolbarVariants({ variant }), className)}
+                data-slot="toolbar"
+                data-variant={variant ?? 'inline'}
+                {...props}
+            >
+                <div
+                    className={cn(
+                        toolbarRowVariants({ variant }),
+                        edges.overflows && 'scrollbar-none overflow-x-auto',
+                    )}
+                    data-overflows={edges.overflows || undefined}
+                    data-slot="toolbar-row"
+                    ref={ref}
+                    style={edges.overflows ? style : undefined}
+                >
+                    {children}
+                </div>
+            </ToolbarPrimitive.Root>
+        </ToolbarVariantContext.Provider>
+    );
+};
 
 export const ToolbarButton = ({
     className,

@@ -8,6 +8,7 @@
 
 @source "../components";
 @source "../charts";
+@source "../lib";
 
 /*
  * Tailwind's colours, type, weights, radii and shadows give way to Continuum's.
@@ -30,7 +31,6 @@
     --font-weight-medium: 500;
 
     --tracking-*: initial;
-    --tracking-normal: 0.32px;
 
     --radius-*: initial;
     --radius-xs: 4px;
@@ -47,6 +47,8 @@
  * ignore the .continuum element it is set on.
  */
 @theme reference {
+    --tracking-normal: var(--tracking-normal);
+    --leading-normal: var(--leading-normal);
     --color-neutral-50: var(--color-neutral-50);
     --color-neutral-100: var(--color-neutral-100);
     --color-neutral-200: var(--color-neutral-200);
@@ -110,10 +112,16 @@
     --color-action: var(--color-action);
     --color-action-hover: var(--color-action-hover);
     --color-on-action: var(--color-on-action);
+    --color-action-knob: var(--color-action-knob);
     --color-tint: var(--color-tint);
     --color-selected: var(--color-selected);
     --color-tint-fg: var(--color-tint-fg);
     --color-segment: var(--color-segment);
+    --color-nav-active: var(--color-nav-active);
+    --color-nav-active-fg: var(--color-nav-active-fg);
+    --color-nav-active-border: var(--color-nav-active-border);
+    --color-nav-section: var(--color-nav-section);
+    --color-nav-section-fg: var(--color-nav-section-fg);
     --color-segment-fg: var(--color-segment-fg);
     --color-segment-border: var(--color-segment-border);
     --color-segment-track: var(--color-segment-track);
@@ -138,6 +146,9 @@
     --shadow-sheet: var(--shadow-sheet);
     --shadow-composer: var(--shadow-composer);
     --shadow-action: var(--shadow-action);
+    --shadow-card: var(--shadow-card);
+    --shadow-control: var(--shadow-control);
+    --shadow-nav-active: var(--shadow-nav-active);
 
     /* max-w-content-narrow · max-w-content · max-w-content-wide · max-w-content-dense */
     --container-content-narrow: var(--container-content-narrow);
@@ -145,6 +156,14 @@
     --container-content-wide: var(--container-content-wide);
     --container-content-dense: var(--container-content-dense);
     --spacing-content-inset: var(--spacing-content-inset);
+
+    /*
+     * @max-shell-compact/shell · @max-shell-sidebar/shell: the shell's own widths, as numbers
+     * rather than variables, because a container query is written out at build time and cannot
+     * read one. Keep them equal to tokens.css.
+     */
+    --container-shell-compact: 640px;
+    --container-shell-sidebar: 1024px;
 
     /*
      * Fixed widths, in pixels whatever the spacing unit: w-sidebar · w-rail · w-rail-open ·

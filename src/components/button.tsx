@@ -10,6 +10,15 @@ import { Spinner } from './spinner';
 export const focusRing =
     'outline-none focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2';
 
+/*
+ * A finger needs about 44px to land on, and a 28 or 34px square is drawn for a mouse. On a coarse
+ * pointer an invisible 44px square is centred over the control, so the target grows and nothing
+ * round it moves. The control is positioned so the square centres on it; a caller's `absolute`
+ * replaces that through cn(). For small controls that use no ::after of their own.
+ */
+export const touchTarget =
+    "relative pointer-coarse:after:absolute pointer-coarse:after:top-1/2 pointer-coarse:after:left-1/2 pointer-coarse:after:size-11 pointer-coarse:after:-translate-1/2 pointer-coarse:after:content-['']";
+
 export const buttonVariants = cva(
     [
         'inline-flex shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap font-medium text-xs transition-[background-color,border-color,color,opacity,scale] duration-150 ease-out-strong',
@@ -26,7 +35,7 @@ export const buttonVariants = cva(
                     'hover:bg-action-hover hover:[background-image:none]',
                 ],
                 secondary:
-                    'border border-neutral-200 bg-neutral-100 text-neutral-950 hover:border-neutral-300 hover:bg-neutral-200',
+                    'border border-neutral-200 bg-neutral-100 text-neutral-950 shadow-control hover:border-neutral-300 hover:bg-neutral-200',
                 ghost: 'text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-800',
                 // For AI actions beside the primary one: the theme's wash, no shadow. Hover mixes the
                 // wash towards its own text colour, so it deepens in every theme and in dark mode.
@@ -38,8 +47,8 @@ export const buttonVariants = cva(
                 md: 'h-control rounded-control px-4 data-[icon=both]:px-3 data-[icon=leading]:pl-3 data-[icon=trailing]:pr-3',
                 // The field row: level with a medium input, and the height of the dock's action.
                 lg: 'h-control-lg rounded-control px-4',
-                icon: 'size-control rounded-control',
-                'icon-sm': 'size-control-sm rounded-chip',
+                icon: ['size-control rounded-control', touchTarget],
+                'icon-sm': ['size-control-sm rounded-chip', touchTarget],
             },
             shape: {
                 default: '',

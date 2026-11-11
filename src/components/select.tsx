@@ -8,7 +8,7 @@ import { cn, type WithClassName } from '../lib/cn';
 import { focusRing } from './button';
 import { useFieldControl } from './field';
 import { PopoverItem } from './popover-item';
-import { ThemeScope } from './theme';
+import { ThemeScope, usePortalContainer } from './theme';
 
 type SelectItemEntry = { value: unknown; label: ReactNode };
 
@@ -78,7 +78,7 @@ export const SelectValue = (props: SelectPrimitive.Value.Props) => (
 
 export const selectTriggerVariants = cva(
     [
-        'inline-flex shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-control border font-medium text-neutral-950 text-xs transition-[border-color,color] duration-150',
+        'inline-flex shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-control border font-medium text-neutral-950 text-xs shadow-control transition-[border-color,color] duration-150',
         // The placeholder answers the pointer as an Input's does: neutral-600, then neutral-700.
         'data-placeholder:text-neutral-600 not-data-disabled:data-placeholder:hover:text-neutral-700',
         // Base UI may keep a disabled trigger focusable, so the attribute is the reliable hook.
@@ -181,7 +181,7 @@ export const SelectContent = ({
     container,
     ...props
 }: SelectContentProps) => (
-    <SelectPrimitive.Portal container={container}>
+    <SelectPrimitive.Portal container={usePortalContainer(container)}>
         <ThemeScope>
             <SelectPrimitive.Positioner
                 align={align}
@@ -194,7 +194,8 @@ export const SelectContent = ({
             >
                 <SelectPrimitive.Popup
                     className={cn(
-                        'relative flex max-h-(--available-height) min-w-(--anchor-width) flex-col overflow-hidden rounded-item border border-neutral-200 bg-neutral-50 shadow-float outline-none',
+                        // Never wider than the room beside the trigger, as a Combobox's list.
+                        'relative flex max-h-(--available-height) min-w-(--anchor-width) max-w-(--available-width) flex-col overflow-hidden rounded-item border border-neutral-200 bg-neutral-50 shadow-float outline-none',
                         'origin-(--transform-origin) transition-[opacity,scale] duration-200 ease-out-strong data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
                         className,
                     )}

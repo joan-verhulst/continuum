@@ -14,7 +14,7 @@ import {
 } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
 import { PopoverItem, popoverItemVariants } from './popover-item';
-import { ThemeScope } from './theme';
+import { ThemeScope, usePortalContainer } from './theme';
 
 const contentClass = [
     'flex max-h-(--available-height) min-w-menu flex-col gap-1 overflow-y-auto rounded-item border border-neutral-200 bg-neutral-50 p-1 shadow-float outline-none',
@@ -74,7 +74,7 @@ export const DropdownMenuContent = ({
     container,
     ...props
 }: DropdownMenuContentProps) => (
-    <MenuPrimitive.Portal container={container}>
+    <MenuPrimitive.Portal container={usePortalContainer(container)}>
         <ThemeScope>
             <MenuPrimitive.Positioner
                 align={align}
@@ -105,7 +105,7 @@ export const DropdownMenuSubContent = ({
     container,
     ...props
 }: DropdownMenuContentProps) => (
-    <MenuPrimitive.Portal container={container}>
+    <MenuPrimitive.Portal container={usePortalContainer(container)}>
         <ThemeScope>
             <MenuPrimitive.Positioner
                 align={align}
@@ -296,7 +296,8 @@ export const DropdownMenuSearch = ({
             <input
                 autoComplete="off"
                 className={cn(
-                    'h-full min-w-0 flex-1 bg-transparent text-neutral-950 text-xs outline-none placeholder:text-neutral-600',
+                    // 16px on a touch screen, or iOS zooms the page in when the search takes focus.
+                    'h-full min-w-0 flex-1 bg-transparent pointer-coarse:text-base text-neutral-950 text-xs outline-none placeholder:text-neutral-600',
                     className,
                 )}
                 data-slot="dropdown-menu-search-input"

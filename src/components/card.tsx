@@ -4,7 +4,7 @@ import { cn } from '../lib/cn';
 import { Badge } from './badge';
 
 export const cardVariants = cva(
-    'flex flex-col rounded-card border border-neutral-200 bg-neutral-50',
+    'flex flex-col rounded-card border border-neutral-200 bg-neutral-50 shadow-card',
     {
         variants: {
             layout: {

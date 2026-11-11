@@ -25,7 +25,8 @@ import { useFieldControl } from './field';
 export const codeInputSlotVariants = cva(
     [
         // grow: a row given a width (w-full) shares it out; in the default w-fit row each box keeps its own.
-        'relative flex grow items-center justify-center border bg-neutral-50 font-medium tabular-nums',
+        // min-w-0: on a parent narrower than the row, the boxes shrink to fit rather than spill.
+        'relative flex min-w-0 grow items-center justify-center border bg-neutral-50 font-medium tabular-nums shadow-control',
         'transition-[border-color,color] duration-150',
     ],
     {
@@ -311,7 +312,7 @@ export const CodeInput = ({
     return (
         <div
             className={cn(
-                'group/code-input relative inline-flex w-fit',
+                'group/code-input relative inline-flex w-fit max-w-full',
                 gapBySize[size ?? 'md'],
                 isDisabled && 'cursor-not-allowed opacity-50',
                 className,

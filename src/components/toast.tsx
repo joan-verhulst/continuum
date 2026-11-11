@@ -5,7 +5,7 @@ import { ArrowRight, CircleAlert, CircleCheck, Info, TriangleAlert, Undo2, X } f
 import type { ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { focusRing } from './button';
-import { Theme, ThemeScope, useTheme } from './theme';
+import { Theme, ThemeScope, usePortalContainer, useTheme } from './theme';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 export type ToastProviderProps = {
@@ -41,7 +41,7 @@ export const ToastProvider = ({
 }: ToastProviderProps) => (
     <ToastPrimitive.Provider limit={limit} timeout={timeout}>
         {children}
-        <ToastPrimitive.Portal container={container}>
+        <ToastPrimitive.Portal container={usePortalContainer(container)}>
             <ThemeScope>
                 <ToastPrimitive.Viewport
                     className={cn(

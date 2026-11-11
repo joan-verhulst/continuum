@@ -3,7 +3,7 @@
 import { Tooltip as TooltipPrimitive } from '@base-ui/react/tooltip';
 import { type ComponentProps, createContext, useContext } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
-import { ThemeScope } from './theme';
+import { ThemeScope, usePortalContainer } from './theme';
 
 // Whether a TooltipProvider sits above, so a tooltip inside it joins that provider's group.
 const InProviderContext = createContext(false);
@@ -57,7 +57,7 @@ export const TooltipContent = ({
     positionerClassName,
     ...props
 }: TooltipContentProps) => (
-    <TooltipPrimitive.Portal container={container}>
+    <TooltipPrimitive.Portal container={usePortalContainer(container)}>
         <ThemeScope>
             <TooltipPrimitive.Positioner
                 align={align}

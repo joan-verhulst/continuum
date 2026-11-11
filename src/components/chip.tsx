@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { X } from 'lucide-react';
 import { type ComponentProps, createContext, type ReactNode, useContext } from 'react';
 import { cn } from '../lib/cn';
-import { focusRing } from './button';
+import { focusRing, touchTarget } from './button';
 
 /*
  * A chip: a short value in a pill. Soft, on neutral-100, it holds a filter, a picked value or a tag.
@@ -41,9 +41,14 @@ const pressable = {
 /** The 25px soft chip, as the combobox draws its picked values. */
 export const chipClass = chipVariants();
 
-/** The button at the end of a chip: a 20px target drawn round a 12px icon. */
-export const chipRemoveClass =
-    'relative z-10 -m-1 inline-flex cursor-pointer items-center justify-center rounded-full p-1 transition-colors duration-150 hover:text-neutral-950 [&_svg]:size-3!';
+/*
+ * The button at the end of a chip: a 20px target drawn round a 12px icon. On a touch screen it
+ * reaches 44px, over the chip's own face beside it, since the action is the smaller target.
+ */
+export const chipRemoveClass = cn(
+    'relative z-10 -m-1 inline-flex cursor-pointer items-center justify-center rounded-full p-1 transition-colors duration-150 hover:text-neutral-950 [&_svg]:size-3!',
+    touchTarget,
+);
 
 /*
  * The chip's text label, for an action's default name ("Remove Country is Netherlands"), and

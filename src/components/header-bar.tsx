@@ -5,22 +5,91 @@ import { type ComponentProps, useState } from 'react';
 import { cn } from '../lib/cn';
 import { Button } from './button';
 import { Notice, type NoticeProps, useNotice } from './notice';
+import { SidebarToggle, useAppShellNav } from './sidebar';
+
+type HeaderBarProps = ComponentProps<'header'> & {
+    /**
+     * Whether the bar starts with the toggle that opens the shell's sidebar as a drawer, when the
+     * shell is too narrow for it. On by default; a bar with a toggle of its own turns it off.
+     */
+    sidebarToggle?: boolean;
+};
 
 /**
  * The panel's top bar: breadcrumb on the left, actions on the right. Its hairline
  * is one of the few kept: the page scrolls under it, and space can't mark that edge.
  * It positions its notice, which hangs from that hairline.
+ *
+ * In an `AppShell` too narrow for the sidebar it starts with the toggle that opens the sidebar
+ * as a drawer, in the place of the back and forward arrows, which hide, as the actions do.
  */
-export const HeaderBar = ({ className, ...props }: ComponentProps<'header'>) => (
-    <header
-        className={cn(
-            'relative flex h-header shrink-0 items-center justify-between gap-4 border-neutral-200 border-b py-2 pr-2 pl-4',
-            className,
-        )}
-        data-slot="header-bar"
-        {...props}
-    />
-);
+export const HeaderBar = ({
+    sidebarToggle = true,
+    className,
+    children,
+    ...props
+}: HeaderBarProps) => {
+    const shell = useAppShellNav();
+
+    return (
+        <header
+            className={cn(
+                'relative flex h-header shrink-0 items-center justify-between gap-4 border-neutral-200 border-b py-2 pr-2 pl-4',
+                // With the toggle shown first, the trail after it takes the free space, so it stays
+                // beside the toggle rather than being pushed to the far end.
+                '@max-shell-sidebar/shell:[&>[data-slot=header-bar-sidebar-toggle]+*]:mr-auto',
+                className,
+            )}
+            data-slot="header-bar"
+            {...props}
+        >
+            {/* A shell with a top nav keeps its toggle there. */}
+            {sidebarToggle && shell?.nav === 'side' && <HeaderBarSidebarToggle />}
+            {children}
+        </header>
+    );
+};
+
+type HeaderBarSidebarToggleProps = Omit<ComponentProps<'button'>, 'children'> & {
+    /** Its names for screen readers while the drawer is closed and while it is open. */
+    openLabel?: string;
+    closeLabel?: string;
+};
+
+/**
+ * Opens the shell's navigation as a drawer. It is the sidebar's own toggle, the same icon in the
+ * same quiet grey, so the narrow bar reads as the wide shell with its sidebar folded away. It only
+ * shows while the shell is too narrow for the sidebar, and renders nothing outside an `AppShell`
+ * with a drawer. The header bar starts with one of its own; put one in a bar of your own making.
+ */
+export const HeaderBarSidebarToggle = ({
+    openLabel = 'Open navigation',
+    closeLabel = 'Close navigation',
+    className,
+    onClick,
+    ...props
+}: HeaderBarSidebarToggleProps) => {
+    const shell = useAppShellNav();
+    if (!shell?.hasDrawer) return null;
+
+    return (
+        <SidebarToggle
+            aria-controls={shell.drawerId}
+            aria-label={shell.open ? closeLabel : openLabel}
+            // 12 to the trail, as in a bar that draws its own toggle, not the bar's 16 between its ends.
+            className={cn('-mr-1 @max-shell-sidebar/shell:grid hidden shrink-0', className)}
+            data-slot="header-bar-sidebar-toggle"
+            expanded={shell.open}
+            onClick={event => {
+                onClick?.(event);
+                if (event.defaultPrevented) return;
+                if (!shell.open) shell.opener.current = event.currentTarget;
+                shell.setOpen(!shell.open);
+            }}
+            {...props}
+        />
+    );
+};
 
 /** The left of the bar: back and forward, then the breadcrumb; it gives way before the actions do. */
 export const HeaderBarStart = ({ className, ...props }: ComponentProps<'div'>) => (
@@ -48,6 +117,7 @@ export type HeaderBarNavProps = Omit<ComponentProps<'div'>, 'children'> & {
  * Back and forward through the pages visited in the app, before the trail: the trail says where the
  * page sits, the arrows where you came from. Ghost 28px buttons, ruled off from the trail by a
  * hairline that runs the bar's full height, as the segments of a toolbar are.
+ * They hide on a shell too narrow for the sidebar, where the drawer's toggle takes their place.
  */
 export const HeaderBarNav = ({
     onBack,
@@ -66,7 +136,7 @@ export const HeaderBarNav = ({
              * and through its left padding: 12px before the arrows, near the 13px the bar leaves above
              * and below them, and 16px after, so the rule doesn't crowd them.
              */
-            '-my-2 -ml-4 flex shrink-0 items-center gap-0.5 self-stretch border-neutral-200 border-r pr-4 pl-3',
+            '-my-2 -ml-4 flex @max-shell-sidebar/shell:hidden shrink-0 items-center gap-0.5 self-stretch border-neutral-200 border-r pr-4 pl-3',
             className,
         )}
         data-slot="header-bar-nav"
@@ -119,10 +189,16 @@ export const usePageHistory = <Page,>(initial: Page[], start = initial.length - 
     };
 };
 
-/** The right of the bar: one or two actions, secondary before primary. */
+/**
+ * The right of the bar: one or two actions, secondary before primary. They hide on a shell too
+ * narrow for the sidebar: the page keeps its own primary, and the bar its trail.
+ */
 export const HeaderBarActions = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
-        className={cn('flex shrink-0 items-center gap-2', className)}
+        className={cn(
+            'flex @max-shell-sidebar/shell:hidden shrink-0 items-center gap-2',
+            className,
+        )}
         data-slot="header-bar-actions"
         {...props}
     />

@@ -596,7 +596,7 @@ export const DateRangePicker = (props: DateRangePickerProps) => {
             <PopoverContent
                 align={align}
                 aria-label={labels?.dialog ?? 'Choose a date range'}
-                className="w-auto max-w-[calc(100vw-32px)] gap-0 p-0"
+                className="w-auto max-w-[calc(100cqw-32px)] gap-0 p-0"
                 collisionPadding={16}
                 initialFocus={() => focusDay(popupRef.current)}
                 ref={popupRef}

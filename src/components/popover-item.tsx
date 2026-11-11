@@ -184,7 +184,7 @@ export const PopoverItemIndicator = ({
 }: PopoverItemIndicatorProps) => (
     <span
         className={cn(
-            'inline-flex size-4 shrink-0 items-center justify-center border border-neutral-500 text-on-action transition-[background-color,border-color] duration-150',
+            'inline-flex size-4 shrink-0 items-center justify-center border border-neutral-300 text-on-action transition-[background-color,border-color] duration-150',
             kind === 'radio' ? 'rounded-full' : 'rounded-[calc(var(--radius-chip)-2px)]',
             'group-data-checked/popover-item:border-transparent group-data-checked/popover-item:bg-action group-data-checked/popover-item:[background-image:var(--action-gradient)]',
             'group-data-selected/popover-item:border-transparent group-data-selected/popover-item:bg-action group-data-selected/popover-item:[background-image:var(--action-gradient)]',
@@ -206,10 +206,10 @@ export const PopoverItemIndicator = ({
     </span>
 );
 
-/** A shortcut at the end of a row, muted: "⌘D", "G I". */
+/** A shortcut at the end of a row, muted: "⌘D", "G I". Not drawn on a touch screen, which has no keys. */
 export const PopoverItemShortcut = ({ className, ...props }: ComponentProps<'span'>) => (
     <span
-        className={cn('font-medium text-neutral-600 text-xxs', className)}
+        className={cn('pointer-coarse:hidden font-medium text-neutral-600 text-xxs', className)}
         data-slot="popover-item-shortcut"
         {...props}
     />

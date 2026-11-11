@@ -180,8 +180,9 @@ export const BarList = ({
                         {title}
                     </span>
                     {valueLabel && (
+                        // Truncates as the title does, rather than pushing out of a narrow card.
                         <span
-                            className="shrink-0 font-normal text-neutral-600"
+                            className="min-w-0 truncate font-normal text-neutral-600"
                             data-slot="bar-list-value-label"
                         >
                             {valueLabel}

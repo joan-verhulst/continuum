@@ -7,11 +7,14 @@ import {
     type CSSProperties,
     isValidElement,
     type ReactNode,
+    useCallback,
+    useEffect,
     useLayoutEffect,
     useRef,
     useState,
 } from 'react';
 import { cn } from '../lib/cn';
+import { useOverflowScroll } from '../lib/overflow-scroll';
 import { radioToggleRender } from '../lib/radio-toggle-render';
 import { useSingleValue } from '../lib/use-single-value';
 import { focusRing } from './button';
@@ -48,7 +51,7 @@ const firstItemValue = (children: ReactNode): string | undefined => {
 /**
  * Picks one value that reshapes the same content: a view (List · Grid), a range (7d · 30d), a filter.
  * To switch between panels with content of their own, use Tabs instead.
- * Always holds one value: clicking the active segment keeps it selected. The raised segment is one
+ * Always holds one value: clicking the active segment keeps it selected. The active fill is one
  * thumb under the items, so it slides from the old value to the new one.
  */
 export const SegmentedControl = ({
@@ -123,16 +126,35 @@ export const SegmentedControl = ({
         return () => observer.disconnect();
     }, [current]);
 
+    // Items keep their labels' width, so labels never run into each other; more than fit scrolls
+    // the track sideways, the picked one kept in view. Only once it overflows, so a track that fits
+    // keeps its focus rings whole. More than four options on a narrow page is a Select's job.
+    const overflow = useOverflowScroll<HTMLDivElement>();
+    const setGroup = useCallback(
+        (node: HTMLDivElement | null) => {
+            ref.current = node;
+            overflow.ref(node);
+        },
+        [overflow.ref],
+    );
+    const { overflows } = overflow.edges;
+    const { reveal } = overflow;
+    useEffect(() => {
+        if (current && overflows) reveal('[data-pressed]');
+    }, [current, overflows, reveal]);
+
     return (
         <ToggleGroup
             className={cn(
                 // Hugs its items even in a stretching flex column, and never outgrows its parent.
-                'relative isolate flex h-control max-w-full items-center rounded-item border border-neutral-200 bg-segment-track p-[2px]',
+                'relative isolate flex h-control max-w-full items-center rounded-item border border-neutral-200 bg-segment-track p-[2px] shadow-control',
                 fill ? 'w-full [&>[data-slot=segmented-control-item]]:flex-1' : 'w-fit',
+                overflows && 'scrollbar-none overflow-x-auto',
                 className,
             )}
             data-slot="segmented-control"
-            ref={ref}
+            ref={setGroup}
+            style={overflows ? overflow.style : undefined}
             role="radiogroup"
             aria-describedby={control['aria-describedby']}
             aria-labelledby={labelledBy ?? (props['aria-label'] ? undefined : field?.labelId)}
@@ -168,9 +190,9 @@ export const SegmentedControlItem = ({ className, ...props }: SegmentedControlIt
     <Toggle
         className={cn(
             // The track's radius minus its 2px inset and 1px border, so the curves stay concentric in every theme.
-            'inline-flex h-segment min-w-0 cursor-pointer select-none items-center justify-center gap-1.5 overflow-hidden whitespace-nowrap rounded-[calc(var(--radius-item)-3px)] px-2.5 font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150',
+            'inline-flex h-segment shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-[calc(var(--radius-item)-3px)] px-2.5 font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150',
             'hover:bg-neutral-950/5 hover:text-neutral-800',
-            // The thumb under it is the raised look; the item only takes the thumb's text colour.
+            // The thumb under it is the fill; the item only takes the thumb's text colour.
             'data-pressed:text-segment-fg data-pressed:hover:bg-transparent data-pressed:hover:text-segment-fg',
             'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
             focusRing,

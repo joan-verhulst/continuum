@@ -275,15 +275,28 @@ export const paletteProfile = (hue: number, without: readonly number[] = []) => 
     };
 };
 
-/** The tinted greys' chroma per step, relative to their own peak: slate, gray, zinc, stone and the rest. */
+/**
+ * The tinted greys' chroma per step, relative to their 500, where the tint is given.
+ *
+ * Up to the 500 it rises as Tailwind's tinted greys do, taken together: they agree there, a 50
+ * carrying about a twentieth of the 500's chroma and a 400 three quarters. From the 500 down it
+ * holds. Tailwind's greys part ways in the dark half: slate and gray keep their tint into the 950,
+ * zinc, stone and the newer four let it fade to a third or less. Averaged, as this once was, the
+ * darkest steps kept two fifths of the tint, and those are the steps a tint has to show on: the
+ * surface and the canvas in dark mode, the text in light. A tint that fades there reads as no tint
+ * at all, so the dark half follows the two that hold. A grey that should fade is given its steps
+ * by hand.
+ */
 const greyShape = (() => {
     const tinted = Object.values(tailwindGreys).filter(ramp => ramp.some(([, c]) => c > 0.001));
     const shapes = tinted.map(ramp => {
-        const peak = Math.max(...ramp.map(([, c]) => c));
-        return ramp.map(([, c]) => c / peak);
+        const middle = Math.max(1e-6, ramp[5]?.[1] ?? 0);
+        return ramp.map(([, c]) => c / middle);
     });
-    return rampSteps.map(
-        (_, i) => shapes.reduce((sum, shape) => sum + (shape[i] ?? 0), 0) / shapes.length,
+    return rampSteps.map((_, i) =>
+        i >= 5
+            ? 1
+            : Math.min(1, shapes.reduce((sum, shape) => sum + (shape[i] ?? 0), 0) / shapes.length),
     );
 })();
 
@@ -415,8 +428,10 @@ export const buildRampFrom = (
 
 /**
  * A grey ramp: the given lightness at every step, stretched to the shape's ends and bent by its
- * midtones; one hue, turned at the ends by the shape; and a faint chroma that follows Tailwind's tinted
- * greys, `tint` at its peak, faded at the ends by the taper.
+ * midtones; one hue, turned at the ends by the shape; and a faint chroma, `tint` at the 500, that
+ * rises to it from the 50 as Tailwind's tinted greys do and holds from it into the 950. The taper
+ * is how much the lighter steps fade: none leaves every step at the tint, twice fades them to
+ * nothing sooner.
  */
 export const buildGreyRamp = (
     hue: number,
@@ -438,7 +453,8 @@ export const buildGreyRamp = (
         const t = (baseTop - (lightness[i] ?? 0.5)) / Math.max(1e-6, baseTop - baseBottom);
         const l = top - (top - bottom) * bend(t, midtones);
         const h = (hue + (i < 5 ? lightHue : darkHue) * reach(i, 5) + 360) % 360;
-        const c = tint * saturation * (1 - (1 - (greyShape[i] ?? 0)) * taper);
+        // Never under none: a taper past one would otherwise turn the palest steps to the opposite hue.
+        const c = tint * saturation * Math.max(0, 1 - (1 - (greyShape[i] ?? 0)) * taper);
         return fit({ l, c, h }, gamut);
     });
     return shape.steps ? applyRampSteps(curves, shape.steps, gamut) : curves;

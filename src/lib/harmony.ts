@@ -154,13 +154,15 @@ export const harmonyTurns = (harmony: ChartHarmony, spread?: number): number[] |
 };
 
 export type ChartSeries = {
-    /** Series 1 to 4 for light mode; the first is a step of the primary ramp. */
+    /** Series 1 to 4 for light mode; the first is the primary's 500 unless it was put elsewhere. */
     light: Oklch[];
     /** The same series for dark mode, a step lighter or darker each where the surface asks. */
     dark: Oklch[];
-    /** The primary step series 1 takes in each mode, 0 for 50 … 10 for 950. */
+    /** The step series 1 takes in each mode, 0 for 50 … 10 for 950. */
     primaryStep: { light: number; dark: number };
-    /** The hue of each series after the first, as a turn of the primary's. */
+    /** Series 1's hue as a turn of the primary's: 0 while it is the primary itself. */
+    leadTurn: number;
+    /** The hue of each series after the first, as a turn of series 1's. */
     turns: number[];
     /**
      * Which of the harmony's hues each series after the first is, by its place in the harmony's
@@ -198,8 +200,16 @@ export const chartStepIn = (step: number, from: Mode, to: Mode) => {
     return target[index] ?? Math.round(step);
 };
 
+/** Series 1 put by hand: its hue as a turn of the primary's, and its light-mode step (3 to 8). */
+export type ChartLead = { turn?: number; step?: number };
+
 /** The geometry a harmony is worked within: its spread, custom hues, and steps held by hand. */
 export type ChartGeometry = {
+    /**
+     * Series 1, where it is not the primary's own 500: the harmony's hues are turns of its hue, so
+     * the set follows it round.
+     */
+    lead?: ChartLead;
     /** The harmony's one parameter (analogous, split complementary, tetradic), in degrees. */
     spread?: number;
     /** Custom only: series 2 to 4 as turns of the primary's hue, in order. */
@@ -409,19 +419,33 @@ export const buildChartSeries = (
         spread,
         turns: customTurns,
         steps: customSteps,
+        lead: customLead,
     }: { gamut: Gamut; surface: Record<Mode, Oklch> } & ChartGeometry,
 ): ChartSeries => {
+    // Series 1: the primary's own hue and its 500 unless put elsewhere, within the band.
+    const leadTurn =
+        typeof customLead?.turn === 'number' && Number.isFinite(customLead.turn)
+            ? ((Math.round(customLead.turn) % 360) + 360) % 360
+            : 0;
+    const [bandLow = 3, bandHigh = 8] = [stepsFor.light.steps[0], stepsFor.light.steps.at(-1)];
+    const leadStep =
+        typeof customLead?.step === 'number' && Number.isFinite(customLead.step)
+            ? Math.min(bandHigh, Math.max(bandLow, Math.round(customLead.step)))
+            : 5;
     // Custom without its three hues is auto; auto has no hues to hold a step for.
     const given = harmony === 'custom' ? givenTurns(customTurns) : null;
     const kind: ChartHarmony = harmony === 'custom' && !given ? 'auto' : harmony;
     const hues = kind === 'custom' ? given : harmonyTurns(kind, spread);
     const held = kind === 'auto' ? null : heldSteps(customSteps);
-    // Without a spread, custom hues or a held step, the key is the one it always was.
-    const key = JSON.stringify(
-        hues && (spread !== undefined || held || kind === 'custom')
-            ? [primary, kind, gamut, surface, hues, held]
-            : [primary, kind, gamut, surface],
-    );
+    const key = JSON.stringify([
+        primary,
+        kind,
+        gamut,
+        surface,
+        hues && (spread !== undefined || held || kind === 'custom') ? [hues, held] : null,
+        leadTurn,
+        leadStep,
+    ]);
     const cached = cache.get(key);
     if (cached) {
         // The most recent go last, so a drag through many geometries never pushes out the sets in use.
@@ -432,8 +456,9 @@ export const buildChartSeries = (
 
     const rampAt = chartRamps(primary, gamut);
 
+    // A turn is of series 1's hue; the ramps are kept by turn of the primary's.
     const optionsAt = (turn: number, mode: Mode, steps = stepsFor[mode].steps) => {
-        const ramp = rampAt(turn);
+        const ramp = rampAt(leadTurn + turn);
         return steps.flatMap(step => {
             const color = ramp[step];
             return color ? [ready(color, step, turn, mode, surface[mode])] : [];
@@ -448,9 +473,21 @@ export const buildChartSeries = (
             typeof step === 'number' ? [chartStepIn(step, 'light', mode)] : undefined,
         );
 
-    // Series 1 is the primary: its 500 in light mode and 400 in dark, a step or two off where the band asks.
+    // Series 1 is the colour as given in light mode: the primary's 500, or the step it was put
+    // on. It is never moved there by the search; where it misses the band, the checks say so and
+    // it can be put on another step. Dark mode has no colour of its own to keep, so its step is
+    // found among the four round the 500's place, as it always was, unless the step was put by hand.
+    const leadHeld = typeof customLead?.step === 'number' && Number.isFinite(customLead.step);
     const first = (mode: Mode) =>
-        optionsAt(0, mode, mode === 'light' ? [4, 5, 6, 7] : [3, 4, 5, 6]);
+        optionsAt(
+            0,
+            mode,
+            mode === 'light'
+                ? [leadStep]
+                : leadHeld
+                  ? [chartStepIn(leadStep, 'light', 'dark')]
+                  : [3, 4, 5, 6],
+        );
 
     // A set of hues in one order (by their places in the list), at the best steps for each mode;
     // it is as good as its weaker mode.
@@ -555,6 +592,7 @@ export const buildChartSeries = (
         light: light.map(option => option.color),
         dark: dark.map(option => option.color),
         primaryStep: { light: light[0]?.step ?? 5, dark: dark[0]?.step ?? 4 },
+        leadTurn,
         turns,
         members,
         steps: {

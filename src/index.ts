@@ -21,6 +21,7 @@ export * from './components/checkbox';
 export * from './components/checklist';
 export * from './components/chip';
 export * from './components/code-input';
+export * from './components/color-picker';
 export * from './components/combobox';
 export * from './components/command-menu';
 export * from './components/date-picker';
@@ -137,6 +138,7 @@ export {
     type ChartGeometry,
     type ChartHarmony,
     type ChartHarmonyInfo,
+    type ChartLead,
     type ChartSeries,
     type ChartSpread,
     chartHarmonies,

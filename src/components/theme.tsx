@@ -69,6 +69,29 @@ export const Theme = ({
     return <ThemeContext.Provider value={value}>{element}</ThemeContext.Provider>;
 };
 
+const PortalContext = createContext<HTMLElement | null>(null);
+
+/**
+ * Where the overlays inside it open: menus, popovers, tooltips, dialogs, sheets and toasts portal
+ * into `container` instead of the body. The container has to hold fixed descendants (a transform,
+ * `contain: paint` or `container-type: size`) and be sized to the screen it stands for, so a scrim,
+ * a sheet and a menu's collisions keep to it, as a preview of a phone's screen needs. An overlay's
+ * own `container` prop still wins.
+ */
+export const PortalContainer = ({
+    container,
+    children,
+}: {
+    container: HTMLElement | null;
+    children: ReactNode;
+}) => <PortalContext.Provider value={container}>{children}</PortalContext.Provider>;
+
+/** The container an overlay portals into: its own if given, else the nearest PortalContainer's, else the body. */
+export const usePortalContainer = <T = HTMLElement>(container?: T | null) => {
+    const fallback = useContext(PortalContext);
+    return container ?? fallback ?? undefined;
+};
+
 /**
  * Re-opens the current theme inside a portal. Base UI renders menus, tooltips
  * and dialogs at the end of the body, outside the scope that styles them.

@@ -3,7 +3,7 @@
 import { Popover as PopoverPrimitive } from '@base-ui/react/popover';
 import type { ComponentProps } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
-import { ThemeScope } from './theme';
+import { ThemeScope, usePortalContainer } from './theme';
 
 /** A handle that lets a trigger outside the Popover open it (detached triggers). */
 export const createPopoverHandle = PopoverPrimitive.createHandle;
@@ -50,7 +50,7 @@ export const PopoverContent = ({
     container,
     ...props
 }: PopoverContentProps) => (
-    <PopoverPrimitive.Portal container={container}>
+    <PopoverPrimitive.Portal container={usePortalContainer(container)}>
         {/* Portalled content leaves the Theme subtree, so the theme is opened again here. */}
         <ThemeScope>
             <PopoverPrimitive.Positioner

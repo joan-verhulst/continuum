@@ -23,7 +23,7 @@ export const inputVariants = cva(
                 md: 'h-control-lg rounded-control px-3',
             },
             variant: {
-                outline: '',
+                outline: 'shadow-control',
                 /*
                  * No box: the search inside a container (a table's bar, a menu) is an icon and the
                  * text. It keeps the shared ring round where the box would be, so a keyboard still
@@ -69,10 +69,11 @@ export const inputVariants = cva(
 /*
  * Value and placeholder colours shared with Textarea. The library's "selected"
  * state is the value in neutral-900. Disabled keeps these colours: the box around
- * them is dimmed to half strength, as every disabled control is.
+ * them is dimmed to half strength, as every disabled control is. On a touch screen the text is
+ * 16px: anything smaller and iOS zooms the page in when the field takes focus.
  */
 export const inputTextClass = [
-    'font-medium text-neutral-900 text-xs placeholder:text-neutral-600',
+    'font-medium text-neutral-900 text-xs placeholder:text-neutral-600 pointer-coarse:text-base',
     'aria-invalid:placeholder:text-error-300',
     'disabled:cursor-not-allowed',
 ];

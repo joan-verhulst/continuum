@@ -14,7 +14,7 @@ import {
     toCss,
 } from './color';
 import { wcagContrast } from './contrast';
-import { buildChartSeries, type ChartHarmony, type ChartSeries } from './harmony';
+import { buildChartSeries, type ChartHarmony, type ChartLead, type ChartSeries } from './harmony';
 
 /*
  * The theme builder. A theme is a handful of choices (an accent, how grey the
@@ -90,10 +90,28 @@ export type ThemeOptions = {
     actionStyle?: 'flat' | 'lit' | 'glossy';
     /** The selected wash: a translucent neutral, or the accent's palest step. */
     tint?: 'neutral' | 'accent';
-    /** The active segment: filled with the action colour, or raised as a chip on the track. */
-    segment?: 'filled' | 'raised';
     /** The dock, rail and small chips: full pills, or a tighter 10px corner. */
     dock?: 'pill' | 'rounded';
+    /**
+     * The page you are on in the sidebar: `quiet` the grey wash, `tinted` the primary's tint, `raised`
+     * a card on the canvas. The sections that hold it stay plain in every look; their darkened guide
+     * line leads to the page. A filled row would read as a button; a page that wants one adds one.
+     */
+    nav?: 'quiet' | 'tinted' | 'raised';
+    /**
+     * What lifts off the page: `flat` only what floats (menus, popovers, sheets); `full` cards,
+     * panels and table frames as well, and the controls on them (fields, selects, secondary buttons,
+     * segmented controls, checkboxes). A theme saved with `soft`, since removed, reads as `full`.
+     */
+    elevation?: 'flat' | 'full';
+    /** Letter spacing, in em of the type: 0.025 as drawn (0.32px at 13px), below 0 tighter. */
+    tracking?: number;
+    /** Line height as a share of the type size: 1.25 as drawn, every size on the scale with it. */
+    leading?: number;
+    /** How dark the shadows are: 1 as drawn, 0.25 barely there, 3 heavy. */
+    shadowStrength?: number;
+    /** How far the shadows reach: 1 as drawn, 0.5 tight, 3 wide and soft. */
+    shadowSize?: number;
     /** Corner scale; 1 is as drawn, 0 squares everything off. */
     radius?: number;
     /**
@@ -116,6 +134,12 @@ export type ThemeOptions = {
      * search. Dark mode holds the same place in its band, a step lighter. Auto ignores it.
      */
     chartSteps?: readonly (number | null)[];
+    /**
+     * Series 1 put by hand: `turn` is its hue as a turn of the primary's, `step` its light-mode
+     * step (3 to 8, the 300 to the 800). It is the primary's own 500 unless given, and the harmony's
+     * hues are turns of its hue, so the set follows it.
+     */
+    chartLead?: ChartLead;
     /** Data colours of the theme's own, in place of the set the harmony finds. */
     charts?: ThemeCharts;
 };
@@ -127,10 +151,12 @@ export const defaultThemeOptions = {
     // No theme leans nowhere: the baseline greys are achromatic.
     neutral: { hue: 0, tint: 0 },
     font: 'geist' as ThemeFont,
-    action: 'neutral' as const,
+    // A theme's own colour fills its main button unless it asks for near-black.
+    action: 'accent' as 'accent' | 'neutral',
     actionStyle: 'flat' as const,
     tint: 'neutral' as const,
-    segment: 'filled' as const,
+    nav: 'quiet' as const,
+    elevation: 'flat' as const,
     dock: 'pill' as const,
     radius: 1,
 };
@@ -270,7 +296,7 @@ const asOklch = (ramp: readonly string[]) =>
 export const themeChartSeries = (options: ThemeOptions): ChartSeries | null => {
     if (options.charts) return null;
     const curves = themeAccentCurves(options);
-    if (!curves && !options.chartHarmony) return null;
+    if (!curves && !options.chartHarmony && !options.chartLead) return null;
     const greys = themeNeutralCurves(options) ?? asOklch(defaultNeutral);
     const surface = { light: greys[0], dark: greys[10] };
     if (!surface.light || !surface.dark) return null;
@@ -280,6 +306,7 @@ export const themeChartSeries = (options: ThemeOptions): ChartSeries | null => {
         spread: options.chartSpread,
         turns: options.chartTurns,
         steps: options.chartSteps,
+        lead: options.chartLead,
     });
 };
 
@@ -307,15 +334,21 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
         light['--font-sans'] = fontFamily(options.font);
     }
 
-    // Type: every size on the scale from the base, rounded to a pixel; its line height 1.25 times it.
+    // Type: every size on the scale from the base, rounded to a pixel, and its line height the
+    // theme's share of it (1.25 as drawn).
     const type = options.type ?? drawnType;
-    if (type !== drawnType) {
+    const leading = options.leading;
+    if (type !== drawnType || leading !== undefined) {
         const scale = type / drawnType;
         for (const [name, [size, line]] of Object.entries(typeScale)) {
             const rounded = Math.round(size * scale);
             light[`--text-${name}`] = px(rounded);
-            light[`--text-${name}--line-height`] = px(rounded * (line / size));
+            light[`--text-${name}--line-height`] = px(rounded * (leading ?? line / size));
         }
+    }
+    if (leading !== undefined) light['--leading-normal'] = String(leading);
+    if (options.tracking !== undefined) {
+        light['--tracking-normal'] = `${Number(options.tracking.toFixed(4))}em`;
     }
 
     // Spacing: a whole-pixel unit; the steps between units round themselves (tokens.css).
@@ -332,31 +365,61 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
     const action = options.action ?? defaultThemeOptions.action;
     const style = options.actionStyle ?? defaultThemeOptions.actionStyle;
     if (action === 'accent') {
+        const ramp = themeAccentCurves(options) ?? asOklch(defaultAccent);
+        const greys = themeNeutralCurves(options) ?? asOklch(defaultNeutral);
+        // The surface and the canvas each mode paints: dark reads the greys back to front.
+        const ground = {
+            light: [greys[0], greys[1]],
+            dark: [greys[10], greys[9]],
+        };
+        /** The first raw step from `from`, walking `by`, that keeps 3:1 on both grounds. */
+        const reach = (from: number, by: 1 | -1, on: (Oklch | undefined)[]) => {
+            for (let i = from; i >= 0 && i <= 10; i += by) {
+                const color = ramp[i];
+                if (color && on.every(bg => !bg || wcagContrast(color, bg) >= 3)) return i;
+            }
+            return by > 0 ? 10 : 0;
+        };
+        // What sits on the fill is neutral, never a step of the fill's own ramp: the palest grey
+        // wherever it keeps 3:1, the deepest only below that (an orange, a lime, a sky). WCAG's ratio
+        // under-rates white on saturated mid-tones, so the higher of the two ratios would put black
+        // on a blue, red or violet 500 that reads better in white. The raw greys, so it is the same
+        // in both modes, as the fill is.
+        const fill = ramp[5];
+        const paleGrey = greys[0];
+        const deepGrey = greys[10];
         light['--color-action'] = 'var(--color-primary-500)';
         light['--color-action-hover'] = 'var(--color-primary-600)';
-        // The label is the raw end of the ramp that reads on the fill: the palest step on a deep
-        // accent, the deepest on a bright one (an orange, a lime), the same in both modes.
-        const ramp = themeAccentCurves(options) ?? asOklch(defaultAccent);
-        const fill = ramp[5];
-        const pale = ramp[0];
-        const deep = ramp[10];
         light['--color-on-action'] =
-            fill && pale && deep && wcagContrast(deep, fill) > wcagContrast(pale, fill)
-                ? 'var(--continuum-p-950)'
-                : 'var(--continuum-p-50)';
-        light['--color-focus'] = 'var(--continuum-p-300)';
+            fill && paleGrey && deepGrey && wcagContrast(paleGrey, fill) < 3
+                ? 'var(--continuum-n-950)'
+                : 'var(--continuum-n-50)';
+        // The knob of a switch is a shape on the fill, not a label: the palest grey unless the fill
+        // is so pale itself that only the deepest shows on it.
+        light['--color-action-knob'] =
+            fill && paleGrey && wcagContrast(paleGrey, fill) < 1.6
+                ? 'var(--continuum-n-950)'
+                : 'var(--continuum-n-50)';
+
+        // The ring is the accent's first step from its 300 that keeps 3:1 on the surface and the
+        // canvas, as the grey ring is: deeper in light, paler in dark.
+        const ringLight = `var(--continuum-p-${steps[reach(3, 1, ground.light)]})`;
+        const ringDark = `var(--continuum-p-${steps[reach(3, -1, ground.dark)]})`;
+        light['--color-focus'] = ringLight;
+        if (ringDark !== ringLight) dark['--color-focus'] = ringDark;
     }
+    const lit = (step: number) => `var(--continuum-p-${steps[Math.max(0, step - 1)]})`;
     if (style !== 'flat') {
         light['--color-action-highlight'] =
             action === 'accent'
-                ? 'var(--continuum-p-400)'
+                ? lit(5)
                 : 'color-mix(in oklab, var(--color-on-action) 20%, transparent)';
         light['--color-action-ring'] = 'var(--color-action)';
     }
     if (style === 'glossy') {
         light['--action-gradient'] =
             action === 'accent'
-                ? 'linear-gradient(180deg, var(--continuum-p-400), var(--continuum-p-500))'
+                ? `linear-gradient(180deg, ${lit(5)}, var(--continuum-p-500))`
                 : 'linear-gradient(180deg, var(--color-neutral-800), var(--color-neutral-950))';
     }
 
@@ -367,11 +430,75 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
         dark['--color-tint-fg'] = 'var(--continuum-p-300)';
     }
 
-    if ((options.segment ?? defaultThemeOptions.segment) === 'raised') {
-        light['--color-segment'] = 'var(--color-neutral-50)';
-        light['--color-segment-fg'] = 'var(--color-neutral-950)';
-        light['--color-segment-border'] = 'var(--color-neutral-200)';
-        light['--color-segment-track'] = 'var(--color-neutral-100)';
+    // The page you are on in the sidebar; the sections that hold it stay plain. A theme saved
+    // under an earlier name still reads; the filled looks, since removed, read as quiet.
+    const navNames: Record<string, ThemeOptions['nav']> = {
+        neutral: 'quiet',
+        tint: 'tinted',
+        fill: 'quiet',
+        bold: 'quiet',
+    };
+    const nav = navNames[String(options.nav)] ?? options.nav ?? defaultThemeOptions.nav;
+    const tintAt = (fill: string, text: string) => {
+        light[fill] = 'var(--color-primary-100)';
+        light[text] = 'var(--color-primary-700)';
+        // 700 reads back to a deep step on the dark tint; the raw 300 stays legible.
+        dark[text] = 'var(--continuum-p-300)';
+    };
+    if (nav === 'tinted') {
+        tintAt('--color-nav-active', '--color-nav-active-fg');
+    } else if (nav === 'raised') {
+        // A card on the canvas: the surface, a hairline and a short shadow. Dark reads the greys
+        // back to front, so there the surface would sink below the canvas: the item is the canvas
+        // lit a little instead, with a faint light edge.
+        light['--color-nav-active'] = 'var(--color-neutral-50)';
+        light['--color-nav-active-border'] = 'var(--color-neutral-200)';
+        light['--shadow-nav-active'] = '0 1px 2px 0 rgb(20 22 23 / 0.06)';
+        dark['--color-nav-active'] =
+            'color-mix(in oklab, var(--color-neutral-950) 7%, transparent)';
+        dark['--color-nav-active-border'] =
+            'color-mix(in oklab, var(--color-neutral-950) 10%, transparent)';
+        dark['--shadow-nav-active'] = '0 1px 2px 0 rgb(0 0 0 / 0.4)';
+    }
+
+    // Cards and the controls on them lift together; the strength darkens them, the size spreads them.
+    const elevation = options.elevation ?? defaultThemeOptions.elevation;
+    if (elevation !== 'flat') {
+        const k = Math.max(0, options.shadowStrength ?? 1);
+        const z = Math.max(0.25, options.shadowSize ?? 1);
+        const n = (value: number) => Number(value.toFixed(2));
+        const shadow = (layers: [number, number, number, number][], tint: string, scale: number) =>
+            layers
+                .map(
+                    ([y, blur, spread, alpha]) =>
+                        `0 ${n(y * z)}px ${n(blur * z)}px ${n(spread * z)}px rgb(${tint} / ${n(Math.min(1, alpha * k * scale))})`,
+                )
+                .join(', ');
+        // A card lifts a little more than a control, so the two read as layers.
+        const card: [number, number, number, number][] = [
+            [1, 2, 0, 0.06],
+            [4, 12, -2, 0.08],
+        ];
+        const control: [number, number, number, number][] = [
+            [1, 2, 0, 0.07],
+            [2, 4, -1, 0.05],
+        ];
+        // Dark: the canvas is near black, so a black shadow has little to darken. It is drawn
+        // deeper and wider there, and the lift is said mostly by a faint light top edge, as a
+        // surface catching light from above; the strength sets both.
+        const edge = (alpha: number) =>
+            `inset 0 1px 0 0 rgb(255 255 255 / ${n(Math.min(0.2, alpha * k))})`;
+        const deep = (layers: [number, number, number, number][]) =>
+            layers.map(([y, blur, spread, alpha]): [number, number, number, number] => [
+                y * 1.5,
+                blur * 1.5,
+                spread,
+                alpha,
+            ]);
+        light['--shadow-card'] = shadow(card, '20 22 23', 1);
+        dark['--shadow-card'] = `${edge(0.06)}, ${shadow(deep(card), '0 0 0', 6)}`;
+        light['--shadow-control'] = shadow(control, '20 22 23', 1);
+        dark['--shadow-control'] = `${edge(0.05)}, ${shadow(deep(control), '0 0 0', 6)}`;
     }
 
     if ((options.dock ?? defaultThemeOptions.dock) === 'rounded') {
@@ -400,7 +527,15 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
         const series = themeChartSeries(options);
         if (series) {
             const gamut = gamutOf(options);
-            light['--color-chart-1'] = `var(--continuum-p-${steps[series.primaryStep.light]})`;
+            // Series 1 is a step of the primary while it keeps the primary's hue, and a colour of
+            // its own once it has been turned away from it.
+            const first = (mode: 'light' | 'dark') => {
+                const color = series[mode][0];
+                return series.leadTurn === 0 || !color
+                    ? `var(--continuum-p-${steps[series.primaryStep[mode]]})`
+                    : toCss(color, gamut);
+            };
+            light['--color-chart-1'] = first('light');
             light['--color-chart-5'] = 'var(--continuum-p-600)';
             for (const i of [1, 2, 3]) {
                 const lit = series.light[i];
@@ -410,7 +545,7 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
                 light[`--color-chart-series-${i + 1}`] = `var(--color-chart-${i + 1})`;
             }
             // A 500 sinks into a dark surface, so the set starts a step lighter.
-            dark['--color-chart-1'] = `var(--continuum-p-${steps[series.primaryStep.dark]})`;
+            dark['--color-chart-1'] = first('dark');
             dark['--color-chart-5'] = 'var(--continuum-p-300)';
         }
     }

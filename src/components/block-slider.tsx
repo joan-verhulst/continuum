@@ -170,6 +170,8 @@ export const BlockSlider = ({
                                 sizes[size].grip,
                                 'after:w-0.5 after:rounded-full after:bg-neutral-500 after:opacity-0 after:transition-[opacity,background-color] after:duration-150',
                                 'group-hover/block-slider:after:opacity-100 has-focus-visible:after:opacity-100 data-dragging:after:bg-neutral-950 data-dragging:after:opacity-100',
+                                // A touch screen has no hover to reveal it, so there the grip always shows.
+                                'pointer-coarse:after:opacity-100',
                                 'group-data-disabled/block-slider:cursor-not-allowed group-data-disabled/block-slider:after:opacity-0',
                                 // Focus lands on the hidden input inside the grip, so the ring follows it.
                                 'outline-none has-focus-visible:outline-2 has-focus-visible:outline-focus has-focus-visible:outline-solid has-focus-visible:outline-offset-2',

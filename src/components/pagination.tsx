@@ -113,46 +113,70 @@ export const Pagination = ({
     const count = Math.max(1, pageCount);
     const current = Math.min(Math.max(1, page), count);
 
+    // Its own container, so it answers the room it is given wherever it sits. Under 720 the results
+    // line goes and the pages fold into "‹ 3 of 25 ›": the way along cannot go, so it gets smaller.
     return (
         <nav
             aria-label={label}
-            className={cn('grid grid-cols-[1fr_auto_1fr] items-center gap-12', className)}
+            className={cn('@container/pagination', className)}
             data-slot="pagination"
             {...props}
         >
-            <div className="min-w-0 font-medium text-neutral-800 text-xs">{results}</div>
-            <div className="flex items-center gap-2">
-                <PaginationPrevious
-                    aria-label={previousLabel}
-                    disabled={current <= 1}
-                    onClick={() => onPageChange(current - 1)}
-                />
-                {getPageItems(current, count, siblings).map(item =>
-                    typeof item === 'number' ? (
-                        <PaginationButton
-                            current={item === current}
-                            key={item}
-                            onClick={() => onPageChange(item)}
-                        >
-                            {item}
-                        </PaginationButton>
-                    ) : (
-                        <span
-                            aria-hidden
-                            className="inline-flex size-control items-center justify-center font-medium text-neutral-600 text-sm"
-                            key={item}
-                        >
-                            …
-                        </span>
-                    ),
-                )}
-                <PaginationNext
-                    aria-label={nextLabel}
-                    disabled={current >= count}
-                    onClick={() => onPageChange(current + 1)}
-                />
+            {/* Narrow, a row: the pages centred on their own, or at the start with the end slot at the end. */}
+            <div className="@max-[720px]/pagination:flex grid grid-cols-[1fr_auto_1fr] items-center @max-[720px]/pagination:justify-center @max-[720px]/pagination:gap-3 gap-12">
+                <div
+                    className="@max-[720px]/pagination:hidden min-w-0 whitespace-nowrap font-medium text-neutral-800 text-xs"
+                    data-slot="pagination-results"
+                >
+                    {results}
+                </div>
+                <div className="flex items-center gap-2">
+                    <PaginationPrevious
+                        aria-label={previousLabel}
+                        disabled={current <= 1}
+                        onClick={() => onPageChange(current - 1)}
+                    />
+                    <div
+                        className="flex @max-[720px]/pagination:hidden items-center gap-2"
+                        data-slot="pagination-pages"
+                    >
+                        {getPageItems(current, count, siblings).map(item =>
+                            typeof item === 'number' ? (
+                                <PaginationButton
+                                    current={item === current}
+                                    key={item}
+                                    onClick={() => onPageChange(item)}
+                                >
+                                    {item}
+                                </PaginationButton>
+                            ) : (
+                                <span
+                                    aria-hidden
+                                    className="inline-flex size-control items-center justify-center font-medium text-neutral-600 text-sm"
+                                    key={item}
+                                >
+                                    …
+                                </span>
+                            ),
+                        )}
+                    </div>
+                    <span
+                        className="@max-[720px]/pagination:inline-flex hidden min-w-control justify-center whitespace-nowrap px-1 font-medium text-neutral-800 text-xs tabular-nums"
+                        data-slot="pagination-position"
+                    >
+                        <span className="sr-only">Page </span>
+                        {current} of {count}
+                    </span>
+                    <PaginationNext
+                        aria-label={nextLabel}
+                        disabled={current >= count}
+                        onClick={() => onPageChange(current + 1)}
+                    />
+                </div>
+                <div className="@max-[720px]/pagination:ml-auto flex min-w-0 items-center justify-end @max-[720px]/pagination:empty:hidden">
+                    {end}
+                </div>
             </div>
-            <div className="flex min-w-0 items-center justify-end">{end}</div>
         </nav>
     );
 };

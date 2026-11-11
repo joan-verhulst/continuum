@@ -21,13 +21,16 @@ export const BottomBar = ({
     className,
     ...props
 }: ComponentProps<'div'> & {
-    /** Pins the bar 24px above the bottom of its positioned parent, centred. */
+    /**
+     * Pins the bar 24px above the bottom of its positioned parent, centred, and never wider than the
+     * parent less 16px a side, so a dock with more sections than fit scrolls rather than spills.
+     */
     floating?: boolean;
 }) => (
     <div
         className={cn(
-            'flex items-center gap-2',
-            floating && 'absolute inset-x-0 bottom-6 z-10 mx-auto w-fit',
+            'flex min-w-0 max-w-full items-center gap-2',
+            floating && 'absolute inset-x-0 bottom-6 z-10 mx-auto w-fit max-w-[calc(100%-32px)]',
             className,
         )}
         data-slot="bottom-bar"
@@ -67,8 +70,9 @@ export const Dock = ({
     const { ref, edges, step, reveal, style } = useOverflowScroll<HTMLDivElement>();
 
     useEffect(() => {
-        if (current) reveal('[data-pressed]');
-    }, [current, reveal]);
+        // Again when the row starts overflowing, so the selected one is in view from the start.
+        if (current && edges.overflows) reveal('[data-pressed]');
+    }, [current, reveal, edges.overflows]);
 
     return (
         <div className={cn(dockVariants({ shape }), className)} data-slot="dock">
@@ -126,9 +130,29 @@ export const DockItem = ({ className, ...props }: DockItemProps) => (
     />
 );
 
+/**
+ * A count after a dock item's label ("Active 12"), in the item's own colour at 70%, so it follows
+ * the pressed item onto its fill. It hides on a compact shell, where the labels need the room.
+ */
+export const DockCount = ({ className, ...props }: ComponentProps<'span'>) => (
+    <span
+        className={cn(
+            '@max-shell-compact/shell:hidden font-normal tabular-nums opacity-70',
+            className,
+        )}
+        data-slot="dock-count"
+        {...props}
+    />
+);
+
 export const dockActionVariants = cva(
-    // A lit action's ring drawn inside, so it stays the dock's 38px instead of growing 1px each side.
-    'rounded-dock [box-shadow:inset_0_1px_0_0_var(--color-action-highlight),inset_0_0_0_1px_var(--color-action-ring)]',
+    [
+        // A lit action's ring drawn inside, so it stays the dock's 38px instead of growing 1px each side.
+        'rounded-dock [box-shadow:inset_0_1px_0_0_var(--color-action-highlight),inset_0_0_0_1px_var(--color-action-ring)]',
+        // On a compact shell an action with an icon keeps only the icon, a 38px square, so the dock
+        // keeps the width; its label stays in the button for screen readers, set at no size.
+        '@max-shell-compact/shell:has-[svg]:w-control-lg @max-shell-compact/shell:has-[svg]:gap-0 @max-shell-compact/shell:has-[svg]:px-0 @max-shell-compact/shell:has-[svg]:text-[0px]',
+    ],
     {
         variants: {
             shape: shapeVariants,

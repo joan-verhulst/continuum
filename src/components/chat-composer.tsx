@@ -400,6 +400,8 @@ export const ChatComposer = ({
                             className={cn(
                                 // One line is the cell row of the buttons beside it: text-xs's line and the rest either side.
                                 'block max-h-40 min-h-cell min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-[calc((var(--spacing-cell)-var(--text-xs--line-height))/2)] text-neutral-900 text-xs outline-none placeholder:text-neutral-600',
+                                // 16px on a touch screen, or iOS zooms the page in on focus; one line still fills the cell row.
+                                'pointer-coarse:py-[calc((var(--spacing-cell)-var(--text-base--line-height))/2)] pointer-coarse:text-base',
                                 'disabled:cursor-not-allowed disabled:text-neutral-400 disabled:placeholder:text-neutral-300',
                                 !leading && 'pl-2',
                             )}

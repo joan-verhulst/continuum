@@ -49,6 +49,9 @@ const inputSizes = {
     md: 'min-h-7 max-h-40 px-2 pt-1.5 text-xs',
 } as const;
 
+// Both sizes write at 16px on a touch screen: anything smaller and iOS zooms the page in on focus.
+const touchText = 'pointer-coarse:text-base';
+
 export type ChatPromptProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'children'> &
     VariantProps<typeof chatPromptVariants> & {
         /** Controlled draft. */
@@ -286,6 +289,7 @@ export const ChatPrompt = ({
                         'block min-w-0 resize-none overflow-y-auto bg-transparent text-neutral-900 outline-none placeholder:text-neutral-600',
                         'disabled:cursor-not-allowed disabled:text-neutral-400 disabled:placeholder:text-neutral-300',
                         inputSizes[resolved],
+                        touchText,
                     )}
                     data-slot="chat-prompt-input"
                     disabled={disabled}
