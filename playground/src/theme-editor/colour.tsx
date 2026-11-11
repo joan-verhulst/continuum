@@ -1,6 +1,8 @@
 import {
     Button,
     type ChartHarmony,
+    ColorField,
+    ColorPicker,
     chartHarmonies,
     cn,
     defaultAccent,
@@ -10,11 +12,10 @@ import {
     type Gamut,
     hexToOklch,
     type Oklch,
+    oklchToHex,
     type RampShape,
     type RampStep,
     rampSteps,
-    SegmentedControl,
-    SegmentedControlItem,
     Select,
     SelectContent,
     SelectItem,
@@ -30,28 +31,22 @@ import {
     useTheme,
 } from 'continuum';
 import { RotateCcw } from 'lucide-react';
-import { type ReactNode, useDeferredValue, useId, useMemo, useState } from 'react';
+import { useDeferredValue, useMemo, useState } from 'react';
 import { measureSeries } from './checks';
-import { AccentPicker } from './color-picker';
+import { Block } from './controls';
 import { geometryReset, HarmonyWheel, harmonyChoice, hasGeometry } from './harmony-wheel';
-import { HexInput, hueBand, hueKnob, Row, SliderRow, SliderStack } from './parts';
-import { RampGraph, withoutSteps } from './ramp-graph';
+import { RampEditor } from './ramp-editor';
 
 /*
- * The project's colour as one builder: the three palettes it is made of (the primary ramp, the
- * greys and the data colours) in one list, and under it the editor for the one picked. The data
- * colours are found from the primary, so they live here rather than on a tab of their own; how the
- * colours read for every kind of vision is the preview's check layer, not this page's.
+ * The editors of a project's colour: the primary ramp, the greys and the data colours. The data
+ * colours are found from the primary; how the colours read for every kind of vision is the
+ * preview's check layer, not these.
  */
 
 export type ColourBuilderProps = {
     theme: ThemeOptions;
     set: (patch: Partial<ThemeOptions>) => void;
 };
-
-type Palette = 'primary' | 'greys' | 'data';
-
-const form = 'grid grid-cols-[88px_minmax(0,1fr)] items-center gap-x-3 gap-y-2';
 
 const asOklch = (ramp: readonly string[]): Oklch[] =>
     ramp.map(value => hexToOklch(value) ?? { l: 0.5, c: 0, h: 0 });
@@ -69,12 +64,14 @@ const withShape = (
     return kept.primary || kept.neutral ? kept : undefined;
 };
 
-const Eyebrow = ({ children }: { children: ReactNode }) => (
-    <p className="font-normal text-neutral-600 text-xs">{children}</p>
-);
-
 /** A palette's colours as one strip of equal cells, so every palette lines up on its first step. */
-const Strip = ({ colors, size = 'md' }: { colors: readonly string[]; size?: 'sm' | 'md' }) => (
+export const Strip = ({
+    colors,
+    size = 'md',
+}: {
+    colors: readonly string[];
+    size?: 'sm' | 'md';
+}) => (
     <span
         aria-hidden
         className={cn(
@@ -95,64 +92,6 @@ const Strip = ({ colors, size = 'md' }: { colors: readonly string[]; size?: 'sm'
     </span>
 );
 
-/* ---------- The palettes ---------- */
-
-type PaletteRow = { id: Palette; label: string; colors: readonly string[]; summary: string };
-
-/**
- * The three palettes as one divided list. Picking a row picks what the editor under it edits, so
- * each row is a radio: one in the tab order, the arrows move the choice.
- */
-const PaletteList = ({
-    rows,
-    value,
-    onChange,
-}: {
-    rows: readonly PaletteRow[];
-    value: Palette;
-    onChange: (value: Palette) => void;
-}) => {
-    const name = useId();
-
-    return (
-        <fieldset
-            aria-label="Palette"
-            className="flex min-w-0 flex-col divide-y divide-neutral-200 overflow-hidden rounded-card border border-neutral-200"
-        >
-            {rows.map(row => {
-                const selected = row.id === value;
-                return (
-                    <label
-                        className={cn(
-                            'relative flex cursor-pointer items-center gap-4 px-4 py-3 text-xs transition-[background-color] duration-150',
-                            selected ? 'bg-selected' : 'hover:bg-neutral-950/5',
-                            // Inside the list's clipped corners, the ring sits inside the row.
-                            'has-focus-visible:outline-2 has-focus-visible:outline-focus has-focus-visible:outline-solid has-focus-visible:-outline-offset-2',
-                        )}
-                        key={row.id}
-                    >
-                        <input
-                            checked={selected}
-                            className="sr-only"
-                            name={name}
-                            onChange={() => onChange(row.id)}
-                            type="radio"
-                            value={row.id}
-                        />
-                        <span className="w-16 shrink-0 font-medium text-neutral-950">
-                            {row.label}
-                        </span>
-                        <Strip colors={row.colors} />
-                        <span className="min-w-0 flex-1 truncate text-right text-neutral-600 tabular-nums">
-                            {row.summary}
-                        </span>
-                    </label>
-                );
-            })}
-        </fieldset>
-    );
-};
-
 /* ---------- The data colours, read once per theme ---------- */
 
 /** The page's mode and the theme as the data colours follow it: when React has time, as they are searched. */
@@ -162,7 +101,7 @@ const useDataTheme = (theme: ThemeOptions) => {
 };
 
 /** Series 1 to 4 as the theme writes them for the page's mode: the tokens' own set with neither an accent nor a harmony. */
-const useWrittenSeries = (theme: ThemeOptions) => {
+export const useWrittenSeries = (theme: ThemeOptions) => {
     const { mode, key } = useDataTheme(theme);
     return useMemo(() => measureSeries(JSON.parse(key) as ThemeOptions, mode).series, [key, mode]);
 };
@@ -171,7 +110,12 @@ const useWrittenSeries = (theme: ThemeOptions) => {
 const useHarmonies = (theme: ThemeOptions) => {
     // Picking a harmony clears the geometry it was worked within, so a drag on the wheel never
     // searches them again; custom keeps the set as it is.
-    const { mode, key } = useDataTheme({ ...theme, charts: undefined, ...geometryReset(theme) });
+    const { mode, key } = useDataTheme({
+        ...theme,
+        charts: undefined,
+        ...geometryReset(theme),
+        chartLead: theme.chartLead,
+    });
     return useMemo(() => {
         const loose = JSON.parse(key) as ThemeOptions;
         return chartHarmonies.map(info => ({
@@ -188,7 +132,7 @@ const useHarmonies = (theme: ThemeOptions) => {
 
 export type EditorProps = ColourBuilderProps & { gamut: Gamut };
 
-/** The accent, its colour well, hex and step, then the primary ramp's curves. */
+/** The accent by its well and its value, then the ramp it gives, edited on its own strip. */
 export const PrimaryEditor = ({ theme, set, gamut }: EditorProps) => {
     const accent = theme.accent ?? defaultAccentSeed;
     const accentStep = theme.accentStep ?? defaultThemeOptions.accentStep;
@@ -198,7 +142,19 @@ export const PrimaryEditor = ({ theme, set, gamut }: EditorProps) => {
 
     const setStep = (value: RampStep) => {
         const step = value === defaultThemeOptions.accentStep ? undefined : value;
+        // The step takes the colour itself, so what was set on it by hand goes.
+        const steps = { ...theme.curves?.primary?.steps };
+        delete steps[value];
+        const shape = theme.curves?.primary && {
+            ...theme.curves.primary,
+            steps: Object.keys(steps).length ? steps : undefined,
+        };
         set({
+            curves: withShape(
+                theme.curves,
+                'primary',
+                shape && Object.values(shape).some(item => item !== undefined) ? shape : undefined,
+            ),
             accentStep: step,
             // The default ramp is fixed at its 500: another step needs the seed written out to move it.
             accent: step ? accent : theme.accent === defaultAccentSeed ? undefined : theme.accent,
@@ -213,63 +169,52 @@ export const PrimaryEditor = ({ theme, set, gamut }: EditorProps) => {
             ...withAccent,
             curves: withShape(theme.curves, 'primary', undefined),
         }) ?? asOklch(defaultAccent);
-    // And as the curves alone draw it, under the steps set by hand.
-    const curve = theme.curves?.primary?.steps
-        ? (themeAccentCurves({
-              ...withAccent,
-              curves: withShape(theme.curves, 'primary', withoutSteps(theme.curves.primary)),
-          }) ?? asOklch(defaultAccent))
-        : ramp;
 
-    // Two groups: the accent itself, then its ramp under a hairline and an eyebrow.
+    // The theme's own surface in each mode, which the picker reads the colour against as a fill.
+    const greysKey = JSON.stringify([theme.neutral, theme.curves?.neutral, theme.gamut]);
+    // biome-ignore lint/correctness/useExhaustiveDependencies: the greys by what shapes them
+    const surfaces = useMemo(() => {
+        const greys = themeNeutralCurves(theme) ?? asOklch(defaultNeutral);
+        return {
+            light: oklchToHex(greys[0] ?? { l: 0.98, c: 0, h: 0 }),
+            dark: oklchToHex(greys[10] ?? { l: 0.15, c: 0, h: 0 }),
+        };
+    }, [greysKey]);
+
+    // The colour in one container, the ramp it gives in another.
     return (
-        <div className="flex flex-col gap-6">
-            <div className={form}>
-                <Row
-                    hint="Your colour, and which step of the ramp it is: the other ten are built around it the way Tailwind builds its palette."
-                    label="Primary"
-                >
-                    <AccentPicker
-                        gamut={gamut}
+        <div className="flex flex-col gap-3">
+            <Block>
+                {/* The colour's well opens the picker; its value beside it can be typed or pasted. */}
+                <div className="flex items-center gap-3">
+                    <ColorPicker
+                        contrast={surfaces}
+                        label="Primary"
                         onChange={setAccent}
-                        step={accentStep}
                         value={accent}
                     />
-                    <HexInput onChange={setAccent} value={accent} />
-                    <Select onValueChange={value => setStep(value as RampStep)} value={accentStep}>
-                        <SelectTrigger
-                            aria-label="Which step the primary is"
-                            className="w-24"
-                            size="sm"
-                        >
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent align="end">
-                            {rampSteps.map(step => (
-                                <SelectItem key={step} value={step}>
-                                    {step}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </Row>
-            </div>
-            <RampGraph
-                gamut={gamut}
-                kind="primary"
-                label="Primary ramp"
-                curve={curve}
-                onShape={shape => set({ curves: withShape(theme.curves, 'primary', shape) })}
-                ramp={ramp}
-                reference={reference}
-                seed={rampSteps.indexOf(accentStep)}
-                shape={theme.curves?.primary}
-            />
+                    <ColorField label="Primary" onChange={setAccent} value={accent} />
+                </div>
+            </Block>
+            <Block>
+                <RampEditor
+                    gamut={gamut}
+                    kind="primary"
+                    name="Primary"
+                    onSeed={setStep}
+                    onShape={shape => set({ curves: withShape(theme.curves, 'primary', shape) })}
+                    ramp={ramp}
+                    reference={reference}
+                    seed={rampSteps.indexOf(accentStep)}
+                    shape={theme.curves?.primary}
+                    swatches={themeAccentRamp(withAccent)}
+                />
+            </Block>
         </div>
     );
 };
 
-/** The greys' hue and tint, then their curves, opened on chroma: their lightness is Tailwind's. */
+/** The greys' own colour with its hue and tint, then the ramp on its strip. */
 export const GreysEditor = ({ theme, set, gamut }: EditorProps) => {
     const neutral = theme.neutral ?? defaultThemeOptions.neutral;
 
@@ -279,52 +224,43 @@ export const GreysEditor = ({ theme, set, gamut }: EditorProps) => {
     const reference =
         themeNeutralCurves({ ...theme, curves: withShape(theme.curves, 'neutral', undefined) }) ??
         baseline;
-    const curve = theme.curves?.neutral?.steps
-        ? (themeNeutralCurves({
-              ...theme,
-              curves: withShape(theme.curves, 'neutral', withoutSteps(theme.curves.neutral)),
-          }) ?? baseline)
-        : ramp;
+    // The greys as one colour: their 500, which a picked or typed colour gives its hue and chroma to.
+    const middle = oklchToHex(ramp[5] ?? { l: 0.55, c: 0, h: 0 });
+    const setOwn = (hex?: string) => {
+        const own = hex ? hexToOklch(hex) : null;
+        if (!own) return;
+        // The colour gives the greys its hue and how much of it; how light each step is stays
+        // Tailwind's, since that is what every pair of text and surface is measured on.
+        const tint = Math.min(0.08, Number(own.c.toFixed(3)));
+        setNeutral(tint < 0.001 ? { hue: 0, tint: 0 } : { hue: Math.round(own.h), tint });
+    };
 
     const setNeutral = (next: { hue: number; tint: number }) =>
         set({ neutral: next.hue === 0 && next.tint === 0 ? undefined : next });
 
-    // Two groups: the greys' own hue and tint, then their ramp under a hairline and an eyebrow.
+    // A grey of one's own with its hue and tint, then the ramp.
     return (
-        <div className="flex flex-col gap-6">
-            <SliderStack>
-                <SliderRow
-                    display={`${Math.round(neutral.hue)}°`}
-                    knob={hueKnob(neutral.hue)}
-                    label="Hue"
-                    max={360}
-                    min={0}
-                    onValueChange={hue => setNeutral({ ...neutral, hue })}
-                    step={1}
-                    track={hueBand}
-                    value={neutral.hue}
+        <div className="flex flex-col gap-3">
+            <Block>
+                {/* The greys' own colour: its hue and how much of it. Set here and nowhere else. */}
+                <div className="flex items-center gap-3">
+                    <ColorPicker label="Neutral" onChange={setOwn} value={middle} />
+                    <ColorField label="Neutral" onChange={setOwn} value={middle} />
+                </div>
+            </Block>
+            <Block>
+                <RampEditor
+                    gamut={gamut}
+                    kind="grey"
+                    name="Neutral"
+                    onShape={shape => set({ curves: withShape(theme.curves, 'neutral', shape) })}
+                    ramp={ramp}
+                    reference={reference}
+                    shape={theme.curves?.neutral}
+                    swatches={themeNeutralRamp(theme)}
+                    tint={{ hue: neutral.hue, tint: neutral.tint, onChange: setNeutral }}
                 />
-                <SliderRow
-                    display={neutral.tint === 0 ? 'None' : neutral.tint.toFixed(3)}
-                    label="Tint"
-                    max={0.04}
-                    min={0}
-                    onValueChange={tint => setNeutral({ ...neutral, tint })}
-                    step={0.001}
-                    value={neutral.tint}
-                />
-            </SliderStack>
-            <RampGraph
-                gamut={gamut}
-                initialChannel="c"
-                kind="grey"
-                label="Neutral ramp"
-                curve={curve}
-                onShape={shape => set({ curves: withShape(theme.curves, 'neutral', shape) })}
-                ramp={ramp}
-                reference={reference}
-                shape={theme.curves?.neutral}
-            />
+            </Block>
         </div>
     );
 };
@@ -343,13 +279,12 @@ export const DataEditor = ({ theme, set, gamut }: EditorProps) => {
     };
 
     return (
-        // The harmony as a form row, then the wheel it is worked within across the whole column.
-        <div className="flex flex-col gap-6">
-            <div className={form}>
-                <Row
-                    hint="Auto keeps series 2 to 4 furthest apart for every reader; the others follow a harmony. On the wheel, drag a series round for its hue, in or out for its step. Shift turns by 1°; a double-click gives the step back."
-                    label="Harmony"
-                >
+        // The harmony picked from its list, then the wheel it is worked within.
+        <div className="flex flex-col gap-3">
+            <Block>
+                {/* The harmony picked from a list, each with the four colours it finds. */}
+                <div className="flex items-center gap-3">
+                    <span className="w-20 shrink-0 text-neutral-600 text-xs">Harmony</span>
                     {own ? (
                         <>
                             <p className="min-w-0 flex-1 truncate text-neutral-600 text-xs">
@@ -362,14 +297,10 @@ export const DataEditor = ({ theme, set, gamut }: EditorProps) => {
                     ) : (
                         <>
                             <Select<ChartHarmony>
-                                onValueChange={value => work(harmonyChoice(theme, value))}
+                                onValueChange={value => value && work(harmonyChoice(theme, value))}
                                 value={selected}
                             >
-                                <SelectTrigger
-                                    aria-label="Harmony"
-                                    className="min-w-0 flex-1"
-                                    size="sm"
-                                >
+                                <SelectTrigger aria-label="Harmony" className="min-w-0 flex-1">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
@@ -403,100 +334,11 @@ export const DataEditor = ({ theme, set, gamut }: EditorProps) => {
                             </Button>
                         </>
                     )}
-                </Row>
-            </div>
-            <HarmonyWheel gamut={gamut} set={work} theme={theme} />
-        </div>
-    );
-};
-
-/* ---------- The builder ---------- */
-
-const editorLabels: Record<Palette, string> = {
-    primary: 'Primary',
-    greys: 'Neutral',
-    data: 'Chart colours',
-};
-
-/**
- * The project's colour: the primary ramp, the greys and the data colours as one list, the gamut
- * they are all drawn in, and the editor for the palette picked in the list.
- */
-export const ColourBuilder = ({ theme, set }: ColourBuilderProps) => {
-    const [palette, setPalette] = useState<Palette>('primary');
-    const gamut = theme.gamut ?? defaultThemeOptions.gamut;
-    const written = useWrittenSeries(theme);
-
-    const accent = theme.accent ?? defaultAccentSeed;
-    const neutral = theme.neutral ?? defaultThemeOptions.neutral;
-    const harmony = chartHarmonies.find(info => info.id === (theme.chartHarmony ?? 'auto'));
-
-    const rows: PaletteRow[] = [
-        {
-            id: 'primary',
-            label: 'Primary',
-            colors: themeAccentRamp(theme),
-            summary: `${accent} · ${theme.accentStep ?? defaultThemeOptions.accentStep}`,
-        },
-        {
-            id: 'greys',
-            label: 'Neutral',
-            colors: themeNeutralRamp(theme),
-            summary:
-                neutral.tint === 0
-                    ? 'Pure grey'
-                    : `Hue ${Math.round(neutral.hue)}° · tint ${neutral.tint.toFixed(3)}`,
-        },
-        {
-            id: 'data',
-            label: 'Chart colours',
-            colors: written.map(color => toCss(color, gamut)),
-            summary: theme.charts ? 'Own colours' : (harmony?.label ?? 'Auto'),
-        },
-    ];
-
-    const editor = { theme, set, gamut };
-
-    return (
-        <div className="flex flex-col gap-8">
-            <div className="flex flex-col gap-4">
-                <PaletteList onChange={setPalette} rows={rows} value={palette} />
-                <div className={form}>
-                    <Row
-                        hint="P3 is the wider gamut Tailwind's palette is drawn in; screens that cannot show it fall back on their own. sRGB keeps every colour to what every screen shows."
-                        label="Gamut"
-                    >
-                        {/* Two short values: the control hugs them rather than spanning the column. */}
-                        <SegmentedControl
-                            aria-label="Gamut"
-                            onValueChange={value =>
-                                set({
-                                    gamut:
-                                        value === defaultThemeOptions.gamut
-                                            ? undefined
-                                            : (value as Gamut),
-                                })
-                            }
-                            value={gamut}
-                        >
-                            <SegmentedControlItem value="p3">P3</SegmentedControlItem>
-                            <SegmentedControlItem value="srgb">sRGB</SegmentedControlItem>
-                        </SegmentedControl>
-                    </Row>
                 </div>
-            </div>
-
-            <section
-                aria-label={editorLabels[palette]}
-                className="flex flex-col gap-4 border-neutral-200 border-t pt-6"
-            >
-                <Eyebrow>{editorLabels[palette]}</Eyebrow>
-                <div className="flex flex-col gap-6">
-                    {palette === 'primary' && <PrimaryEditor {...editor} />}
-                    {palette === 'greys' && <GreysEditor {...editor} />}
-                    {palette === 'data' && <DataEditor {...editor} />}
-                </div>
-            </section>
+            </Block>
+            <Block>
+                <HarmonyWheel gamut={gamut} set={work} theme={theme} />
+            </Block>
         </div>
     );
 };

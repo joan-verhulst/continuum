@@ -11,11 +11,9 @@ import {
     type RampShape,
     type RampStepOverride,
     rampSteps,
-    SegmentedControl,
-    SegmentedControlItem,
+    StatusDot,
     toCss,
 } from 'continuum';
-import { RotateCcw } from 'lucide-react';
 import {
     type KeyboardEvent,
     type PointerEvent,
@@ -25,24 +23,23 @@ import {
     useRef,
     useState,
 } from 'react';
-import { SliderRow, SliderStack } from './parts';
-
-const icon = { strokeWidth: 2 } as const;
+import { hueBand, hueKnob, SliderRow } from './parts';
 
 /*
- * A ramp as three curves over its eleven steps: lightness, chroma and hue. The block sliders under it
- * move a whole curve at a time through the ramp's shape, so the ramp stays even; a single step can
- * also be taken by its point and dragged up or down (or nudged with the arrow keys) when one step
- * needs to sit apart. Tailwind's own curve stays drawn, dashed, once the shape has moved it. On the
- * chroma curve the gamut's limit is drawn as a ceiling: past it a colour cannot be shown. Each point
- * is filled with its step's colour, so the graph is the ramp as well as its curves.
+ * A ramp as three charts over its eleven steps: lightness, chroma and hue. It is the ramp editor's
+ * other view, for working on the ramp as curves rather than as swatches. One chart is picked at a
+ * time, and what shapes that curve as a whole sits under it: the others only show. A single step can be taken by its point and dragged up or
+ * down (or nudged with the arrow keys) when it needs to sit apart on one channel, and a point
+ * pressed without moving picks the step. Tailwind's own curve stays drawn, dashed, once the ramp
+ * has moved off it. On the chroma chart the gamut's limit is drawn as a ceiling: past it a colour
+ * cannot be shown. Each point is filled with its step's colour, so a chart is the ramp as well as
+ * its curve.
  *
- * A step set by hand is absolute: it stays where it was put while the sliders move every other step
- * of the curve, and only for the channel it was set in (a step set on lightness still follows the
- * chroma and hue curves). Its point carries a dot, as a held series does on the harmony wheel, and
- * the curve the sliders draw shows faintly beside the line through it. Delete, Backspace or a
- * double-click gives the step back to the curve; Reset steps gives every step back. A primary's seed
- * is the accent itself and is never set here.
+ * A step set by hand is absolute: it stays where it was put while the whole-ramp sliders move every
+ * other step, and only for the channel it was set in (a step set on lightness still follows the
+ * chroma and hue curves). Its point carries a dot, as a held series does on the harmony wheel.
+ * Delete, Backspace or a double-click gives the step back to the curve. A primary's seed is the
+ * accent itself and is never moved here.
  */
 
 const channels: { value: RampChannel; label: string }[] = [
@@ -53,13 +50,13 @@ const channels: { value: RampChannel; label: string }[] = [
 
 /**
  * The chart's drawing box in px. Its width is measured rather than scaled into, so the labels keep
- * their size at any width; the side pads hold the tick labels and half a point.
+ * their size at any width; the side pads hold the tick labels and half a point. Every chart is
+ * the one height, picked or not, so picking one moves nothing but its controls.
  */
-const H = 160;
+const CHART = 116;
 const pad = { top: 12, right: 12, bottom: 24, left: 52 };
 /** How far a tick's value stands off the plot, clear of the first point's ring. */
 const tickGap = 14;
-const plotH = H - pad.top - pad.bottom;
 
 const hueDelta = (a: number, b: number) => ((a - b + 540) % 360) - 180;
 const wrapHue = (h: number) => ((h % 360) + 360) % 360;
@@ -107,10 +104,11 @@ const asTurn = (value: number) =>
     Math.round(value) === 0 ? '0°' : `${sign(value)}${Math.abs(Math.round(value))}°`;
 
 /**
- * The sliders for the channel on screen; a grey ramp has no seed and no drift of its own. Lightest
- * and Darkest set the 50 and the 950; Midtones bends the steps between (right lighter); Saturation
- * scales the chroma against Tailwind's and Taper fades the ends; Drift is Tailwind's turn of hue
- * along the ramp, and the two ends turn the lighter and the darker steps.
+ * What shapes one curve as a whole, shown under its chart while that chart is the one picked; a
+ * grey ramp has no drift of its own. Lightest and Darkest set the 50 and the 950; Midtones leans
+ * the steps between (right lighter); Vividness scales the chroma against Tailwind's and Taper
+ * fades the ends; Drift is Tailwind's turn of hue along the ramp, and the two ends turn the
+ * lighter and the darker steps.
  */
 const controlsFor = (channel: RampChannel, kind: Kind): Control[] => {
     if (channel === 'l') {
@@ -123,6 +121,7 @@ const controlsFor = (channel: RampChannel, kind: Kind): Control[] => {
                 step: 0.002,
                 format: asLightness,
             },
+            { key: 'midtones', label: 'Midtones', min: -1, max: 1, step: 0.05, format: asSigned },
             {
                 key: 'darkest',
                 label: 'Darkest',
@@ -131,20 +130,29 @@ const controlsFor = (channel: RampChannel, kind: Kind): Control[] => {
                 step: 0.005,
                 format: asLightness,
             },
-            { key: 'midtones', label: 'Midtones', min: -1, max: 1, step: 0.05, format: asSigned },
         ];
     }
     if (channel === 'c') {
+        const taper: Control = {
+            key: 'taper',
+            label: 'Taper',
+            min: 0,
+            max: 2,
+            step: 0.05,
+            format: asPercent,
+        };
+        // The greys' amount of colour is their own colour's, set with it: only its fade is shaped here.
+        if (kind === 'grey') return [taper];
         return [
             {
                 key: 'saturation',
-                label: 'Saturation',
+                label: 'Vividness',
                 min: 0,
                 max: 1.5,
                 step: 0.05,
                 format: asPercent,
             },
-            { key: 'taper', label: 'Taper', min: 0, max: 2, step: 0.05, format: asPercent },
+            taper,
         ];
     }
     const ends: Control[] = [
@@ -223,12 +231,66 @@ export type RampGraphProps = {
     shape?: RampShape;
     onShape: (shape?: RampShape) => void;
     kind: Kind;
-    /** The curve shown first: lightness unless given. */
-    initialChannel?: RampChannel;
+    /**
+     * Where a step of this ramp starts to read as text: the lightness under which it keeps 4.5:1 on
+     * the light surface, and the one over which it keeps it on the dark. Drawn across the lightness
+     * chart, for a ramp whose steps are text: the greys.
+     */
+    textLine?: { light: number; dark: number };
+    /**
+     * The greys' own colour: its hue, and how much of it they carry (the chroma at their 500). It
+     * is what the chroma and hue charts are charts of, so it is set under them: the tint under
+     * chroma, the hue under hue. None for a colour's ramp, whose hue and chroma are the colour's.
+     */
+    tint?: { hue: number; tint: number; onChange: (next: { hue: number; tint: number }) => void };
+    /** The step picked to be set under the chart, by index. */
+    picked?: number | null;
+    onPick?: (index: number) => void;
 };
 
-/** A ramp drawn as one curve per channel, with the block sliders that shape that curve as a whole. */
-export const RampGraph = ({
+/** The shape with every step set by hand on one channel given back to its curve. */
+const withoutChannelSteps = (shape: RampShape | undefined, channel: RampChannel) => {
+    const steps = Object.fromEntries(
+        Object.entries(shape?.steps ?? {}).flatMap(([name, step]) => {
+            const rest = { ...step };
+            delete rest[channel];
+            return Object.keys(rest).length ? [[name, rest]] : [];
+        }),
+    );
+    return tidy({ ...shape, steps: Object.keys(steps).length ? steps : undefined });
+};
+
+/**
+ * A ramp as three charts, one under the other: lightness, chroma and hue over the eleven steps.
+ * All three show at once, Tailwind's own curve stays drawn, dashed, behind what has been moved,
+ * and a moved curve carries a mark by its name and its own Reset. One chart is the one being
+ * worked on: it is picked by pressing it, and what shapes its curve as a whole shows under it and
+ * nowhere else, so a slider is always beside the curve it moves. A point pressed is picked, to be
+ * set under the charts as a step is on the strip; a point dragged up or down sets that step on
+ * that channel alone.
+ */
+export const RampChart = (props: RampGraphProps) => {
+    // Lightness first, for a colour and for the greys alike: it is where a ramp is read from.
+    const order = ['l', 'c', 'h'] as const;
+    const [active, setActive] = useState<RampChannel>(order[0]);
+
+    return (
+        <div className="flex min-w-0 flex-col gap-2" data-slot="ramp-chart">
+            {order.map(channel => (
+                <ChannelGraph
+                    {...props}
+                    active={channel === active}
+                    channel={channel}
+                    key={channel}
+                    onActivate={() => setActive(channel)}
+                />
+            ))}
+        </div>
+    );
+};
+
+/** One of a ramp's curves: its eleven steps as points in their own colours. */
+const ChannelGraph = ({
     label,
     ramp,
     reference,
@@ -238,9 +300,19 @@ export const RampGraph = ({
     shape,
     onShape,
     kind,
-    initialChannel = 'l',
-}: RampGraphProps) => {
-    const [channel, setChannel] = useState<RampChannel>(initialChannel);
+    channel,
+    picked,
+    onPick,
+    textLine,
+    tint,
+    active,
+    onActivate,
+}: RampGraphProps & {
+    channel: RampChannel;
+    /** The chart being worked on: the one whose controls show under it. */
+    active: boolean;
+    onActivate: () => void;
+}) => {
     const clip = `ramp-plot-${useId().replace(/[^\w-]/g, '')}`;
     const box = useRef<HTMLDivElement>(null);
     const svg = useRef<SVGSVGElement>(null);
@@ -250,6 +322,8 @@ export const RampGraph = ({
     // The scale under a drag holds still, so the point follows the pointer rather than the axis.
     const [frozen, setFrozen] = useState<Scale | null>(null);
     const drag = useRef<Drag | null>(null);
+    const H = CHART;
+    const plotH = H - pad.top - pad.bottom;
 
     // A drag writes once a frame, with the latest onShape.
     const write = useRef(onShape);
@@ -273,7 +347,7 @@ export const RampGraph = ({
     useLayoutEffect(() => {
         const node = box.current;
         if (!node) return;
-        const measure = () => setW(Math.max(240, node.clientWidth));
+        const measure = () => setW(Math.max(200, node.clientWidth));
         measure();
         const observer = new ResizeObserver(measure);
         observer.observe(node);
@@ -337,7 +411,7 @@ export const RampGraph = ({
 
     const ticks =
         channel === 'l'
-            ? [0, 0.25, 0.5, 0.75, 1]
+            ? [0, 0.5, 1]
             : chromaStep
               ? Array.from({ length: Math.round(high / chromaStep) + 1 }, (_, i) => i * chromaStep)
               : [low, (low + high) / 2, high];
@@ -353,7 +427,6 @@ export const RampGraph = ({
         return i !== seed && name !== undefined && shape?.steps?.[name]?.[channel] !== undefined;
     };
     const anyHeld = rampSteps.some((_, i) => heldAt(i));
-    const anySteps = hasRampSteps(shape);
 
     /** The range a step may take on the channel on screen: chroma stops at the gamut's limit. */
     const rangeAt = (i: number): [number, number] =>
@@ -418,6 +491,8 @@ export const RampGraph = ({
         } else flush();
         setFrozen(null);
         setDragging(null);
+        // A press let go where it was put down is a pick, not a move.
+        if (!cancel && !current.moved) onPick?.(current.index);
     };
     const end = (event: PointerEvent<SVGSVGElement>) => finish(event.pointerId, false);
 
@@ -439,81 +514,92 @@ export const RampGraph = ({
         event.preventDefault();
     };
 
-    // The ends' defaults are the reference ramp's own; the rest are the shape's neutral values.
-    const fallback = (key: ShapeKey) =>
+    // What moves this curve as a whole, which its Reset clears with its steps set by hand.
+    const keys = channelKeys[channel];
+    const shaped = keys.some(key => shape?.[key] !== undefined);
+
+    // The ends rest where Tailwind puts them; the rest at the shape's own neutral values.
+    const rest = (key: ShapeKey) =>
         key === 'lightest'
             ? (reference[0]?.l ?? 0.97)
             : key === 'darkest'
               ? (reference[10]?.l ?? 0.28)
               : neutralShape[key];
-    const currentOf = (key: ShapeKey) => shape?.[key] ?? fallback(key);
-
-    // A seed at an end is that end: its slider would move nothing.
+    const currentOf = (key: ShapeKey) => shape?.[key] ?? rest(key);
+    // An end the theme's own colour sits on is that colour: its slider would move nothing.
     const controls = controlsFor(channel, kind).filter(
         control =>
             !(control.key === 'lightest' && seed === 0) &&
             !(control.key === 'darkest' && seed === 10),
     );
-    const keys = channelKeys[channel];
-    const shaped = keys.some(key => shape?.[key] !== undefined);
-
     const writeControl = (control: Control, value: number) => {
-        // Back at its default, within half a step, a slider leaves the shape.
-        const atDefault = Math.abs(value - fallback(control.key)) <= control.step / 2 + 1e-9;
+        // Back where it rests, within half a step, a slider leaves the shape.
+        const resting = Math.abs(value - rest(control.key)) <= control.step / 2 + 1e-9;
         onShape(
             tidy(
                 { ...shape, [control.key]: Number(value.toFixed(4)) },
-                atDefault ? [control.key] : [],
+                resting ? [control.key] : [],
             ),
         );
     };
 
+    // Under about 28px a step, three digits run into the next: every other step is named then,
+    // the theme's own always, and its neighbours give it room.
+    const sparse = plotW / 10 < 28;
+    const named = (i: number) =>
+        !sparse || i === seed || (i % 2 === 0 && (seed === undefined || Math.abs(i - seed) !== 1));
+
     // Wide enough to take with a finger, never over the next step's point.
     const hit = Math.min(12, plotW / 20);
 
-    // A group of its own under the settings above it: a hairline and an eyebrow, then the curve
-    // picked, the graph and the sliders that shape it, 16px apart, as the Controls step's groups are.
+    const title = channels.find(item => item.value === channel)?.label ?? '';
+    const edited = shaped || anyHeld;
+
     return (
-        <section
-            aria-labelledby={`${clip}-title`}
-            className="flex flex-col gap-4 border-neutral-200 border-t pt-6"
-            data-slot="ramp-graph"
+        // A press anywhere on a chart makes it the one worked on; its controls open under it.
+        <div
+            className={cn(
+                // A card like any other choice here: the same box and padding picked or not, so
+                // picking one changes its edge and its fill and nothing about where things sit.
+                'flex min-w-0 flex-col gap-3 rounded-item border p-3 transition-[background-color,border-color] duration-150',
+                active
+                    ? // Told by its fill and a hairline one step firmer: enough to say which, not a frame.
+                      'border-neutral-300 bg-neutral-950/4'
+                    : 'cursor-pointer border-neutral-200 hover:bg-neutral-950/5',
+            )}
+            data-active={active || undefined}
+            data-slot="ramp-channel"
+            onPointerDownCapture={() => {
+                if (!active) onActivate();
+            }}
         >
-            <h2 className="font-normal text-neutral-600 text-xs" id={`${clip}-title`}>
-                Ramp
-            </h2>
-            <div className="flex items-center justify-between gap-3">
-                <SegmentedControl
-                    aria-label={`${label}: which curve`}
-                    onValueChange={value => setChannel(value as RampChannel)}
-                    value={channel}
-                >
-                    {channels.map(item => (
-                        <SegmentedControlItem key={item.value} value={item.value}>
-                            {item.label}
-                        </SegmentedControlItem>
-                    ))}
-                </SegmentedControl>
-                <div className="flex items-center gap-1">
-                    {anySteps && (
-                        <Button
-                            aria-label={`Reset the ${rampName.toLowerCase()} steps set by hand`}
-                            onClick={() => onShape(withoutSteps(shape))}
-                            variant="ghost"
-                        >
-                            Reset steps
-                        </Button>
-                    )}
+            <div className="flex h-6 items-center justify-between gap-3">
+                <h3 className="text-xs">
+                    <button
+                        aria-pressed={active}
+                        className={cn(
+                            'flex cursor-pointer items-center gap-2 rounded-chip outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:outline-offset-2',
+                            active ? 'font-medium text-neutral-950' : 'text-neutral-600',
+                        )}
+                        onClick={onActivate}
+                        type="button"
+                    >
+                        {title}
+                        {/* Moved off Tailwind's curve, by a slider or a step set by hand. */}
+                        {edited && <StatusDot tone="primary" />}
+                    </button>
+                </h3>
+                {edited && (
                     <Button
                         aria-label={`Reset ${channelName}`}
-                        disabled={!shaped}
-                        onClick={() => onShape(tidy(shape ?? {}, keys))}
+                        onClick={() =>
+                            onShape(tidy(withoutChannelSteps(shape, channel) ?? {}, keys))
+                        }
                         variant="ghost"
                     >
-                        <RotateCcw {...icon} />
                         Reset
                     </Button>
-                </div>
+                )}
             </div>
 
             <div ref={box}>
@@ -583,6 +669,52 @@ export const RampGraph = ({
                             {gamut === 'p3' ? 'P3 limit' : 'sRGB limit'}
                         </text>
                     )}
+
+                    {/*
+                     * Where a grey turns from text on one surface to text on the other: under the
+                     * line a step reads on the light surface, over it on the dark. The two
+                     * thresholds lie a hair apart, so they are drawn as one line as thick as the gap.
+                     */}
+                    {channel === 'l' &&
+                        textLine &&
+                        (() => {
+                            const upper = yAt(Math.max(textLine.light, textLine.dark));
+                            const lower = yAt(Math.min(textLine.light, textLine.dark));
+                            const height = Math.max(1.5, lower - upper);
+                            const mid = (upper + lower) / 2;
+                            return (
+                                <g className="pointer-events-none">
+                                    <rect
+                                        fill="var(--color-neutral-950)"
+                                        fillOpacity={0.45}
+                                        height={height}
+                                        width={plotW}
+                                        x={pad.left}
+                                        y={mid - height / 2}
+                                    />
+                                    {/* Named on the side each holds for, where the curve leaves room. */}
+                                    {active && (
+                                        <>
+                                            <text
+                                                className="fill-neutral-600 text-xxs"
+                                                textAnchor="end"
+                                                x={W - pad.right}
+                                                y={mid - height / 2 - 5}
+                                            >
+                                                Reads as text on dark
+                                            </text>
+                                            <text
+                                                className="fill-neutral-600 text-xxs"
+                                                x={pad.left + 4}
+                                                y={mid + height / 2 + 12}
+                                            >
+                                                Reads as text on light
+                                            </text>
+                                        </>
+                                    )}
+                                </g>
+                            );
+                        })()}
 
                     {/* Tailwind's own curve, dashed, once the shape has moved this one off it. */}
                     {moved && (
@@ -655,8 +787,13 @@ export const RampGraph = ({
                         );
                         return (
                             <g key={step}>
+                                {/* In a narrow chart every other step is named, and always the theme's own. */}
                                 <text
-                                    className={cn('text-xxs tabular-nums', isSeed && 'font-medium')}
+                                    className={cn(
+                                        'text-xxs tabular-nums',
+                                        isSeed && 'font-medium',
+                                        !named(i) && 'hidden',
+                                    )}
                                     fill={
                                         isSeed
                                             ? 'var(--color-neutral-950)'
@@ -669,9 +806,43 @@ export const RampGraph = ({
                                     {step}
                                 </text>
                                 {isSeed ? (
-                                    <g>
+                                    // Your colour is never moved here, but it can be picked like any step.
+                                    // biome-ignore lint/a11y/useSemanticElements: a point in an SVG chart cannot be a button element
+                                    <g
+                                        aria-label={`${rampName} ${step}, your colour`}
+                                        aria-pressed={picked === i}
+                                        className="cursor-pointer outline-none"
+                                        onBlur={() => setFocused(null)}
+                                        onClick={() => onPick?.(i)}
+                                        onFocus={() => setFocused(i)}
+                                        onKeyDown={event => {
+                                            if (event.key !== 'Enter' && event.key !== ' ') return;
+                                            event.preventDefault();
+                                            onPick?.(i);
+                                        }}
+                                        role="button"
+                                        tabIndex={0}
+                                    >
                                         <title>{`${step}, your colour: ${exact(value)}`}</title>
+                                        <circle
+                                            cx={cx}
+                                            cy={cy}
+                                            fill="transparent"
+                                            pointerEvents="all"
+                                            r={hit}
+                                        />
                                         {point}
+                                        {focused === i && (
+                                            <circle
+                                                className="pointer-events-none"
+                                                cx={cx}
+                                                cy={cy}
+                                                fill="none"
+                                                r={13}
+                                                stroke="var(--color-focus)"
+                                                strokeWidth={2}
+                                            />
+                                        )}
                                         <circle
                                             cx={cx}
                                             cy={cy}
@@ -720,7 +891,19 @@ export const RampGraph = ({
                                             r={hit}
                                         />
                                         {point}
-                                        {/* The step picked: a ring in the focus colour, while it has focus. */}
+                                        {/* The step picked to be set under the chart: a plain ring. */}
+                                        {picked === i && focused !== i && (
+                                            <circle
+                                                className="pointer-events-none"
+                                                cx={cx}
+                                                cy={cy}
+                                                fill="none"
+                                                r={10}
+                                                stroke="var(--color-neutral-950)"
+                                                strokeWidth={1.5}
+                                            />
+                                        )}
+                                        {/* The step with the keyboard: a ring in the focus colour. */}
                                         {focused === i && (
                                             <circle
                                                 className="pointer-events-none"
@@ -740,20 +923,56 @@ export const RampGraph = ({
                 </svg>
             </div>
 
-            <SliderStack>
-                {controls.map(control => (
-                    <SliderRow
-                        display={control.format(currentOf(control.key))}
-                        key={control.key}
-                        label={control.label}
-                        max={control.max}
-                        min={control.min}
-                        onValueChange={value => writeControl(control, value)}
-                        step={control.step}
-                        value={currentOf(control.key)}
-                    />
-                ))}
-            </SliderStack>
-        </section>
+            {/* What shapes this curve as a whole, under it, while this is the chart worked on. */}
+            {active && (
+                <div className="flex flex-col gap-2">
+                    {/* How much colour the greys carry: without any, there is nothing to shape. */}
+                    {tint && channel === 'c' && (
+                        <SliderRow
+                            display={tint.tint === 0 ? 'None' : tint.tint.toFixed(3)}
+                            label="Tint"
+                            max={0.08}
+                            min={0}
+                            onValueChange={value => tint.onChange({ hue: tint.hue, tint: value })}
+                            step={0.001}
+                            value={tint.tint}
+                        />
+                    )}
+                    {/* Which colour that is; a pure grey has none to turn. */}
+                    {tint && channel === 'h' && tint.tint > 0 && (
+                        <SliderRow
+                            display={`${Math.round(tint.hue)}°`}
+                            knob={hueKnob(tint.hue)}
+                            label="Hue"
+                            max={360}
+                            min={0}
+                            onValueChange={value => tint.onChange({ hue: value, tint: tint.tint })}
+                            step={1}
+                            track={hueBand}
+                            value={tint.hue}
+                        />
+                    )}
+                    {tint && tint.tint === 0 && channel === 'h' && (
+                        <p className="text-neutral-600 text-xs">
+                            A pure grey has no hue. Give it a tint under Chroma first.
+                        </p>
+                    )}
+                    {/* The rest shape the curve; on a pure grey only its lightness has one. */}
+                    {(!tint || tint.tint > 0 || channel === 'l') &&
+                        controls.map(control => (
+                            <SliderRow
+                                display={control.format(currentOf(control.key))}
+                                key={control.key}
+                                label={control.label}
+                                max={control.max}
+                                min={control.min}
+                                onValueChange={value => writeControl(control, value)}
+                                step={control.step}
+                                value={currentOf(control.key)}
+                            />
+                        ))}
+                </div>
+            )}
+        </div>
     );
 };

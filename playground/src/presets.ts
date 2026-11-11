@@ -31,7 +31,7 @@ const eyesCharts: ThemeCharts = {
 
 /**
  * Starting points for a new project, showing the range of the choices; a project edits any of
- * them from there. Without one a project starts on the system's own neutral baseline; Eyes is
+ * them from there. Without one a project starts on the system's own baseline, its fill the primary colour; Eyes is
  * the product it was distilled from.
  */
 export const presets: Preset[] = [

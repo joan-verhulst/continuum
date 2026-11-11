@@ -288,6 +288,7 @@ export const ExportDialog = ({
     label,
     mode,
     unsaved = false,
+    onGamut,
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -298,6 +299,8 @@ export const ExportDialog = ({
     mode: ThemeMode;
     /** The theme has changes not saved yet; the files carry them. */
     unsaved?: boolean;
+    /** Sets the gamut the files' colours are written in; without it the choice is not offered. */
+    onGamut?: (gamut: 'p3' | 'srgb') => void;
 }) => {
     const [tab, setTab] = useState('css');
     const theme = exportTheme(options, label, mode);
@@ -342,6 +345,23 @@ export const ExportDialog = ({
                         says where the library comes from, what to install and how to keep the look.
                         {unsaved && ' Unsaved changes are included; save to keep them.'}
                     </DialogDescription>
+                    {onGamut && (
+                        <div className="flex items-center justify-between gap-4 text-xs">
+                            <p className="min-w-0 text-neutral-600">
+                                <span className="font-medium text-neutral-950">Colours in </span>
+                                P3 is the wider gamut Tailwind's palette is drawn in; sRGB keeps
+                                every colour to what every screen shows.
+                            </p>
+                            <SegmentedControl
+                                aria-label="Gamut"
+                                onValueChange={value => onGamut(value === 'srgb' ? 'srgb' : 'p3')}
+                                value={options.gamut ?? 'p3'}
+                            >
+                                <SegmentedControlItem value="p3">P3</SegmentedControlItem>
+                                <SegmentedControlItem value="srgb">sRGB</SegmentedControlItem>
+                            </SegmentedControl>
+                        </div>
+                    )}
                     <Tabs onValueChange={value => setTab(String(value))} value={current?.id}>
                         <div className="flex items-center justify-between gap-3">
                             <TabsList variant="pill">

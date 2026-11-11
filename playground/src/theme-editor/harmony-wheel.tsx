@@ -5,7 +5,6 @@ import {
     chartRamps,
     chartSeriesSteps,
     chartStepIn,
-    checkSeries,
     defaultAccent,
     type Gamut,
     hexToOklch,
@@ -13,7 +12,6 @@ import {
     rampSteps,
     type SeriesCheck,
     StatusDot,
-    seriesThresholds,
     type ThemeMode,
     type ThemeOptions,
     Tooltip,
@@ -33,21 +31,26 @@ import {
     useRef,
     useState,
 } from 'react';
-import { cut, measureSeries } from './checks';
+import { checkChartSeries, cut, measureSeries, seriesLevels } from './checks';
 
 /*
- * The data colours' wheel, where a harmony is worked within. The disk is every colour series 2 to 4
+ * The data colours' wheel, where a harmony is worked within. The disk is every colour a series
  * can take in the page's mode: a ring per step the mode allows, the lightest outside, each ring
  * every hue as the engine draws it at that step. A series sits at its hue and its step. Round the
  * wheel is hue: the harmonies with a parameter keep their shape (an analogous spread, the split
  * either side of the opposite, the rectangle's width), the rigid ones turn custom, and custom moves
- * each hue freely. In and out is the step, held by hand in place of the search's pick.
+ * each hue freely. In and out is the step, held by hand in place of the search's pick. Series 1
+ * starts as the primary's own 500 and can be taken like the others: the harmony's hues are turns
+ * of its hue, so they follow it round, and a faint ring stays where the primary is.
  *
  * Light outside, because the disk then reads as the ramp does from the rim in: the eye takes the
  * pale rim as the lightest, and the deep centre as the deepest, in either mode.
  */
 
-type Geometry = Pick<ThemeOptions, 'chartHarmony' | 'chartSpread' | 'chartTurns' | 'chartSteps'>;
+type Geometry = Pick<
+    ThemeOptions,
+    'chartHarmony' | 'chartSpread' | 'chartTurns' | 'chartSteps' | 'chartLead'
+>;
 
 /** The geometry a harmony is drawn at by itself: no spread, no hues of its own, no step held. */
 const cleared = { chartSpread: undefined, chartTurns: undefined, chartSteps: undefined };
@@ -65,6 +68,7 @@ export const hasGeometry = (theme: ThemeOptions) =>
     theme.chartSpread !== undefined ||
     theme.chartTurns !== undefined ||
     theme.chartSteps !== undefined ||
+    theme.chartLead !== undefined ||
     theme.chartHarmony === 'custom';
 
 /** A turn the short way round, in −180 to 180. */
@@ -105,7 +109,7 @@ type Handle = {
     member: number;
     /** Its place among series 2 to 4, 0 to 2. */
     series: number;
-    /** Its hue as a turn of the primary's. */
+    /** Its hue as a turn of series 1's. */
     turn: number;
     hue: number;
     /** Its step in the page's mode, 0 for 50 … 10 for 950. */
@@ -115,7 +119,15 @@ type Handle = {
     color: Oklch;
 };
 
-type Lead = { hue: number; step: number; color: Oklch };
+type Lead = {
+    hue: number;
+    /** Its hue as a turn of the primary's: 0 while it is the primary itself. */
+    turn: number;
+    step: number;
+    /** True once it has been put somewhere other than the primary's own 500. */
+    moved: boolean;
+    color: Oklch;
+};
 
 /** The step of a hue whose ramp colour is nearest in lightness, for a set not drawn from ramps. */
 const nearestStep = (ramp: readonly Oklch[], color: Oklch, steps: readonly number[]) =>
@@ -144,8 +156,15 @@ const readSeries = ({
     if (series) {
         const colors = series[mode];
         const kind = kindOf(view);
+        const leadTurn = signed(series.leadTurn);
         const lead = colors[0]
-            ? { hue: wrap(seedHue), step: series.primaryStep[mode], color: colors[0] }
+            ? {
+                  hue: wrap(seedHue + leadTurn),
+                  turn: leadTurn,
+                  step: series.primaryStep[mode],
+                  moved: view.chartLead !== undefined,
+                  color: colors[0],
+              }
             : null;
         const handles = [0, 1, 2].flatMap(i => {
             const color = colors[i + 1];
@@ -157,7 +176,7 @@ const readSeries = ({
                     member,
                     series: i,
                     turn,
-                    hue: wrap(seedHue + turn),
+                    hue: wrap(seedHue + leadTurn + turn),
                     step: series.steps[mode][i + 1] ?? 5,
                     held: kind !== 'auto' && typeof view.chartSteps?.[member] === 'number',
                     color,
@@ -171,7 +190,9 @@ const readSeries = ({
     const lead = first
         ? {
               hue: first.h,
+              turn: 0,
               step: nearestStep(rampAt(first.h - seedHue), first, [4, 5, 6, 7]),
+              moved: false,
               color: first,
           }
         : null;
@@ -208,20 +229,54 @@ const toCustom = (geometry: Geometry, handles: readonly Handle[]): Geometry => {
     };
 };
 
+/** Series 1's place by hand, or nothing once it is back on the primary's own 500. */
+const tidyLead = (lead: { turn?: number; step?: number }) => {
+    const turn = lead.turn !== undefined && signed(lead.turn) !== 0 ? signed(lead.turn) : undefined;
+    const step = lead.step !== undefined && lead.step !== 5 ? lead.step : undefined;
+    if (turn === undefined && step === undefined) return undefined;
+    return { ...(turn !== undefined && { turn }), ...(step !== undefined && { step }) };
+};
+
 /**
- * A series turned to a hue: the parameter of a harmony that has one, where the series follows it;
- * otherwise the series' own hue, the harmony turned custom first.
+ * Series 1 turned to a hue. A harmony's hues are turns of its hue, so they follow it round; hues
+ * placed by hand are each their own, so they give the turn back and stay where they were put.
  */
-const withHue = (
-    geometry: Geometry,
-    handles: readonly Handle[],
-    handle: Handle,
-    target: number,
-    fine: boolean,
-): Geometry => {
+const withLeadHue = (geometry: Geometry, target: number, fine: boolean): Geometry => {
+    const before = signed(geometry.chartLead?.turn ?? 0);
+    const turn = signed(snap(target, fine));
+    return {
+        ...geometry,
+        chartLead: tidyLead({ ...geometry.chartLead, turn }),
+        ...(kindOf(geometry) === 'custom' && {
+            chartTurns: geometry.chartTurns?.map(own => signed(own - (turn - before))),
+        }),
+    };
+};
+
+/** Series 1 put on a light-mode step, or back on the 500 with undefined. */
+const withLeadStep = (geometry: Geometry, step: number | undefined): Geometry => ({
+    ...geometry,
+    chartLead: tidyLead({ ...geometry.chartLead, step }),
+});
+
+/** Series 1 back on the primary's own 500. */
+const withoutLead = (geometry: Geometry): Geometry =>
+    withLeadStep(withLeadHue(geometry, 0, true), undefined);
+
+/**
+ * A series turned to a hue. A harmony stays the harmony it is: where it has a parameter and the
+ * series follows it, the parameter moves; otherwise the whole set turns with the series, by
+ * turning series 1, which the harmony is found from. Only hues placed by hand (custom) move alone.
+ */
+const withHue = (geometry: Geometry, handle: Handle, target: number, fine: boolean): Geometry => {
     const kind = kindOf(geometry);
+    if (kind === 'custom') {
+        const turns = [...(geometry.chartTurns ?? [])];
+        turns[handle.series] = signed(snap(target, fine));
+        return { ...geometry, chartTurns: turns };
+    }
     const range = infoOf(kind)?.spread;
-    const follows = kind === 'custom' ? null : range?.members[handle.member];
+    const follows = range?.members[handle.member];
     if (range && follows) {
         const spread = Math.min(
             range.max,
@@ -229,10 +284,9 @@ const withHue = (
         );
         return { ...geometry, chartSpread: spread === range.initial ? undefined : spread };
     }
-    const custom = toCustom(geometry, handles);
-    const turns = [...(custom.chartTurns ?? [])];
-    turns[handle.series] = signed(snap(target, fine));
-    return { ...custom, chartTurns: turns };
+    // The series keeps its place in the harmony, so the set turns by as far as it was moved.
+    const before = signed(geometry.chartLead?.turn ?? 0);
+    return withLeadHue(geometry, before + signed(target - handle.turn), fine);
 };
 
 /** A series held at a light-mode step, or given back to the search with null. */
@@ -284,6 +338,7 @@ export const geometryReset = (theme: ThemeOptions, origin: ChartHarmony = 'auto'
     return {
         chartHarmony: harmony === 'auto' || harmony === 'custom' ? undefined : harmony,
         ...cleared,
+        chartLead: undefined,
     };
 };
 
@@ -358,7 +413,7 @@ const SeriesStatus = ({
     const band = checks.find(check => check.id === 'band');
     const cvd = checks.find(check => check.id === 'cvd');
     const normal = checks.find(check => check.id === 'normal');
-    const [low, high] = seriesThresholds.band[mode];
+    const [low, high] = seriesLevels.band[mode];
     const pair = (check?: SeriesCheck) =>
         check?.series.length === 2
             ? `series ${(check.series[0] ?? 0) + 1} and ${(check.series[1] ?? 0) + 1}`
@@ -376,14 +431,14 @@ const SeriesStatus = ({
             state: cvd.state,
             label: 'Colour-blind',
             value: cut(cvd.value, 1),
-            about: `Apart for colour-blind readers: the closest, ${pair(cvd)}, are ${cut(cvd.value, 1)} apart under ${cvd.vision} vision. ${seriesThresholds.cvd.target} is wanted; ${seriesThresholds.cvd.floor} holds only with labels beside the colours.`,
+            about: `Apart for colour-blind readers: the closest, ${pair(cvd)}, are ${cut(cvd.value, 1)} apart under ${cvd.vision} vision. ${seriesLevels.cvd.target} is wanted; ${seriesLevels.cvd.floor} holds only with labels beside the colours.`,
         },
         normal && {
             id: 'normal',
             state: normal.state,
             label: 'Full vision',
             value: cut(normal.value, 1),
-            about: `Apart with full colour vision: the closest, ${pair(normal)}, are ${cut(normal.value, 1)} apart. ${seriesThresholds.normal} is wanted.`,
+            about: `Apart with full colour vision: the closest, ${pair(normal)}, are ${cut(normal.value, 1)} apart. ${seriesLevels.normal} is wanted.`,
         },
     ].filter(item => Boolean(item)) as {
         id: string;
@@ -423,7 +478,8 @@ type Drag = {
     /** The geometry, the series and the series dragged as they were when the drag began. */
     geometry: Geometry;
     handles: Handle[];
-    handle: Handle;
+    /** The series dragged; null for series 1, which is held apart from the three after it. */
+    handle: Handle | null;
     /** Where the pointer took the handle, so it keeps its place under the pointer. */
     offset: { angle: number; radius: number };
     from: { angle: number; radius: number };
@@ -441,8 +497,8 @@ export type HarmonyWheelProps = {
 };
 
 /**
- * The hue and step of each data colour on one disk, with the primary fixed and series 2 to 4 to
- * drag, and under it how the set reads, as it moves.
+ * The hue and step of each data colour on one disk, each to drag, and under it how the set
+ * reads, as it moves.
  */
 export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
     const { mode } = useTheme();
@@ -533,7 +589,7 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
         rampAt,
     });
     const colors = series ? series[mode] : measured.series;
-    const checks = checkSeries(colors, { mode, surface: measured.surface });
+    const checks = checkChartSeries(colors, { mode, surface: measured.surface });
 
     const kind = kindOf(view);
     const range = infoOf(kind)?.spread;
@@ -566,6 +622,7 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
         chartSpread: options.chartSpread,
         chartTurns: options.chartTurns,
         chartSteps: options.chartSteps,
+        chartLead: options.chartLead,
     });
 
     const lightStep = (step: number) => chartStepIn(step, mode, 'light');
@@ -592,6 +649,29 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
         setDragging(keyOf(handle));
     };
 
+    /** Series 1 taken: it is dragged as the others are, round for its hue, in or out for its step. */
+    const beginLead = (event: PointerEvent<SVGGElement>) => {
+        if (event.button !== 0 || !lead) return;
+        event.preventDefault();
+        event.currentTarget.focus({ preventScroll: true });
+        const pointer = polar(event);
+        drag.current = {
+            pointer: event.pointerId,
+            geometry: geometryOf(view),
+            handles,
+            handle: null,
+            offset: {
+                angle: signed(lead.hue - pointer.angle),
+                radius: ringRadius(Math.max(0, steps.indexOf(lead.step))) - pointer.radius,
+            },
+            from: pointer,
+            hue: false,
+            step: false,
+            captured: false,
+        };
+        setDragging(-1);
+    };
+
     const move = (event: PointerEvent<SVGSVGElement>) => {
         const current = drag.current;
         if (!current || current.pointer !== event.pointerId) return;
@@ -608,9 +688,23 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
 
         const { handle, handles: before } = current;
         let next = current.geometry;
+        if (!handle) {
+            if (current.hue) {
+                const target = wrap(pointer.angle + current.offset.angle) - seedHue;
+                next = withLeadHue(next, target, event.shiftKey);
+            }
+            if (current.step) {
+                const step = steps[ringIndexAt(pointer.radius + current.offset.radius)];
+                if (step !== undefined) next = withLeadStep(next, lightStep(step));
+            }
+            schedule(next);
+            return;
+        }
         if (current.hue) {
-            const target = wrap(pointer.angle + current.offset.angle) - seedHue;
-            next = withHue(next, before, handle, target, event.shiftKey);
+            // A series' hue is a turn of series 1's, wherever that has been put.
+            const from = seedHue + signed(current.geometry.chartLead?.turn ?? 0);
+            const target = wrap(pointer.angle + current.offset.angle) - from;
+            next = withHue(next, handle, target, event.shiftKey);
         }
         if (current.step) {
             const ring = ringIndexAt(pointer.radius + current.offset.radius);
@@ -655,7 +749,7 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
             const target = follows
                 ? follows.from + follows.times * (spread + way * amount * Math.sign(follows.times))
                 : handle.turn + way * amount;
-            apply(withHue(geometry, handles, handle, target, event.shiftKey), handle);
+            apply(withHue(geometry, handle, target, event.shiftKey), handle);
         } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
             // Up is out, towards the lighter rim.
             const index = Math.max(0, steps.indexOf(handle.step));
@@ -668,6 +762,29 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
             apply(withStep(geometry, handles, handle, null), handle);
         } else return;
         event.preventDefault();
+    };
+
+    const onLeadKey = (event: KeyboardEvent<SVGGElement>) => {
+        if (!lead) return;
+        const geometry = geometryOf(view);
+        let next: Geometry;
+        if (event.key === 'ArrowLeft' || event.key === 'ArrowRight') {
+            const way = event.key === 'ArrowRight' ? 1 : -1;
+            next = withLeadHue(geometry, lead.turn + way * (event.shiftKey ? 1 : 5), true);
+        } else if (event.key === 'ArrowUp' || event.key === 'ArrowDown') {
+            // Up is out, towards the lighter rim.
+            const index = Math.max(0, steps.indexOf(lead.step));
+            const step =
+                steps[Math.min(5, Math.max(0, index + (event.key === 'ArrowUp' ? -1 : 1)))];
+            if (step === undefined) return;
+            next = withLeadStep(geometry, lightStep(step));
+        } else if (event.key === 'Backspace' || event.key === 'Delete') {
+            if (!lead.moved) return;
+            next = withoutLead(geometry);
+        } else return;
+        event.preventDefault();
+        refocus.current = -1;
+        set(next);
     };
 
     const stepName = (step: number) => rampSteps[step] ?? '';
@@ -688,8 +805,8 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
         }
         if (active === -1 && lead) {
             return {
-                value: `${Math.round(lead.hue)}°`,
-                caption: `Primary · ${stepName(lead.step)}`,
+                value: lead.turn === 0 ? `${Math.round(lead.hue)}°` : formatTurn(lead.turn),
+                caption: `${lead.turn === 0 ? 'Primary' : 'Series 1'} · ${stepName(lead.step)}`,
             };
         }
         if (range && !own && series) {
@@ -701,11 +818,14 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
         return null;
     })();
 
-    // The angle being set, along the rim: from the primary, or from the opposite for split's pair.
+    // The angle being set, along the rim: series 1's from the primary, the others' from series 1
+    // (or from its opposite for split's pair).
     const angle = (() => {
-        if (!activeHandle || own) return null;
+        if (own) return null;
+        if (active === -1 && lead && lead.turn !== 0) return { from: wrap(seedHue), to: lead.hue };
+        if (!activeHandle) return null;
         const follows = kind === 'custom' ? null : range?.members[activeHandle.member];
-        const from = wrap(seedHue + (follows?.from ?? 0));
+        const from = wrap(seedHue + (lead?.turn ?? 0) + (follows?.from ?? 0));
         return { from, to: activeHandle.hue };
     })();
 
@@ -715,13 +835,17 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
     };
 
     const leadAt = lead ? placed(lead.hue, lead.step) : null;
+    // Where the primary itself is, shown once series 1 has been put somewhere else.
+    const homeAt =
+        lead?.moved && !own ? placed(wrap(seedHue), chartStepIn(5, 'light', mode)) : null;
+    const leadBead = dragging === -1 || hovered === -1 ? BEAD.lifted : BEAD.rest;
     const turnsText = handles.map(handle => formatTurn(handle.turn)).join(', ');
 
     return (
         // The wheel is the step's centrepiece: centred in the column, its reading centred under it.
         <div className="flex flex-col items-center gap-3">
             <fieldset
-                aria-label={`Chart colours on the oklch wheel, the lightest steps outside. Series 2 to 4 at ${turnsText} from the primary.`}
+                aria-label={`Chart colours on the oklch wheel, the lightest steps outside. Series 2 to 4 at ${turnsText} from series 1.`}
                 className="relative size-86 min-w-0 shrink-0 select-none"
             >
                 {/*
@@ -767,7 +891,7 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
                 )}
 
                 <svg
-                    aria-label="Series 2 to 4: left and right turn the hue, up and down the step"
+                    aria-label="Series 1 to 4: left and right turn the hue, up and down the step"
                     className="absolute inset-0 size-full touch-none overflow-visible"
                     onPointerCancel={end}
                     onPointerMove={move}
@@ -787,20 +911,70 @@ export const HarmonyWheel = ({ theme, set, gamut }: HarmonyWheelProps) => {
                         </g>
                     )}
 
-                    {leadAt && lead && (
-                        // The primary: fixed, its hue the accent's. Not a bead but a ring round its
-                        // colour, as the ramp graph marks the seed, and no wider than a bead, so a
-                        // series at its hue on the next step keeps clear of it.
+                    {homeAt && (
+                        // The primary's own place, hollow: where series 1 goes back to.
                         <g
+                            className="pointer-events-none"
+                            transform={`translate(${homeAt.x} ${homeAt.y})`}
+                        >
+                            <circle
+                                fill="none"
+                                r={BEAD.rest.white - 1}
+                                stroke="var(--color-neutral-950)"
+                                strokeDasharray="2 2"
+                                strokeOpacity={0.6}
+                                strokeWidth={1}
+                            />
+                        </g>
+                    )}
+
+                    {leadAt && lead && (
+                        // Series 1: the primary's own colour until it is taken. Ringed rather than
+                        // a plain bead, as the ramp marks the theme's own colour, so it is told
+                        // from the three found from it.
+                        <g
+                            aria-label="Series 1"
+                            aria-valuemax={180}
+                            aria-valuemin={-180}
+                            aria-valuenow={Math.round(lead.turn)}
+                            aria-valuetext={`Series 1, ${lead.turn === 0 ? 'the primary' : `${formatTurn(lead.turn)} from the primary`}, step ${stepName(lead.step)}`}
+                            className={`group outline-none ${
+                                own ? '' : dragging === -1 ? 'cursor-grabbing' : 'cursor-grab'
+                            } ${
+                                dragging === null
+                                    ? 'transition-transform duration-200 ease-out motion-reduce:transition-none'
+                                    : ''
+                            }`}
+                            data-handle={-1}
+                            onBlur={() => setFocused(null)}
+                            onDoubleClick={() => {
+                                if (own || !lead.moved) return;
+                                refocus.current = -1;
+                                set(withoutLead(geometryOf(view)));
+                            }}
+                            onFocus={() => setFocused(-1)}
+                            onKeyDown={own ? undefined : onLeadKey}
+                            onPointerDown={own ? undefined : beginLead}
                             onPointerEnter={() => setHovered(-1)}
                             onPointerLeave={() => setHovered(null)}
-                            transform={`translate(${leadAt.x} ${leadAt.y})`}
+                            role="slider"
+                            style={{ transform: `translate(${leadAt.x}px, ${leadAt.y}px)` }}
+                            tabIndex={own ? undefined : 0}
                         >
-                            <title>{`Series 1, the primary, at ${Math.round(lead.hue)}°: fixed`}</title>
+                            <title>
+                                {`Series 1${lead.moved ? ' (double-click to put it back on the primary)' : ', the primary'}`}
+                            </title>
                             <circle fill="transparent" r={BEAD.hit} />
-                            <circle fill="var(--color-neutral-950)" r={BEAD.rest.white + 0.5} />
-                            <circle fill="var(--color-neutral-50)" r={BEAD.rest.white - 1} />
-                            <circle fill={toCss(lead.color, gamut)} r={BEAD.rest.color - 1} />
+                            <circle
+                                className="opacity-0 group-focus-visible:opacity-100"
+                                fill="none"
+                                r={leadBead.white + 3}
+                                stroke="var(--color-focus)"
+                                strokeWidth={2}
+                            />
+                            <circle fill="var(--color-neutral-950)" r={leadBead.white + 0.5} />
+                            <circle fill="var(--color-neutral-50)" r={leadBead.white - 1} />
+                            <circle fill={toCss(lead.color, gamut)} r={leadBead.color - 1} />
                         </g>
                     )}
 

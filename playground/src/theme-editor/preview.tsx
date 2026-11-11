@@ -367,13 +367,10 @@ export const ThemePreview = ({ theme, mode, filter, className }: ThemePreviewPro
             className={cn('overflow-y-auto overscroll-contain bg-neutral-50', className)}
             mode={mode}
             // The scrollbar in the preview's mode, not the page's.
-            style={{ colorScheme: mode }}
+            style={{ colorScheme: mode, filter }}
             theme={theme}
         >
-            <div
-                className="flex min-h-full flex-col gap-8 bg-neutral-50 px-6 pt-8 pb-6 text-neutral-950"
-                style={{ filter }}
-            >
+            <div className="flex min-h-full flex-col gap-8 bg-neutral-50 px-6 pt-8 pb-6 text-neutral-950">
                 {/* In a narrow panel the actions go under the title rather than squeeze it. */}
                 <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
                     <div className="flex min-w-0 flex-col gap-1.5">

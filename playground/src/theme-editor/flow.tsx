@@ -1,5 +1,4 @@
 import {
-    Badge,
     Button,
     chartHarmonies,
     Dialog,
@@ -19,20 +18,33 @@ import {
     type ThemeOptions,
     themeFontFamilies,
 } from 'continuum';
-import { ArrowRight, Check } from 'lucide-react';
-import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
+import { ArrowRight } from 'lucide-react';
+import { type ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { PageFooter } from '../layout';
 import { sizesLine } from '../presets';
 import { type Balance, balanceCurves, measurePairs, measureSeries } from './checks';
 import { DataEditor, GreysEditor, PrimaryEditor } from './colour';
-import { ControlsTab, SizeTab } from './controls';
-import { Choice, Row } from './parts';
+import {
+    ButtonsEditor,
+    CornersEditor,
+    DensityEditor,
+    ElevationEditor,
+    FontEditor,
+    NavEditor,
+    TypeSizeEditor,
+    TypeSpacingEditor,
+} from './controls';
+import { Choice } from './parts';
 
 /*
- * A project's theme as a short flow, one step at a time: the primary, the neutral, the chart colours,
- * the controls, the sizes, then a review. Steps already reached can be returned to from the stepper. At the end the theme is measured in light and dark, and any pair that misses its
- * contrast is put to the person before the theme is used: they may fix it, look again, or go on.
- * Using it makes it the theme the whole playground wears.
+ * A project's theme as a short flow, one step at a time: the primary, the neutral, the chart
+ * colours, the controls, the sizes, then a review. Steps already reached can be returned to from
+ * the stepper. Each part of a step sits in a container of its own, and a choice is made by picking
+ * a drawing of what it changes. How the theme reads is checked where it is decided: a step that
+ * sets colour says under it whether its pairs keep their contrast, and offers the fix. At the end
+ * the theme is measured again in light and dark, and any pair that still misses is put to the
+ * person before the theme is used: they may fix it, look again, or go on. Using it makes it the
+ * theme the whole playground wears.
  */
 
 export type FlowProps = {
@@ -45,16 +57,15 @@ export type FlowProps = {
     onUse: () => void;
     /** The playground wears this theme as it is now, so there is nothing to use. */
     inUse: boolean;
+    /** The theme has been used before, so using it again is an update. */
+    used: boolean;
     /** Opens the export of app.css and DESIGN.md. */
     onExport: () => void;
     /** The theme has changes the project has not saved. */
     dirty: boolean;
-    /** Saves the theme as it is now to the project. */
+    /** Saves the theme as it is now to the project; Continue calls it on leaving a step. */
     onSave: () => void;
 };
-
-/** The save shortcut as the reader's keyboard writes it. */
-const saveKey = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent) ? '⌘S' : 'Ctrl+S';
 
 type Balancing = { state: 'idle' } | { state: 'busy' } | { state: 'done'; balance: Balance };
 
@@ -79,110 +90,15 @@ const changeLine = (balance: Balance) =>
         )
         .join(' · ');
 
-const fontName = (theme: ThemeOptions) =>
-    theme.font && theme.font in themeFontFamilies
-        ? themeFontFamilies[theme.font as keyof typeof themeFontFamilies].family
-        : (theme.font ?? 'Geist');
-
-/** What each step was answered with, in a line. */
-const summaries: Record<string, (theme: ThemeOptions) => string> = {
-    accent: theme =>
-        `${theme.accent ?? defaultAccentSeed} · ${theme.accentStep ?? defaultThemeOptions.accentStep} · ${(theme.gamut ?? 'p3') === 'p3' ? 'P3' : 'sRGB'}`,
-    greys: theme => {
-        const neutral = theme.neutral ?? defaultThemeOptions.neutral;
-        return neutral.tint === 0
-            ? 'Pure grey'
-            : `Hue ${Math.round(neutral.hue)}° · tint ${neutral.tint.toFixed(3)}`;
-    },
-    data: theme =>
-        theme.charts
-            ? "The theme's own set"
-            : (chartHarmonies.find(item => item.id === (theme.chartHarmony ?? 'auto'))?.label ??
-              'Custom'),
-    controls: theme =>
-        `${fontName(theme)} · ${(theme.action ?? 'neutral') === 'accent' ? 'primary' : 'neutral'} action, ${theme.actionStyle ?? 'flat'} · corners ${Math.round((theme.radius ?? 1) * 100)}%`,
-    density: theme => sizesLine(theme),
-};
-
-type Step = {
-    id: string;
-    /** In the stepper. */
-    label: string;
-    /** The page's title while the step is open. */
-    title: string;
-    /** What the step asks, under the title. */
-    ask: string;
-    render: (props: FlowProps) => ReactNode;
-};
-
-const form = 'grid grid-cols-[88px_minmax(0,1fr)] items-center gap-x-3 gap-y-2';
-
-const steps: Step[] = [
-    {
-        id: 'accent',
-        label: 'Primary',
-        title: 'Choose your primary colour',
-        ask: "The theme's own colour: its badges, notices and status dots, and the first of its chart colours. The main button takes it too if the Controls step fills it with the primary. Pick it, and say which step of its ramp it is; the rest of the ramp is built from it.",
-        render: ({ theme, set }) => (
-            <div className="flex flex-col gap-2">
-                <div className={form}>
-                    <Row
-                        hint="P3 is the wider gamut Tailwind's palette is drawn in; sRGB keeps every colour to what every screen shows."
-                        label="Gamut"
-                    >
-                        <Choice
-                            label="Gamut"
-                            onChange={gamut => set({ gamut: gamut === 'p3' ? undefined : gamut })}
-                            options={[
-                                { value: 'p3', label: 'P3' },
-                                { value: 'srgb', label: 'sRGB' },
-                            ]}
-                            value={theme.gamut ?? 'p3'}
-                        />
-                    </Row>
-                </div>
-                <PrimaryEditor gamut={theme.gamut ?? 'p3'} set={set} theme={theme} />
-            </div>
-        ),
-    },
-    {
-        id: 'greys',
-        label: 'Neutral',
-        title: 'Choose your neutral colour',
-        ask: 'The greys of text, borders and surfaces. Most products keep them pure grey; a little tint makes them warmer or cooler.',
-        render: ({ theme, set }) => (
-            <GreysEditor gamut={theme.gamut ?? 'p3'} set={set} theme={theme} />
-        ),
-    },
-    {
-        id: 'data',
-        label: 'Charts',
-        title: 'Choose your chart colours',
-        ask: 'The colours charts tell series apart by. Pick a harmony, then drag on the wheel to adjust it.',
-        render: ({ theme, set }) => (
-            <DataEditor gamut={theme.gamut ?? 'p3'} set={set} theme={theme} />
-        ),
-    },
-    {
-        id: 'controls',
-        label: 'Controls',
-        title: 'Choose your font and controls',
-        ask: 'The font, what the main button is filled with, and how round the corners are.',
-        render: ({ theme, set }) => <ControlsTab set={set} theme={theme} />,
-    },
-    {
-        id: 'density',
-        label: 'Sizes',
-        title: 'Choose your sizes',
-        ask: 'The type size, the spacing, and the height of controls.',
-        render: ({ theme, set }) => <SizeTab set={set} theme={theme} />,
-    },
-];
-
-const REVIEW = steps.length;
-
 /** A pair or a data-colour check that misses, in a line, for the prompt and the review. */
-type Fault = { key: string; mode: ThemeMode; label: string; detail: string; soft: boolean };
+type Fault = {
+    key: string;
+    id: string;
+    mode: ThemeMode;
+    label: string;
+    detail: string;
+    soft: boolean;
+};
 
 const seriesNames: Record<string, string> = {
     band: 'Chart colours in their lightness band',
@@ -199,6 +115,7 @@ const findFaults = (theme: ThemeOptions): Fault[] =>
             .filter(result => result.state === 'fail')
             .map(result => ({
                 key: `${mode}-${result.check.id}`,
+                id: result.check.id,
                 mode,
                 label: result.check.label,
                 detail: `${result.ratio.toFixed(2)}:1, needs ${result.check.min}:1`,
@@ -208,6 +125,7 @@ const findFaults = (theme: ThemeOptions): Fault[] =>
             .checks.filter(check => check.state !== 'pass')
             .map(check => ({
                 key: `${mode}-series-${check.id}`,
+                id: `series-${check.id}`,
                 mode,
                 label: seriesNames[check.id] ?? check.id,
                 detail: check.state === 'warn' ? 'only with labels beside it' : 'misses',
@@ -323,27 +241,126 @@ const FaultPrompt = ({
     );
 };
 
-const review = {
-    label: 'Review',
-    title: 'Review your theme',
-    ask: 'How your theme reads in light and dark. Use it when it reads; anything that misses is shown to you first.',
+/* ---------- The steps ---------- */
+
+/** A part of the Colour step: a section with its own builder and its own contrast line. */
+type ColourPart = {
+    id: string;
+    label: string;
+    ask: string;
+    panel: ReactNode;
+    summary: string;
+    checks?: (id: string) => boolean;
+};
+
+type Step = {
+    id: string;
+    /** In the stepper and the review. */
+    label: string;
+    /** The page's title while the step is open. */
+    title: string;
+    /** What the step asks, under the title. */
+    ask: string;
+    /** Its builder. */
+    panel: ReactNode;
+    /** What it was answered with, in a line, for the review. */
+    summary: string;
+    /** The checks decided here, by id; none where nothing about contrast is decided. */
+    checks?: (id: string) => boolean;
+    /** Whether the curves can fix a miss here, so the balance is offered. */
+    balances?: boolean;
 };
 
 /**
- * The project's theme, one step at a time: the step's title and what it asks, the stepper under it, its
- * asks, its settings, and Back and Continue in a bar at the foot of the panel, where they never move.
+ * How what this step decides reads, under its builder: one quiet line while every pair keeps its
+ * contrast, the pairs that miss and the fix once one does not.
+ */
+const StepCheck = ({
+    faults,
+    balances,
+    onBalance,
+}: {
+    faults: Fault[];
+    balances: boolean;
+    onBalance: () => void;
+}) => {
+    const hard = faults.filter(fault => !fault.soft);
+
+    if (faults.length === 0) {
+        return (
+            <p className="flex items-center gap-2 text-neutral-600 text-xs">
+                <StatusDot tone="success" />
+                Reads in light and in dark
+            </p>
+        );
+    }
+    return (
+        <div className="flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-3">
+                <p className="flex items-center gap-2 text-neutral-950 text-xs">
+                    <StatusDot tone={hard.length ? 'error' : 'warning'} />
+                    {hard.length
+                        ? `${hard.length} ${hard.length === 1 ? 'pair is' : 'pairs are'} hard to read`
+                        : 'Told apart once each series has a label beside it'}
+                </p>
+                {balances && hard.length > 0 && (
+                    <Button className="shrink-0" onClick={onBalance} variant="secondary">
+                        Balance light and dark
+                    </Button>
+                )}
+            </div>
+            <FaultList faults={faults} />
+        </div>
+    );
+};
+
+const fontName = (theme: ThemeOptions) =>
+    theme.font && theme.font in themeFontFamilies
+        ? themeFontFamilies[theme.font as keyof typeof themeFontFamilies].family
+        : (theme.font ?? 'Geist');
+
+const textPairs = [
+    'text',
+    'text-canvas',
+    'cell',
+    'quiet',
+    'secondary',
+    'secondary-canvas',
+    'muted',
+];
+const actionPairs = ['action', 'on-action'];
+
+const review = {
+    label: 'Review',
+    title: 'Review your theme',
+    ask: 'How your theme reads in light and dark.',
+};
+
+/**
+ * The project's theme, one step at a time: the step's title and what it asks, the stepper under
+ * it, its builder, and Back and Continue in a bar at the foot of the panel, where they never move.
  */
 export const ProjectFlow = (props: FlowProps & { name: string }) => {
-    const { theme, set, progress, onProgress, onUse, inUse, onExport, name, dirty, onSave } = props;
+    const { theme, set, progress, onProgress, onUse, inUse, used, onExport, name, dirty, onSave } =
+        props;
+    const REVIEW = 4;
     const [current, setCurrent] = useState(() => Math.min(progress, REVIEW));
+    // The Colour step shows one of its parts at a time, and Continue walks them before leaving it,
+    // so the greys and the chart colours are seen rather than scrolled past.
+    const COLOUR = 0;
+    const [part, setPart] = useState(0);
     const [prompting, setPrompting] = useState(false);
     const [balancing, setBalancing] = useState<Balancing>({ state: 'idle' });
-    const signature = JSON.stringify(theme);
     const isReview = current === REVIEW;
-    // biome-ignore lint/correctness/useExhaustiveDependencies: measured again when the theme changes, by its signature
-    const faults = useMemo(() => (isReview ? findFaults(theme) : []), [signature, isReview]);
-    const hard = faults.filter(fault => !fault.soft);
+    // Every step has been opened once: from here they are places to go back to, not a path to walk
+    // again, so one thing can be changed and the theme used from wherever that was.
+    const complete = progress >= REVIEW;
     const top = useRef<HTMLDivElement>(null);
+
+    // Measured when React has time, so a drag on a curve is never held up by it.
+    const signature = JSON.stringify(useDeferredValue(theme));
+    const faults = useMemo(() => findFaults(JSON.parse(signature) as ThemeOptions), [signature]);
+    const hard = faults.filter(fault => !fault.soft);
 
     // Once a balance clears every miss there is nothing left to ask, so the prompt goes.
     useEffect(() => {
@@ -354,7 +371,7 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
     // biome-ignore lint/correctness/useExhaustiveDependencies: runs on a change of step only
     useEffect(() => {
         top.current?.closest('[data-slot=sheet-area]')?.scrollTo({ top: 0 });
-    }, [current]);
+    }, [current, part]);
 
     const go = (step: number) => {
         const next = Math.max(0, Math.min(REVIEW, step));
@@ -363,16 +380,176 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
     };
 
     const balance = () => {
+        setPrompting(true);
         setBalancing({ state: 'busy' });
         runBalance(theme, result => setBalancing({ state: 'done', balance: result }));
     };
 
     const finish = () => {
-        if (findFaults(theme).length) setPrompting(true);
+        // A set of chart colours that only wants labels beside it is said in its step, not asked again here.
+        if (findFaults(theme).some(fault => !fault.soft)) setPrompting(true);
         else onUse();
     };
 
-    const open = isReview ? review : steps[current];
+    const gamut = theme.gamut ?? defaultThemeOptions.gamut;
+    const editor = { theme, set, gamut };
+    const neutral = theme.neutral ?? defaultThemeOptions.neutral;
+    const accentAction = (theme.action ?? defaultThemeOptions.action) === 'accent';
+    const accentTint = (theme.tint ?? defaultThemeOptions.tint) === 'accent';
+
+    // The three parts of the Colour step: each a section, with its own contrast line under it.
+    const colourParts: ColourPart[] = [
+        {
+            id: 'accent',
+            label: 'Primary',
+            ask: 'Badges, notices, status dots and the first chart colour.',
+            panel: <PrimaryEditor {...editor} />,
+            summary: `${theme.accent ?? defaultAccentSeed} · ${theme.accentStep ?? defaultThemeOptions.accentStep}`,
+            // The ring and the primary badge always; the button and the wash once they take the colour.
+            checks: id =>
+                ['focus', 'focus-canvas', 'badge-primary'].includes(id) ||
+                (accentAction && actionPairs.includes(id)) ||
+                (accentTint && id === 'tint'),
+        },
+        {
+            id: 'greys',
+            label: 'Neutral',
+            ask: 'The greys of text, borders and surfaces.',
+            panel: <GreysEditor {...editor} />,
+            summary:
+                neutral.tint === 0
+                    ? 'pure grey'
+                    : `hue ${Math.round(neutral.hue)}° · tint ${neutral.tint.toFixed(3)}`,
+            checks: id =>
+                textPairs.includes(id) ||
+                id === 'checkbox' ||
+                (!accentAction && actionPairs.includes(id)) ||
+                (!accentTint && id === 'tint'),
+        },
+        {
+            id: 'data',
+            label: 'Charts',
+            ask: 'The colours charts tell series apart by.',
+            panel: <DataEditor {...editor} />,
+            summary: theme.charts
+                ? 'own chart set'
+                : `${(
+                      chartHarmonies.find(item => item.id === (theme.chartHarmony ?? 'auto'))
+                          ?.label ?? 'Custom'
+                  ).toLowerCase()} charts`,
+            // The chart colours are not judged: the wheel says how the set reads, where it is changed.
+        },
+    ];
+
+    const lastPart = colourParts.length - 1;
+    const shown = colourParts[Math.min(part, lastPart)] as ColourPart;
+
+    // Back and Continue step through the Colour step's parts as through steps.
+    const back = () => {
+        if (current === COLOUR && part > 0) return setPart(part - 1);
+        if (current - 1 === COLOUR) setPart(lastPart);
+        go(current - 1);
+    };
+    const next = () => {
+        onSave();
+        if (current === COLOUR && part < lastPart) return setPart(part + 1);
+        go(current + 1);
+    };
+
+    const steps: Step[] = [
+        {
+            id: 'colour',
+            label: 'Colour',
+            title: 'Choose your colours',
+            ask: 'The primary colour, the greys and the chart colours. All three start filled in: keep them or change them.',
+            panel: (
+                <div className="flex flex-col gap-6">
+                    <div className="flex flex-col gap-2">
+                        <Choice
+                            label="Colour"
+                            onChange={id =>
+                                setPart(
+                                    Math.max(
+                                        0,
+                                        colourParts.findIndex(item => item.id === id),
+                                    ),
+                                )
+                            }
+                            options={colourParts.map(item => ({
+                                value: item.id,
+                                label: item.label,
+                            }))}
+                            value={shown.id}
+                        />
+                        <p className="text-neutral-600 text-xs">{shown.ask}</p>
+                    </div>
+                    <div className="flex flex-col gap-3" key={shown.id}>
+                        {shown.panel}
+                        {/* How what this part decides reads, said under it. */}
+                        {shown.checks && (
+                            <div className="pt-2">
+                                <StepCheck
+                                    balances
+                                    faults={faults.filter(fault => shown.checks?.(fault.id))}
+                                    onBalance={balance}
+                                />
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ),
+            summary: colourParts.map(part => part.summary).join(' · '),
+            // Each part says its own checks under it, so the step adds no line of its own.
+        },
+        {
+            id: 'type',
+            label: 'Type',
+            title: 'Choose your type',
+            ask: 'The font, and the space between letters and lines.',
+            panel: (
+                <div className="flex flex-col gap-8">
+                    <FontEditor set={set} theme={theme} />
+                    <TypeSpacingEditor set={set} theme={theme} />
+                </div>
+            ),
+            summary: `${fontName(theme)} · spacing ${((theme.tracking ?? 0.025) * (theme.type ?? 13)).toFixed(2)}px · lines ${(theme.leading ?? 1.25).toFixed(2)}`,
+        },
+        {
+            id: 'controls',
+            label: 'Controls',
+            title: 'Choose your controls',
+            ask: 'The main button, the corners, the sidebar and the shadows.',
+            panel: (
+                <div className="flex flex-col gap-8">
+                    <ButtonsEditor set={set} theme={theme} />
+                    <CornersEditor set={set} theme={theme} />
+                    <NavEditor set={set} theme={theme} />
+                    <ElevationEditor set={set} theme={theme} />
+                </div>
+            ),
+            summary: `${accentAction ? 'primary' : 'neutral'} action, ${theme.actionStyle ?? 'flat'} · corners ${Math.round((theme.radius ?? 1) * 100)}% · ${theme.nav ?? 'neutral'} active item · ${theme.elevation ?? 'flat'} shadows`,
+            checks: id => actionPairs.includes(id) || id === 'tint',
+            balances: true,
+        },
+        {
+            id: 'density',
+            label: 'Sizes',
+            title: 'Choose your sizes',
+            ask: 'The type size, the room around things, and the height of controls.',
+            panel: (
+                <div className="flex flex-col gap-8">
+                    <TypeSizeEditor set={set} theme={theme} />
+                    <DensityEditor set={set} theme={theme} />
+                </div>
+            ),
+            summary: sizesLine(theme),
+        },
+    ];
+
+    const faultsOf = (step: Step) =>
+        step.checks ? faults.filter(fault => step.checks?.(fault.id)) : [];
+    const step = isReview ? undefined : steps[current];
+    const open = step ?? review;
     const all = [...steps, review];
 
     return (
@@ -382,9 +559,9 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                 <header className="flex flex-col gap-3">
                     <p className="text-neutral-600 text-xs tabular-nums">{name}</p>
                     <h1 className="font-medium text-3xl text-neutral-950 tracking-[-0.02em]">
-                        {open?.title}
+                        {open.title}
                     </h1>
-                    <p className="max-w-xl text-base text-neutral-600">{open?.ask}</p>
+                    <p className="max-w-xl text-base text-neutral-600">{open.ask}</p>
                     {/* The preview panel is hidden below the large breakpoint, so a narrow window says where it went. */}
                     <p className="text-neutral-600 text-xs lg:hidden">
                         The preview shows beside the steps in a wider window.
@@ -392,12 +569,13 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                 </header>
 
                 <Stepper aria-label="Theme steps" marker="line" value={current + 1}>
-                    {all.map((step, i) => (
+                    {all.map((item, i) => (
                         <StepperItem
                             invalid={i === REVIEW && isReview && hard.length > 0}
-                            key={step.label}
-                            label={step.label}
-                            onSelect={i <= progress && i !== current ? () => go(i) : undefined}
+                            key={item.label}
+                            label={item.label}
+                            // Any step can be opened at any time: the order is a suggestion, not a lock.
+                            onSelect={i !== current ? () => go(i) : undefined}
                             status={i === current ? 'current' : i <= progress ? 'done' : 'upcoming'}
                             step={i + 1}
                         />
@@ -406,17 +584,31 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
             </div>
 
             <div key={current}>
-                {isReview ? (
+                {step ? (
+                    <div className="flex flex-col gap-3">
+                        {step.panel}
+                        {/* How what this step decides reads, said where it is decided. */}
+                        {step.checks && (
+                            <div className="pt-2">
+                                <StepCheck
+                                    balances={Boolean(step.balances)}
+                                    faults={faultsOf(step)}
+                                    onBalance={balance}
+                                />
+                            </div>
+                        )}
+                    </div>
+                ) : (
                     <div className="flex flex-col gap-8">
                         <dl className="flex flex-col divide-y divide-neutral-200 rounded-item border border-neutral-200">
-                            {steps.map((step, i) => (
+                            {steps.map((item, i) => (
                                 <div
                                     className="flex items-center gap-4 py-1.5 pr-1.5 pl-3 text-xs"
-                                    key={step.id}
+                                    key={item.id}
                                 >
-                                    <dt className="w-24 shrink-0 text-neutral-600">{step.label}</dt>
+                                    <dt className="w-24 shrink-0 text-neutral-600">{item.label}</dt>
                                     <dd className="min-w-0 flex-1 truncate text-neutral-950">
-                                        {summaries[step.id]?.(theme)}
+                                        {item.summary}
                                     </dd>
                                     <Button onClick={() => go(i)} variant="ghost">
                                         Change
@@ -452,13 +644,7 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                                           : 'Every pair reads, in light and in dark'}
                                 </p>
                                 {hard.length > 0 && (
-                                    <Button
-                                        onClick={() => {
-                                            setPrompting(true);
-                                            balance();
-                                        }}
-                                        variant="secondary"
-                                    >
+                                    <Button onClick={balance} variant="secondary">
                                         Balance light and dark
                                     </Button>
                                 )}
@@ -466,61 +652,56 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                             {faults.length > 0 && <FaultList faults={faults} />}
                         </div>
                     </div>
-                ) : (
-                    steps[current]?.render(props)
                 )}
             </div>
 
-            {/* Back and the step's action in the bar at the foot of the panel, at its right: they never move. */}
+            {/*
+             * The foot of the panel. The first time through, it walks the steps: the count and the
+             * theme's state at the left, Back and Continue at the right, where they never move, and
+             * Continue saves the step it leaves. Once every step has been opened it holds the one
+             * action instead, on every step: Use this theme, or Update theme for one used before.
+             * Both save the whole; ⌘S saves without using. With the theme in use as it is, there
+             * is nothing left to do and the action goes.
+             */}
             <PageFooter>
                 <div className="mr-auto flex min-w-0 items-center gap-4 text-neutral-600 text-xs">
-                    <span className="shrink-0 tabular-nums">
-                        Step {current + 1} of {all.length}
-                    </span>
+                    {!complete && (
+                        <span className="shrink-0 tabular-nums">
+                            Step {current + 1} of {all.length}
+                        </span>
+                    )}
                     {dirty && (
                         <span className="flex min-w-0 items-center gap-2">
                             <StatusDot tone="warning" />
                             <span className="truncate">Unsaved changes</span>
                         </span>
                     )}
+                    {inUse && (
+                        <span className="flex min-w-0 items-center gap-2">
+                            <StatusDot tone="primary" />
+                            <span className="truncate">In use</span>
+                        </span>
+                    )}
                 </div>
-                {/* Once the theme is in use, what is left to do with it is take it to the project. */}
-                {isReview && inUse && (
-                    <Badge tone="primary">
-                        <Check strokeWidth={2} />
-                        In use
-                    </Badge>
-                )}
-                <Button
-                    aria-keyshortcuts="Meta+S Control+S"
-                    disabled={!dirty}
-                    onClick={onSave}
-                    title={`Save (${saveKey})`}
-                    variant="secondary"
-                >
-                    Save
-                </Button>
-                <Button
-                    disabled={current === 0}
-                    onClick={() => go(current - 1)}
-                    variant="secondary"
-                >
-                    Back
-                </Button>
-                <Button onClick={isReview ? (inUse ? onExport : finish) : () => go(current + 1)}>
-                    {isReview ? (
-                        inUse ? (
-                            'Export'
-                        ) : (
-                            'Use this theme'
-                        )
-                    ) : (
-                        <>
+                {complete ? (
+                    !inUse && (
+                        <Button onClick={finish}>{used ? 'Update theme' : 'Use this theme'}</Button>
+                    )
+                ) : (
+                    <>
+                        <Button
+                            disabled={current === 0 && part === 0}
+                            onClick={back}
+                            variant="secondary"
+                        >
+                            Back
+                        </Button>
+                        <Button onClick={next}>
                             Continue
                             <ArrowRight strokeWidth={2} />
-                        </>
-                    )}
-                </Button>
+                        </Button>
+                    </>
+                )}
             </PageFooter>
 
             <FaultPrompt

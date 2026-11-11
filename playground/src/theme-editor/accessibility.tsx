@@ -21,7 +21,6 @@ import {
     type SeriesCheckId,
     StatusDot,
     type StatusDotTone,
-    seriesThresholds,
     type ThemeMode,
     type ThemeOptions,
     Tooltip,
@@ -55,6 +54,7 @@ import {
     pairNeeds,
     rampColors,
     requiredMisses,
+    seriesLevels,
     stepLabels,
     type Verdict,
     verdict,
@@ -216,7 +216,7 @@ type SeriesRow = {
     show: (check: SeriesCheck, series: Oklch[]) => string;
 };
 
-const { band, chroma, cvd, normal, contrast } = seriesThresholds;
+const { band, chroma, cvd, normal, contrast } = seriesLevels;
 
 const seriesRows: SeriesRow[] = [
     {
@@ -360,7 +360,7 @@ const PairTip = ({ result }: { result: PairResult }) => {
             <span className="mb-1 text-neutral-400">{pairName(result.check)}</span>
             <TipRow label="Needs">{pairNeeds(result.check)}</TipRow>
             <TipRow label="Has">
-                {`${cut(result.ratio, 2)}:1${result.state === 'aaa' ? ', AAA' : ''} · APCA Lc ${lcValue(result.lc)} of ${result.check.lc}`}
+                {`${cut(result.ratio, 2)}:1 · APCA Lc ${lcValue(result.lc)}`}
             </TipRow>
             {state === 'advise' && result.check.advisory && (
                 <span className="mt-1 font-normal text-neutral-400">{result.check.advisory}</span>
@@ -447,7 +447,8 @@ export const Checked = ({
             {layer &&
                 check &&
                 (check === 'series' ? (
-                    <SeriesMark layer={layer} place={place} />
+                    // No mark where the chart colours are not judged.
+                    layer.series.checks.length > 0 && <SeriesMark layer={layer} place={place} />
                 ) : (
                     <PairMark place={place} result={layer.byId.get(check)} />
                 ))}
@@ -686,7 +687,7 @@ const Proposal = ({
 };
 
 /**
- * The header's quiet count while the layer is on: the misses WCAG requires, or "All clear". It
+ * The header's quiet count while the layer is on: the pairs under their level, or "All clear". It
  * opens the list of every miss in the mode shown, the advised ones under their own title, and the
  * other mode's count beside the action that balances the two.
  */
@@ -742,7 +743,7 @@ export const MissesButton = ({
                         <PopoverHeader>
                             <PopoverTitle>{`${count} in ${layer.mode}`}</PopoverTitle>
                             <PopoverDescription>
-                                By WCAG 2.2: 4.5:1 for text, 3:1 for the parts of controls.
+                                Text 4.5:1 · labels, hints and the focus ring 3:1 · shapes 1.5:1.
                             </PopoverDescription>
                         </PopoverHeader>
                         {misses.length > 0 && <Lines lines={misses} />}
@@ -753,9 +754,7 @@ export const MissesButton = ({
                             </div>
                         )}
                         {lines.length === 0 && (
-                            <p className="text-neutral-600">
-                                Every pair meets its level, and the chart colours stay apart.
-                            </p>
+                            <p className="text-neutral-600">Every pair meets its level.</p>
                         )}
                         <Separator />
                         <div className="flex items-center justify-between gap-3">

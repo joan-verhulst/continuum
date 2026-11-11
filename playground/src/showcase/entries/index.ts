@@ -23,6 +23,7 @@ import * as checkbox from './checkbox';
 import * as checklist from './checklist';
 import * as chip from './chip';
 import * as codeInput from './code-input';
+import * as colorPicker from './color-picker';
 import * as combobox from './combobox';
 import * as commandMenu from './command-menu';
 import * as datePicker from './date-picker';
@@ -104,6 +105,7 @@ export const entries: Entry[] = [
     slider.entry,
     blockSlider.entry,
     codeInput.entry,
+    colorPicker.entry,
     datePicker.entry,
     dateRangePicker.entry,
     dropZone.entry,
@@ -175,6 +177,7 @@ export const inUse: Record<string, InUse> = {
     'date-picker': datePicker.inUse,
     'date-range-picker': dateRangePicker.inUse,
     'code-input': codeInput.inUse,
+    'color-picker': colorPicker.inUse,
     'value-field': valueField.inUse,
     'drop-zone': dropZone.inUse,
     'stepper': stepper.inUse,

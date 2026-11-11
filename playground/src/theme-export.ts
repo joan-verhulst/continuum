@@ -174,7 +174,8 @@ const fontNames: Record<string, string> = Object.fromEntries(
 const fontOf = (options: ThemeOptions) => options.font ?? defaultThemeOptions.font;
 
 /** Tailwind turns these namespaces into utilities; anything else is a plain variable. */
-const utility = /^--((color|font|text|radius|shadow|container|spacing|ease|tracking)-|spacing$)/;
+const utility =
+    /^--((color|font|text|radius|shadow|container|spacing|ease|tracking|leading)-|spacing$)/;
 
 const declare = (name: string, value: string) => `    ${name}: ${value};`;
 
@@ -226,7 +227,7 @@ export const tailwindEntry = (theme: ThemeExport) => {
             ...tokensWhere(name => name.startsWith('--text-')),
         ],
         fixedWhere(name => name.startsWith('--font-weight-')),
-        fixedWhere(name => name.startsWith('--tracking-')),
+        tokensWhere(name => name.startsWith('--tracking-') || name.startsWith('--leading-')),
         [
             '    /* Radii nest: a panel holds cards, a card items, an item chips. */',
             ...fixedWhere(name => name === '--radius-*' || name === '--radius-xs'),
@@ -288,7 +289,7 @@ ${fixedSizes}
     [data-mode] {
         font-family: var(--font-sans);
         font-size: var(--text-xs);
-        line-height: 1.25;
+        line-height: var(--leading-normal);
         letter-spacing: var(--tracking-normal);
         color: var(--color-neutral-950);
         -webkit-font-smoothing: antialiased;
@@ -403,10 +404,22 @@ const themeRows = (options: ThemeOptions): [string, string][] => {
                 : 'a translucent grey wash',
         ],
         [
-            'Segments',
-            options.segment === 'raised'
-                ? 'the active one raised as a chip on the track'
-                : 'the active one filled with the action colour',
+            'Sidebar',
+            `${
+                (
+                    {
+                        tinted: "the page you are on on the primary's 100 with its 700 as text",
+                        tint: "the page you are on on the primary's 100 with its 700 as text",
+                        raised: 'the page you are on raised on the canvas (the surface, a hairline, a faint shadow)',
+                    } as Record<string, string>
+                )[String(options.nav)] ?? 'the page you are on on the grey wash'
+            }; the foldouts that hold it stay plain, their guide line darkened to it`,
+        ],
+        [
+            'Shadows',
+            options.elevation && options.elevation !== 'flat'
+                ? 'faint shadows on cards, table frames and the controls (fields, selects, secondary buttons, segmented controls, checkboxes)'
+                : 'flat: only what floats casts a shadow',
         ],
         [
             'Dock',
@@ -475,7 +488,7 @@ The short form. The full statement, in units, is the skill's \`references/founda
 ### Colour
 
 - Only roles: the \`neutral\`, \`primary\`, \`success\`, \`warning\` and \`error\` ramps, steps 50 to 950. Never hex values, \`bg-white\` or \`dark:\` variants: dark mode flips every ramp, so \`neutral-50\` is the surface in both.
-- By step: \`neutral-50\` the surface (panels, cards, dialogs, inputs), \`neutral-100\` the canvas behind the panel and muted fills inside a bordered container, \`neutral-200\` every hairline, \`neutral-500\` an unchecked box's border and quiet icons, \`neutral-600\` secondary text, placeholders, hints and icons, \`neutral-950\` primary text. Text that is read never sits on \`neutral-500\`: it misses 4.5:1.
+- By step: \`neutral-50\` the surface (panels, cards, dialogs, inputs), \`neutral-100\` the canvas behind the panel and muted fills inside a bordered container, \`neutral-200\` every hairline, \`neutral-300\` an unchecked box's border, \`neutral-500\` quiet icons and the focus ring, \`neutral-600\` secondary text, placeholders, hints and icons, \`neutral-950\` primary text. Text that is read never sits on \`neutral-500\`: it misses 4.5:1.
 - One action colour, \`bg-action text-on-action\`, for the primary button, checked controls, the active rail item and the selected dock item. One primary action per view, and nothing decorative.
 - Selection is a wash, not a colour: \`bg-neutral-950/5\` on hover (a table row \`/3\`), \`bg-selected\` (7%) on what is current, selected or open, \`bg-tint text-tint-fg\` where it should be coloured.
 - Status colours only in badges, deltas, dots, icon tiles and invalid states, as two colours from one ramp: \`bg-success-500/20 text-success-800\`, the 800 for every tone. A rising delta is \`text-success-800\`, a falling one \`text-error-600\`. Never a solid \`-100\` fill, never an outline, never a coloured row.
@@ -483,7 +496,7 @@ The short form. The full statement, in units, is the skill's \`references/founda
 
 ### Type
 
-- \`text-xs\` (${text('xs')}px) is the base, for body, controls, input values, labels and cells; \`text-xxs\` (${text('xxs')}) for badges, counts and meta; \`text-sm\` (${text('sm')}) for overlay titles and a page's description line; \`text-base\` (${text('base')}) section titles; \`text-lg\` (${text('lg')}) KPI values; \`text-2xl\` (${text('2xl')}) page titles. Line height 1.25 and tracking 0.32px come with the classes.
+- \`text-xs\` (${text('xs')}px) is the base, for body, controls, input values, labels and cells; \`text-xxs\` (${text('xxs')}) for badges, counts and meta; \`text-sm\` (${text('sm')}) for overlay titles and a page's description line; \`text-base\` (${text('base')}) section titles; \`text-lg\` (${text('lg')}) KPI values; \`text-2xl\` (${text('2xl')}) page titles. Line height ${(options.leading ?? 1.25).toFixed(2)} times the size and letter spacing ${((options.tracking ?? 0.025) * type).toFixed(2)}px come with the classes.
 - Two weights, \`font-normal\` and \`font-medium\`. No semibold or bold, no all caps. Sentence case; buttons are verb + object.
 - Hierarchy through colour and weight, not size: labels quiet in \`neutral-600\`, data loud in \`neutral-950\` at medium.
 - Numbers \`tabular-nums\`, right-aligned in tables. Text that overflows truncates; it does not wrap or grow the control.
@@ -507,6 +520,8 @@ The short form. The full statement, in units, is the skill's \`references/founda
 - **Settings**: one \`Card layout="list"\` per group under a quiet \`SettingGroup\` title, cards \`gap-6\` apart; \`SettingRow\`s with **one control per setting** (a \`Switch\` to turn on, a \`Select indicator="right"\` to pick, a \`Button\` to do); rows divided by a hairline at the card's content width (a \`Separator\` between rows), a dependent setting sharing its parent's space between hairlines (no rule between them, disabled while the parent is off; an eyebrow over several dependents), never closeness alone; the settings areas in the floating dock.
 - **Assistant**: empty, a large \`ChatPrompt\` in a \`max-w-conversation\` (720) column with the recent chats under it as quiet rows (the title, its age at the right); once asked, a \`ChatThread\` in that column and the prompt (\`size="md"\`) docked at the panel's foot. The chat is the trail's last crumb, a \`BreadcrumbMenu\` with New chat and the recent ones.
 - Controls sit on ${heights[0]}px (buttons, small inputs, nav items) or ${heights[1]}px (fields, large buttons, the dock), nothing between: \`h-control\` and \`h-control-lg\`, never a height in pixels.
+- **Narrow**, measured on the shell, not the screen (\`@max-shell-sidebar/shell:\` under 1024, \`@max-shell-compact/shell:\` under 640); a part answers to its own container, only overlays to the screen. Under 1024 the sidebar becomes a drawer behind a toggle at the header bar's far left, and the bar's actions hide; under 640 the column ${step(4)}px in and ${step(10)}px down. Never a rail on a phone.
+- A row of controls never wraps: it scrolls (tabs, the dock, a toolbar, a table), hides (header and secondary actions, the results line, counts, \`optional\` table columns) or stacks (the page head, stat cards two across, card pairs one column, facts two across); never a "⋯" menu. Fold only what cannot go: pagination to ‹ 3 of 25 ›, more than four segments to a \`Select\`, an index's selects into its Filter button. On touch (\`pointer-coarse:\`) a field that takes typing is 16px, targets reach 44px, nothing hides behind hover and keyboard hints go.
 
 ### Spacing
 
@@ -520,6 +535,6 @@ The short form. The full statement, in units, is the skill's \`references/founda
 
 ## Before finishing
 
-Components first; only roles; hairlines, not shadows; space, not dividers; width by kind; one column on a detail, a form and settings; views in the dock; heights on ${heights[0]} or ${heights[1]}; two weights; one action colour and one primary action; a visible focus ring; everything inside the \`Theme\`. Look at every screen, in light and in dark, before calling it done.
+Components first; only roles; hairlines, not shadows; space, not dividers; width by kind; one column on a detail, a form and settings; views in the dock; heights on ${heights[0]} or ${heights[1]}; two weights; one action colour and one primary action; a visible focus ring; everything inside the \`Theme\`. Look at every screen at 1440 and at 390, in light and in dark, before calling it done.
 `;
 };

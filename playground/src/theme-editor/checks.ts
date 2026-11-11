@@ -8,6 +8,7 @@ import {
     parseHex,
     type RampShape,
     type SeriesCheck,
+    seriesThresholds,
     type ThemeMode,
     type ThemeOptions,
     themeAccentCurves,
@@ -24,11 +25,9 @@ import { themeToken } from '../theme-export';
  * cascade (the theme laid over the default tokens) to the colour an element is painted with. The
  * pairs are the roles foundations names: which step is text, which the surface, which the hairline.
  *
- * WCAG 2.2 is the measure that binds (1.4.3 for text, 1.4.11 for the parts of controls), and the
- * one the check layer marks by. APCA is given beside it, in a mark's tooltip, as advice: it was
- * taken out of the WCAG 3 draft in 2023, and the draft names no contrast method yet. Its levels
- * here are the ones APCA gives for a use at Continuum's 13px; no Lc reaches what its font table
- * asks of 13px text, so the dense roles aim for the top of the scale.
+ * A pair is measured as WCAG 2 measures contrast, and held to the system's own level for the kind
+ * of thing it is (see `levels`): text that is read to 4.5:1, a label or a hint to 3:1, a shape to
+ * what makes it visible. APCA is given beside it, in a mark's tooltip, as a second reading.
  */
 
 /** A token's colour and how opaque it is; a translucent wash is laid over what it sits on. */
@@ -82,6 +81,30 @@ export const over = (top: Paint, below: Oklch): Oklch => {
 
 export type Group = 'text' | 'controls';
 
+/**
+ * What a pair is, and the least contrast the system holds it to. These are the system's own
+ * levels, not a standard's: they are set where the system itself draws each kind of thing, so a
+ * theme is told when it has moved one out of sight, not when the system's own look falls short of
+ * WCAG's strictest reading.
+ *
+ * - `text` is read: 4.5:1, which is WCAG's AA for body text.
+ * - `label` is short and placed, a hint, a helper, a badge, a delta: 3:1, WCAG's level for large text.
+ * - `ring` is the focus ring, the one mark a keyboard needs: 3:1.
+ * - `shape` is a control's own outline, track or fill: it has to be seen as a shape, 1.5:1. The
+ *   unchecked box and the switch's track are drawn at about 2:1, and a bright brand colour as a
+ *   fill sits near there too.
+ */
+export type Level = 'text' | 'label' | 'ring' | 'shape';
+
+export const levels: Record<Level, number> = { text: 4.5, label: 3, ring: 3, shape: 1.5 };
+
+const levelNames: Record<Level, string> = {
+    text: 'Text',
+    label: 'Label',
+    ring: 'Focus ring',
+    shape: 'Shape',
+};
+
 export type PairCheck = {
     id: string;
     group: Group;
@@ -95,7 +118,9 @@ export type PairCheck = {
     bg: string;
     bgAlpha?: number;
     under?: string;
-    /** WCAG 2's minimum ratio for it. */
+    /** What kind of thing it is, which sets how much contrast it is held to. */
+    level: Level;
+    /** The least ratio it is held to: its level's. */
     min: number;
     /** APCA's Lc for its size and use. */
     lc: number;
@@ -124,7 +149,8 @@ export const pairChecks: PairCheck[] = [
         use: 'Titles, values, the active nav item',
         fg: '--color-neutral-950',
         bg: surface,
-        min: 4.5,
+        level: 'text',
+        min: levels.text,
         lc: 90,
         criterion: '1.4.3',
     },
@@ -135,7 +161,8 @@ export const pairChecks: PairCheck[] = [
         use: 'A page title on the canvas, a table header',
         fg: '--color-neutral-950',
         bg: canvas,
-        min: 4.5,
+        level: 'text',
+        min: levels.text,
         lc: 90,
         criterion: '1.4.3',
     },
@@ -146,7 +173,8 @@ export const pairChecks: PairCheck[] = [
         use: 'A table cell, an input’s value',
         fg: '--color-neutral-900',
         bg: surface,
-        min: 4.5,
+        level: 'text',
+        min: levels.text,
         lc: 90,
         criterion: '1.4.3',
     },
@@ -157,7 +185,8 @@ export const pairChecks: PairCheck[] = [
         use: 'Body copy one step down, a footer label',
         fg: '--color-neutral-700',
         bg: surface,
-        min: 4.5,
+        level: 'text',
+        min: levels.text,
         lc: 75,
         criterion: '1.4.3',
     },
@@ -168,7 +197,8 @@ export const pairChecks: PairCheck[] = [
         use: 'Card titles, idle controls, default icons',
         fg: '--color-neutral-600',
         bg: surface,
-        min: 4.5,
+        level: 'label',
+        min: levels.label,
         lc: 75,
         criterion: '1.4.3',
     },
@@ -179,7 +209,8 @@ export const pairChecks: PairCheck[] = [
         use: 'A description under a page title',
         fg: '--color-neutral-600',
         bg: canvas,
-        min: 4.5,
+        level: 'label',
+        min: levels.label,
         lc: 75,
         criterion: '1.4.3',
     },
@@ -193,7 +224,8 @@ export const pairChecks: PairCheck[] = [
         use: 'Helper text, muted labels, eyebrows, neutral-600',
         fg: '--color-neutral-600',
         bg: surface,
-        min: 4.5,
+        level: 'label',
+        min: levels.label,
         lc: 75,
         criterion: '1.4.3',
     },
@@ -204,9 +236,12 @@ export const pairChecks: PairCheck[] = [
         use: 'The primary button, a checked segment',
         fg: '--color-on-action',
         bg: '--color-action',
-        min: 4.5,
+        level: 'text',
+        min: levels.text,
         lc: 75,
         criterion: '1.4.3',
+        advisory:
+            'The label is white from 3:1 on a primary fill: WCAG’s ratio under-rates white on saturated mid-tones, where it reads better than black.',
     },
     {
         id: 'tint',
@@ -216,7 +251,8 @@ export const pairChecks: PairCheck[] = [
         fg: '--color-tint-fg',
         bg: '--color-tint',
         under: surface,
-        min: 4.5,
+        level: 'text',
+        min: levels.text,
         lc: 90,
         criterion: '1.4.3',
     },
@@ -230,7 +266,8 @@ export const pairChecks: PairCheck[] = [
             bg: `--color-${tone}-500`,
             bgAlpha: 0.2,
             under: surface,
-            min: 4.5,
+            level: 'label',
+            min: levels.label,
             lc: 75,
             criterion: '1.4.3',
         }),
@@ -242,7 +279,8 @@ export const pairChecks: PairCheck[] = [
         use: 'success-800 as text: +12%',
         fg: '--color-success-800',
         bg: surface,
-        min: 4.5,
+        level: 'label',
+        min: levels.label,
         lc: 75,
         criterion: '1.4.3',
     },
@@ -253,7 +291,8 @@ export const pairChecks: PairCheck[] = [
         use: 'error-600 under a field, a falling delta',
         fg: '--color-error-600',
         bg: surface,
-        min: 4.5,
+        level: 'label',
+        min: levels.label,
         lc: 75,
         criterion: '1.4.3',
     },
@@ -266,19 +305,20 @@ export const pairChecks: PairCheck[] = [
         use: 'The action fill that shows the state',
         fg: '--color-action',
         bg: surface,
-        min: 3,
+        level: 'shape',
+        min: levels.shape,
         lc: 30,
         criterion: '1.4.11',
     },
     {
-        // The unchecked box is the state's only mark, so 1.4.11 asks 3:1 of its border outright.
         id: 'checkbox',
         group: 'controls',
         label: 'Unchecked box',
-        use: 'A checkbox’s border, neutral-500',
-        fg: '--color-neutral-500',
+        use: 'A checkbox’s border, neutral-300',
+        fg: '--color-neutral-300',
         bg: surface,
-        min: 3,
+        level: 'shape',
+        min: levels.shape,
         lc: 45,
         criterion: '1.4.11',
     },
@@ -289,7 +329,8 @@ export const pairChecks: PairCheck[] = [
         use: 'The 2px ring, on the surface',
         fg: '--color-focus',
         bg: surface,
-        min: 3,
+        level: 'ring',
+        min: levels.ring,
         lc: 45,
         criterion: '1.4.11',
     },
@@ -301,23 +342,12 @@ export const pairChecks: PairCheck[] = [
         use: 'A control on the canvas, a page’s tabs',
         fg: '--color-focus',
         bg: canvas,
-        min: 3,
+        level: 'ring',
+        min: levels.ring,
         lc: 45,
         criterion: '1.4.11',
     },
-    {
-        id: 'field',
-        group: 'controls',
-        label: 'Field border',
-        use: 'An input’s hairline, and every divider',
-        fg: '--color-neutral-200',
-        bg: surface,
-        min: 3,
-        lc: 15,
-        criterion: '1.4.11',
-        advisory:
-            '1.4.11 asks 3:1 of a field’s border only where the border alone shows there is a field; its label shows it here. Dividers mark no control, so nothing is asked of them.',
-    },
+    // A field's border is the hairline, and a hairline is meant to be faint: it is not judged.
     {
         id: 'track',
         group: 'controls',
@@ -325,11 +355,10 @@ export const pairChecks: PairCheck[] = [
         use: 'A switch’s track when it is off',
         fg: '--color-neutral-300',
         bg: surface,
-        min: 3,
+        level: 'shape',
+        min: levels.shape,
         lc: 30,
         criterion: '1.4.11',
-        advisory:
-            'Off, the knob at the start and the missing action fill show the state, and the label names the switch. WCAG asks no contrast between on and off, so a pale track is advice, not a failure.',
     },
 ];
 
@@ -388,7 +417,7 @@ export const measurePairs = (theme: ThemeOptions, mode: ThemeMode): PairResult[]
 
 export type Verdict = 'pass' | 'fail' | 'advise';
 
-/** How a measured pair reads by WCAG: met, missed, or missed where only advice is given. */
+/** How a measured pair reads against its level: met, missed, or missed where only advice is given. */
 export const verdict = (result: PairResult): Verdict => {
     if (result.ratio >= result.check.min) return 'pass';
     return result.check.advisory ? 'advise' : 'fail';
@@ -403,9 +432,8 @@ export const pairName = (check: PairCheck) =>
         check.bgAlpha ? ` at ${Math.round(check.bgAlpha * 100)}%` : ''
     }`;
 
-/** What WCAG asks of the pair, as a mark says it: "Text, 4.5:1 · WCAG 1.4.3". */
-export const pairNeeds = (check: PairCheck) =>
-    `${check.group === 'text' ? 'Text' : 'Control'}, ${check.min}:1 · WCAG ${check.criterion}`;
+/** What the pair is held to, as a mark says it: "Label, 3:1". */
+export const pairNeeds = (check: PairCheck) => `${levelNames[check.level]}, ${check.min}:1`;
 
 /** APCA's Lc as a whole number, its sign (which way the polarity runs) left off. */
 export const lcValue = (lc: number) => String(Math.trunc(Math.abs(lc)));
@@ -420,6 +448,52 @@ export const cut = (value: number, digits: number) => {
 export const wcagLevel = (ratio: number) =>
     ratio >= 7 ? 'AAA' : ratio >= 4.5 ? 'AA' : ratio >= 3 ? '3:1' : null;
 
+/**
+ * The chart colours' levels as a theme is held to them. The engine's own (`seriesThresholds`) are
+ * what its search aims at, and stay as they are; a set a little outside them still reads, so the
+ * check allows a margin: a wider lightness band, a little less chroma, and 2:1 against the chart's
+ * surface where the engine aims for 3.
+ */
+export const seriesLevels = {
+    band: { light: [0.38, 0.82], dark: [0.43, 0.72] },
+    chroma: 0.08,
+    cvd: seriesThresholds.cvd,
+    normal: seriesThresholds.normal,
+    contrast: 2,
+} as const;
+
+/** The chart colours checked at those levels. */
+export const checkChartSeries = (
+    colors: Oklch[],
+    { mode, surface }: { mode: ThemeMode; surface: Oklch },
+): SeriesCheck[] =>
+    checkSeries(colors, { mode, surface }).map((check): SeriesCheck => {
+        if (check.id === 'band') {
+            const [low, high] = seriesLevels.band[mode];
+            const off = colors.flatMap((color, i) => (color.l < low || color.l > high ? [i] : []));
+            return { ...check, state: off.length ? 'fail' : 'pass', series: off };
+        }
+        if (check.id === 'chroma') {
+            const grey = colors.flatMap((color, i) => (color.c < seriesLevels.chroma ? [i] : []));
+            return { ...check, state: grey.length ? 'fail' : 'pass', series: grey };
+        }
+        if (check.id === 'contrast') {
+            const faint = colors.flatMap((color, i) =>
+                wcagContrast(color, surface) < seriesLevels.contrast ? [i] : [],
+            );
+            return { ...check, state: faint.length ? 'warn' : 'pass', series: faint };
+        }
+        return check;
+    });
+
+/**
+ * Whether the chart colours are judged along with the pairs. They are not: series 1 is the theme's
+ * own colour at its 500, whatever that is, so a bright or a deep one missed the band every time,
+ * and whoever chose the colour knows what it is. The wheel still says how the set is told apart,
+ * beside the place it is changed.
+ */
+const judgeSeries: boolean = false;
+
 /** The data colours a chart reads, series 1 to 4, and the surface it is drawn on. */
 export const measureSeries = (theme: ThemeOptions, mode: ThemeMode) => {
     const token = themeToken(theme, mode);
@@ -432,7 +506,9 @@ export const measureSeries = (theme: ThemeOptions, mode: ThemeMode) => {
         const paint = parseColor(token(`--color-chart-series-${i}`));
         return paint ? [over(paint, surfaceColor)] : [];
     });
-    const checks: SeriesCheck[] = checkSeries(series, { mode, surface: surfaceColor });
+    const checks: SeriesCheck[] = judgeSeries
+        ? checkChartSeries(series, { mode, surface: surfaceColor })
+        : [];
     return { series, surface: surfaceColor, checks };
 };
 

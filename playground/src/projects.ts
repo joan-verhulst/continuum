@@ -17,8 +17,28 @@ export type Project = {
     updated: number;
     /** The furthest step of the flow reached; a project opens there. A new one starts at 0. */
     progress?: number;
+    /** Which flow the progress counts in: 2 for Colour, Type, Controls, Sizes, Review; none for the six steps before. */
+    flow?: number;
     /** The theme as it was last used; none while the project is a draft. */
     applied?: ThemeOptions;
+    /** Which defaults the theme is saved against: 2 once an unset fill means the primary colour. */
+    defaults?: number;
+};
+
+/**
+ * A project saved when an unset fill meant near-black keeps that look: its fill is written out
+ * as neutral, so the primary default only applies to projects made after it.
+ */
+const withDefaults = (project: Project): Project => {
+    if (project.defaults === 2) return project;
+    const pin = (theme: ThemeOptions): ThemeOptions =>
+        theme.action ? theme : { ...theme, action: 'neutral' };
+    return {
+        ...project,
+        theme: pin(project.theme ?? {}),
+        applied: project.applied && pin(project.applied),
+        defaults: 2,
+    };
 };
 
 const KEY = 'continuum.projects';
@@ -33,13 +53,15 @@ const read = (): Project[] => {
         const raw = localStorage.getItem(KEY);
         const parsed: unknown = raw ? JSON.parse(raw) : [];
         cache = Array.isArray(parsed)
-            ? parsed.filter(
-                  (item): item is Project =>
-                      typeof item === 'object' &&
-                      item !== null &&
-                      typeof (item as Project).id === 'string' &&
-                      typeof (item as Project).name === 'string',
-              )
+            ? parsed
+                  .filter(
+                      (item): item is Project =>
+                          typeof item === 'object' &&
+                          item !== null &&
+                          typeof (item as Project).id === 'string' &&
+                          typeof (item as Project).name === 'string',
+                  )
+                  .map(withDefaults)
             : [];
     } catch {
         cache = [];
@@ -85,7 +107,7 @@ export const useProjects = () => {
         projects: [...projects].sort((a, b) => b.updated - a.updated),
         create: (
             name: string,
-            from: Partial<Pick<Project, 'theme' | 'progress' | 'applied'>> = {},
+            from: Partial<Pick<Project, 'theme' | 'progress' | 'applied' | 'flow'>> = {},
         ) => {
             // A new project starts clear, at the first step of its flow.
             const project: Project = {
@@ -93,6 +115,8 @@ export const useProjects = () => {
                 name,
                 theme: {},
                 progress: 0,
+                flow: 2,
+                defaults: 2,
                 ...from,
                 updated: Date.now(),
             };

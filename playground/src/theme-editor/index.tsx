@@ -259,7 +259,8 @@ const ProjectList = ({
                                         onDuplicate={() =>
                                             store.create(`${project.name} copy`, {
                                                 theme: project.theme,
-                                                progress: project.progress ?? REVIEW_STEP,
+                                                progress: progressOf(project),
+                                                flow: 2,
                                                 applied: project.applied,
                                             })
                                         }
@@ -442,7 +443,17 @@ const DeleteDialog = ({
 /* ---------- A project ---------- */
 
 /** The review: the step an existing project without a recorded progress opens on. */
-const REVIEW_STEP = 5;
+const REVIEW_STEP = 4;
+
+/** Where the six steps before (Primary, Neutral, Charts, Controls, Sizes, Review) land in today's five. */
+const fromSixSteps = [0, 0, 0, 2, 3, 4];
+
+/** A project's progress in today's steps, an older project's read from the six it was counted in. */
+const progressOf = (project: Project) => {
+    if (project.progress === undefined) return REVIEW_STEP;
+    if (project.flow === 2) return Math.min(project.progress, REVIEW_STEP);
+    return fromSixSteps[Math.min(project.progress, 5)] ?? REVIEW_STEP;
+};
 
 /** Drops the keys set to undefined, so untouched options compare equal to the defaults. */
 const compact = (options: ThemeOptions): ThemeOptions =>
@@ -551,18 +562,27 @@ const ProjectPage = ({ project, store, state, onChange }: ProjectPageProps) => {
     const id = projectThemeId(project);
     const css = useMemo(() => createThemeCss({ ...shown, name: id }), [shown, id]);
     // In use: the playground wears this project and its theme has not changed since.
-    const inUse = state.current === project.id && sameTheme(project.applied, theme);
+    // A draft never used is not in use, even while its theme is still the empty one.
+    const inUse =
+        state.current === project.id &&
+        Boolean(project.applied) &&
+        sameTheme(project.applied, theme);
 
     // The project saves the theme as it is now, keeps it as used and becomes current, so every page
     // wears it; with nothing left unsaved, going home asks nothing.
     const use = () => {
         const theme = draftRef.current;
-        store.update(project.id, { theme, applied: theme, progress: REVIEW_STEP });
+        // A theme used before is updated where it is being worked on, so the next change is a
+        // step away; only the first use goes to Home, to show the playground wearing it.
+        const update = Boolean(project.applied);
+        store.update(project.id, { theme, applied: theme, progress: REVIEW_STEP, flow: 2 });
         savedRef.current = theme;
-        onChange({ view: 'home', project: project.id });
+        if (!update) onChange({ view: 'home', project: project.id });
         toast.add({
-            title: `${project.name} is in use`,
-            description: 'Every page of the playground wears its theme now.',
+            title: update ? `${project.name} is updated` : `${project.name} is in use`,
+            description: update
+                ? 'Every page of the playground wears the new theme.'
+                : 'Every page of the playground wears its theme now.',
             type: 'success',
         });
     };
@@ -579,10 +599,11 @@ const ProjectPage = ({ project, store, state, onChange }: ProjectPageProps) => {
                 inUse={inUse}
                 name={project.name}
                 onExport={() => setExporting(true)}
-                onProgress={step => store.update(project.id, { progress: step })}
+                onProgress={step => store.update(project.id, { progress: step, flow: 2 })}
                 onSave={save}
                 onUse={use}
-                progress={project.progress ?? REVIEW_STEP}
+                used={Boolean(project.applied)}
+                progress={progressOf(project)}
                 set={set}
                 theme={theme}
             />
@@ -601,6 +622,7 @@ const ProjectPage = ({ project, store, state, onChange }: ProjectPageProps) => {
             <ExportDialog
                 label={project.name}
                 mode={mode}
+                onGamut={gamut => set({ gamut: gamut === 'p3' ? undefined : gamut })}
                 onOpenChange={setExporting}
                 open={exporting}
                 options={theme}
