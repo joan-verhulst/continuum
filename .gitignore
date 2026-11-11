@@ -8,3 +8,6 @@ reference
 .claude/skills/continuum-taste/assets
 .claude/skills/continuum-taste/references/screens
 .claude/skills/continuum-fix-padding/scripts/spacing.ts
+
+# Plans for agents to work from: kept locally, never committed.
+PLAN.md
