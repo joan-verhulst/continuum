@@ -237,12 +237,12 @@ const SwitchWorkspace = () => {
                         <HeaderBar>
                             <Trail trail={['Overview']} />
                         </HeaderBar>
-                        <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-hidden px-10 pt-10">
+                        <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-hidden @max-shell-compact/shell:px-4 px-10 @max-shell-compact/shell:pt-10 pt-10">
                             <PageHead
                                 description={`${current.name}, week of 19 October.`}
                                 title="Overview"
                             />
-                            <div className="grid grid-cols-3 gap-4">
+                            <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                                 <StatCard delta="+12.4%" label="Revenue" value="€48,210" />
                                 <StatCard delta="+3" label="New customers" value="27" />
                                 <StatCard delta="−1.2%" label="Churn" trend="down" value="2.4%" />

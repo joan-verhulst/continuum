@@ -258,10 +258,15 @@ const PageColumn = ({
         </>
     );
 
+    // A page that clears something floating at its left (a rail) keeps that inset on a phone too.
+    const ownLeft = /(^|\s)pl-/.test(className ?? '');
+
     return (
         <div
             className={cn(
-                'flex min-h-0 flex-1 flex-col gap-8 overflow-hidden px-10 pt-10 [mask-image:linear-gradient(to_bottom,black_calc(100%-48px),transparent)]',
+                // On a phone the page keeps 16px a side, as PageContent does, so the piece has the room.
+                'flex min-h-0 flex-1 flex-col gap-8 overflow-hidden px-10 pt-10 @max-shell-compact/shell:pr-4 [mask-image:linear-gradient(to_bottom,black_calc(100%-48px),transparent)]',
+                !ownLeft && '@max-shell-compact/shell:pl-4',
                 className,
             )}
         >
@@ -304,9 +309,11 @@ export const AppWindow = ({
         );
     }
 
-    return (
-        <div className="relative flex h-full w-full flex-col bg-neutral-50">
-            {nav === 'top' && (
+    if (nav === 'top') {
+        return (
+            // A shell, so the links give way to the toggle and its drawer below the sidebar width;
+            // the panel lies flat under the bar, as the window always drew it.
+            <AppShell className="h-full min-h-0 w-full bg-neutral-50" nav="top">
                 <TopNav className="border-neutral-200 border-b">
                     <TopNavBrand logo={<Boxes {...icon} />}>Acme</TopNavBrand>
                     <TopNavLinks aria-label="Sections">
@@ -317,13 +324,24 @@ export const AppWindow = ({
                         ))}
                     </TopNavLinks>
                 </TopNav>
-            )}
+                <AppPanel className="m-0 @max-shell-sidebar/shell:ml-0 rounded-none border-0 [[data-nav=top]>&]:ml-0">
+                    <PageColumn {...page} />
+                    {overlay}
+                </AppPanel>
+            </AppShell>
+        );
+    }
+
+    return (
+        // The window is the shell here too, so the page and its parts narrow by its width, as
+        // they do in an AppShell.
+        <div className="@container/shell relative flex h-full w-full flex-col bg-neutral-50">
             {nav === 'rail' && (
                 // Floats over the page at its left edge, centred, as an island does.
                 <TooltipProvider>
                     <Rail
                         aria-label="Main"
-                        className="absolute top-1/2 left-6 z-20 -translate-y-1/2"
+                        className="absolute top-1/2 left-6 z-20 @max-shell-sidebar/shell:hidden -translate-y-1/2"
                     >
                         {places.map(item => (
                             <RailItem active={item.id === place} key={item.id} label={item.label}>
@@ -339,8 +357,13 @@ export const AppWindow = ({
             )}
             <PageColumn
                 {...page}
-                // Clear of the floating rail: its 24px inset, its 52px and a gutter.
-                className={cn(nav === 'rail' && 'pl-28', page.className)}
+                // Clear of the floating rail: its 24px inset, its 52px and a gutter. Below the
+                // sidebar width the rail is gone, so the page takes its usual inset back.
+                className={cn(
+                    nav === 'rail' &&
+                        '@max-shell-compact/shell:pl-4 @max-shell-sidebar/shell:pl-10 pl-28',
+                    page.className,
+                )}
             />
             {overlay}
         </div>

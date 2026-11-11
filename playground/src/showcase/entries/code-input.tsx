@@ -66,7 +66,7 @@ const CheckEmail = () => {
 
     return (
         <AppWindow className="items-center justify-center bg-neutral-100 px-10 pt-0" nav="none">
-            <Card className="w-100 gap-6 p-8">
+            <Card className="w-full max-w-100 gap-6 p-8">
                 <div className="flex flex-col items-start gap-4">
                     <SidebarLogo className="-ml-1.5">
                         <Boxes {...icon} />

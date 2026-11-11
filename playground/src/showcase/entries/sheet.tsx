@@ -220,7 +220,7 @@ const HistorySheet = () => {
         <Sheet open>
             <SheetContent
                 // Below the top nav, as a sheet area would set it: the nav's 56px and its 16px gap.
-                className="top-18 w-95"
+                className="top-18 w-[min(380px,calc(100%-32px))]"
                 container={stage}
                 finalFocus={false}
                 initialFocus={false}
@@ -270,7 +270,7 @@ const InvoiceWithHistory = () => (
                     {/* The invoice's facts, each label over its value, as a detail page's are. */}
                     <Card layout="list">
                         <CardTitle>Details</CardTitle>
-                        <dl className="grid grid-cols-3 gap-x-6 gap-y-5">
+                        <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
                             {invoiceFacts.map(fact => (
                                 <div className="flex min-w-0 flex-col gap-1.5" key={fact.term}>
                                     <dt className="text-neutral-600 text-xs">{fact.term}</dt>

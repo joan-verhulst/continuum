@@ -49,7 +49,7 @@ const TopNavPreview = ({ knobs }: PreviewProps) => {
     return (
         // A whole app, small: the bar on the canvas, the page on its panel under it.
         <AppShell
-            className="h-85 max-h-full min-h-0 w-170 overflow-hidden rounded-panel border border-neutral-200"
+            className="h-85 max-h-full min-h-0 w-170 max-w-full overflow-hidden rounded-panel border border-neutral-200"
             nav="top"
         >
             <TopNav>
@@ -182,7 +182,7 @@ const SupportDesk = () => {
                     </DropdownMenu>
                 </TopNavActions>
             </TopNav>
-            <AppPanel className="gap-8 px-10 pt-10">
+            <AppPanel className="gap-8 @max-shell-compact/shell:px-4 px-10 @max-shell-compact/shell:pt-10 pt-10">
                 <div className="flex flex-col gap-1.5">
                     <h1 className="font-medium text-2xl text-neutral-950">Tickets</h1>
                     <p className="text-neutral-600 text-sm">

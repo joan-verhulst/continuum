@@ -75,7 +75,7 @@ const CheckoutPage = () => (
             </CardHeader>
             <FunnelChart data={steps} style={{ height: 220 }} />
         </Card>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             <StatCard delta="+3.8%" label="Carts started" value="8,420" />
             <StatCard delta="−2.4%" label="Average order" trend="down" value="€86.40" />
             <StatCard delta="+0.6 pt" label="Payment failures" trend="down" value="4.1%" />

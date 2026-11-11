@@ -114,7 +114,7 @@ const AudiencePage = () => (
         title="Audience"
         trail={['Reports', 'Audience']}
     >
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-2 gap-4">
             <DevicesCard />
             <Card layout="list">
                 <BarList title="Top countries" valueLabel="Sessions">
@@ -130,7 +130,7 @@ const AudiencePage = () => (
                 </BarList>
             </Card>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             <StatCard delta="+4.0%" label="Visitors" value="9,315" />
             <StatCard delta="+2.1 pt" label="Returning" value="38%" />
             <StatCard delta="+0.8 pt" label="On mobile" value="31%" />

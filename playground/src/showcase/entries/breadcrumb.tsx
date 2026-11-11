@@ -201,7 +201,7 @@ const PayoutBatch = () => (
                     <HeaderBar>
                         <DeepTrail />
                     </HeaderBar>
-                    <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-hidden px-10 pt-10 [mask-image:linear-gradient(to_bottom,black_calc(100%-48px),transparent)]">
+                    <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-hidden @max-shell-compact/shell:px-4 px-10 @max-shell-compact/shell:pt-10 pt-10 [mask-image:linear-gradient(to_bottom,black_calc(100%-48px),transparent)]">
                         <PageHead
                             description="14 payouts · €18,420.00 · sent 14 October"
                             title="Batch #12345"

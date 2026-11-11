@@ -21,8 +21,10 @@ export const SignIn = () => {
     const nav = useScreenNav();
 
     return (
-        <div className="flex h-full min-h-full min-w-7xl flex-col items-center justify-center gap-6 bg-neutral-100 p-10">
-            <Card className="w-[min(400px,calc(100vw-32px))] p-8">
+        // The card is 400 wide where there is room and runs the width on a phone, 16px from either
+        // side; centred, the side padding only shows once the card fills the row.
+        <div className="flex h-full min-h-full flex-col items-center justify-center gap-6 bg-neutral-100 px-4 py-10">
+            <Card className="w-full max-w-100 p-8">
                 <form
                     className="flex flex-col gap-6"
                     onSubmit={event => {

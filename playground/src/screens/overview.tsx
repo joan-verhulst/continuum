@@ -145,7 +145,8 @@ export const Overview = () => {
                 </div>
             </Card>
 
-            <div className="grid grid-cols-4 gap-4">
+            {/* Stacked rather than squeezed on a phone: two across, which costs height, not width. */}
+            <div className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-4 gap-4">
                 <StatCard delta="+3" label="Active customers" value={String(activeCustomers)} />
                 <StatCard
                     delta={shown.newDelta}
@@ -161,7 +162,7 @@ export const Overview = () => {
                 <StatCard delta="+5" label="Open tickets" trend="down" value="23" />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-2 gap-4">
                 <Card layout="list">
                     <BarList title="Recurring revenue by plan" valueLabel="A month">
                         {byPlan.map(plan => (

@@ -107,7 +107,7 @@ const Overview = () => (
         title="Overview"
         trail={['Overview']}
     >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             {headline.map(card => (
                 <Card className="gap-6 p-5" key={card.title}>
                     <CardHeader className="gap-1">

@@ -124,7 +124,7 @@ const CustomerDetail = () => (
                 </TabsTrigger>
             </TabsList>
             <TabsContent className="flex flex-col gap-6" value="overview">
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                     <StatCard delta="+12.0%" label="Monthly revenue" value="€4,800" />
                     <StatCard delta="+12" label="Seats in use" value="86 of 100" />
                     <StatCard delta="+6" label="Invoices this year" value="24" />
@@ -132,7 +132,7 @@ const CustomerDetail = () => (
                 {/* The facts as a detail page has them: each label over its value, in a list card. */}
                 <Card layout="list">
                     <CardTitle>Details</CardTitle>
-                    <dl className="grid grid-cols-3 gap-x-6 gap-y-5">
+                    <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
                         {[
                             ['Owner', 'Maya Chen'],
                             ['Billing email', 'finance@northwind.com'],

@@ -5,6 +5,9 @@ import {
     cn,
     DockAction,
     PageContent,
+    PortalContainer,
+    SegmentedControl,
+    SegmentedControlItem,
     Theme,
     type ThemeMode,
     ThemeScope,
@@ -12,6 +15,7 @@ import {
 import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import {
     type ComponentProps,
+    type CSSProperties,
     createContext,
     type ReactNode,
     useCallback,
@@ -22,6 +26,7 @@ import {
     useState,
 } from 'react';
 import { createPortal } from 'react-dom';
+import { chromes, DeviceChrome } from './devices/device-chrome';
 
 export type SectionEntry = {
     id: string;
@@ -187,14 +192,38 @@ export const AsidePanel = ({ className, children, ...props }: ComponentProps<'as
 type SectionProps = Omit<ComponentProps<'section'>, 'title'> & {
     title: ReactNode;
     description?: ReactNode;
+    /** A control at the right end of the title's line, such as the width a piece is drawn at. */
+    aside?: ReactNode;
 };
 
-export const Section = ({ title, description, className, children, ...props }: SectionProps) => (
+export const Section = ({
+    title,
+    description,
+    aside,
+    className,
+    children,
+    ...props
+}: SectionProps) => (
     <section className={cn('flex scroll-mt-6 flex-col gap-6', className)} {...props}>
-        <header className="flex max-w-2xl flex-col gap-2">
-            <h2 className="font-medium text-2xl text-neutral-950 tracking-[-0.01em]">{title}</h2>
-            {description && <p className="text-neutral-600 text-sm">{description}</p>}
-        </header>
+        {aside ? (
+            // The control keeps to the section's right edge; the title and its line keep their measure.
+            <header className="flex flex-col gap-2">
+                <div className="flex items-center justify-between gap-6">
+                    <h2 className="max-w-2xl font-medium text-2xl text-neutral-950 tracking-[-0.01em]">
+                        {title}
+                    </h2>
+                    {aside}
+                </div>
+                {description && <p className="max-w-2xl text-neutral-600 text-sm">{description}</p>}
+            </header>
+        ) : (
+            <header className="flex max-w-2xl flex-col gap-2">
+                <h2 className="font-medium text-2xl text-neutral-950 tracking-[-0.01em]">
+                    {title}
+                </h2>
+                {description && <p className="text-neutral-600 text-sm">{description}</p>}
+            </header>
+        )}
         {children}
     </section>
 );
@@ -291,22 +320,73 @@ export const Stage = ({ className, children, ...props }: ComponentProps<'div'>) 
     );
 };
 
-const useWidth = (initial: number) => {
+const useSize = (initial: { width: number; height: number }) => {
     const ref = useRef<HTMLDivElement>(null);
-    const [width, setWidth] = useState(initial);
+    const [size, setSize] = useState(initial);
 
     useEffect(() => {
         const element = ref.current;
         if (!element) return;
         const observer = new ResizeObserver(([entry]) => {
-            if (entry) setWidth(entry.contentRect.width);
+            if (entry)
+                setSize({ width: entry.contentRect.width, height: entry.contentRect.height });
         });
         observer.observe(element);
         return () => observer.disconnect();
     }, []);
 
-    return [ref, width] as const;
+    return [ref, size] as const;
 };
+
+/* ---------- Devices: the widths a piece or a screen can be drawn at ---------- */
+
+export type Device = 'desktop' | 'tablet' | 'phone';
+
+/** Each device's width in px: a piece is drawn at it, and a screen on the device itself (see devices/). */
+export const devices: Record<Device, { label: string; width: number }> = {
+    desktop: { label: 'Desktop', width: 1440 },
+    tablet: { label: 'Tablet', width: 768 },
+    phone: { label: 'Phone', width: 390 },
+};
+
+// Kept outside the pages, so the width picked on one component or screen holds on the next.
+let lastDevice: Device = 'desktop';
+
+/** The device a page draws its piece at, remembered from the page before. */
+export const useDevice = () => {
+    const [device, setDevice] = useState(lastDevice);
+    const pick = useCallback((next: Device) => {
+        lastDevice = next;
+        setDevice(next);
+    }, []);
+
+    return [device, pick] as const;
+};
+
+/**
+ * Desktop · Tablet · Phone: the width a piece or a screen is drawn at. One knob rather than the
+ * three side by side, so one thing is on show at a time.
+ */
+export const DeviceControl = ({
+    value,
+    onChange,
+}: {
+    value: Device;
+    onChange: (device: Device) => void;
+}) => (
+    <SegmentedControl
+        aria-label="Width"
+        className="shrink-0"
+        onValueChange={next => onChange(next as Device)}
+        value={value}
+    >
+        {(Object.keys(devices) as Device[]).map(device => (
+            <SegmentedControlItem key={device} value={device}>
+                {devices[device].label}
+            </SegmentedControlItem>
+        ))}
+    </SegmentedControl>
+);
 
 type FrameProps = {
     /** The width the content was designed at; it is scaled down from there to fit. */
@@ -316,20 +396,26 @@ type FrameProps = {
     /** A shot rather than a thing to use: nothing inside can be focused or clicked. */
     still?: boolean;
     className?: string;
+    style?: CSSProperties;
     children: ReactNode;
 };
 
-/** A screen at its design size, scaled to the room it has, like a photograph of the thing. */
+/**
+ * A screen at its design size, scaled to the room it has, like a photograph of the thing. It is
+ * the screen its overlays open on: menus, sheets and dialogs portal into it rather than the
+ * page, so a phone's sheet keeps to the phone and a menu turns at the phone's edge.
+ */
 export const Frame = ({
     designWidth = 1280,
     designHeight = 780,
     mode,
     still = false,
     className,
+    style,
     children,
 }: FrameProps) => {
-    const [ref, width] = useWidth(600);
-    const scale = Math.min(1, width / designWidth);
+    const [ref, size] = useSize({ width: 600, height: 400 });
+    const scale = Math.min(1, size.width / designWidth);
 
     return (
         <div
@@ -339,10 +425,10 @@ export const Frame = ({
             )}
             inert={still || undefined}
             ref={ref}
-            style={{ height: designHeight * scale }}
+            style={{ ...style, height: designHeight * scale }}
         >
             <Theme
-                className="origin-top-left bg-neutral-50"
+                className="relative origin-top-left bg-neutral-50"
                 mode={mode}
                 style={{
                     width: designWidth,
@@ -350,9 +436,67 @@ export const Frame = ({
                     transform: `scale(${scale})`,
                 }}
             >
-                {children}
+                <OverlayLayer>{children}</OverlayLayer>
             </Theme>
         </div>
+    );
+};
+
+/**
+ * A screen on its device, in a 16:9 box as wide as the page whichever device it is: the
+ * MacBook, the tablet and the phone are drawn whole at the screen's own size and scaled down
+ * to fit the box, centred, so the page keeps its shape as the device changes. The shell inside
+ * answers to the device's width, so the screen is laid out as it would be on that device; its
+ * overlays open on the device's screen.
+ */
+export const DeviceStage = ({ device, children }: { device: Device; children: ReactNode }) => {
+    const { outer } = chromes[device];
+    const [ref, room] = useSize({ width: 1100, height: 560 });
+    const scale = Math.min(1, room.width / outer.width, room.height / outer.height);
+
+    return (
+        <div className="flex aspect-video min-h-0 w-full min-w-0 rounded-panel border border-neutral-200 bg-neutral-50 p-8">
+            <div className="flex min-h-0 min-w-0 flex-1 items-center justify-center" ref={ref}>
+                <div
+                    className="shrink-0"
+                    style={{ width: outer.width * scale, height: outer.height * scale }}
+                >
+                    <Theme
+                        className="origin-top-left"
+                        style={{
+                            width: outer.width,
+                            height: outer.height,
+                            transform: `scale(${scale})`,
+                        }}
+                    >
+                        <DeviceChrome device={device}>
+                            <OverlayLayer>{children}</OverlayLayer>
+                        </DeviceChrome>
+                    </Theme>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/**
+ * Makes the positioned box it sits in the screen its children's overlays open on: menus,
+ * popovers, sheets and dialogs portal into a layer over the box instead of the page. The layer
+ * is a size container, so it holds fixed overlays and sizes them by its own width and height,
+ * and it lets clicks through between them.
+ */
+export const OverlayLayer = ({ children }: { children: ReactNode }) => {
+    // State rather than a ref: an overlay inside renders before the ref is attached and has to render again once it is.
+    const [screen, setScreen] = useState<HTMLDivElement | null>(null);
+
+    return (
+        <>
+            <PortalContainer container={screen}>{children}</PortalContainer>
+            <div
+                className="@container-size pointer-events-none absolute inset-0 z-50 *:pointer-events-auto"
+                ref={setScreen}
+            />
+        </>
     );
 };
 
@@ -370,7 +514,7 @@ const BAR_IDLE_MS = 2500;
 
 /**
  * A screen at the window's own size, as an app opens: over everything, unscaled, in the
- * previewed theme. Portalled to the body, so its menus and dialogs still open over it. Esc closes
+ * previewed theme, with its menus, sheets and dialogs opening in it. Esc closes
  * it, whether it leaves the browser's full screen or the browser never granted one, and so does
  * the button in its bar. Focus moves into it on open and back to what opened it on close.
  */
@@ -409,11 +553,14 @@ export const FullScreen = ({ onClose, controls, children }: FullScreenProps) => 
         };
         wake();
         document.addEventListener('fullscreenchange', left);
+        // A finger moves no pointer between taps, so a tap wakes the bar too.
+        window.addEventListener('pointerdown', wake);
         window.addEventListener('pointermove', wake);
         window.addEventListener('keydown', wake);
         window.addEventListener('keydown', onEscape);
         return () => {
             document.removeEventListener('fullscreenchange', left);
+            window.removeEventListener('pointerdown', wake);
             window.removeEventListener('pointermove', wake);
             window.removeEventListener('keydown', wake);
             window.removeEventListener('keydown', onEscape);
@@ -432,7 +579,8 @@ export const FullScreen = ({ onClose, controls, children }: FullScreenProps) => 
                 ref={layer}
                 tabIndex={-1}
             >
-                {children}
+                {/* Its overlays open in it, over the screen, rather than in the body under it. */}
+                <OverlayLayer>{children}</OverlayLayer>
                 {/* Centred over the header bar's empty middle; hovered or focused, it stays. */}
                 <BottomBar
                     className={cn(

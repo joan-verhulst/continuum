@@ -84,7 +84,7 @@ const BillingPage = () => (
             children: (
                 <>
                     {/* Room above the cards for the open tip, so it never sits on the page's description. */}
-                    <div className="mt-10 grid grid-cols-3 gap-4">
+                    <div className="mt-10 grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                         <Card className="gap-4">
                             <CardTitle>Plan</CardTitle>
                             <p className="font-medium text-lg text-neutral-950">Pro</p>

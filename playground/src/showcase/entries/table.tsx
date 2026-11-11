@@ -139,7 +139,11 @@ const TablePreview = ({ knobs }: PreviewProps) => {
                     </>
                 )
             }
-            wrapperClassName={tile ? 'w-full' : 'ml-auto w-[calc(100%-264px)]'}
+            wrapperClassName={
+                tile
+                    ? 'w-full'
+                    : 'w-full @min-[720px]/shell:ml-auto @min-[720px]/shell:w-[calc(100%-264px)]'
+            }
         >
             <TableHeader>
                 <TableRow>

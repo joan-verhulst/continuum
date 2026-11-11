@@ -353,7 +353,7 @@ const AskSheet = () => {
     return (
         <Sheet open>
             <SheetContent
-                className="w-100"
+                className="w-[min(400px,calc(100%-32px))]"
                 container={stage}
                 finalFocus={false}
                 initialFocus={false}
@@ -476,7 +476,7 @@ export const inUse: InUse = {
                 className: 'pr-109',
                 children: (
                     <>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-2 gap-4">
                             <StatCard delta="+17.1%" label="Recurring revenue" value="€48,260" />
                             <StatCard
                                 delta="+0.6 pt"

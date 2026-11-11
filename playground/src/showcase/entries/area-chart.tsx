@@ -115,7 +115,7 @@ const TrafficPage = () => (
         trail={['Reports', 'Traffic']}
     >
         <VisitorsChart />
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             <StatCard delta="+6.2%" label="Sign-ups" value="412" />
             <StatCard delta="−3.1%" label="Bounce rate" trend="down" value="41.2%" />
             <StatCard delta="0.0%" label="Avg. duration" trend="neutral" value="2m 14s" />

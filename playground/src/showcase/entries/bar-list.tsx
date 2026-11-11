@@ -41,7 +41,7 @@ const Traffic = () => (
         place="reports"
         title="Traffic"
     >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             <Card layout="list">
                 <BarList limit={5} title="Top pages" valueLabel="Visitors">
                     <BarListItem href="#" value={4120}>

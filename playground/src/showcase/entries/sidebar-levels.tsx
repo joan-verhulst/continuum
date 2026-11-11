@@ -377,7 +377,7 @@ const DocsSidebar = () => {
                                 </BreadcrumbList>
                             </Breadcrumb>
                         </HeaderBar>
-                        <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-hidden px-10 pt-10">
+                        <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-hidden @max-shell-compact/shell:px-4 px-10 @max-shell-compact/shell:pt-10 pt-10">
                             <PageHead
                                 description="What it is for, its knobs and one piece of a product it sits in."
                                 title={page?.label ?? 'Components'}

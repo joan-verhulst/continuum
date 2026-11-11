@@ -68,7 +68,7 @@ const Usage = () => (
         place="settings"
         title="Usage"
     >
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-2 gap-4">
             <Card className="gap-5 p-5">
                 <Meter caption="3 invites pending" label="Seats" max={20} showValue value={12} />
                 <p className="text-neutral-600 text-xs">

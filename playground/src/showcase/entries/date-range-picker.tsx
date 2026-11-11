@@ -33,7 +33,7 @@ const DateRangePickerPreview = ({ knobs }: PreviewProps) => (
     <DateRangePicker
         aria-invalid={knobs.invalid ? true : undefined}
         aria-label="Report period"
-        className="w-64"
+        className="w-64 max-w-full"
         defaultValue={{ from: new Date(2026, 9, 12), to: new Date(2026, 9, 26) }}
         disabled={Boolean(knobs.disabled)}
         icon={knobs.icon as 'leading' | 'trailing'}
@@ -65,7 +65,7 @@ const ComparePeriods = () => (
         trail={['Reports', 'Compare periods']}
     >
         <div className="flex items-end gap-3">
-            <Field className="w-64">
+            <Field className="w-64 min-w-0">
                 <FieldLabel>Period</FieldLabel>
                 <DateRangePicker
                     defaultValue={{ from: new Date(2025, 9, 1), to: new Date(2025, 9, 31) }}
@@ -75,7 +75,7 @@ const ComparePeriods = () => (
             <Button aria-label="Swap the periods" size="icon" variant="ghost" className="mb-0.5">
                 <ArrowLeftRight {...icon} />
             </Button>
-            <Field className="w-64">
+            <Field className="w-64 min-w-0">
                 <FieldLabel>Compared to</FieldLabel>
                 <DateRangePicker
                     defaultValue={{ from: new Date(2025, 8, 1), to: new Date(2025, 8, 30) }}
@@ -83,7 +83,7 @@ const ComparePeriods = () => (
                 />
             </Field>
         </div>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             <StatCard delta="+12.4%" label="Sessions" value="12,480" />
             <StatCard delta="+6.1%" label="Revenue" value="€48,920" />
             <StatCard delta="+8.9%" label="Conversions" value="1,204" />

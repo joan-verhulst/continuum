@@ -115,7 +115,7 @@ const reportPage = {
     title: 'Northwind Q3 review',
     children: (
         <>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                 <StatCard delta="+6.2%" label="Revenue" value="€412,800" />
                 <StatCard delta="+1.4%" label="Net retention" value="108%" />
                 <StatCard delta="−0.3%" label="Churn" trend="down" value="2.1%" />

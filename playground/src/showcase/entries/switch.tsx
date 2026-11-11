@@ -141,7 +141,7 @@ export const inUse: InUse = {
                 ),
                 children: (
                     <>
-                        <div className="grid grid-cols-3 gap-4">
+                        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                             <StatCard delta="+9.2%" label="Revenue" value="€184,300" />
                             <StatCard delta="−0.6%" label="Churn" value="2.1%" />
                             <StatCard delta="+14.0%" label="Pipeline" value="€412,000" />

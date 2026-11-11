@@ -3,7 +3,8 @@ import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react
 import { exampleSections } from './examples';
 import {
     DetailHeader,
-    Frame,
+    DeviceControl,
+    DeviceStage,
     FullScreen,
     FullScreenButton,
     Page,
@@ -12,6 +13,7 @@ import {
     Section,
     Stage,
     scrollToSection,
+    useDevice,
     usePageIndex,
     useScrollSpy,
 } from './layout';
@@ -255,22 +257,32 @@ const ItemPage = ({ item, onOpen, nav, onFull }: ItemPageProps) => {
     const siblings = items.filter(entry => entry.kind === item.kind);
     const index = siblings.indexOf(item);
     const neighbour = (entry?: Item) => entry && { id: entry.id, name: entry.title };
+    const [device, setDevice] = useDevice();
 
     return (
         <Page className="gap-10" width={item.kind === 'screen' ? 'dense' : 'wide'}>
             <DetailHeader
-                // A screen is judged as it opens, at the window's size; a block has no window of its own.
-                aside={item.kind === 'screen' && <FullScreenButton onOpen={onFull} />}
+                // A screen is judged as it opens, at the window's size, or at a tablet's or a phone's;
+                // a block has no window of its own.
+                aside={
+                    item.kind === 'screen' && (
+                        <div className="flex items-center gap-2">
+                            <DeviceControl onChange={setDevice} value={device} />
+                            <FullScreenButton onOpen={onFull} />
+                        </div>
+                    )
+                }
                 description={item.description}
                 onBack={() => onOpen(undefined)}
                 parent="Patterns"
                 title={item.title}
             />
             {item.kind === 'screen' ? (
-                // At its design size where the page is wide enough, scaled to it where it is not.
-                <Frame designHeight={900} designWidth={1440}>
+                // Always a 16:9 box as wide as the heading; the desktop, tablet or phone is scaled
+                // whole to fit inside it.
+                <DeviceStage device={device}>
                     <ScreenNavProvider value={nav}>{item.render()}</ScreenNavProvider>
-                </Frame>
+                </DeviceStage>
             ) : (
                 <Stage className="min-h-120">{item.render()}</Stage>
             )}

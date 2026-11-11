@@ -9,6 +9,7 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
+    cn,
     HeaderBar,
     NavItem,
     PageContent,
@@ -30,7 +31,7 @@ import {
     Sparkles,
     Users,
 } from 'lucide-react';
-import { Fragment, type ReactNode } from 'react';
+import { Fragment, type ReactNode, type RefObject, useLayoutEffect, useState } from 'react';
 import { AccountFooter, type ScreenId, useScreenNav, WorkspaceMark } from './shared';
 
 /*
@@ -188,7 +189,7 @@ export const Workspace = ({
     bar,
     children,
 }: WorkspaceProps) => (
-    <AppShell className="h-full min-h-0 min-w-7xl">
+    <AppShell className="h-full min-h-0">
         <WorkspaceSidebar place={place} />
         <AppPanel>
             <HeaderBar>
@@ -209,20 +210,65 @@ export const Workspace = ({
 type PageHeadProps = {
     title: ReactNode;
     description?: ReactNode;
-    /** The page's own actions, at the right of its title. */
+    /** The page's own actions, at the right of its title: its primary, or a control the page reads by. */
     children?: ReactNode;
+    /** Actions a phone can do without, before the others: they hide in a compact shell. */
+    secondary?: ReactNode;
 };
 
-/** A page's title and the line under it, with its actions beside it. */
-export const PageHead = ({ title, description, children }: PageHeadProps) => (
-    <div className="flex items-end justify-between gap-6">
+/**
+ * A page's title and the line under it, with its actions beside it. In a compact shell the head
+ * stacks (title, line, then the actions under them) and the secondary actions hide, so a row of
+ * actions never squeezes the title and a phone keeps only what the page is for.
+ */
+export const PageHead = ({ title, description, children, secondary }: PageHeadProps) => (
+    <div className="flex @max-shell-compact/shell:flex-col @max-shell-compact/shell:items-start items-end justify-between @max-shell-compact/shell:gap-4 gap-6">
         <div className="flex min-w-0 flex-col gap-1.5">
             <h1 className="font-medium text-2xl text-neutral-950">{title}</h1>
             {description && <p className="text-neutral-600 text-sm">{description}</p>}
         </div>
-        {children && <div className="flex shrink-0 items-center gap-2">{children}</div>}
+        {(children || secondary) && (
+            <div
+                className={cn(
+                    'flex shrink-0 items-center gap-2',
+                    // Holding nothing but secondaries, the row goes with them, and its gap too.
+                    !children && '@max-shell-compact/shell:hidden',
+                )}
+            >
+                {secondary && (
+                    <span className="contents @max-shell-compact/shell:hidden">{secondary}</span>
+                )}
+                {children}
+            </div>
+        )}
     </div>
 );
+
+/**
+ * Whether the shell round `ref` is compact, narrower than the shell's compact size, for what a
+ * container query cannot do: change which controls a page offers, not only how they sit. Outside
+ * a shell it is never compact, as the shell's own variants never match there.
+ */
+export const useShellCompact = (ref: RefObject<HTMLElement | null>) => {
+    const [compact, setCompact] = useState(false);
+
+    // Measured before paint, so a phone never sees the wide controls for a frame.
+    useLayoutEffect(() => {
+        const shell = ref.current?.closest<HTMLElement>('[data-slot="app-shell"]');
+        if (!shell) return;
+        const limit =
+            Number.parseFloat(
+                getComputedStyle(shell).getPropertyValue('--container-shell-compact'),
+            ) || 640;
+        const measure = () => setCompact(shell.clientWidth < limit);
+        measure();
+        const observer = new ResizeObserver(measure);
+        observer.observe(shell);
+        return () => observer.disconnect();
+    }, [ref]);
+
+    return compact;
+};
 
 /** A section's title and the line under it, as every screen sets them. */
 export const SectionHead = ({

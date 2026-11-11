@@ -5,6 +5,11 @@ import {
     Input,
     SegmentedControl,
     SegmentedControlItem,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
     Table,
     TableBody,
     TableCell,
@@ -86,8 +91,25 @@ const CustomerList = () => {
             title="Customers"
         >
             <div className="flex items-center justify-between gap-4">
+                <Select onValueChange={value => setStatus(value as StatusFilter)} value={status}>
+                    <SelectTrigger
+                        aria-label="Status"
+                        className="@max-shell-compact/shell:inline-flex hidden"
+                        size="sm"
+                    >
+                        <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                        {statuses.map(filter => (
+                            <SelectItem key={filter} value={filter}>
+                                {filter} ({count(filter)})
+                            </SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
                 <SegmentedControl
                     aria-label="Status"
+                    className="@max-shell-compact/shell:hidden"
                     onValueChange={value => setStatus(value as StatusFilter)}
                     value={status}
                 >
@@ -100,7 +122,7 @@ const CustomerList = () => {
                 </SegmentedControl>
                 <Input
                     aria-label="Search customers"
-                    className="w-56"
+                    className="@max-shell-compact/shell:w-auto w-56 @max-shell-compact/shell:min-w-0 @max-shell-compact/shell:flex-1"
                     leadingIcon={<Search {...icon} />}
                     placeholder="Search customers"
                     size="sm"

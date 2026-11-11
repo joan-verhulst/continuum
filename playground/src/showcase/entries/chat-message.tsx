@@ -188,7 +188,7 @@ const HelpPanel = () => {
     };
 
     return (
-        <Card className="absolute right-6 bottom-6 z-10 h-110 w-96 gap-0 p-0 shadow-float">
+        <Card className="absolute right-6 bottom-6 z-10 h-110 w-96 max-w-[calc(100%-48px)] gap-0 p-0 shadow-float">
             <div className="flex h-12 shrink-0 items-center border-neutral-200 border-b px-4 font-medium text-neutral-950 text-xs">
                 Billing support
             </div>
@@ -243,7 +243,7 @@ export const inUse: InUse = {
                 description: 'What Acme billed you, and what is still open.',
                 trail: ['Invoices'],
                 children: (
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                         <StatCard label="Open" value="€1,240.00" />
                         <StatCard label="Paid this year" value="€14,880.00" />
                         <StatCard label="Next invoice" value="1 Dec" />

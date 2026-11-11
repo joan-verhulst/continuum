@@ -6,6 +6,7 @@ import {
     Checkbox,
     Dock,
     DockAction,
+    DockCount,
     DockItem,
     DropdownMenu,
     DropdownMenuContent,
@@ -50,6 +51,7 @@ import {
     Download,
     EllipsisVertical,
     Euro,
+    Layers,
     Mail,
     Plus,
     SearchX,
@@ -57,7 +59,7 @@ import {
     UserRound,
     X,
 } from 'lucide-react';
-import { type MouseEvent, useState } from 'react';
+import { type MouseEvent, useRef, useState } from 'react';
 import { useScreenNav } from './shared';
 import {
     allCustomers,
@@ -68,6 +70,7 @@ import {
     type Plan,
     type Status,
     statusTone,
+    useShellCompact,
     Workspace,
 } from './workspace';
 
@@ -87,6 +90,18 @@ const ownerField: FieldDef = {
     icon: <UserRound {...icon} />,
     kind: 'many',
     options: owners.map(owner => owner.name),
+};
+
+/**
+ * The plan as a condition, for a compact shell: there the bar has no room for the plan's select
+ * beside the search, so the plan joins the conditions the Filter button offers.
+ */
+const planField: FieldDef = {
+    id: 'plan',
+    label: 'Plan',
+    icon: <Layers {...icon} />,
+    kind: 'one',
+    options: ['Enterprise', 'Pro', 'Starter'],
 };
 
 /** What a condition can be on: the columns a select does not already cover. */
@@ -110,7 +125,7 @@ const fields: FieldDef[] = [
 
 type Condition = { field: string; operator: string; values: string[] };
 
-const fieldOf = (id: string) => fields.find(field => field.id === id) ?? ownerField;
+const fieldOf = (id: string) => [...fields, planField].find(field => field.id === id) ?? ownerField;
 
 const amount = (value: string) => Number(value.replace(/[^\d.]/g, ''));
 
@@ -127,6 +142,10 @@ const passes = (customer: Customer, condition: Condition) => {
             // One owner each: "has all of" holds only while a single name is asked for.
             if (condition.operator === 'all') return hit && condition.values.length === 1;
             return hit;
+        }
+        case 'plan': {
+            const hit = condition.values.includes(customer.plan);
+            return condition.operator === 'isNot' ? !hit : hit;
         }
         case 'seen': {
             const days = amount(condition.values[0] ?? '');
@@ -198,7 +217,13 @@ export const Customers = () => {
     const some = chosen.length > 0 && !all;
     const filtered = query !== '' || plan !== 'any' || conditions.length > 0;
 
-    const remaining = fields.filter(field => !conditions.some(c => c.field === field.id));
+    // In a compact shell the plan's select folds into the Filter button, unless a plan is picked
+    // in it already: a filter that applies is never hidden.
+    const frame = useRef<HTMLDivElement>(null);
+    const compact = useShellCompact(frame);
+    const planSelect = !compact || plan !== 'any';
+    const offered = planSelect ? fields : [planField, ...fields];
+    const remaining = offered.filter(field => !conditions.some(c => c.field === field.id));
 
     const toggle = (id: string, on: boolean) =>
         setSelected(on ? [...chosen, id] : chosen.filter(item => item !== id));
@@ -243,8 +268,7 @@ export const Customers = () => {
                 {views.map(item => (
                     <DockItem key={item} value={item}>
                         {item}
-                        {/* The item's own colour at 70%, so it follows the pressed item onto the action fill. */}
-                        <span className="font-normal tabular-nums opacity-70">{counts[item]}</span>
+                        <DockCount>{counts[item]}</DockCount>
                     </DockItem>
                 ))}
             </Dock>
@@ -309,26 +333,30 @@ export const Customers = () => {
                     placeholder="Search customers"
                     value={query}
                 />
-                <TableToolbarEnd>
-                    <Select
-                        onValueChange={value => {
-                            setPlan(value as 'any' | Plan);
-                            setPage(1);
-                        }}
-                        value={plan}
-                    >
-                        <SelectTrigger aria-label="Plan" size="sm">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent align="end">
-                            <SelectItem value="any">Any plan</SelectItem>
-                            <SelectItem value="Enterprise">Enterprise</SelectItem>
-                            <SelectItem value="Pro">Pro</SelectItem>
-                            <SelectItem value="Starter">Starter</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    {conditions.length === 0 && add}
-                </TableToolbarEnd>
+                {(planSelect || conditions.length === 0) && (
+                    <TableToolbarEnd>
+                        {planSelect && (
+                            <Select
+                                onValueChange={value => {
+                                    setPlan(value as 'any' | Plan);
+                                    setPage(1);
+                                }}
+                                value={plan}
+                            >
+                                <SelectTrigger aria-label="Plan" size="sm">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent align="end">
+                                    <SelectItem value="any">Any plan</SelectItem>
+                                    <SelectItem value="Enterprise">Enterprise</SelectItem>
+                                    <SelectItem value="Pro">Pro</SelectItem>
+                                    <SelectItem value="Starter">Starter</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        )}
+                        {conditions.length === 0 && add}
+                    </TableToolbarEnd>
+                )}
             </TableToolbar>
             {conditions.length > 0 && (
                 <TableConditions className={rows.length === 0 ? 'border-b-0' : undefined}>
@@ -382,18 +410,21 @@ export const Customers = () => {
             {/* The counts are the dock's; the title says what the list holds. */}
             <PageHead
                 description="The companies on a plan or a trial, and the ones that have left."
+                secondary={
+                    <Button variant="secondary">
+                        <Upload {...icon} />
+                        Import
+                    </Button>
+                }
                 title="Customers"
-            >
-                <Button variant="secondary">
-                    <Upload {...icon} />
-                    Import
-                </Button>
-            </PageHead>
+            />
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4" ref={frame}>
                 <Table toolbar={toolbar}>
                     {rows.length > 0 && (
                         <>
+                            {/* On a narrow table the revenue, owner and last seen hide: who it is,
+                                its plan and its status are what a row is told apart by. */}
                             <TableHeader>
                                 <TableRow>
                                     <TableHead className="w-11">
@@ -409,11 +440,15 @@ export const Customers = () => {
                                     <TableHead>Customer</TableHead>
                                     <TableHead className="w-32">Plan</TableHead>
                                     <TableHead className="w-32">Status</TableHead>
-                                    <TableHead className="w-32 text-right">
+                                    <TableHead className="w-32 text-right" optional>
                                         Monthly revenue
                                     </TableHead>
-                                    <TableHead className="w-44">Owner</TableHead>
-                                    <TableHead className="w-32">Last seen</TableHead>
+                                    <TableHead className="w-44" optional>
+                                        Owner
+                                    </TableHead>
+                                    <TableHead className="w-32" optional>
+                                        Last seen
+                                    </TableHead>
                                     <TableHead className="w-11">
                                         <span className="sr-only">Actions</span>
                                     </TableHead>
@@ -469,10 +504,10 @@ export const Customers = () => {
                                                 {customer.status}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="text-right tabular-nums">
+                                        <TableCell className="text-right tabular-nums" optional>
                                             {customer.mrr ? formatEuro(customer.mrr) : '—'}
                                         </TableCell>
-                                        <TableCell>
+                                        <TableCell optional>
                                             <span className="flex items-center gap-2 font-normal text-neutral-700">
                                                 <Avatar
                                                     alt={customer.owner}
@@ -483,7 +518,10 @@ export const Customers = () => {
                                                 {customer.owner}
                                             </span>
                                         </TableCell>
-                                        <TableCell className="font-normal text-neutral-600">
+                                        <TableCell
+                                            className="font-normal text-neutral-600"
+                                            optional
+                                        >
                                             {customer.seen}
                                         </TableCell>
                                         <TableCell onClick={keep}>

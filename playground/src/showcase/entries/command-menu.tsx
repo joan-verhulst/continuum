@@ -205,7 +205,7 @@ const JumpAnywhere = () => {
 // The overview the menu was opened from.
 const OverviewBehind = () => (
     <>
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-4 gap-4">
             <StatCard delta="+6.2%" label="Revenue" value="€184,200" />
             <StatCard delta="+12" label="New customers" value="48" />
             <StatCard delta="−0.4%" label="Churn" trend="down" value="1.8%" />

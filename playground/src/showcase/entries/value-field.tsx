@@ -89,7 +89,7 @@ const webhooksPage: AppWindowProps = {
     title: 'Webhooks',
     trail: ['Settings', 'Webhooks'],
     children: (
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             <StatCard delta="+4.1%" label="Events this week" value="18,204" />
             <StatCard delta="−0.2%" label="Failed deliveries" trend="down" value="0.4%" />
             <StatCard delta="0 ms" label="Median response" trend="neutral" value="182 ms" />

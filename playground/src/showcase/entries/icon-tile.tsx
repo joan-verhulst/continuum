@@ -104,7 +104,7 @@ const Integrations = () => (
         place="settings"
         title="Integrations"
     >
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             {integrations.map(item => (
                 <Card className="gap-4 p-5" key={item.name}>
                     <div className="flex items-center justify-between gap-3">

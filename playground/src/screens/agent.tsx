@@ -250,7 +250,7 @@ export const Agent = () => {
     };
 
     return (
-        <AppShell className="h-full min-h-0 min-w-7xl">
+        <AppShell className="h-full min-h-0">
             <WorkspaceSidebar place="agent" />
             <AppPanel>
                 <HeaderBar>
@@ -301,8 +301,9 @@ export const Agent = () => {
                 </HeaderBar>
                 {empty ? (
                     <div className="min-h-0 flex-1 overflow-y-auto px-4">
-                        {/* The prompt a third of the way down, the chats under it at its width. */}
-                        <div className="mx-auto flex w-full max-w-conversation flex-col gap-6 pt-40 pb-24">
+                        {/* The prompt a third of the way down, the chats under it at its width; on
+                            a phone it starts where a page does, clear of the keyboard. */}
+                        <div className="mx-auto flex w-full max-w-conversation flex-col gap-6 @max-shell-compact/shell:pt-10 pt-40 pb-24">
                             <ChatPrompt onSend={send} placeholder="Ask the workspace…" />
                             {/* The recent chats as quiet rows: the title, its age at the right, a
                                 dot in the side padding for an unread one, so titles stay on one line. */}

@@ -90,7 +90,7 @@ const DockFrame = () => {
     return (
         <div className="relative flex h-80 w-full flex-col gap-4 overflow-hidden rounded-item border border-neutral-200 bg-neutral-50 p-6">
             <p className="font-medium text-neutral-950 text-sm">Start campaign</p>
-            <div className="grid grid-cols-3 gap-4 opacity-60">
+            <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4 opacity-60">
                 <div className="h-20 rounded-card border border-neutral-200" />
                 <div className="h-20 rounded-card border border-neutral-200" />
                 <div className="h-20 rounded-card border border-neutral-200" />

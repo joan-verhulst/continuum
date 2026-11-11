@@ -55,7 +55,7 @@ const SessionsLoading = () => (
                 margin={chartMargin}
             />
         </Card>
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             <StatCard delta="+12.4%" label="Sessions this week" value="12,480" />
             <StatCard delta="+4.0%" label="Unique visitors" value="9,315" />
             <StatCard delta="−3.1%" label="Bounce rate" trend="down" value="41.2%" />

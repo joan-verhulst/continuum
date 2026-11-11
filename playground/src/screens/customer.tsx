@@ -240,8 +240,10 @@ export const CustomerDetail = () => {
 
     return (
         <Workspace place="customers" trail={[{ label: 'Customers', to: 'list' }, customer.name]}>
-            <div className="flex items-start justify-between gap-6">
-                <div className="flex min-w-0 items-center gap-4">
+            {/* On a phone it stacks as a page head does: who it is, then the actions under it, the
+                secondary one hidden; the menu stays, as it holds what has no button. */}
+            <div className="flex @max-shell-compact/shell:flex-col items-start justify-between @max-shell-compact/shell:gap-4 gap-6">
+                <div className="flex min-w-0 max-w-full items-center gap-4">
                     <Avatar alt={customer.name} fallback={customer.initials} size={36} />
                     <div className="flex min-w-0 flex-col gap-1">
                         <div className="flex items-center gap-2">
@@ -256,7 +258,7 @@ export const CustomerDetail = () => {
                     </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                    <Button variant="secondary">
+                    <Button className="@max-shell-sidebar/shell:hidden" variant="secondary">
                         <UserPlus {...icon} />
                         Add contact
                     </Button>
@@ -300,7 +302,7 @@ export const CustomerDetail = () => {
 
                 {/* One column, as every detail is: the numbers, the facts, then what it uses and what happened. */}
                 <TabsContent className="flex flex-col gap-10" value="overview">
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                         <StatCard
                             delta={paying ? '+12%' : undefined}
                             label="Monthly revenue"
@@ -318,7 +320,7 @@ export const CustomerDetail = () => {
                     {/* Each fact's label over its value, so the two read together at this width. */}
                     <Card layout="list">
                         <CardTitle>Details</CardTitle>
-                        <dl className="grid grid-cols-3 gap-x-6 gap-y-5">
+                        <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
                             {facts.map(fact => (
                                 <div className="flex min-w-0 flex-col gap-1.5" key={fact.term}>
                                     <dt className="text-neutral-600 text-xs">{fact.term}</dt>

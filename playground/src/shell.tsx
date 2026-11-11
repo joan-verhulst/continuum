@@ -132,15 +132,6 @@ const ShellFrame = ({ state, onChange, children }: ShellProps) => {
         scroller.current?.scrollTo({ top: 0 });
     }, [state.view, state.component, state.screen]);
 
-    useEffect(() => {
-        if (!overlay) return;
-        const close = (event: KeyboardEvent) => {
-            if (event.key === 'Escape') setOverlay(false);
-        };
-        window.addEventListener('keydown', close);
-        return () => window.removeEventListener('keydown', close);
-    }, [overlay]);
-
     const show = () => (isDesktop() ? setDocked(true) : setOverlay(true));
     const hide = () => (isDesktop() ? setDocked(false) : setOverlay(false));
 
@@ -170,21 +161,10 @@ const ShellFrame = ({ state, onChange, children }: ShellProps) => {
     }, []);
 
     return (
-        <AppShell className="h-dvh min-h-0">
-            {overlay && (
-                <button
-                    aria-label="Close sidebar"
-                    className="fixed inset-0 z-40 cursor-default bg-neutral-950/20 lg:hidden"
-                    onClick={() => setOverlay(false)}
-                    type="button"
-                />
-            )}
+        // Narrow, the sidebar is the shell's own drawer: its scrim, Escape and focus come with it.
+        <AppShell className="h-dvh min-h-0" navOpen={overlay} onNavOpenChange={setOverlay}>
             <PlaygroundSidebar
-                className={cn(
-                    'max-lg:fixed max-lg:inset-y-0 max-lg:left-0 max-lg:z-50 max-lg:bg-neutral-100 max-lg:shadow-sheet max-lg:transition-[translate,visibility] max-lg:duration-200 max-lg:ease-out-strong',
-                    !overlay && 'max-lg:invisible max-lg:-translate-x-full',
-                    !docked && 'lg:hidden',
-                )}
+                className={cn(!docked && 'lg:hidden')}
                 onChange={patch => {
                     onChange(patch);
                     if (patch.view) setOverlay(false);
@@ -199,7 +179,8 @@ const ShellFrame = ({ state, onChange, children }: ShellProps) => {
                 state={state}
             />
             <AppPanel className={cn('max-lg:ml-2', !docked && 'lg:ml-2')}>
-                <HeaderBar className="justify-start gap-3">
+                {/* One toggle at every width: it docks the sidebar on a wide screen and opens the drawer on a narrow one. */}
+                <HeaderBar className="justify-start gap-3" sidebarToggle={false}>
                     <SidebarToggle
                         aria-expanded={overlay}
                         aria-label="Show sidebar"

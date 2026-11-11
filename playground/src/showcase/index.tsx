@@ -20,11 +20,16 @@ import { Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
     DetailHeader,
+    type Device,
+    DeviceControl,
+    devices,
+    OverlayLayer,
     Page,
     PageDock,
     PageHeader,
     Section,
     scrollToSection,
+    useDevice,
     usePageIndex,
     useScrollSpy,
 } from '../layout';
@@ -295,8 +300,10 @@ type ComponentPageProps = {
 };
 
 /** A piece of a product in a 16:9 frame, centred; a piece taller than the frame grows it. */
-const Piece = ({ piece }: { piece: InUse }) =>
-    piece.bare ? (
+const Piece = ({ piece, device }: { piece: InUse; device: Device }) =>
+    device !== 'desktop' ? (
+        <NarrowPiece device={device} piece={piece} />
+    ) : piece.bare ? (
         piece.render()
     ) : piece.app ? (
         // A page of the app, edge to edge: the window is the frame.
@@ -315,6 +322,48 @@ const Piece = ({ piece }: { piece: InUse }) =>
         </div>
     );
 
+/**
+ * The same piece in a box a tablet or a phone wide, centred in the room the desktop frame takes
+ * and as tall. The box is a shell container, so the piece narrows as it would on that screen
+ * while the page around it stays as it is; a piece taller than the box still grows it.
+ */
+const NarrowPiece = ({ piece, device }: { piece: InUse; device: Exclude<Device, 'desktop'> }) => {
+    const width = { width: devices[device].width };
+
+    return (
+        <div className="flex aspect-video min-w-0 items-start justify-center">
+            {piece.bare ? (
+                // A scene draws its own stage, hairline and all: it fills the box's height instead of
+                // keeping its 16:9.
+                <div
+                    className="@container/shell max-w-full self-stretch *:aspect-auto *:h-full"
+                    style={width}
+                >
+                    {piece.render()}
+                </div>
+            ) : piece.app ? (
+                <div
+                    className="@container/shell relative max-w-full self-stretch overflow-hidden rounded-item border border-neutral-200 bg-neutral-50"
+                    style={width}
+                >
+                    <OverlayLayer>{piece.render()}</OverlayLayer>
+                </div>
+            ) : (
+                <div
+                    className={cn(
+                        '@container/shell relative flex min-h-full max-w-full flex-col items-center justify-center rounded-item border border-neutral-200 bg-neutral-50',
+                        device === 'phone' ? 'p-4' : 'p-8',
+                        piece.canvas && 'bg-neutral-100',
+                    )}
+                    style={width}
+                >
+                    <OverlayLayer>{piece.render()}</OverlayLayer>
+                </div>
+            )}
+        </div>
+    );
+};
+
 /** One component: one variant in one state on the stage, one piece it is used in, then its neighbours. */
 const ComponentPage = ({ entry, onOpen }: ComponentPageProps) => {
     const piece = inUseOf(entry.id);
@@ -322,6 +371,7 @@ const ComponentPage = ({ entry, onOpen }: ComponentPageProps) => {
     const previous = entries[index - 1];
     const next = entries[index + 1];
     const { Preview, knobs } = entry;
+    const [device, setDevice] = useDevice();
 
     return (
         <Page className="gap-12" width="wide">
@@ -339,6 +389,7 @@ const ComponentPage = ({ entry, onOpen }: ComponentPageProps) => {
             />
             {piece && (
                 <Section
+                    aside={<DeviceControl onChange={setDevice} value={device} />}
                     description={
                         <>
                             <span className="font-medium text-neutral-950">{piece.title}.</span>{' '}
@@ -347,7 +398,7 @@ const ComponentPage = ({ entry, onOpen }: ComponentPageProps) => {
                     }
                     title="In use"
                 >
-                    <Piece piece={piece} />
+                    <Piece device={device} piece={piece} />
                 </Section>
             )}
             <Neighbours

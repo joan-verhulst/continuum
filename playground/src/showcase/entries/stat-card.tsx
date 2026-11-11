@@ -59,7 +59,7 @@ const WeekStats = () => (
         place="overview"
         title="Overview"
     >
-        <div className="grid grid-cols-4 gap-4">
+        <div className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-4 gap-4">
             <StatCard delta="+12.4%" label="Sessions" value="12,480" />
             <StatCard delta="−3.1%" label="Bounce rate" trend="down" value="41.2%" />
             <StatCard delta="0.0%" label="Avg. duration" trend="neutral" value="2m 14s" />

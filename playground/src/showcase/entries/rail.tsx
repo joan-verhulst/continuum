@@ -179,7 +179,7 @@ const ReportsWithRail = () => {
             }
             title="Reports"
         >
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                 {reportCards.map(report => (
                     <Card className="gap-4" key={report.name}>
                         <IconTile>

@@ -50,7 +50,6 @@ const PaginationDemo = ({ knobs }: PreviewProps) => {
     return (
         <div className="w-full overflow-x-auto">
             <Pagination
-                className="min-w-150"
                 end={
                     knobs.end ? (
                         <Select defaultValue="10">
