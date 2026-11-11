@@ -23,7 +23,14 @@ sits straight on it; the panel is `main`, inset 8 on every side but the navigati
 elsewhere), `panel` corners (20), hairline, surface, clipped. Everything styled sits inside a `Theme`
 (the `.continuum` scope with `data-mode` and `data-theme`; 13px Geist, line height 1.25, tracking 0.32px, text
 `neutral-950`; `radius` sets the corner scale); `ThemeScope` re-opens it inside a portal (menus, tooltips,
-dialogs render at the end of the body).
+dialogs render at the end of the body). `PortalContainer` points every overlay inside it at another element
+than the body, a box that holds fixed descendants and stands for the screen (a phone drawn in a preview): its
+sheets, dialogs and menus then keep to that box and size by it.
+
+**Narrow:** the shell is the width the page answers to, not the screen. Under 1024 of it the sidebar (or a top
+nav's links) goes into a drawer the shell holds open or shut (open by the header bar's toggle; Esc, the scrim, a
+chosen place or the drawer's own toggle shut it, focus going back to the toggle), and the panel is inset 8 on
+every side. The panel keeps its gutter, corners and hairline at every width: a phone shows the same shell.
 
 ### Sidebar
 **For** the main navigation of an app with several places and groups. **Not for** an app with a handful of
@@ -42,6 +49,9 @@ SidebarAccount, SidebarSwitcher.
 - **SidebarFooter**: pushed to the bottom; padding 16 top, 20 right, 24 bottom, 18 left; gap 12; holds
   `SidebarAccount` (a 36 avatar with chip corners, 12 from the name 13/500 `neutral-600` over the plan 11/500
   `neutral-600`) and a bell.
+- **Narrow:** under 1024 of shell it is a drawer: 256 wide (at most the shell less 48), on the canvas colour,
+  sliding in from the left over the panel in 200ms with the `sheet` shadow and a 40% black scrim, still under
+  reduced motion; shut, it is neither seen nor focusable. Its SidebarToggle then shuts the drawer.
 
 ### SidebarSwitcher
 **For** the current workspace, project or account of a product that has several, a click from the others: under
@@ -79,10 +89,17 @@ Vertical padding 8, gap 8, `item` corners (10), full width, label truncates. Sta
 `action-hover`); current (`aria-current="page"`) the selected wash, inset text `neutral-950`; focus ring.
 
 ### NavGroup
-**For** a project or collection that folds open to its pages (inset NavItems). **Not for** flat sections.
-- Trigger: a NavItem row, 14/400 `neutral-700`, an icon box 16, a chevron (16) that shows on hover and turns
-  from −90° to 0° when open; open: the selected wash and `neutral-950` text. Panel: 4 vertical padding, items 2
+**For** a section that folds open to its pages (inset NavItems), as deep as it needs: a NavGroup's rows may be
+NavGroups. **Not for** flat sections.
+- Trigger: a NavItem row, 14/400 `neutral-700` (`neutral-950` open), an icon box 16, a chevron (16) that shows on
+  hover (always on touch) and turns from −90° to 0° when open. Open is never a background: a background means
+  "you are here".
+- Rows: on a 1px `neutral-200` guide line from the middle of the icon above (17 in), the rows 6 off it, so a
+  page's label lines up with its section's; each level one icon's width further in. 4 above and below, rows 2
   apart; opens over 200ms.
+- The page you are on takes the theme's active look, and its piece of the guide line turns `neutral-950`; every
+  NavGroup that holds it (found among its rows, open or closed, or set with `current`) stays plain, its label at
+  full strength, and darkens its own piece of the line, so the path down to the page can be followed.
 
 ### SidebarLevel · SidebarLevelHead · SidebarBack
 **For** a sidebar place with a long index of its own (a docs site's components, a settings tree): the sidebar
@@ -112,6 +129,8 @@ instead) or views of the current page (Tabs, the Dock). **With** SidebarGroup, N
   name hides under 640). Links 2 apart; links that overflow scroll with a chevron (34 × 34) at the end that has
   more. **TopNavLink**: 34 high, 12 side, 8 vertical, gap 8, `item` corners, 13/400 `neutral-600`; hover 5% wash
   and `neutral-950`; current the selected wash and `neutral-950`. Actions pushed right, gap 8.
+- **Narrow:** under 1024 of shell the links and the actions hide, and a toggle before the brand opens the
+  shell's drawer, the links listed in it as nav items.
 
 ### Rail
 **For** the main navigation as a floating island: icons only, labels on demand. **Not for** an app whose places
@@ -123,6 +142,8 @@ need to be read at a glance (Sidebar). **With** RailToggle, RailItem, RailSepara
   `neutral-600` (opacity 0 closed, 1 open), a tooltip on the right while closed; hover 5% wash and
   `neutral-800`; current `on-action` text on the pill. **RailSeparator**: a hairline with 6 vertical margin.
   **RailToggle** is named "Collapse navigation" or "Expand navigation" (`collapseLabel`, `expandLabel`).
+- **Narrow:** none; the rail is a choice for a wide screen. An app that must work on a phone takes the Sidebar
+  or the TopNav, whose places go into the drawer.
 
 ### HeaderBar
 **For** the top of the panel: the breadcrumb and at most two page-wide actions. **Not for** the page's title
@@ -137,12 +158,16 @@ HeaderBarActions, Notice; `usePageHistory`.
   it gives the page, `canGoBack`, `canGoForward`, `back`, `forward` and `go` (which drops anything forward, as a
   browser does); use the router's history where there is one. **HeaderBarActions**: gap 8, secondary before
   primary.
+- **Narrow:** under 1024 of shell, in an app with a sidebar, a **HeaderBarSidebarToggle** takes the far left,
+  where back and forward sit (a ghost square with the panel icon, opening the drawer); back and forward and the
+  actions hide; the breadcrumb and a notice stay. A bar of your own places the toggle itself.
 
 ### PageContent
 **For** the centred column every page's content sits in. **Not for** a container inside the page.
 - Content-box, centred, min width 0. Width `narrow` 640 · `default` 896 · `wide` 1080 · `dense` 1280 · `inset`
   (the panel less 64 a side from 1024, 128 from 1536) · `full` (0). Side padding 16, 24 from 640. Top padding 96,
   128 from 1536. Never pass a smaller top padding.
+- **Narrow:** in a compact shell (under 640) side padding 16 and top padding 40. Outside a shell, as above.
 
 ### BottomBar · Dock · DockItem · DockAction
 **For** the views of a list, the facets of an editor beside its commit action, or sibling settings pages, at the
@@ -155,10 +180,12 @@ panel's foot. **Not for** the facets of one object on its detail page (Tabs), a 
   selected; more items than fit scroll sideways with a chevron (32 × 32) at the end that has more, the selected
   one kept in view.
 - **DockItem**: 32 high, 12 side, gap 8, corners `dock − 3` (23), 13/500 `neutral-600`, icon 16; hover
-  `neutral-950`; pressed: the action fill and `on-action` text (a theme may make it a raised chip); a count may
-  trail.
+  `neutral-950`; pressed: the action fill and `on-action` text; a count may trail.
 - **DockAction**: a large primary button (38) with the dock's corners; 16 side padding, 13/500 `on-action`, or
   38 × 38 with an icon only.
+- **Narrow:** in a compact shell the floating BottomBar is never wider than its parent less 32, so the dock's
+  own scroll and chevrons start; the dock's counts (DockCount) hide; a DockAction with an icon shows the icon only, 38 × 38,
+  its label kept for screen readers.
 
 ### ContinuumMark · ContinuumLogo
 The system's own mark (an endless loop opening into a C) in the current colour, 24 by default, and the lockup
@@ -177,6 +204,8 @@ BreadcrumbLink, BreadcrumbMenu, BreadcrumbPage, BreadcrumbSeparator.
   switches siblings deeper in the trail (a report among reports; the workspace itself only in an app without a
   SidebarSwitcher); without, it is the "…" standing in for a long middle; hover 5% wash;
   open the selected wash; menu min width 192.
+- **Narrow:** in a compact shell only the last two crumbs show, parent › page; home and the earlier crumbs
+  hide.
 
 ### Tabs
 **For** the facets of one object, each with content of its own: line tabs under a page's, a section's or a
@@ -193,7 +222,8 @@ list, settings areas, or an editor with a commit action (the Dock); not for swit
 Hover `neutral-950` (pill: also the 5% wash); disabled 50%; arrow keys select as they move. A pill list nested
 in a line list keeps its own look. **TabsCount**: 16 high, min 16 wide, 4 side, round, the tab's
 colour at 10% behind 11/500 in the tab's colour. A trailing piece may also be a `Kbd`, a `StatusDot` or an
-icon.
+icon. **Narrow:** a list longer than its width scrolls sideways under an edge fade, with a chevron at the end
+that has more (the dock's), the active tab kept in view; line tabs keep their hairline full width.
 
 ### Pagination
 **For** paging a table. **Not for** steps (Stepper). **With** PaginationPrevious, PaginationButton,
@@ -204,6 +234,8 @@ PaginationNext.
   is a 34 slot; the slot count is constant (siblings × 2 + 5), so the row never changes width.
   **getPageItems**`(page, pageCount, siblings = 1)` returns those slots (page numbers and `start-ellipsis` /
   `end-ellipsis`), for a pager drawn by hand.
+- **Narrow:** it measures its own width. Under 720 the results text (one line, never wrapping) hides and the pages become previous, "3 of
+  25" (13/500 `neutral-800`, tabular) and next, on the same 34 buttons.
 
 ### CommandMenu
 **For** search-and-run from the keyboard (⌘K). **Not for** a search box in a page (Input) or a long menu
@@ -217,7 +249,8 @@ CommandMenuItem, CommandMenuEmpty, CommandMenuFooter; `useCommandMenuShortcut`.
   corners, 13/500 `neutral-700`, icon 16 `neutral-600`, a hint 11/400 `neutral-600` at the end; highlighted the
   5% wash and `neutral-800`. Empty: 13 `neutral-600`, 10 side, 12 vertical. Footer 40 high, 16 side, gap 16,
   hairline above, 11 `neutral-600` key hints. On a touch screen the input row ends in a secondary close button
-  (`closeLabel`), since a finger has no Esc.
+  (`closeLabel`), since a finger has no Esc, and the footer hides, its hints being keys. The footer's hints
+  never wrap; what does not fit is cut off.
 
 ### Stepper
 **For** the steps of a long form, horizontal over it or vertical beside it. **Not for** a page's facets (Tabs)
@@ -271,6 +304,8 @@ standing actions (the title row) or the views of a list (Dock). **With** Toolbar
 
 Hairline, surface, `float` shadow. Items 13/500 `neutral-600`, `neutral-950` on hover, icons 16. **ToolbarChip**
 leads it ("AI suggestions"): `primary-500` at 20% behind 11/500 `primary-800`, a 16 sparkle, 8–10 side padding.
+**Narrow:** a bar longer than its room scrolls sideways under an edge fade, no scrollbar, rather than clipping;
+in a compact shell a ToolbarButton with an icon drops its label (kept for screen readers), one without keeps it.
 
 ### DropdownMenu
 **For** a row's or an object's actions behind a ghost ellipsis, or an account menu. **Not for** picking a value
@@ -298,7 +333,8 @@ DropdownMenuSearch, DropdownMenuEmpty, DropdownMenuShortcut.
 
 ### Kbd
 A shortcut key: 21 high, min 21 wide, 4 side, chip corners, a 1px `neutral-300` border, no fill, 11/500
-`neutral-700`. Trails a NavItem, a CommandMenuItem, a search input.
+`neutral-700`. Trails a NavItem, a CommandMenuItem, a search input. Hidden on a touch screen, which has no keys
+to hint at.
 
 ## Inputs
 
@@ -323,11 +359,13 @@ Hairline, no fill, full width, icons 16 `neutral-600`. Hover border `neutral-300
 plus the ring; invalid border `error-500`, icon `error-500` and placeholder `error-300`; disabled the whole box
 at 50%, its colours and hairline kept, as every disabled control. `sm` in a toolbar beside buttons; `md` in a
 form. The `plain` variant drops the box (no border, no side padding) for a search inside a container that
-already frames it (a table's bar, a menu); it keeps the ring.
+already frames it (a table's bar, a menu); it keeps the ring. **On touch** the text is 16, so the phone does not
+zoom the page on focus; the box keeps its height. The same holds for every field that takes typing: Textarea,
+the Combobox's input, a menu's search, the command menu's, a filter's typed value, the chat composer and prompt.
 
 ### Textarea
 A medium Input for several lines: min height 96, 12 side, 10 vertical, `control` corners, hairline, 13/500
-`neutral-900`; grows downwards only. Same states as Input.
+`neutral-900`; grows downwards only. Same states as Input; 16 on touch, as Input.
 
 ### Select
 **For** one value from a list of many; in a setting row with `indicator="right"` as the "Select ›" picker.
@@ -339,7 +377,8 @@ SelectGroup, SelectLabel, SelectSeparator.
   (`neutral-700` on hover); hover and open border `neutral-300`; invalid border and icon `error-500`; disabled 50%.
 - Panel: at least the trigger's width, `item` corners, hairline, surface, `float` shadow, 4 below; the list
   padded 4 with rows 4 apart; rows as a menu's (36 high, 12 side, corner 5, 13/500 `neutral-700`), the picked
-  one on the selected wash with a 16 check at its end; a group label 11/500 `neutral-600`.
+  one on the selected wash with a 16 check at its end; a group label 11/500 `neutral-600`. Never wider than the
+  room the screen leaves beside its trigger, as the Combobox's.
 
 ### Combobox
 **For** a value, or several, found by typing. **Not for** a short list (Select) or free text (Input). **With**
@@ -361,16 +400,16 @@ mapping the values to chips); `useComboboxFilter` filters by label with the loca
 ### Checkbox
 **For** selecting rows in a table, agreeing to a thing in a form, several choices from a short list. **Not for**
 a setting that is on or off (Switch), nor a column of channels in settings (one control per setting).
-- 20 × 20, `chip` corners (6), a 1px `neutral-500` border (the border alone shows it, so it reaches 3:1), no
+- 20 × 20, `chip` corners (6), a 1px `neutral-300` border (one step over the hairline), no
   fill; checked or mixed: the action fill, the border kept, a 14 check or minus in `on-action`. Hover border
-  `neutral-600`; invalid `error-500`; disabled 50%. Inside a
+  `neutral-400`; invalid `error-500`; disabled 50%. Inside a
   menu row the indicator is 16 with a 12 mark.
 
 ### RadioGroup · RadioGroupItem
 **For** one of a few options read together, each with a label (an OptionRow when it needs a description).
 **Not for** five or more options (Select) or a yes/no (Switch).
-- Items 8 apart in a column. Item 20 × 20 round, a 1px `neutral-500` border (3:1, as the checkbox's), no fill; checked:
-  a 14 round dot in the action colour. Hover border `neutral-600`; invalid `error-500`; disabled 50%.
+- Items 8 apart in a column. Item 20 × 20 round, a 1px `neutral-300` border (as the checkbox's), no fill; checked:
+  a 14 round dot in the action colour. Hover border `neutral-400`; invalid `error-500`; disabled 50%.
 
 ### Switch
 **For** a setting that is on or off and takes effect as it changes. **Not for** a choice submitted with a form
@@ -388,6 +427,8 @@ on an index. **Not for** going to another place (Dock, Tabs), a yes/no (Switch),
   text; a theme may raise it as a chip with a hairline) that slides between items over 200ms. Inside a Field it
   is named by the FieldLabel, described by the helper and disabled with the field; elsewhere give it an
   `aria-label`.
+- **Narrow:** items keep their labels' width and never collide; a track wider than its room scrolls. In a
+  compact shell a choice of more than four options is a Select instead, the page's call, not the control's.
 
 ### Slider
 A range: a 4 track in `neutral-200` filled with the action colour up to a 16 round knob on the surface with a
@@ -401,6 +442,14 @@ on hover.
 - N boxes driven by one input: `md` 38 × 38 (gap 8, text 14/500), `lg` 48 × 52 (gap 10, text 18/500, for a page
   whose only task it is); `control` corners, hairline, the surface, tabular; the active box takes the ring;
   invalid `error-500` with a 240ms shake.
+
+### ColorPicker · ColorField
+**For** choosing one colour: a label's, a series', a theme's own. **Not for** a choice from a fixed set (swatches as radios).
+- **ColorPicker** is a well: a 34 square in the colour, `control` corners, a 10% inner edge. It opens a popover holding, 12 apart: a plane 176 high at one hue with a 14 round handle (2 white border), a hue BlockSlider (48) with its band along the foot, then a ColorField.
+- **ColorField** is the value by hand: a notation Select (Hex · RGB · HSL · OKLCH, 96 wide, 28 high) beside a mono Input of the same height. A value is taken once it reads as a whole colour, in the notation picked or the one it names itself; it is kept as hex.
+- The plane follows the notation: saturation over brightness for Hex and RGB, saturation over lightness for HSL, chroma over lightness for OKLCH.
+- Given the light and the dark surface the colour sits on (`contrast`), two readings lead the popover ("On light 2.63:1", a dot in `success` or `error`), each a toggle for its own check, and the colours that miss 3:1 as a fill are dotted over on the plane up to a 1px white line.
+- Put the well and the field side by side, 12 apart, when the value matters as much as the look; the well alone in a dense row.
 
 ### DatePicker · DateRangePicker · Calendar
 **For** a date in a form (DatePicker, 38 like a medium input), a period for a report or overview
@@ -513,7 +562,9 @@ slot, a search, selects; `filterOperators` for the operator sets.
   sentence ends at the operator (`filterOperatorTakesValue` says which).
 - A value typed rather than picked (a number, a date, a piece of text: "is more than 500") is a
   **FilterConditionInput**: a borderless input in the segment, 13/500 `neutral-950`, 10 side, growing with what
-  is typed from 64 to 192 wide, placeholder `neutral-600`.
+  is typed from 64 to 192 wide, placeholder `neutral-600`; 16 on touch, as an Input.
+- **Narrow:** the value segment truncates with an ellipsis before the condition clips; conditions still wrap as
+  whole chips.
 - **Add** is a 34 secondary square with the filter icon opening the fields not yet applied (with a search when
   long); picking one adds the condition with its default operator and no value. The conditions, a ghost
   "Clear all" (once anything applies) and the add button sit in one wrapping row, in that order, 8 apart.
@@ -533,6 +584,8 @@ above the column head. **Not for** page-wide controls (the period, Export: the p
   bar, so narrowing reads apart from finding.
 - The selects and the conditions work together: a select for the one or two filters always at hand, the
   conditions for the rest.
+- **Narrow:** the search gives up its 256 and takes the rest of the bar, the end group beside it. Folding the
+  selects into the Filter button on a phone is the page's decision (`pages.md`), not the bar's.
 
 ## Overlays
 
@@ -581,8 +634,9 @@ the list's. **Not for** a row on a page (a table row, a setting row, a bar list 
   avatar or a chip pads the row 10 vertical, a 32 or 36 avatar 12, and beside either one line of text sits 10
   from it.
 - **PopoverItemIndicator**: a 16 checkbox (corner `chip` − 2) or radio (round) at the row's head, a 1px
-  `neutral-500` border (3:1, as a checkbox's); checked or selected, the action fill with a 12 check or a 6 dot in `on-action`.
-  **PopoverItemShortcut**: 11/500 `neutral-600`, slightly tracked ("⌘D", "G I").
+  `neutral-300` border (as a checkbox's); checked or selected, the action fill with a 12 check or a 6 dot in `on-action`.
+  **PopoverItemShortcut**: 11/500 `neutral-600`, slightly tracked ("⌘D", "G I"); hidden on a touch screen, as a
+  Kbd.
 
 ### Tooltip
 **For** naming an icon-only control. **Not for** explanation (InfoTip) or anything that must stay. **With**
@@ -642,6 +696,11 @@ fill, 8 vertical padding), then a row per sum with no rules, the first cell `neu
 hairline above, 12 top and 16 bottom padding. **TableCaption** under the table, 13 `neutral-600`. A `toolbar`
 stays put in the frame while a table wider than it scrolls sideways under it.
 
+**Narrow:** a head or cell keeps to one line (a second line of meta still stacks under the first), and the frame
+scrolls sideways under an edge fade at the side that has more, so it reads as scrollable. A column marked
+`optional` on its head and cells (an owner, a last seen: what the reader can do without) hides while the frame is
+under 640; the name and the row's menu are never optional.
+
 ### DescriptionList · DescriptionItem
 **For** key–value facts in a bordered box, term left and value right in two equal columns. **Not for** facts on a
 detail page, which go in a card as a grid of label-over-value pairs; not for settings.
@@ -665,7 +724,8 @@ categories (a chart) or a data table.
   corners, the 3% wash, with a bar behind the label sized to its value (the 7% wash; `chart-1` at 20% for the
   `chart` tone; min 4 wide), an optional 16 icon, the label 13/400 `neutral-950` truncating, the value 13/400
   `neutral-600` tabular. Interactive rows hover the 5% wash; pressed (a filter toggle) the tint with the label at
-  500. Empty: a 34 row "No data yet" in `neutral-600`.
+  500. Empty: a 34 row "No data yet" in `neutral-600`. Narrow, the header's value label truncates rather than
+  push the title out.
 
 ### Separator
 A 1px `neutral-200` line, horizontal or vertical. Rarely: between the rows of a bordered list, segments of a
@@ -714,6 +774,7 @@ A 6 (`sm`) or 8 (`md`) round dot in the tone's 500; `pulse` adds a halo at 60% e
   tabular at the right, gap 12) 8 above a track 4 (`sm`) or 8 (`md`) high, round, `neutral-200`, filled in the
   action colour (`success-500` / `warning-500` / `error-500` / `chart-1` by tone) over 200ms. A tone only when the
   amount warrants it. Indeterminate progress fills the track at 30% and holds still.
+- **Narrow:** the caption or value truncates with an ellipsis rather than push the label out.
 
 ### Checklist · ChecklistItem
 **For** onboarding steps on the overview. **Not for** a form's steps (Stepper) or tasks to tick (that is data,
@@ -721,7 +782,7 @@ a table).
 - A card (16 padding, `card` corners): the title 14/500 with the count 13 `neutral-600` ("3 of 5") and an
   action, a 4 meter under them 12 below (action fill; success when complete), then the steps 2 apart. A step:
   8 padding (12 vertical when current), `item` corners, the current one on the 4% wash; a 22 round marker (a
-  `neutral-500` ring; the action ring when current; the action fill with a 14 tick when done), the title 13/500
+  `neutral-300` ring; the action ring when current; the action fill with a 14 tick when done), the title 13/500
   (`neutral-600` at 400 when done), and for the current step its line 13 `neutral-600` and its action 10 below.
 
 ### Skeleton · SkeletonText · Spinner

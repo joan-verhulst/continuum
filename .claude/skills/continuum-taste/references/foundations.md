@@ -44,9 +44,9 @@ Use a step by what it means, never by how it looks:
 | Surface: panels, cards, dialogs, floating bars, inputs    | `neutral-50`  | `#f8f8f8` | `#0d0d0d` |
 | Canvas behind the panel; muted fills *inside* a bordered container (a table header, a group row) | `neutral-100` | `#ededed` | `#181818` |
 | The hairline: every border and every divider              | `neutral-200` | `#d2d2d2` | `#2a2a2a` |
-| A plain field's hover border; a switch's off track        | `neutral-300` | `#b3b3b3` | `#484848` |
-| Disabled helper text; decorative marks (a breadcrumb's home and separators); a calendar's days outside the month | `neutral-400` | `#9a9a9a` | `#676767` |
-| The focus ring; an unchecked mark's border (checkbox, radio, a menu row's indicator); quiet icons | `neutral-500` | `#818181` | `#818181` |
+| A plain field's hover border; a switch's off track; an unchecked mark's border (checkbox, radio, a menu row's indicator) | `neutral-300` | `#b3b3b3` | `#484848` |
+| Disabled helper text; decorative marks (a breadcrumb's home and separators); a calendar's days outside the month; an unchecked mark's hover border | `neutral-400` | `#9a9a9a` | `#676767` |
+| The focus ring; quiet icons | `neutral-500` | `#818181` | `#818181` |
 | Secondary text, card titles, idle controls, default icons; **and every quieter text**: placeholders, hints, helper text, muted labels, eyebrows, timestamps, counts | `neutral-600` | `#676767` | `#9a9a9a` |
 | Quieter body text; a footer label                         | `neutral-700` | `#484848` | `#b3b3b3` |
 | Ghost text on hover                                       | `neutral-800` | `#2a2a2a` | `#d2d2d2` |
@@ -56,15 +56,18 @@ Use a step by what it means, never by how it looks:
 **Contrast sets the lightest step a role may take.** Text that is read needs 4.5:1 on the surface and on the
 canvas; `neutral-500` gives 3.67 on the surface and 3.33 on the canvas, so it is never text, and `neutral-600`
 (5.33 on the surface) is the lightest text there is. Hints, placeholders and helper text share the secondary
-step with descriptions: they are told apart by size and place, not by a paler grey. An icon, a mark or a border
-that alone shows a state needs 3:1, which `neutral-500` gives (3.67) and `neutral-300` or `neutral-400` do not.
+step with descriptions: they are told apart by size and place, not by a paler grey. An icon that alone carries
+a meaning and the focus ring need 3:1, which `neutral-500` gives (3.67). A control's own outline or track (an
+unchecked mark's border, a switch's off track) is a shape, not something read: it has to be seen, about 1.5:1,
+which `neutral-300` gives (1.97). A hairline is meant to be faint and is held to nothing.
 Disabled text is exempt (it sits at 50%, or in `neutral-400` for a disabled helper). In dark the ramps reverse
 and every role passes at the same step.
 
 The hairline is **1px** of `neutral-200`, always. There is no second border weight and no second border colour
 except on hover (`neutral-300`), in an invalid state (`error-500`) and on an **unchecked mark** (a checkbox, a
-radio, a menu row's indicator: `neutral-500`, `neutral-600` on hover), whose border alone says it is there and
-so must reach 3:1. A plain field's border is the hairline: its label and placeholder say it is a field.
+radio, a menu row's indicator: `neutral-300`, `neutral-400` on hover), one step over the hairline, so an empty
+box stands a little clearer than a field's edge and still sits with the fields. A plain field's border is the
+hairline: its label and placeholder say it is a field.
 
 ### The action colour
 
@@ -131,10 +134,10 @@ Two, and only on what floats:
 | Name    | Light                                 | Dark                              | On                                         |
 | ------- | ------------------------------------- | --------------------------------- | ------------------------------------------ |
 | `float` | `1px 1px 4px rgb(20 22 23 / 0.10)`    | `1px 1px 4px rgb(0 0 0 / 0.40)`   | the dock, floating toolbars, menus, popovers, a slider knob |
-| `sheet` | `0 2px 4px rgb(20 22 23 / 0.10)`      | `0 2px 8px rgb(0 0 0 / 0.50)`     | dialogs and sheets                         |
+| `sheet` | `0 2px 4px rgb(20 22 23 / 0.10)`      | `0 2px 8px rgb(0 0 0 / 0.50)`     | dialogs, sheets, the sidebar as a drawer   |
 
-Never on a card, a button, an icon button or a selected segment. A scrim behind a dialog is `black` at 40% and
-does not flip with the mode.
+Never on a card, a button, an icon button or a selected segment, unless the theme's `elevation` is `full`: then cards and table frames take `shadow-card` (the app panel stays flat) and the controls on them `shadow-control`, both short and faint. A scrim behind a dialog or the sidebar's drawer
+is `black` at 40% and does not flip with the mode.
 
 ### Data colours
 
@@ -389,7 +392,7 @@ and a hairline. Icons lead in navigation and menu rows and trail on action butto
 
 | State    | Look                                                                                                |
 | -------- | --------------------------------------------------------------------------------------------------- |
-| Hover    | border `200 → 300` (an unchecked mark `500 → 600`); ghost text `600 → 800`; a row or item takes the 5% wash (a table row 3%) |
+| Hover    | border `200 → 300` (an unchecked mark `300 → 400`); ghost text `600 → 800`; a row or item takes the 5% wash (a table row 3%) |
 | Pressed  | a button scales to 97% for the press                                                                |
 | Focus    | the 2px ring above, keyboard only                                                                   |
 | Selected | the 7% wash; in a dock, segment or rail, the action fill with `on-action` text                      |
@@ -404,12 +407,12 @@ A single-choice group (segmented control, dock, radio) always keeps one value.
 | What                              | Duration | Easing                               | From                                      |
 | --------------------------------- | -------- | ------------------------------------ | ----------------------------------------- |
 | Colour, border, opacity changes   | 150ms    | ease-out                             |                                           |
-| Something entering (dialog, sheet, popup, menu) | 200ms | `cubic-bezier(0.22, 1, 0.36, 1)` | opacity 0 plus a small move: dialogs 8px up, sheets 16px from their edge, popups scale 95% |
+| Something entering (dialog, sheet, popup, menu, the sidebar's drawer) | 200ms | `cubic-bezier(0.22, 1, 0.36, 1)` | opacity 0 plus a small move: dialogs 8px up, sheets 16px from their edge, popups scale 95%; the drawer slides its whole width from the left |
 | A press                           | 150ms    |                                      | scale 97%                                 |
 
 A control's response stays at or under 250ms; a large surface entering or changing size (the rail's width, a
 toast, a sheet) may take up to 400ms. Nothing bouncy, no animated layout. Reveal-on-hover only for secondary affordances (a
-chevron), never a primary action. Reduced motion turns transitions off.
+chevron), never a primary action, and never on touch (Touch, under Layout). Reduced motion turns transitions off.
 
 ## Layout
 
@@ -419,12 +422,54 @@ chevron), never a primary action. Reduced motion turns transitions off.
 | Content column, `default` (overview, detail, document)   | 896                                |
 | Content column, `wide` (a table of several columns)      | 1080                               |
 | Content column, `dense` (a very dense table)             | 1280                               |
-| Side padding of the column, below its width        | 16; 24 from a 640px viewport             |
+| Side padding of the column, below its width        | 16; 24 from a 640px screen; 16 in a compact shell |
 | `inset` (several dense tables): the panel less, a side | 64 from 1024px; 128 from 1536px     |
-| The page's top offset below the header bar         | 96; 128 on a large screen (from 1536px)  |
-| Check at                                           | 1440 × 900, light and dark               |
+| The page's top offset below the header bar         | 96; 128 on a large screen (from 1536px); 40 in a compact shell |
+| Check at                                           | 1440 × 900 and 390, light and dark       |
 
 The column is centred and never runs to the panel's edge unless a page is explicitly asked to be `full`.
+
+### Narrow screens
+
+The system is drawn at 1440 and holds down to a phone at 390. Two widths change the shell, measured on the shell
+itself, not the screen, so a shell shown narrow inside a box or embedded in another page behaves as on a phone:
+
+| Shell width               | What changes                                                                                   |
+| ------------------------- | ---------------------------------------------------------------------------------------------- |
+| 1024 and up               | Nothing: everything as drawn.                                                                  |
+| under 1024 (`shell-sidebar`) | The sidebar no longer fits beside the panel. It becomes a drawer behind a toggle at the far left of the header bar; the header bar's back and forward and its actions hide; a top nav's links go into the same drawer. |
+| under 640 (`shell-compact`)  | Compact, a phone: the page's top offset is 40 and its side padding 16. The panel keeps its 8 gutter, its corners and its hairline, as on a wide screen. |
+
+**A part answers to the width it is given**, its container, never the screen: a table or a pager in a narrow
+card behaves as it would on a phone. Only overlays (dialogs, sheets, toasts, popovers, a date picker's panel)
+answer to the screen, since they float over it.
+
+**A row of controls never wraps.** When it runs out of room it does one of three things:
+
+- **Scroll**, a row of peers that are all needed: tabs, the dock, a top nav's links, a toolbar, a table. It
+  moves sideways under an edge fade at the end that has more (with a chevron where a pointer needs one), the
+  current item kept in view.
+- **Hide**, what the page works without: the header bar's actions, a page's secondary actions, pagination's
+  results line, the dock's counts, a table's optional columns, keyboard hints on touch. Hidden, never folded
+  into a "⋯" menu.
+- **Stack**, blocks side by side: the page head (the title, its line, then the actions), stat cards four
+  across become two, two cards side by side become one column, a facts grid three across becomes two.
+  Stacking costs height, which a phone has; width it has not.
+
+Fold into a smaller control only what can neither scroll nor go: pagination to ‹ 3 of 25 ›, a segmented control
+of more than four options to a select, an index's selects into its one Filter button. Only content wraps: text,
+and applied-filter chips.
+
+### Touch
+
+On a touch screen (a coarse pointer), at any width:
+
+- Every field that takes typing is **16**, not 13, so the phone does not zoom the page on focus; the box keeps
+  its height. The one place the type scale yields.
+- A target is at least **44** square. A smaller control keeps its drawn size and gets an invisible hit area
+  round it, so nothing in a row grows wider.
+- Nothing is revealed by hover alone: what shows on hover (a group's chevron, a block's handle) shows always.
+- No keyboard hints: a kbd and a menu row's shortcut hide.
 
 ### Fixed widths
 
@@ -435,7 +480,7 @@ pixels) stay on the spacing scale.
 
 | Width                                                       | Px                         |
 | ----------------------------------------------------------- | -------------------------- |
-| Sidebar                                                     | 256                        |
+| Sidebar (as a drawer, never wider than the shell − 48)      | 256                        |
 | Rail, closed · open                                         | 52 · 208                   |
 | Toast                                                       | 360                        |
 | Popover                                                     | 288                        |
@@ -448,5 +493,5 @@ pixels) stay on the spacing scale.
 | A table's or an index's search                              | 256                        |
 | A date-range picker's presets column                        | 144                        |
 | An empty state's sentence · a chat's empty line (maximum)   | 480 · 288                  |
-| Sign-in card                                                | 400                        |
+| Sign-in card (on a phone, the screen less 16 a side)        | 400                        |
 | An assistant's conversation column and its prompt           | 720                        |

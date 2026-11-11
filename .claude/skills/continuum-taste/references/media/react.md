@@ -54,7 +54,7 @@ there (a `continuum` folder or a `.continuum` class), skip setup.
 | An icon on that tint                    | `text-primary-600` · `text-error-600`; `text-success-700` · `text-warning-700` (the 600 misses 3:1 on their tints) |
 | A delta: rising · falling               | `text-success-800` · `text-error-600`                                    |
 | Placeholders, hints, helper text, eyebrows, timestamps | `text-neutral-600`, `placeholder:text-neutral-600`; never `text-neutral-500` or lighter for read text |
-| An unchecked checkbox, radio or menu indicator | `border-neutral-500`, `hover:border-neutral-600`                  |
+| An unchecked checkbox, radio or menu indicator | `border-neutral-300`, `hover:border-neutral-400`                  |
 | The focus ring                          | the exported `focusRing` string (`focus-visible:outline-solid outline-2 outline-focus outline-offset-2`; inside a clipping container `-outline-offset-2`) |
 | Type sizes 11 · 13 · 14 · 16 · 18 · 20 · 24 · 31 | `text-xxs` · `text-xs` · `text-sm` · `text-base` · `text-lg` · `text-xl` · `text-2xl` · `text-3xl` (line height and tracking come with them) |
 | Weights 400 · 500                       | `font-normal` · `font-medium`                                            |
@@ -73,10 +73,27 @@ there (a `continuum` folder or a `.continuum` class), skip setup.
 | Icons                                   | `lucide-react` with `strokeWidth={2}`; a container sizes them with `[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0` |
 | Colour transitions                      | `transition-[background-color,border-color,color] duration-150`; never `transition-all` |
 | Entries                                 | `duration-200 ease-out-strong` from Base UI's `data-starting-style:opacity-0 data-starting-style:translate-y-2` (dialogs), `translate-x-4` (sheets), `scale-95` (popups), with `motion-reduce:transition-none` |
+| The shell's widths: under 1024 (sidebar) · under 640 (compact) | `AppShell` is the container `@container/shell`; inside it the variants `@max-shell-sidebar/shell:` · `@max-shell-compact/shell:`, from `--container-shell-sidebar` (1024px) · `--container-shell-compact` (640px) in `@theme`. Outside an `AppShell` there is no `shell` container and they never match, so a part looks as drawn |
+| A part's own width                      | its own named container on the part (`@container/table`, `@container/pagination`) and a variant on it (`@max-[640px]/table:`), so it narrows in a card as on a phone |
+| Touch                                   | `pointer-coarse:`: a field `pointer-coarse:text-base` (16), a hint `pointer-coarse:hidden`, a hover reveal `pointer-coarse:opacity-100`; a hit area as an absolutely placed `after:` of at least 44 square, centred on the control, under `pointer-coarse:` (check the part does not already use `::after`) |
 
 Never: hex values, `bg-white`, Tailwind's default palette or radii (`rounded-md`), `dark:` variants (the ramps
 flip on their own), a height above in pixels or on the spacing scale (`h-[34px]`, `h-8`: the theme's item size
-never reaches it), a height between 34 and 38.
+never reaches it), a height between 34 and 38, a screen variant (`sm:`, `md:`, `lg:`) for anything inside the
+shell but an overlay (the shell's and the part's own containers decide), `flex-wrap` on a row of controls.
+
+## Narrow screens in the library
+
+- `AppShell` holds the drawer's state: uncontrolled by default, or `navOpen` / `defaultNavOpen` /
+  `onNavOpenChange` to hold it yourself. Under 1024 of shell the `Sidebar` is the drawer and a `NavItem` chosen
+  in it shuts it; a `SidebarToggle` in its header with no `onClick` of its own shuts it too.
+- `HeaderBar` draws a `HeaderBarSidebarToggle` at its far left on its own inside an `AppShell nav="side"`;
+  export it into a bar of your own. `HeaderBarNav` and `HeaderBarActions` hide under 1024 of shell.
+- `TableHead` and `TableCell` take `optional`: mark a column's head and its cells, and it hides while the
+  table's frame is under 640.
+- `DockCount`, the count trailing a `DockItem`, hides in a compact shell (under 640).
+- A row of peers that scrolls (tabs, the dock, top-nav links) uses `useOverflowScroll` and `OverflowChevron`
+  from `lib/overflow-scroll`: the edge fade, a chevron at the end that has more, the current item kept in view.
 
 ## Code idiom
 
@@ -134,5 +151,5 @@ they live in the host's components folder, importing `cn` and `focusRing` from C
 
 ## Checking
 
-Run the app, look at the screen at 1440 × 900 in light and dark (switch `<Theme mode>`), and in an accent theme
-if the product has one. Take screenshots; do not report a screen done from the code alone.
+Run the app, look at the screen at 1440 × 900 and at 390 in light and dark (switch `<Theme mode>`), and in an
+accent theme if the product has one. Take screenshots; do not report a screen done from the code alone.

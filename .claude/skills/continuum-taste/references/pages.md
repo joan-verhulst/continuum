@@ -48,7 +48,7 @@ forward pair, when there is no router, sits at the far left, ruled off full heig
 **The floating dock.** Centred over the page's foot, 24 above the panel's bottom edge: 38 high outside, a
 hairline, the surface colour, `dock` corners (a pill), the `float` shadow. Inside, items of 32 high sitting 3
 from the outer edge (the hairline plus 2), 12 side padding, 13 medium `neutral-600`, 2 apart; the selected one
-is filled with the action colour and `on-action` text (a theme may make it a raised chip instead). A count may
+is filled with the action colour and `on-action` text. A count may
 trail a label in the same size, `neutral-600` (`on-action` at 70% on the selected item). Beside the dock, the page's one
 primary action as a **dock action**: a 38 pill in the action colour. The page's column gets 96 of bottom
 padding so the last row scrolls clear of the dock. When rows are selected, a floating toolbar of the bulk actions
@@ -68,8 +68,8 @@ pick the narrowest that fits:
 | Several dense tables side by side (`inset`: the panel less 64 a side, 128 on a large screen) | `inset` |
 | Only when explicitly asked for: the panel edge to edge           | `full`    |
 
-Below its width the column takes the panel less 16 a side (24 from a 640 viewport). A form is never wider than
-640 whatever the screen; an overview with cards and charts is not dense and stays 896.
+Below its width the column takes the panel less 16 a side (24 from a 640 screen; 16 again in a compact shell). A
+form is never wider than 640 whatever the screen; an overview with cards and charts is not dense and stays 896.
 
 ## The page head
 
@@ -209,6 +209,37 @@ full-width large (38) primary "Sign in", "or" between hairlines, a full-width se
 with Google"), and a 13 `neutral-600` line with a link under the card. A one-time code is a code input, large
 when it is the page's only task.
 
+## On a narrow screen
+
+The same pages, narrowed by the shell's own width (the two widths, and scroll, hide or stack, are in
+`foundations.md` under Narrow screens). At 1024 and up nothing on this page changes.
+
+**Below 1024: a top bar and a drawer.** The sidebar leaves the canvas and the panel takes the shell's width, 8
+in on every side. At the header bar's far left, in the place of back and forward, a sidebar toggle (a ghost
+square with the panel icon) opens the sidebar as a **drawer**: the same anatomy, 256 wide (never more than the
+shell less 48), on the canvas colour, sliding in from the left over the panel in 200ms, the `sheet` shadow, a
+40% black scrim over the rest. Esc, the scrim, the toggle in the drawer's header or choosing a place closes it,
+and focus goes back to the toggle. The header bar keeps the breadcrumb; its back and forward and its actions
+hide, and a notice still hangs from it. A **top nav** does the same: its links and actions hide, and a toggle
+before the brand opens the drawer with the links as nav items. One narrow shell for both. **No rail**: the rail
+is a choice for a wide screen, and an app that must work on a phone takes the sidebar or the top nav.
+
+**Below 640: compact.** The panel stays the panel, 8 from the canvas on every side with its corners and
+hairline, so a phone shows the same shell as a desktop. The column starts 40 below the header bar, 16 in from each side. The breadcrumb
+shortens to its last two crumbs, parent › page. The floating dock keeps its place but is never wider than the
+panel less 32: its views scroll, their counts hide, and the dock action shows its icon only.
+
+**The page head stacks**: the title, its line, then the actions under them, left-aligned. A page's secondary
+actions hide; its primary stays.
+
+| Kind                | Narrow                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------ |
+| Overview            | The period picker under the title; the chart card full width; stat cards two across; a pair of list cards one column. |
+| Index               | The search takes the toolbar's row; the selects fold into the one Filter button (the page decides, not the table); a table's optional columns hide and the rest scroll sideways, each cell on one line; pagination becomes ‹ 3 of 25 ›; the dock scrolls and its action is its icon. |
+| Detail              | The title row stacks: the avatar and name, the meta line, then the actions; the tabs scroll; the numbers one column; the facts two across. |
+| Create or edit, settings, assistant | Unchanged: they are one column already. A segmented control of more than four options becomes a select. |
+| Sign in             | The card takes the screen less 16 a side.                                                        |
+
 ## Secondary surfaces
 
 | Surface            | Size and place                                                 | For                                                             |
@@ -238,4 +269,6 @@ when it is the page's only task.
 - **Nothing repeats**: a chart's headline is not also a stat card; a count in the dock is not also in the title.
 - **Titles, empty states and forms align left**; nothing is centred except the column itself and the sign-in
   card.
-- **Check at 1440 × 900, in light and dark**, and in an accent theme when the product has one.
+- **Narrow, a row scrolls, hides or stacks**, never wraps; actions hide rather than fold into a "⋯" menu; the
+  navigation becomes a top bar and a drawer, never a rail.
+- **Check at 1440 × 900 and at 390, in light and dark**, and in an accent theme when the product has one.

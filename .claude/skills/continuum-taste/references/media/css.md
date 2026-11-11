@@ -44,7 +44,7 @@ pixels that a theme's spacing unit never changes: `--spacing-sidebar` (256), `--
 `--spacing-chart-tooltip` (140, a minimum), `--spacing-search` (256), `--spacing-presets` (144), `--spacing-measure` (480)
 and `--spacing-measure-narrow` (288), `--spacing-conversation` (720) for an assistant's column and prompt; a dialog is 480, a sheet 512, the command menu 560, each never wider than
 the viewport less 32. Colours by their roles: placeholders and hints `--color-neutral-600`, an unchecked
-checkbox's border `--color-neutral-500`, a badge's text its tone's 800 on the tone's 500 at 20%, the focus ring
+checkbox's border `--color-neutral-300`, a badge's text its tone's 800 on the tone's 500 at 20%, the focus ring
 `--color-focus` (`neutral-500`). Side padding by kind; content padding from the spacing tables; the state
 table for hover, selected, disabled, invalid. A selected row is `color-mix(in oklab, var(--color-neutral-950)
 7%, transparent)`, which is what `--color-selected` holds. Nothing is ever a hex value in the project's styles.

@@ -125,7 +125,6 @@ createThemeCss({
     font: 'inter',
     action: 'accent',
     actionStyle: 'glossy',
-    segment: 'raised',
     dock: 'rounded',
     radius: 0.5,
 });
