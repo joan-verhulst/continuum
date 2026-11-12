@@ -2030,8 +2030,14 @@
     border-color: var(--color-action, var(--color-action));
   }
 
-  .continuum .border-error-500, .continuum.border-error-500 {
+  .continuum .border-error-500, .continuum.border-error-500, .continuum .border-error-500\/40, .continuum.border-error-500\/40 {
     border-color: var(--color-error-500, var(--color-error-500));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .continuum .border-error-500\/40, .continuum.border-error-500\/40 {
+      border-color: color-mix(in oklab, var(--color-error-500, var(--color-error-500)) 40%, transparent);
+    }
   }
 
   .continuum .border-neutral-50, .continuum.border-neutral-50 {
@@ -2050,8 +2056,28 @@
     border-color: var(--color-neutral-300, var(--color-neutral-300));
   }
 
+  .continuum .border-success-500\/40, .continuum.border-success-500\/40 {
+    border-color: var(--color-success-500, var(--color-success-500));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .continuum .border-success-500\/40, .continuum.border-success-500\/40 {
+      border-color: color-mix(in oklab, var(--color-success-500, var(--color-success-500)) 40%, transparent);
+    }
+  }
+
   .continuum .border-transparent, .continuum.border-transparent {
     border-color: #0000;
+  }
+
+  .continuum .border-warning-500\/40, .continuum.border-warning-500\/40 {
+    border-color: var(--color-warning-500, var(--color-warning-500));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .continuum .border-warning-500\/40, .continuum.border-warning-500\/40 {
+      border-color: color-mix(in oklab, var(--color-warning-500, var(--color-warning-500)) 40%, transparent);
+    }
   }
 
   .continuum .border-white, .continuum.border-white {
@@ -3413,6 +3439,10 @@
   }
 
   @media (hover: hover) {
+    .continuum .group-hover\:bg-neutral-100:is(:where(.group):hover *), .continuum.group-hover\:bg-neutral-100:is(:where(.group):hover *) {
+      background-color: var(--color-neutral-100, var(--color-neutral-100));
+    }
+
     .continuum .group-hover\:opacity-100:is(:where(.group):hover *), .continuum.group-hover\:opacity-100:is(:where(.group):hover *) {
       opacity: 1;
     }
@@ -5217,9 +5247,9 @@
     object-fit: cover;
   }
 
-  .continuum .\[\&_svg\]\:size-3 svg, .continuum.\[\&_svg\]\:size-3 svg {
-    width: 12px;
-    height: 12px;
+  .continuum .\[\&_svg\]\:size-2\.5 svg, .continuum.\[\&_svg\]\:size-2\.5 svg {
+    width: 10px;
+    height: 10px;
   }
 
   .continuum .\[\&_svg\]\:size-3\! svg, .continuum.\[\&_svg\]\:size-3\! svg {

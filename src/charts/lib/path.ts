@@ -10,25 +10,43 @@ export type Point = { x: number; y: number };
  * (Fritsch and Carlson's rule): where a point is a peak the curve is flat there, and
  * between two points it stays between their values. A peak stays the peak it was.
  */
+const sign = (value: number) => (value < 0 ? -1 : 1);
+
 const slopes = (points: readonly Point[]) => {
     const n = points.length;
+    const runs: number[] = [];
     const deltas: number[] = [];
     for (let i = 0; i < n - 1; i++) {
         const a = points[i] as Point;
         const b = points[i + 1] as Point;
         const run = b.x - a.x;
+        runs.push(run);
         deltas.push(run === 0 ? 0 : (b.y - a.y) / run);
     }
 
+    /*
+     * The slope to leave a point at, weighted towards the gentler of its two sides. Taking the
+     * plain average instead and pulling it back into range, as the first draft did, flattens
+     * the curve at every turn, and a line of many readings comes out as a run of flat tops
+     * joined by ramps — the corners that made it look cut rather than drawn.
+     */
+    const between = (before: number, after: number, runBefore: number, runAfter: number) => {
+        if (before * after <= 0) return 0;
+        const weighted = (before * runAfter + after * runBefore) / (runBefore + runAfter);
+        return (
+            (sign(before) + sign(after)) *
+            Math.min(Math.abs(before), Math.abs(after), 0.5 * Math.abs(weighted))
+        );
+    };
+
     const m: number[] = new Array(n).fill(0);
-    m[0] = deltas[0] ?? 0;
-    m[n - 1] = deltas[n - 2] ?? 0;
     for (let i = 1; i < n - 1; i++) {
-        const before = deltas[i - 1] ?? 0;
-        const after = deltas[i] ?? 0;
-        // A turn in direction means a peak or a trough: leave it flat.
-        m[i] = before * after <= 0 ? 0 : (before + after) / 2;
+        m[i] = between(deltas[i - 1] ?? 0, deltas[i] ?? 0, runs[i - 1] ?? 1, runs[i] ?? 1);
     }
+    // The ends have one side only, so they take it, held to what the first span can carry.
+    const end = (delta: number, inner: number) => 1.5 * delta - 0.5 * inner;
+    m[0] = n > 2 ? end(deltas[0] ?? 0, m[1] ?? 0) : (deltas[0] ?? 0);
+    m[n - 1] = n > 2 ? end(deltas[n - 2] ?? 0, m[n - 2] ?? 0) : (deltas[n - 2] ?? 0);
 
     for (let i = 0; i < n - 1; i++) {
         const delta = deltas[i] ?? 0;
@@ -84,6 +102,31 @@ export const linePath = (points: readonly Point[]) => {
         .slice(1)
         .map(point => ` L${round(point.x)},${round(point.y)}`)
         .join('')}`;
+};
+
+/**
+ * The value held across its own period, then stepped to the next. For a measure that is only
+ * true of the period it was taken over — a price in force, a plan's seats, a daily count — a
+ * curve between two readings invents values that were never measured; this draws none.
+ */
+export const stepPath = (points: readonly Point[]) => {
+    const first = points[0];
+    if (!first || points.length < 2) return '';
+    let d = `M${round(first.x)},${round(first.y)}`;
+    for (let i = 1; i < points.length; i++) {
+        const point = points[i] as Point;
+        const middle = (((points[i - 1] as Point).x + point.x) / 2) | 0;
+        d += ` L${middle},${round((points[i - 1] as Point).y)} L${middle},${round(point.y)} L${round(point.x)},${round(point.y)}`;
+    }
+    return d;
+};
+
+/** The stepped line, closed down to the baseline. */
+export const stepAreaPath = (points: readonly Point[], baseline: number) => {
+    const first = points[0];
+    const last = points.at(-1);
+    if (!first || !last || points.length < 2) return '';
+    return `${stepPath(points)} L${round(last.x)},${round(baseline)} L${round(first.x)},${round(baseline)} Z`;
 };
 
 /** The same straight line, closed down to the baseline. */

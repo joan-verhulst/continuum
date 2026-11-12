@@ -63,6 +63,19 @@ const areaKnobs: Knob[] = [
         default: 'two',
     },
     {
+        id: 'curve',
+        label: 'Joined by',
+        options: [o('smooth', 'Curve'), o('linear', 'Straight'), o('step', 'Step')],
+        default: 'smooth',
+    },
+    {
+        id: 'points',
+        label: 'A tick at each reading',
+        switch: true,
+        default: false,
+        when: values => values.range === 'week',
+    },
+    {
         id: 'state',
         label: 'State',
         options: [o('ready', 'Ready'), o('loading', 'Loading'), o('empty', 'No data')],
@@ -96,14 +109,17 @@ const AreaChartPreview = ({ knobs }: PreviewProps) => {
             formatX={long ? formatMonth : formatWeekday}
             height={176}
             incompleteFrom={knobs.incomplete ? rows.length - 2 : undefined}
+            curve={knobs.curve as 'smooth' | 'linear' | 'step'}
             loading={knobs.state === 'loading'}
+            points={Boolean(knobs.points)}
             markers={
                 knobs.marker
                     ? [
                           {
                               index: long ? 304 : 4,
                               label: long ? 'Outage, 9 September' : 'Release 2.4',
-                              icon: <Rocket />,
+                              icon: long ? undefined : <Rocket />,
+                              tone: long ? ('error' as const) : undefined,
                           },
                       ]
                     : undefined

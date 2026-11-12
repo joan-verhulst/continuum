@@ -15,7 +15,16 @@ import { Skeleton } from '../components/skeleton';
 import { cn } from '../lib/cn';
 import { type ChartColor, chartColor, seriesColor } from './lib/color';
 import { formatCompact, formatNumber, formatX as formatXValue } from './lib/format';
-import { areaPath, bandPath, curvePath, lineAreaPath, linePath, type Point } from './lib/path';
+import {
+    areaPath,
+    bandPath,
+    curvePath,
+    lineAreaPath,
+    linePath,
+    type Point,
+    stepAreaPath,
+    stepPath,
+} from './lib/path';
 import { extent, niceTicks, scalePoint, scaleY, slotScale } from './lib/scale';
 import { useActive } from './lib/use-active';
 import { useLabelWidth, useWidth } from './lib/use-size';
@@ -159,6 +168,16 @@ export type CartesianProps<Row extends ChartRow, X = unknown> = {
     xTicks?: number;
     yTicks?: number;
     markers?: readonly ChartMarker[];
+    /**
+     * How a reading is joined to the next. `smooth` is a curve that never overshoots a
+     * neighbour, `linear` the straight run between them, and `step` holds each value across
+     * its own period, for a measure that was only ever true of that period. A chart of many
+     * readings draws straight whatever is asked, since at two pixels a span a curve says
+     * nothing and only costs the slope maths.
+     */
+    curve?: 'smooth' | 'linear' | 'step';
+    /** A tick at each reading, for a chart whose readings are few and worth pointing out. */
+    points?: boolean;
     /** From this row on the line is dashed: the period is not over. */
     incompleteFrom?: number;
     /** False for a chart too small to read out; a function writes its own readout. */
@@ -208,6 +227,8 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
     xTicks,
     yTicks = 4,
     markers,
+    curve = 'smooth',
+    points: showPoints = false,
     incompleteFrom,
     tooltip = true,
     grid = true,
@@ -377,8 +398,11 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
             const dashed = cutAt === undefined ? [] : points.slice(cutAt);
             const dense = marksCount > DENSE;
             const stroke = dense ? 1 : line.muted ? 1.5 : 2;
-            const draw = dense ? linePath : curvePath;
-            const fillUnder = dense ? lineAreaPath : areaPath;
+            // Many readings are drawn straight whatever was asked: see the curve prop.
+            const shape = dense ? 'linear' : curve;
+            const draw = shape === 'step' ? stepPath : shape === 'linear' ? linePath : curvePath;
+            const fillUnder =
+                shape === 'step' ? stepAreaPath : shape === 'linear' ? lineAreaPath : areaPath;
             /*
              * A fill reads under one or two series; past that they are lines. Dense, it reads
              * under one alone: a year of daily readings has a weekly rhythm in it, and two
@@ -433,6 +457,20 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                             strokeWidth={stroke}
                         />
                     )}
+                    {showPoints &&
+                        !dense &&
+                        points.map(point => (
+                            // Where a reading was actually taken, for a chart of few enough of them.
+                            <circle
+                                cx={point.x}
+                                cy={point.y}
+                                fill="var(--color-chart-background)"
+                                key={`${point.x},${point.y}`}
+                                r={2.5}
+                                stroke={color}
+                                strokeWidth={1.5}
+                            />
+                        ))}
                     {dashed.length > 1 && (
                         // The period is not over, so its last stretch is not a measured value.
                         <path
@@ -451,8 +489,10 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         bars,
         baseline,
         columns,
+        curve,
         cutAt,
         empty,
+        showPoints,
         gradientId,
         kind,
         marksCount,
@@ -536,11 +576,38 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
             value: writeValue(columns[i]?.[index] ?? 0),
         }));
 
+    /**
+     * A gathered chart says so: the readout names the period it covers and the low to high the
+     * average was taken from, which is the only place the band behind the line is explained.
+     */
+    const periodFooter = (index: number) => {
+        const period = periods?.[index];
+        if (!period || series.length !== 1) return undefined;
+        const low = Math.min(...(readings[0] ?? []).slice(period.from, period.to));
+        const high = Math.max(...(readings[0] ?? []).slice(period.from, period.to));
+        const days = period.to - period.from;
+        return (
+            <span className="flex items-center justify-between gap-4">
+                <span className="text-neutral-600 text-xs">{days} days, low to high</span>
+                <span className="font-medium text-neutral-950 text-xs tabular-nums">
+                    {writeValue(low)}–{writeValue(high)}
+                </span>
+            </span>
+        );
+    };
+
     const titleOf = (index: number) => {
         const row = rowAt(index);
         if (!row) return '';
         const value = row[xKey];
         if (formatTitle) return formatTitle(value as X, row, index);
+        const period = periods?.[index];
+        if (period) {
+            const last = data[period.to - 1];
+            const from = labelOf(row, index);
+            const to = last ? labelOf(last, period.to - 1) : from;
+            return from === to ? from : `${from} – ${to}`;
+        }
         if (formatX) return formatX(value as X, row, index);
         return formatXValue(value, true);
     };
@@ -779,7 +846,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                     key={`${marker.index}-${marker.label}`}
                                     marker={marker}
                                     x={xOf(markOf(marker.index))}
-                                    y={top}
+                                    y={top / 2}
                                 />
                             ))}
 
@@ -830,7 +897,9 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                                     <ChartTooltipTotal
                                                         value={writeValue(sums[active] ?? 0)}
                                                     />
-                                                ) : undefined
+                                                ) : (
+                                                    periodFooter(active)
+                                                )
                                             }
                                             rows={tooltipRows(active)}
                                             title={titleOf(active)}
@@ -915,6 +984,24 @@ const toneFill: Record<string, string> = {
     neutral: 'bg-neutral-400',
 };
 
+/*
+ * A marker sits in the band above the plot rather than across its top rule, so it reads as a
+ * note in the margin and not as a stray mark on the data, and it carries its tone: a release
+ * and an outage are not the same news.
+ */
+const toneRing: Record<string, string> = {
+    success: 'border-success-500/40',
+    warning: 'border-warning-500/40',
+    error: 'border-error-500/40',
+    neutral: 'border-neutral-300',
+};
+
+const toneInk: Record<string, string> = {
+    success: 'text-success-700',
+    warning: 'text-warning-700',
+    error: 'text-error-600',
+};
+
 /** What a marker puts on the plot's top edge: a disc round its icon, or a bulb in its tone. */
 const ChartMarkerPin = ({ marker, x, y }: { marker: ChartMarker; x: number; y: number }) => (
     <button
@@ -923,19 +1010,23 @@ const ChartMarkerPin = ({ marker, x, y }: { marker: ChartMarker; x: number; y: n
         style={{ left: x, top: y }}
         type="button"
     >
-        {marker.icon ? (
-            <span className="flex size-6 items-center justify-center rounded-full border border-neutral-200 bg-neutral-50 text-neutral-700 [&_svg]:size-3">
-                {marker.icon}
-            </span>
-        ) : (
-            <span className="flex size-3.5 items-center justify-center rounded-full border border-neutral-200 bg-neutral-100">
+        <span
+            className={cn(
+                'flex size-5 items-center justify-center rounded-full border bg-neutral-50 transition-colors duration-150 group-hover:bg-neutral-100 motion-reduce:transition-none [&_svg]:size-2.5',
+                toneRing[marker.tone ?? 'neutral'],
+                marker.tone && marker.tone !== 'neutral'
+                    ? toneInk[marker.tone]
+                    : 'text-neutral-700',
+            )}
+        >
+            {marker.icon ?? (
                 <span className={cn('size-1.5 rounded-full', toneFill[marker.tone ?? 'neutral'])} />
-            </span>
-        )}
+            )}
+        </span>
         <span className="sr-only">{marker.label}</span>
         <span
             aria-hidden
-            className="pointer-events-none absolute top-full left-1/2 z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-item border border-neutral-200 bg-neutral-50 px-3 py-2.5 font-medium text-neutral-950 text-xs opacity-0 shadow-float transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+            className="pointer-events-none absolute top-full left-1/2 z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-item border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 font-medium text-neutral-950 text-xxs opacity-0 shadow-float transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
         >
             {marker.label}
         </span>
