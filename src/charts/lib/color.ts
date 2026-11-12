@@ -7,6 +7,17 @@
 /** How many colours a theme gives before a chart has to say "the rest". */
 export const CHART_COLORS = 5;
 
+/**
+ * The ink a change is written in. A rise is the success colour deepened towards the text
+ * colour, so it is a dark green on a light surface and a clear green on a dark one; the ramp's
+ * own dark steps turn pale mint in dark mode and stop reading as green.
+ */
+export const CHANGE_INK = {
+    up: 'text-[color-mix(in_oklab,var(--color-success-500)_62%,var(--color-neutral-950))]',
+    down: 'text-[color-mix(in_oklab,var(--color-error-500)_80%,var(--color-neutral-950))]',
+    neutral: 'text-neutral-600',
+} as const;
+
 export type ChartColor =
     /** Independent series, by position. */
     | 'series-1'

@@ -8,10 +8,6 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
     Button,
-    CardDelta,
-    CardHeader,
-    CardTitle,
-    CardValue,
     cn,
     pageContentVariants,
     Rail,
@@ -21,16 +17,7 @@ import {
     SidebarAccount,
     SidebarFooter,
 } from 'continuum';
-import { type TooltipRow, useChartStable } from 'continuum/charts-legacy';
-import {
-    Bell,
-    ChartColumn,
-    Globe,
-    LayoutGrid,
-    type LucideIcon,
-    MessagesSquare,
-    Plus,
-} from 'lucide-react';
+import { Bell, ChartColumn, Globe, LayoutGrid, MessagesSquare, Plus } from 'lucide-react';
 import { createContext, Fragment, type ReactNode, useContext, useState } from 'react';
 
 /** The screens of the one generic app, by the ids Patterns opens them by. */
@@ -156,101 +143,11 @@ export const AnalyticsPage = ({
     </div>
 );
 
-/** Card header of the analytics charts: muted title over a big value and its change. */
-export const ChartCardHeader = ({
-    title,
-    value,
-    delta,
-    trend,
-    size = 'xl',
-}: {
-    title: ReactNode;
-    value: ReactNode;
-    delta: ReactNode;
-    trend?: 'up' | 'down';
-    size?: 'lg' | 'xl';
-}) => (
-    <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <div className="flex items-baseline gap-2">
-            <CardValue size={size}>{value}</CardValue>
-            <CardDelta trend={trend}>{delta}</CardDelta>
-        </div>
-    </CardHeader>
-);
-
-/**
- * Room for the y tick labels on the left and the x labels underneath. The kit's
- * 40px on every side leaves an empty band above and beside a chart in a card.
- */
-export const chartMargin = { top: 16, right: 16, bottom: 32, left: 40 };
-
 /** The week the analytics screens report on: Monday 19 to Sunday 25 October 2026. */
 export const reportWeek = Array.from({ length: 7 }, (_, i) => new Date(2026, 9, 19 + i));
 
 /** Weekday names on the x-axis, as the screens were drawn ("Mon", "Tue" …). */
 export const formatWeekday = (date: Date) => date.toLocaleDateString('en-GB', { weekday: 'short' });
-
-/** One tooltip row per series, with a readable name instead of the data key. */
-export const seriesRows =
-    (
-        series: { key: string; label: string; color: string }[],
-        format: (value: number) => string = String,
-    ) =>
-    (point: Record<string, unknown>): TooltipRow[] =>
-        series.map(({ key, label, color }) => ({
-            color,
-            label,
-            value: format(Number(point[key] ?? 0)),
-        }));
-
-/**
- * Marks one data point with a dashed rule and an icon disc at the top of the
- * plot, such as the day a release went out. The kit has no annotation part, so
- * this draws one from the chart's own scales and marker tokens.
- */
-export const ChartAnnotation = ({ index, icon: Icon }: { index: number; icon?: LucideIcon }) => {
-    const { data, xScale, xAccessor, innerHeight } = useChartStable();
-    const point = data[index];
-    if (!point) return null;
-
-    // Half a pixel off the whole pixel, so the 1px rule lands crisp.
-    const x = Math.round(xScale(xAccessor(point)) ?? 0) + 0.5;
-
-    return (
-        <g data-slot="chart-annotation" pointerEvents="none">
-            <line
-                stroke="var(--color-chart-crosshair)"
-                strokeDasharray="4 4"
-                x1={x}
-                x2={x}
-                y1={0}
-                y2={innerHeight}
-            />
-            {Icon && (
-                <>
-                    <circle
-                        cx={x}
-                        cy={0}
-                        fill="var(--color-chart-marker-background)"
-                        r={12}
-                        stroke="var(--color-chart-marker-border)"
-                    />
-                    <Icon
-                        color="var(--color-chart-marker-foreground)"
-                        height={12}
-                        strokeWidth={2}
-                        width={12}
-                        x={x - 6}
-                        y={-6}
-                    />
-                </>
-            )}
-        </g>
-    );
-};
-// Drawn after the series and outside their reveal clip, so the disc is not cut off at the top.
-ChartAnnotation.__isPostOverlay = true;
 
 /** A dark square with a white 16px glyph: the workspace logo in a sidebar footer. */
 export const WorkspaceMark = ({ children }: { children: ReactNode }) => (

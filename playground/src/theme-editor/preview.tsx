@@ -2,8 +2,6 @@ import {
     Avatar,
     Badge,
     Button,
-    Card,
-    CardTitle,
     Checkbox,
     cn,
     Dock,
@@ -27,8 +25,9 @@ import {
     type ThemeMode,
     type ThemeOptions,
 } from 'continuum';
-import { Contrast, Plus, Search } from 'lucide-react';
-import { useId, useLayoutEffect, useRef, useState } from 'react';
+import { ChartCard, ChartFrame, type ChartSeries, FunnelChart } from 'continuum/charts';
+import { Contrast, Plus, Search, ShoppingCart, Wallet } from 'lucide-react';
+import { useId, useState } from 'react';
 import {
     Checked,
     CheckProvider,
@@ -107,175 +106,68 @@ const invoices: {
     },
 ];
 
-const plans = ['Basic', 'Pro', 'Team', 'Enterprise'] as const;
-
 /** Revenue per plan in €K, oldest first; November adds up to the stat card's €48,260. */
 const revenue = [
-    { month: 'Jun', values: [6, 11, 9, 8] },
-    { month: 'Jul', values: [6, 12, 9, 8] },
-    { month: 'Aug', values: [6, 12, 10, 9] },
-    { month: 'Sep', values: [7, 13, 11, 9] },
-    { month: 'Oct', values: [7, 14, 12, 10] },
-    { month: 'Nov', values: [8, 16, 13, 11.26] },
+    { month: 'Jun', basic: 6, pro: 11, team: 9, enterprise: 8 },
+    { month: 'Jul', basic: 6, pro: 12, team: 9, enterprise: 8 },
+    { month: 'Aug', basic: 6, pro: 12, team: 10, enterprise: 9 },
+    { month: 'Sep', basic: 7, pro: 13, team: 11, enterprise: 9 },
+    { month: 'Oct', basic: 7, pro: 14, team: 12, enterprise: 10 },
+    { month: 'Nov', basic: 8, pro: 16, team: 13, enterprise: 11.26 },
 ];
 
-const total = (values: number[]) => values.reduce((sum, value) => sum + value, 0);
-
-/** The chart's geometry in px: a plot over an x-label band, the y labels to its left. */
-const chart = {
-    top: 6,
-    plot: 96,
-    labels: 18,
-    axis: 28,
-    max: 50,
-    ticks: [0, 25, 50],
-    gap: 2,
-    end: 4,
-};
-
-/** The element's content width, measured before paint and kept current. */
-const useWidth = <T extends HTMLElement>() => {
-    const ref = useRef<T>(null);
-    const [width, setWidth] = useState(0);
-
-    useLayoutEffect(() => {
-        const node = ref.current;
-        if (!node) return;
-        setWidth(node.clientWidth);
-        const observer = new ResizeObserver(entries => {
-            const entry = entries[0];
-            if (entry) setWidth(entry.contentRect.width);
-        });
-        observer.observe(node);
-        return () => observer.disconnect();
-    }, []);
-
-    return [ref, width] as const;
-};
-
-/** A column's top segment: square on the one below, the 4px rounded data end on top. */
-const topSegment = (x: number, top: number, bottom: number, width: number) => {
-    const r = Math.min(chart.end, bottom - top, width / 2);
-    return `M${x},${bottom}V${top + r}A${r},${r} 0 0 1 ${x + r},${top}H${x + width - r}A${r},${r} 0 0 1 ${x + width},${top + r}V${bottom}Z`;
-};
-
 /**
- * Revenue by plan as stacked columns in the theme's own series colours, split by a 2px surface
- * gap, over hairline grid lines with 11px labels. No hover: it is a preview, not a report.
+ * The plans as the theme's series colours. Enterprise is new, so it alone is drawn as a tint,
+ * and the tint is where the theme's chart texture shows.
  */
-const RevenueChart = () => {
-    const [ref, width] = useWidth<HTMLDivElement>();
-    const baseline = chart.top + chart.plot;
-    const band = (width - chart.axis) / revenue.length;
-    const barWidth = Math.min(28, Math.round(band * 0.5));
-    const y = (value: number) => Math.round(baseline - (value / chart.max) * chart.plot);
-    const first = revenue[0];
-    const last = revenue.at(-1);
-    const label =
-        first && last
-            ? `Revenue by plan, ${first.month} to ${last.month}: €${Math.round(total(first.values))}K rising to €${Math.round(total(last.values))}K.`
-            : 'Revenue by plan.';
+const plans: ChartSeries[] = [
+    { key: 'basic', name: 'Basic' },
+    { key: 'pro', name: 'Pro' },
+    { key: 'team', name: 'Team' },
+    { key: 'enterprise', name: 'Enterprise', fill: 'tint' },
+];
 
-    return (
-        <div ref={ref}>
-            <svg
-                aria-label={label}
-                className="block overflow-visible text-xxs tabular-nums"
-                height={baseline + chart.labels}
-                role="img"
-                width={width}
-            >
-                {width > 0 && (
-                    <>
-                        {chart.ticks.map(tick => (
-                            <g key={tick}>
-                                <line
-                                    shapeRendering="crispEdges"
-                                    stroke="var(--color-chart-grid)"
-                                    x1={chart.axis}
-                                    x2={width}
-                                    y1={y(tick) + 0.5}
-                                    y2={y(tick) + 0.5}
-                                />
-                                <text
-                                    dominantBaseline="middle"
-                                    fill="var(--color-chart-label)"
-                                    textAnchor="end"
-                                    x={chart.axis - 8}
-                                    y={y(tick) + 0.5}
-                                >
-                                    {tick === 0 ? '0' : `${tick}K`}
-                                </text>
-                            </g>
-                        ))}
-                        {revenue.map(({ month, values }, i) => {
-                            const x = Math.round(chart.axis + band * i + (band - barWidth) / 2);
-                            const tops = values.map((_, j) => y(total(values.slice(0, j + 1))));
+/** The checkout, step by step: the theme's step colours, chart-1 to chart-5, in order. */
+const checkout = [
+    { name: 'Cart', value: 8420 },
+    { name: 'Details', value: 5110 },
+    { name: 'Payment', value: 3240 },
+    { name: 'Paid', value: 2710 },
+];
 
-                            return (
-                                <g key={month}>
-                                    {values.map((_, j) => {
-                                        const top = tops[j] ?? baseline;
-                                        const bottom = tops[j - 1] ?? baseline;
-                                        const fill = `var(--color-chart-series-${j + 1})`;
-                                        if (j === values.length - 1) {
-                                            return (
-                                                <path
-                                                    d={topSegment(x, top, bottom, barWidth)}
-                                                    fill={fill}
-                                                    key={plans[j]}
-                                                />
-                                            );
-                                        }
-                                        const height = bottom - top - chart.gap;
-                                        return height > 0 ? (
-                                            <rect
-                                                fill={fill}
-                                                height={height}
-                                                key={plans[j]}
-                                                width={barWidth}
-                                                x={x}
-                                                y={top + chart.gap}
-                                            />
-                                        ) : null;
-                                    })}
-                                    <text
-                                        fill="var(--color-chart-label)"
-                                        textAnchor="middle"
-                                        x={x + barWidth / 2}
-                                        y={baseline + 15}
-                                    >
-                                        {month}
-                                    </text>
-                                </g>
-                            );
-                        })}
-                    </>
-                )}
-            </svg>
-        </div>
-    );
-};
-
-/** The data colours in use: a key beside the title over stacked columns, so they read in place. */
+/** The series colours in use: the kit's own card and bar chart, as a project draws them. */
 const RevenueCard = () => (
-    <Card layout="list">
-        <div className="flex items-center justify-between gap-4">
-            <CardTitle>Revenue by plan</CardTitle>
-            <ul className="flex flex-wrap gap-x-3 gap-y-1 text-neutral-600 text-xxs">
-                {plans.map((plan, i) => (
-                    <li className="flex items-center gap-1.5" key={plan}>
-                        <span
-                            className="size-2 shrink-0 rounded-full"
-                            style={{ background: `var(--color-chart-series-${i + 1})` }}
-                        />
-                        {plan}
-                    </li>
-                ))}
-            </ul>
-        </div>
-        <RevenueChart />
-    </Card>
+    <ChartCard
+        comparison="on the six months before"
+        data={revenue}
+        delta="+8.4%"
+        figures={false}
+        formatY={value => `€${value}K`}
+        height={168}
+        icon={<Wallet {...icon} />}
+        kind="bar"
+        series={plans}
+        stacked
+        title="Revenue by plan"
+        value="€48,260"
+        x="month"
+    />
+);
+
+/** The step colours in use: the kit's funnel, each step in the next of the theme's steps. */
+const CheckoutCard = () => (
+    <ChartFrame
+        comparison="of carts paid"
+        icon={<ShoppingCart {...icon} />}
+        title="Checkout"
+        value="32.2%"
+    >
+        <FunnelChart
+            aria-label="Shoppers at each step of the checkout"
+            data={checkout}
+            height={112}
+        />
+    </ChartFrame>
 );
 
 const InvoiceTable = () => (
@@ -424,6 +316,7 @@ export const ThemePreview = ({ theme, mode, filter, className }: ThemePreviewPro
                     <Checked as="div" check="series" className="flex w-full flex-col">
                         <RevenueCard />
                     </Checked>
+                    <CheckoutCard />
                 </section>
 
                 <section aria-label="Invoices" className="flex flex-col gap-4">

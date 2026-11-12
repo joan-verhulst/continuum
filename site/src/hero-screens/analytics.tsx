@@ -1,13 +1,9 @@
-import { ChartAnnotation } from '@screens/shared';
 import {
     Badge,
     BarList,
     BarListItem,
     Button,
     Card,
-    CardDelta,
-    CardFigure,
-    CardHeader,
     CardTitle,
     CardValue,
     LiveCount,
@@ -20,8 +16,8 @@ import {
     TableHeader,
     TableRow,
 } from 'continuum';
-import { Area, AreaChart, Grid, XAxis, YAxis } from 'continuum/charts-legacy';
-import { Download, GitBranch, Globe, Link2, Mail, Rocket, Search } from 'lucide-react';
+import { AreaChart, ChartCard } from 'continuum/charts';
+import { Download, GitBranch, Globe, Link2, Mail, Rocket, Search, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Column, Frame, icon, PageHead } from './shell';
 
@@ -58,17 +54,24 @@ const sparkOf = (seed: number, rise: number) =>
         value: 40 + i * rise + wave(i, seed) * 6,
     }));
 
-/** A small trend in the stat card's corner: the line and its fill, no axes. */
-const Sparkline = ({ data, color }: { data: { date: Date; value: number }[]; color: string }) => (
+/**
+ * A small trend in the stat card's corner: the line and its fill, no axes, no grid, and no
+ * frame round the plot, which at this size would be heavier than the line it holds.
+ */
+const Sparkline = ({ data }: { data: { date: Date; value: number }[] }) => (
     <div aria-hidden className="h-10 w-24 shrink-0">
         <AreaChart
+            aria-label="Trend"
+            className="[&_[data-slot=chart-plot]]:hidden"
             data={data}
-            interactive={false}
-            margin={{ top: 2, right: 0, bottom: 2, left: 0 }}
-            style={{ height: 40 }}
-        >
-            <Area dataKey="value" fill={color} fillOpacity={0.18} showHighlight={false} />
-        </AreaChart>
+            grid={false}
+            height={40}
+            series={[{ key: 'value' }]}
+            tooltip={false}
+            x="date"
+            xAxis={false}
+            yAxis={false}
+        />
     </div>
 );
 
@@ -105,7 +108,7 @@ const StatSpark = ({ stat }: { stat: Stat }) => (
                 {stat.delta}
             </Badge>
         </div>
-        <Sparkline color="var(--color-chart-1)" data={stat.spark} />
+        <Sparkline data={stat.spark} />
     </Card>
 );
 
@@ -135,18 +138,11 @@ const pages = [
     { path: '/changelog', visitors: 3142, views: 4811, bounce: '40.3%', time: '1m 22s' },
 ];
 
-const Legend = () => (
-    <div className="flex items-center gap-4 text-neutral-600 text-xxs">
-        <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-chart-1" />
-            This period
-        </span>
-        <span className="flex items-center gap-1.5">
-            <span className="size-2 rounded-full bg-(--color-chart-series-5)" />
-            Previous period
-        </span>
-    </div>
-);
+// The period before is drawn grey and under this one; the card's key names the two.
+const visitorSeries = [
+    { key: 'current', name: 'This period' },
+    { key: 'previous', name: 'Previous period', color: 'neutral', muted: true },
+];
 
 export const AnalyticsScreen = () => (
     <Frame place="analytics" trail={['Analytics', 'Traffic']}>
@@ -169,40 +165,21 @@ export const AnalyticsScreen = () => (
             </PageHead>
             <div className="flex flex-col gap-4">
                 <div className="grid grid-cols-3 gap-4">
-                    <Card className="col-span-2" layout="chart">
-                        <div className="flex items-start justify-between gap-4">
-                            <CardHeader>
-                                <CardTitle>Unique visitors</CardTitle>
-                                <CardFigure>
-                                    <CardValue size="lg">48,210</CardValue>
-                                    <CardDelta>+12.4% on the 30 days before</CardDelta>
-                                </CardFigure>
-                            </CardHeader>
-                            <Legend />
-                        </div>
-                        <div aria-label="Unique visitors per day" role="img">
-                            <AreaChart
-                                data={days}
-                                formatXLabel={shortDate}
-                                interactive={false}
-                                margin={{ top: 8, right: 8, bottom: 28, left: 40 }}
-                                style={{ height: 228 }}
-                            >
-                                <Grid />
-                                <Area
-                                    dataKey="previous"
-                                    fill="var(--color-chart-series-5)"
-                                    fillOpacity={0}
-                                    showHighlight={false}
-                                    strokeWidth={1.5}
-                                />
-                                <Area dataKey="current" fill="var(--color-chart-1)" />
-                                <ChartAnnotation icon={Rocket} index={20} />
-                                <XAxis numTicks={6} />
-                                <YAxis numTicks={4} />
-                            </AreaChart>
-                        </div>
-                    </Card>
+                    <ChartCard
+                        className="col-span-2"
+                        comparison="on the 30 days before"
+                        data={days}
+                        delta="+12.4%"
+                        formatX={shortDate}
+                        height={228}
+                        icon={<Users />}
+                        markers={[{ index: 20, label: 'Launch post', icon: <Rocket /> }]}
+                        series={visitorSeries}
+                        title="Unique visitors"
+                        value="48,210"
+                        x="date"
+                        xTicks={6}
+                    />
                     <Card layout="list">
                         <BarList title="Top sources" tone="chart" valueLabel="Visitors">
                             {sources.map(source => (

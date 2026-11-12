@@ -39,8 +39,8 @@ This is a private workspace package, not on npm (see the licence). Two ways in:
 - **Copied in**: copy `src/` into the project (the bundled Claude skill does exactly this) and import from the
   copied folder.
 
-Peer dependencies: `react` and `react-dom` 19. The date picker needs `react-day-picker`; the charts need visx,
-d3 and motion (listed under Charts).
+Peer dependencies: `react` and `react-dom` 19. The date picker needs `react-day-picker`; the charts need nothing
+more.
 
 ### (a) In a Tailwind v4 app
 
@@ -152,17 +152,21 @@ functions are exported alongside each family.
 
 ### Charts
 
-A separate entry point, `continuum/charts`, so apps without charts do not pull in its libraries: visx
-(`@visx/curve`, `event`, `grid`, `group`, `responsive`, `scale`, `shape`), `d3-array`, `d3-shape`, `motion` and
-`@number-flow/react`.
+A separate entry point, `continuum/charts`, written for Continuum with no dependencies of its own: it draws every
+mark itself.
 
 ```tsx
-import { Area, AreaChart, ChartTooltip, Grid, XAxis, YAxis } from 'continuum/charts';
+import { ChartCard } from 'continuum/charts';
+
+<ChartCard title="Visitors" value="12,480" delta="+10.7%" comparison="on last week"
+    data={rows} x="date" series={[{ key: 'visitors' }]} />
 ```
 
-A chart is composed from parts: `AreaChart` + `Area`, `PieChart` + `PieSlice` + `PieCenter`, and `FunnelChart`, with
-`Grid`, `XAxis`, `YAxis` and `ChartTooltip` as children. Colours come from the `--color-chart-*` tokens, so the
-charts follow the theme and mode like every component.
+A chart takes its rows and series as props: area, line and bar charts (and the bar chart on its side), donut,
+treemap, funnel, radar, rose, bullet, uptime strip, bubble and candlestick, each in the same card (`ChartFrame`,
+or `ChartCard` for the plotted ones). Colours and chrome come from the `--color-chart-*` tokens, so the charts
+follow the theme and mode like every component. Which chart for which need, and how each is drawn, is in
+[the skill's chart reference](.claude/skills/continuum-taste/references/charts.md).
 
 ## Playground
 
@@ -221,11 +225,6 @@ Continuum is built on open-source work, used under its own licences:
 
 - [Base UI](https://base-ui.com/) (`@base-ui/react`, MIT): the primitives behind every interactive component.
 - [react-day-picker](https://daypicker.dev/) (MIT): the calendar behind the date pickers.
-- [visx](https://airbnb.io/visx/) (MIT): scales, shapes and layout for the charts.
-- [d3-array](https://github.com/d3/d3-array) and [d3-shape](https://github.com/d3/d3-shape) (ISC): data helpers
-  and curves for the charts.
-- [Motion](https://motion.dev/) (MIT) and [NumberFlow](https://number-flow.barvian.me/) (`@number-flow/react`,
-  MIT): chart animation and animated numbers.
 - Tailwind CSS, class-variance-authority, clsx and tailwind-merge (MIT), and lucide-react (ISC) for the icons.
 
 ## License

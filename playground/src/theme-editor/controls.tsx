@@ -160,21 +160,19 @@ export const Pick = <Value extends string>({
                                     selected ? 'text-neutral-950' : 'text-neutral-600',
                                 )}
                             >
-                                {/* The radio the card stands for, inline before the name so a long name wraps under it: a ring, filled when picked. */}
+                                {/* The radio the card stands for, inline before the name so a long name wraps under it: a ring,
+                                    thickened to leave a dot when picked. The dot is the ring's own hole, not a child, so a
+                                    fractional line position can't round it off centre. */}
                                 <span
                                     aria-hidden
                                     className={cn(
-                                        'size-3 place-items-center rounded-full border',
-                                        narrow ? 'grid' : 'mr-1.5 inline-grid align-[-1px]',
+                                        'size-3 rounded-full',
+                                        narrow ? 'block' : 'mr-1.5 inline-block align-[-1px]',
                                         selected
-                                            ? 'border-neutral-950 bg-neutral-950'
-                                            : 'border-neutral-300',
+                                            ? 'border-4 border-neutral-950 bg-neutral-50'
+                                            : 'border border-neutral-300',
                                     )}
-                                >
-                                    {selected && (
-                                        <span className="size-1 rounded-full bg-neutral-50" />
-                                    )}
-                                </span>
+                                />
                                 {answer.label}
                             </span>
                         </label>

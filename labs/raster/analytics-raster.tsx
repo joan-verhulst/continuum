@@ -1,9 +1,9 @@
 'use client';
 
-import { curveMonotoneX, line as linePath } from 'd3-shape';
 import { ArrowUpRight, ListFilter, Plus, Search } from 'lucide-react';
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { PieChart, PieSlice } from '../../src/charts-legacy';
+import { type ChartColor, chartColor, DonutChart } from '../../src/charts';
+import { curvePath } from '../../src/charts/lib/path';
 import { focusRing } from '../../src/components/button';
 import {
     DropdownMenu,
@@ -235,10 +235,10 @@ export const lotsOfSites = (): Site[] =>
         current: index === 0,
     })).sort((a, b) => a.label.localeCompare(b.label));
 
-const devices = [
-    { label: 'Desktop', value: 0.62, color: 'var(--continuum-chart-5)' },
-    { label: 'Mobile', value: 0.31, color: 'var(--continuum-chart-1)' },
-    { label: 'Tablet', value: 0.07, color: 'var(--continuum-chart-3)' },
+const devices: { label: string; value: number; color: ChartColor }[] = [
+    { label: 'Desktop', value: 0.62, color: 'chart-5' },
+    { label: 'Mobile', value: 0.31, color: 'chart-1' },
+    { label: 'Tablet', value: 0.07, color: 'chart-3' },
 ];
 const SESSIONS = 12400;
 
@@ -586,11 +586,7 @@ const RasterAreaChart = ({
     const last = points.at(-1);
     const base = yOf(Math.max(min, 0));
     // Monotone, so a peak in the data stays the peak of the curve.
-    const curve =
-        linePath<{ x: number; y: number }>()
-            .x(point => point.x)
-            .y(point => point.y)
-            .curve(curveMonotoneX)(points) ?? '';
+    const curve = curvePath(points);
     // A tick label's baseline one quantum under its gridline, the cap centred on it.
     const tickRowTop = (y: number) => y + raster.quantum - baselineIn(line);
 
@@ -1030,42 +1026,22 @@ const DevicesBand = () => {
         { key: 'share', label: 'Share', span: 1, priority: 9 },
         { key: 'sessions', label: 'Sessions', span: 1, priority: 5 },
     ]);
-    // The centre's two lines, their baselines a line apart around the middle.
-    const centreBaseline = size / 2 - raster.quantum;
-
     return (
         <Band data-section="devices" style={{ marginTop: line * 2 }}>
             <Hanging notes={['Share of sessions', 'Last 7 days']} title="Devices" />
             <Area area="main" className="grid grid-cols-subgrid content-start">
-                <div className="relative" style={{ ...place([1, donutSpan]), height: size }}>
-                    <div
-                        aria-label={devices
-                            .map(device => `${device.label} ${Math.round(device.value * 100)}%`)
-                            .join(', ')}
-                        role="img"
-                    >
-                        {/* No hover offset, so the ring fills exactly ten lines and keeps to the raster. */}
-                        <PieChart
-                            data={devices}
-                            hoverOffset={0}
-                            innerRadius={size / 2 - line / 2}
-                            padAngle={0.02}
-                            size={size}
-                        >
-                            {devices.map((device, index) => (
-                                <PieSlice index={index} key={device.label} showGlow={false} />
-                            ))}
-                        </PieChart>
-                    </div>
-                    <div
-                        className="absolute flex flex-col items-center text-center"
-                        style={{ top: centreBaseline - BODY_CAP_ON_GRID, left: 0, width: size }}
-                    >
-                        <Text className="font-medium text-neutral-950 tabular-nums">12.4k</Text>
-                        <span className="block" style={nextLine(line)}>
-                            <Text className="text-neutral-500">sessions</Text>
-                        </span>
-                    </div>
+                {/* Ten lines across, so the ring keeps to the raster; it writes its own total. */}
+                <div style={{ ...place([1, donutSpan]), height: size }}>
+                    <DonutChart
+                        aria-label="Sessions by device, last 7 days"
+                        data={devices.map(device => ({
+                            name: device.label,
+                            value: Math.round(SESSIONS * device.value),
+                            color: device.color,
+                        }))}
+                        label="sessions"
+                        size={size}
+                    />
                 </div>
                 <div
                     className="grid grid-cols-subgrid content-start"
@@ -1093,7 +1069,7 @@ const DevicesBand = () => {
                                     {column.key === 'label' && (
                                         <Mark
                                             className="mt-0.5"
-                                            style={{ backgroundColor: device.color }}
+                                            style={{ backgroundColor: chartColor(device.color) }}
                                         />
                                     )}
                                     <Text

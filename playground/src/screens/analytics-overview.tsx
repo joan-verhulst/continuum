@@ -23,17 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from 'continuum';
-import {
-    Area,
-    AreaChart,
-    ChartTooltip,
-    Grid,
-    PieCenter,
-    PieChart,
-    PieSlice,
-    XAxis,
-    YAxis,
-} from 'continuum/charts-legacy';
+import { ChartCard, type ChartColor, ChartFrame, ChartLegend, DonutChart } from 'continuum/charts';
 import {
     Calendar,
     ChartLine,
@@ -45,21 +35,13 @@ import {
     ListFilter,
     MapPin,
     Monitor,
+    MousePointerClick,
+    ShoppingCart,
     Smartphone,
     Users,
 } from 'lucide-react';
-import { useState } from 'react';
-import {
-    AnalyticsPage,
-    AnalyticsTopBar,
-    ChartAnnotation,
-    ChartCardHeader,
-    chartMargin,
-    formatWeekday,
-    PageTitle,
-    reportWeek,
-    seriesRows,
-} from './shared';
+import { type ReactNode, useState } from 'react';
+import { AnalyticsPage, AnalyticsTopBar, formatWeekday, PageTitle, reportWeek } from './shared';
 
 const initialFilters = [
     { id: 'device', label: 'Device: 2', icon: <Monitor strokeWidth={2} /> },
@@ -93,42 +75,43 @@ const sections = [
     { id: 'pages', label: 'Pages', icon: <Files strokeWidth={2} /> },
 ];
 
-/** One series over the report week, with an optional release marker on a day. */
-const WeekAreaChart = ({
-    label,
+/** The day the release went out: the bounce rate rises and the conversion rate dips from it. */
+const release = [{ index: 4, label: 'Release 2.4', icon: <CloudUpload /> }];
+
+/** One rate over the report week in its card, the release marked on the day it went out. */
+const RateCard = ({
+    title,
+    icon,
     dataKey,
-    name,
     color,
-    height,
-    format = String,
-    annotation,
+    value,
+    delta,
 }: {
-    label: string;
-    dataKey: 'sessions' | 'bounce' | 'conversion';
-    name: string;
-    color: string;
-    height: number;
-    format?: (value: number) => string;
-    /** Index of the day a release went out. */
-    annotation?: number;
+    title: string;
+    icon: ReactNode;
+    dataKey: 'bounce' | 'conversion';
+    color: ChartColor;
+    value: string;
+    delta: string;
 }) => (
-    <div aria-label={label} role="img">
-        <AreaChart
-            data={week}
-            formatXLabel={formatWeekday}
-            margin={chartMargin}
-            style={{ height }}
-            // Rates stop at 100%, so the axis does not reach past it for headroom.
-            yScaleDomainCap={format === percent ? 100 : undefined}
-        >
-            <Grid />
-            <Area dataKey={dataKey} fill={color} />
-            {annotation !== undefined && <ChartAnnotation icon={CloudUpload} index={annotation} />}
-            <XAxis numTicks={week.length} />
-            <YAxis formatValue={format} />
-            <ChartTooltip rows={seriesRows([{ key: dataKey, label: name, color }], format)} />
-        </AreaChart>
-    </div>
+    <ChartCard
+        comparison="on last week"
+        data={week}
+        delta={delta}
+        formatX={formatWeekday}
+        formatY={percent}
+        height={240}
+        icon={icon}
+        markers={release}
+        series={[{ key: dataKey, name: title, color }]}
+        title={title}
+        trend="down"
+        value={value}
+        x="date"
+        xTicks={week.length}
+        // Rates stop at 100%, so the axis does not reach past it for headroom.
+        yMax={100}
+    />
 );
 
 const pages = {
@@ -155,21 +138,11 @@ const pages = {
     ],
 } as const;
 
-// Shades of one series by opacity, as the legend swatches draw them.
+// The week's sessions by device; the shares add up to the whole week.
 const devices = [
-    { label: 'Desktop', share: 0.62, color: 'var(--color-chart-5)', swatch: 'bg-chart-5' },
-    {
-        label: 'Mobile',
-        share: 0.31,
-        color: 'color-mix(in oklab, var(--color-chart-5) 80%, transparent)',
-        swatch: 'bg-chart-5/80',
-    },
-    {
-        label: 'Tablet',
-        share: 0.07,
-        color: 'color-mix(in oklab, var(--color-chart-5) 33%, transparent)',
-        swatch: 'bg-chart-5/33',
-    },
+    { name: 'Desktop', share: 0.62 },
+    { name: 'Mobile', share: 0.31 },
+    { name: 'Tablet', share: 0.07 },
 ].map(device => ({ ...device, value: Math.round(device.share * totalSessions) }));
 
 const TopPagesCard = () => {
@@ -215,42 +188,35 @@ const TopPagesCard = () => {
     );
 };
 
+/** The week's sessions by device: the total at the card's head, the ring and its key beside it. */
 const DevicesCard = () => (
-    <Card className="gap-4 p-5">
-        <div className="flex items-center justify-between gap-4">
-            <CardTitle>Devices</CardTitle>
-            <span className="text-neutral-600 text-xs">Sessions, this week</span>
+    <ChartFrame
+        comparison="sessions this week"
+        icon={<Monitor />}
+        table={{
+            columns: ['Device', 'Sessions'],
+            rows: devices.map(device => [device.name, device.value]),
+        }}
+        title="Devices"
+        value={compact.format(totalSessions)}
+    >
+        <div className="flex items-center gap-6">
+            <DonutChart
+                aria-label="Sessions by device, this week"
+                data={devices}
+                size={132}
+                total={false}
+            />
+            <ChartLegend
+                className="min-w-0 flex-1"
+                items={devices.map(device => ({
+                    name: device.name,
+                    value: `${Math.round(device.share * 100)}%`,
+                }))}
+                layout="list"
+            />
         </div>
-        <div className="flex flex-1 items-center gap-8 px-2">
-            <div
-                aria-label={devices
-                    .map(device => `${device.label} ${Math.round(device.share * 100)}%`)
-                    .join(', ')}
-                role="img"
-            >
-                <PieChart data={devices} innerRadius={50} padAngle={0.02} size={152}>
-                    {devices.map((device, index) => (
-                        <PieSlice index={index} key={device.label} showGlow={false} />
-                    ))}
-                    <PieCenter
-                        defaultLabel="sessions"
-                        formatOptions={{ notation: 'compact', maximumFractionDigits: 1 }}
-                    />
-                </PieChart>
-            </div>
-            <ul className="flex flex-1 flex-col gap-3 text-xs">
-                {devices.map(device => (
-                    <li className="flex items-center gap-2" key={device.label}>
-                        <span className={`size-2 rounded-full ${device.swatch}`} />
-                        <span className="flex-1 text-neutral-600">{device.label}</span>
-                        <span className="font-medium text-neutral-950 tabular-nums">
-                            {Math.round(device.share * 100)}%
-                        </span>
-                    </li>
-                ))}
-            </ul>
-        </div>
-    </Card>
+    </ChartFrame>
 );
 
 /** Analytics overview (Eyes, 2026): filters, three area charts, top pages and devices. */
@@ -357,60 +323,39 @@ export const AnalyticsOverview = () => {
 
             <div className="mt-8 flex flex-col gap-8">
                 {show('traffic') && (
-                    <Card className="gap-8 p-5 pb-8">
-                        <ChartCardHeader
-                            delta="+10.7% on last week"
-                            title="Sessions this week"
-                            value={compact.format(totalSessions)}
-                        />
-                        <WeekAreaChart
-                            color="var(--color-chart-line-primary)"
-                            dataKey="sessions"
-                            height={280}
-                            label="Sessions per day, this week"
-                            name="Sessions"
-                        />
-                    </Card>
+                    <ChartCard
+                        comparison="on last week"
+                        data={week}
+                        delta="+10.7%"
+                        formatX={formatWeekday}
+                        height={280}
+                        icon={<Users />}
+                        series={[{ key: 'sessions', name: 'Sessions' }]}
+                        title="Sessions this week"
+                        value={compact.format(totalSessions)}
+                        x="date"
+                        xTicks={week.length}
+                    />
                 )}
 
                 {show('performance') && (
                     <div className="grid grid-cols-2 gap-4">
-                        <Card className="gap-8 p-5 pb-8">
-                            <ChartCardHeader
-                                delta="+3.1 pts on last week"
-                                size="lg"
-                                title="Bounce rate"
-                                trend="down"
-                                value={`${Math.round(weekRate('bounce'))}%`}
-                            />
-                            <WeekAreaChart
-                                annotation={4}
-                                color="var(--color-error-500)"
-                                dataKey="bounce"
-                                format={percent}
-                                height={240}
-                                label="Bounce rate per day"
-                                name="Bounce rate"
-                            />
-                        </Card>
-                        <Card className="gap-8 p-5 pb-8">
-                            <ChartCardHeader
-                                delta="−0.4 pts on last week"
-                                size="lg"
-                                title="Conversion rate"
-                                trend="down"
-                                value={`${weekRate('conversion').toFixed(1)}%`}
-                            />
-                            <WeekAreaChart
-                                annotation={4}
-                                color="var(--color-success-500)"
-                                dataKey="conversion"
-                                format={percent}
-                                height={240}
-                                label="Conversion rate per day"
-                                name="Conversion rate"
-                            />
-                        </Card>
+                        <RateCard
+                            color="error"
+                            dataKey="bounce"
+                            delta="+3.1 pts"
+                            icon={<MousePointerClick />}
+                            title="Bounce rate"
+                            value={`${Math.round(weekRate('bounce'))}%`}
+                        />
+                        <RateCard
+                            color="success"
+                            dataKey="conversion"
+                            delta="−0.4 pts"
+                            icon={<ShoppingCart />}
+                            title="Conversion rate"
+                            value={`${weekRate('conversion').toFixed(1)}%`}
+                        />
                     </div>
                 )}
 

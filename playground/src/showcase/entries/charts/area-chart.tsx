@@ -1,16 +1,6 @@
-import {
-    Card,
-    CardDelta,
-    CardFigure,
-    CardHeader,
-    CardTitle,
-    CardValue,
-    SegmentedControl,
-    SegmentedControlItem,
-    StatCard,
-} from 'continuum';
-import { AreaChart, ChartLegend } from 'continuum/charts';
-import { Rocket } from 'lucide-react';
+import { SegmentedControl, SegmentedControlItem, StatCard } from 'continuum';
+import { ChartCard, formatCompact } from 'continuum/charts';
+import { Rocket, Users } from 'lucide-react';
 import { formatWeekday, reportWeek } from '../../../screens/shared';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 
@@ -69,6 +59,13 @@ const areaKnobs: Knob[] = [
         default: 'smooth',
     },
     {
+        // A theme may ask for one for every chart; this asks for it here.
+        id: 'texture',
+        label: 'Texture',
+        options: [o('none', 'None'), o('stripes', 'Stripes'), o('dots', 'Dots')],
+        default: 'none',
+    },
+    {
         id: 'points',
         label: 'A tick at each reading',
         switch: true,
@@ -98,20 +95,29 @@ const areaKnobs: Knob[] = [
     },
 ];
 
+/** The visitors a run of rows came to, as the card's head writes it. */
+const visitorsIn = (rows: readonly { visitors: number }[]) => {
+    const total = rows.reduce((sum, row) => sum + row.visitors, 0);
+    return total >= 100_000 ? formatCompact(total) : total.toLocaleString('en-GB');
+};
+
 const AreaChartPreview = ({ knobs }: PreviewProps) => {
     const long = knobs.range === 'year';
     const rows = long ? year : traffic;
+    const ready = knobs.state === 'ready';
 
     return (
-        <AreaChart
-            aria-label={`Visitors and returning visitors per day, ${long ? 'over a year' : 'this week'}`}
-            data={knobs.state === 'empty' ? [] : rows}
-            formatX={long ? formatMonth : formatWeekday}
-            height={176}
-            incompleteFrom={knobs.incomplete ? rows.length - 2 : undefined}
+        <ChartCard
+            className="w-full max-w-3xl pb-4"
+            comparison={long ? 'on the year before' : 'on last week'}
             curve={knobs.curve as 'smooth' | 'linear' | 'step'}
+            data={knobs.state === 'empty' ? [] : rows}
+            delta={ready ? (long ? '+18.2%' : '+10.7%') : undefined}
+            formatX={long ? formatMonth : formatWeekday}
+            height={200}
+            icon={<Users />}
+            incompleteFrom={knobs.incomplete ? rows.length - 2 : undefined}
             loading={knobs.state === 'loading'}
-            points={Boolean(knobs.points)}
             markers={
                 knobs.marker
                     ? [
@@ -124,7 +130,11 @@ const AreaChartPreview = ({ knobs }: PreviewProps) => {
                       ]
                     : undefined
             }
+            points={Boolean(knobs.points)}
             series={knobs.series === 'one' ? one : both}
+            texture={knobs.texture === 'none' ? undefined : (knobs.texture as 'stripes' | 'dots')}
+            title="Visitors"
+            value={ready ? visitorsIn(rows) : '—'}
             x="date"
             xTicks={long ? 6 : rows.length}
         />
@@ -142,33 +152,9 @@ export const entry: Entry = {
     Preview: AreaChartPreview,
 };
 
+// The card and the chart are one thing: its header reads out what the plot is pointed at.
 const VisitorsChart = () => (
-    <Card layout="chart">
-        <CardHeader className="flex-row items-start justify-between">
-            <div className="flex flex-col gap-1">
-                <CardTitle>Visitors</CardTitle>
-                <CardFigure>
-                    <CardValue size="xl">33,900</CardValue>
-                    <CardDelta>+10.7% on last week</CardDelta>
-                </CardFigure>
-            </div>
-            {/* Two series, so the key names them; it sits in the header, never over the plot. */}
-            <ChartLegend className="pt-1" items={both.map(series => ({ name: series.name }))} />
-        </CardHeader>
-        <AreaChart
-            aria-label="Visitors and returning visitors per day, this week"
-            data={traffic}
-            formatX={formatWeekday}
-            height={240}
-            series={both}
-            x="date"
-            xTicks={traffic.length}
-        />
-    </Card>
-);
-
-const TrafficPage = () => (
-    <AppWindow
+    <ChartCard
         actions={
             <SegmentedControl aria-label="Range" defaultValue="7d">
                 <SegmentedControlItem value="7d">7 days</SegmentedControlItem>
@@ -176,6 +162,22 @@ const TrafficPage = () => (
                 <SegmentedControlItem value="12m">12 months</SegmentedControlItem>
             </SegmentedControl>
         }
+        data={traffic}
+        icon={<Users />}
+        comparison="on last week"
+        delta="+10.7%"
+        formatX={formatWeekday}
+        markers={[{ index: 4, label: 'Release 2.4', icon: <Rocket /> }]}
+        series={both}
+        title="Visitors"
+        value={visitorsIn(traffic)}
+        x="date"
+        xTicks={traffic.length}
+    />
+);
+
+const TrafficPage = () => (
+    <AppWindow
         description="Week of 19 October, against the week before."
         place="reports"
         title="Traffic"

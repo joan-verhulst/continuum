@@ -11,9 +11,16 @@ import * as button from './button';
 import * as card from './card';
 import * as areaChart from './charts/area-chart';
 import * as barChart from './charts/bar-chart';
-import * as chartLoading from './charts/chart-loading';
+import * as bubbleChart from './charts/bubble-chart';
+import * as bulletChart from './charts/bullet-chart';
+import * as candlestickChart from './charts/candlestick-chart';
+import * as donutChart from './charts/donut-chart';
 import * as funnelChart from './charts/funnel-chart';
-import * as pieChart from './charts/pie-chart';
+import * as horizontalBarChart from './charts/horizontal-bar-chart';
+import * as radarChart from './charts/radar-chart';
+import * as roseChart from './charts/rose-chart';
+import * as treemap from './charts/treemap';
+import * as uptimeStrip from './charts/uptime-strip';
 import * as chatAttachment from './chat-attachment';
 import * as chatComposer from './chat-composer';
 import * as chatMessage from './chat-message';
@@ -143,9 +150,16 @@ export const entries: Entry[] = [
     emptyState.entry,
     areaChart.entry,
     barChart.entry,
-    pieChart.entry,
+    horizontalBarChart.entry,
+    bulletChart.entry,
     funnelChart.entry,
-    chartLoading.entry,
+    treemap.entry,
+    donutChart.entry,
+    uptimeStrip.entry,
+    radarChart.entry,
+    roseChart.entry,
+    bubbleChart.entry,
+    candlestickChart.entry,
     chatThread.entry,
     chatMessage.entry,
     chatReference.entry,
@@ -213,9 +227,16 @@ export const inUse: Record<string, InUse> = {
     'bar-list': barList.inUse,
     'area-chart': areaChart.inUse,
     'bar-chart': barChart.inUse,
-    'pie-chart': pieChart.inUse,
+    'horizontal-bar-chart': horizontalBarChart.inUse,
+    'donut-chart': donutChart.inUse,
     'funnel-chart': funnelChart.inUse,
-    'chart-loading': chartLoading.inUse,
+    treemap: treemap.inUse,
+    'radar-chart': radarChart.inUse,
+    'bullet-chart': bulletChart.inUse,
+    'uptime-strip': uptimeStrip.inUse,
+    'rose-chart': roseChart.inUse,
+    'bubble-chart': bubbleChart.inUse,
+    'candlestick-chart': candlestickChart.inUse,
     'progress': progress.inUse,
     'meter': meter.inUse,
     'status-dot': statusDot.inUse,

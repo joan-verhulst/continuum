@@ -44,6 +44,7 @@ same files decide the same screen.
 | `references/pages.md`           | **The composition**: the shell, the column, the page head and sections, each page kind's anatomy top to bottom, the secondary surfaces, the standing decisions. |
 | `references/components.md`      | **The parts**: every component with its anatomy, values, states, and when to use it and when not. A lookup; read the entries you need. |
 | `references/patterns.md`        | **Need → build it as**: lists, filters, totals, KPIs, steps, planners, empty states, forms, settings and the rest, as parts and placement. |
+| `references/charts.md`          | **The chart kit**: which chart for which need, the card a chart sits in, the plot, the marks, colour, hover, motion, and each chart's entry. |
 | `references/method.md`          | **A product the library never covered**: the steps, the recipe for a new part, a worked CMS. |
 | `references/theming.md`         | What a theme can change and how it is applied, in code and on a canvas.                     |
 | `references/media/react.md`     | In React: setup, the Tailwind names for every value, the code idiom.                        |
@@ -60,8 +61,8 @@ same files decide the same screen.
    not), `media/canvas.md` in Paper or Figma, `media/css.md` elsewhere.
 3. **Name each screen's kind** (overview, index, detail, create or edit, settings, sign in) and read its anatomy
    in `pages.md`. A product the references never covered is expected: `method.md`.
-4. **Compose from the parts** in `components.md`, by the rows in `patterns.md`; write only the layout between
-   them. Where nothing fits, make a new part by the recipe in `method.md`, borrowing every value.
+4. **Compose from the parts** in `components.md` (charts from `charts.md`), by the rows in `patterns.md`; write
+   only the layout between them. Where nothing fits, make a new part by the recipe in `method.md`, borrowing every value.
 5. **Build it** with real state for the main task, realistic data in the product's domain, and empty states.
 6. **Look at it** at 1440 × 900, in light and dark, against the checklist below.
 

@@ -1,32 +1,15 @@
 import {
     BottomBar,
-    Card,
     Dock,
     DockItem,
     SegmentedControl,
     SegmentedControlItem,
     StatCard,
 } from 'continuum';
-import {
-    Area,
-    AreaChart,
-    ChartTooltip,
-    FunnelChart,
-    type FunnelStage,
-    Grid,
-    XAxis,
-    YAxis,
-} from 'continuum/charts-legacy';
-import { UserCheck, UserPlus, Users } from 'lucide-react';
+import { ChartCard, ChartFrame, FunnelChart, type FunnelStep } from 'continuum/charts';
+import { CircleCheck, ShoppingCart, UserCheck, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
-import {
-    AnalyticsPage,
-    AnalyticsTopBar,
-    ChartCardHeader,
-    chartMargin,
-    PageTitle,
-    seriesRows,
-} from './shared';
+import { AnalyticsPage, AnalyticsTopBar, PageTitle } from './shared';
 
 type Segment = 'all' | 'new' | 'returning';
 
@@ -74,15 +57,15 @@ const funnelFor = (segment: Segment, weeks: number) => {
     const completed = series(segment, 'completed').slice(-weeks);
     const total = sum(entered);
     const done = sum(completed);
-    const stages: FunnelStage[] = [
-        { label: '/pricing', value: total },
-        { label: '/checkout', value: Math.round(done + (total - done) * CHECKOUT) },
-        { label: '/checkout/step-2', value: Math.round(done + (total - done) * STEP_2) },
-        { label: '/checkout/complete', value: done },
+    const stages: FunnelStep[] = [
+        { name: '/pricing', value: total },
+        { name: '/checkout', value: Math.round(done + (total - done) * CHECKOUT) },
+        { name: '/checkout/step-2', value: Math.round(done + (total - done) * STEP_2) },
+        { name: '/checkout/complete', value: done },
     ];
     // The step that loses the largest share of the visitors who reached the one before it.
     const drops = stages.slice(1).map((stage, i) => ({
-        label: stage.label,
+        label: stage.name,
         share: 1 - stage.value / (stages[i]?.value ?? 1),
     }));
     const biggest = drops.reduce((a, b) => (b.share > a.share ? b : a));
@@ -95,7 +78,7 @@ const funnelFor = (segment: Segment, weeks: number) => {
 
 const formatWeek = (date: Date) =>
     `W${Math.round((date.getTime() - firstWeek.getTime()) / WEEK) + 1}`;
-const rateSeries = [{ key: 'rate', label: 'Completion rate', color: 'var(--color-chart-2)' }];
+const rateSeries = [{ key: 'rate', name: 'Completion rate', color: 'series-2' }];
 
 /** Checkout funnel (Eyes, 2026): KPI cards, the funnel, and completion over time. */
 export const CheckoutFunnel = () => {
@@ -169,31 +152,39 @@ export const CheckoutFunnel = () => {
                 </div>
             </div>
 
-            <FunnelChart className="mt-8" data={stages} style={{ height: 384 }} />
-
-            <Card className="mt-8 gap-8 p-5 pb-8">
-                <ChartCardHeader
-                    delta={`${change >= 0 ? '+' : '−'}${Math.abs(change).toFixed(1)} pts on the week before`}
-                    size="lg"
-                    title="Completion rate, last week"
-                    trend={change >= 0 ? 'up' : 'down'}
-                    value={percent(latest)}
+            <ChartFrame
+                className="mt-8"
+                icon={<ShoppingCart />}
+                table={{
+                    columns: ['Step', 'Visitors'],
+                    rows: stages.map(stage => [stage.name, stage.value]),
+                }}
+                title="From /pricing to a paid order"
+            >
+                <FunnelChart
+                    aria-label="Visitors at each step of the checkout"
+                    data={stages}
+                    height={240}
                 />
-                <div aria-label="Completion rate per week" role="img">
-                    <AreaChart
-                        data={rows}
-                        formatXLabel={formatWeek}
-                        margin={chartMargin}
-                        style={{ height: 260 }}
-                    >
-                        <Grid />
-                        <Area dataKey="rate" fill="var(--color-chart-2)" />
-                        <XAxis numTicks={rows.length} />
-                        <YAxis formatValue={value => `${value}%`} />
-                        <ChartTooltip rows={seriesRows(rateSeries, percent)} />
-                    </AreaChart>
-                </div>
-            </Card>
+            </ChartFrame>
+
+            <ChartCard
+                className="mt-8"
+                comparison="on the week before"
+                data={rows}
+                delta={`${change >= 0 ? '+' : '−'}${Math.abs(change).toFixed(1)} pts`}
+                formatValue={percent}
+                formatX={formatWeek}
+                formatY={value => `${value}%`}
+                height={260}
+                icon={<CircleCheck />}
+                series={rateSeries}
+                title="Completion rate, last week"
+                trend={change >= 0 ? 'up' : 'down'}
+                value={percent(latest)}
+                x="date"
+                xTicks={rows.length}
+            />
         </AnalyticsPage>
     );
 };

@@ -142,6 +142,11 @@ export type ThemeOptions = {
     chartLead?: ChartLead;
     /** Data colours of the theme's own, in place of the set the harmony finds. */
     charts?: ThemeCharts;
+    /**
+     * A texture in every tint a chart draws (an area's fill, a tinted bar): diagonal stripes or
+     * a field of dots. None unless given; a chart can still ask for one, or none, itself.
+     */
+    chartTexture?: 'none' | 'stripes' | 'dots';
 };
 
 export const defaultThemeOptions = {
@@ -442,8 +447,12 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
     const tintAt = (fill: string, text: string) => {
         light[fill] = 'var(--color-primary-100)';
         light[text] = 'var(--color-primary-700)';
-        // 700 reads back to a deep step on the dark tint; the raw 300 stays legible.
-        dark[text] = 'var(--continuum-p-300)';
+        // The 100 reads back to the 900 in dark, a muddy step darker than the canvas it should
+        // lift from: the accent's 600 shows through instead, lighter and in its own hue.
+        dark[fill] = 'color-mix(in oklab, var(--continuum-p-600) 20%, transparent)';
+        // 700 reads back to a deep step on the dark tint; the raw 300 sits too near the 600 the
+        // fill is made of, so the text takes the 200 to stand apart from it.
+        dark[text] = 'var(--continuum-p-200)';
     };
     if (nav === 'tinted') {
         tintAt('--color-nav-active', '--color-nav-active-fg');
@@ -509,6 +518,9 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
     if (options.radius !== undefined && options.radius !== 1) {
         light['--continuum-radius-scale'] = String(options.radius);
     }
+
+    if (options.chartTexture === 'stripes') light['--chart-texture-stripes'] = '1';
+    if (options.chartTexture === 'dots') light['--chart-texture-dots'] = '1';
 
     if (options.charts) {
         // The theme's own set, as given: the accent no longer leads it.

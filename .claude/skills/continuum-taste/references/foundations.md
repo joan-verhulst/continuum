@@ -141,8 +141,9 @@ is `black` at 40% and does not flip with the mode.
 
 ### Data colours
 
-Steps in order (a funnel, shades of one measure) walk `chart-1` to `chart-5`; independent series take
-`chart-series-1` to `chart-series-5`. Neighbours stay apart for colour-blind readers.
+Two sets: `chart-1` to `chart-5`, steps in order, and `chart-series-1` to `chart-series-5`, independent series.
+Neighbours stay apart for colour-blind readers. Which set a chart takes, and how charts use colour, is in
+`charts.md`.
 
 | Name       | Light                     | Dark                      |
 | ---------- | ------------------------- | ------------------------- |
@@ -154,9 +155,10 @@ Steps in order (a funnel, shades of one measure) walk `chart-1` to `chart-5`; in
 | `chart-series-1…4` | `chart-1…4`       |                           |
 | `chart-series-5` | `neutral-400`       |                           |
 
-Shades of one series are the same colour at 80% and 33%. Chart chrome is the neutral ramp: grid `neutral-200`,
-labels `neutral-600`, crosshair `neutral-300`, a highlighted range the 5% wash. An accent theme leads with its
-accent in place of `primary`.
+Chart chrome is the neutral ramp: the grid `neutral-200`, labels `neutral-600`, the crosshair `neutral-300`, the
+band over a column or row being read the 5% wash, the plot's frame `neutral-950` at 8% (a shade quieter than the
+hairline), and the ring round a point being read the surface. An accent theme leads with its accent in place of
+`primary`.
 
 ### Avatar tones
 
@@ -413,6 +415,7 @@ A single-choice group (segmented control, dock, radio) always keeps one value.
 A control's response stays at or under 250ms; a large surface entering or changing size (the rail's width, a
 toast, a sheet) may take up to 400ms. Nothing bouncy, no animated layout. Reveal-on-hover only for secondary affordances (a
 chevron), never a primary action, and never on touch (Touch, under Layout). Reduced motion turns transitions off.
+A chart's marks reveal once as it enters, the one motion past 400ms; its values are in `charts.md`.
 
 ## Layout
 

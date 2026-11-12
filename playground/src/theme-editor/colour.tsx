@@ -16,6 +16,8 @@ import {
     type RampShape,
     type RampStep,
     rampSteps,
+    SegmentedControl,
+    SegmentedControlItem,
     Select,
     SelectContent,
     SelectItem,
@@ -301,7 +303,9 @@ export const DataEditor = ({ theme, set, gamut }: EditorProps) => {
                                 value={selected}
                             >
                                 <SelectTrigger aria-label="Harmony" className="min-w-0 flex-1">
-                                    <SelectValue />
+                                    {/* A flex box, so the strip and label sit on the trigger's centre
+                                        rather than on the text's baseline. */}
+                                    <SelectValue className="flex items-center" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     {harmonies.map(({ info, series }) => (
@@ -338,6 +342,26 @@ export const DataEditor = ({ theme, set, gamut }: EditorProps) => {
             </Block>
             <Block>
                 <HarmonyWheel gamut={gamut} set={work} theme={theme} />
+            </Block>
+            <Block>
+                {/* A texture in every tint the charts draw: a theme's choice, not a chart's. */}
+                <div className="flex items-center gap-3">
+                    <span className="w-20 shrink-0 text-neutral-600 text-xs">Texture</span>
+                    <SegmentedControl
+                        aria-label="Texture"
+                        onValueChange={value =>
+                            set({
+                                chartTexture:
+                                    value === 'none' ? undefined : (value as 'stripes' | 'dots'),
+                            })
+                        }
+                        value={theme.chartTexture ?? 'none'}
+                    >
+                        <SegmentedControlItem value="none">None</SegmentedControlItem>
+                        <SegmentedControlItem value="stripes">Stripes</SegmentedControlItem>
+                        <SegmentedControlItem value="dots">Dots</SegmentedControlItem>
+                    </SegmentedControl>
+                </div>
             </Block>
         </div>
     );

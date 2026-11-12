@@ -12,10 +12,9 @@ import {
     SelectValue,
     StatCard,
 } from 'continuum';
-import { Area, AreaChart, ChartTooltip, Grid, XAxis, YAxis } from 'continuum/charts-legacy';
-import { CircleAlert, Sparkles, UserPlus, UserRoundX } from 'lucide-react';
+import { ChartCard } from 'continuum/charts';
+import { CircleAlert, Euro, Sparkles, UserPlus, UserRoundX } from 'lucide-react';
 import { useState } from 'react';
-import { ChartCardHeader, chartMargin, seriesRows } from './shared';
 import { allCustomers, formatEuro, PageHead, plans, Workspace } from './workspace';
 
 const icon = { strokeWidth: 2 } as const;
@@ -67,7 +66,6 @@ type Period = keyof typeof periods;
 const formatWeek = (date: Date) =>
     date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 const formatThousands = (value: number) => `€${Math.round(value / 1000)}k`;
-const revenueColour = 'var(--color-chart-1)';
 
 // Largest first: what each plan brings in a month, from the customers on it.
 const byPlan = plans
@@ -108,42 +106,22 @@ export const Overview = () => {
                 </Select>
             </PageHead>
 
-            <Card layout="chart">
-                <ChartCardHeader
-                    delta={`${change >= 0 ? '+' : '−'}${Math.abs(change).toFixed(1)}% ${shown.words}`}
-                    title="Monthly recurring revenue"
-                    trend={change >= 0 ? 'up' : 'down'}
-                    value={formatEuro(total)}
-                />
-                <div
-                    aria-label={`Monthly recurring revenue, week by week ${shown.words}`}
-                    role="img"
-                >
-                    <AreaChart
-                        data={range}
-                        formatXLabel={formatWeek}
-                        margin={chartMargin}
-                        style={{ height: 260 }}
-                    >
-                        <Grid />
-                        <Area dataKey="revenue" fill={revenueColour} />
-                        <XAxis numTicks={4} />
-                        <YAxis formatValue={formatThousands} />
-                        <ChartTooltip
-                            rows={seriesRows(
-                                [
-                                    {
-                                        key: 'revenue',
-                                        label: 'Recurring revenue',
-                                        color: revenueColour,
-                                    },
-                                ],
-                                formatEuro,
-                            )}
-                        />
-                    </AreaChart>
-                </div>
-            </Card>
+            <ChartCard
+                comparison={shown.words}
+                data={range}
+                delta={`${change >= 0 ? '+' : '−'}${Math.abs(change).toFixed(1)}%`}
+                formatValue={formatEuro}
+                formatX={formatWeek}
+                formatY={formatThousands}
+                height={260}
+                icon={<Euro />}
+                series={[{ key: 'revenue', name: 'Recurring revenue' }]}
+                title="Monthly recurring revenue"
+                trend={change >= 0 ? 'up' : 'down'}
+                value={formatEuro(total)}
+                x="date"
+                xTicks={4}
+            />
 
             {/* Stacked rather than squeezed on a phone: two across, which costs height, not width. */}
             <div className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-4 gap-4">

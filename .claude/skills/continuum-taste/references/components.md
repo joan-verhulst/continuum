@@ -664,7 +664,7 @@ item inside a group, such as the plan in force).
 | ------- | ----------------------- | --- | ------------------------------------- |
 | default | 16                      | 16  | a stat card, a small unit              |
 | list    | 20                      | 16  | a list, a group of settings, facts     |
-| chart   | 20, 48 at the bottom    | 32  | a chart, with room under its x labels  |
+| chart   | 20, 48 at the bottom    | 32  | a chart drawn by hand, with room under its x labels; the kit's charts bring their own card (`charts.md`) |
 
 `card` corners (16), hairline, surface, no shadow. Header: the title 13/400 `neutral-600` over the value (2
 apart); value `md` 18/500, `lg` 24/500, `xl` 31/500, tabular; a figure row puts the value and its delta (13,
@@ -835,33 +835,10 @@ error (Alert).
 
 ## Charts
 
-`continuum/charts` is a separate entry. A chart is a root that sets up the scales, and children that read them:
-
-- **AreaChart** (`data` of rows with a `date` and numbers, an aspect ratio of 2 / 1 by default, `status` loading or ready with a
-  `loadingLabel`) holds **Area** per series (`dataKey`; monotone curves, so a peak stays the peak; a gradient fill
-  of the series colour at 14% fading to nothing; a 2 line; a dashed tail for a projection), **Grid** (horizontal
-  lines by default), **XAxis**, **YAxis** and **ChartTooltip**; **SeriesMarkers** puts dots on a series,
-  **PatternArea** fills one with a pattern under an `Area` with no fill, and **HighlightSegment** brightens the
-  hovered stretch of a line.
-- **AreaChartLoading** draws the empty chart with a sweep for a chart that has no data yet; **ChartLoadingLabel**
-  and **ShimmeringText** are its centred "Loading" line.
-- **PieChart** (`data`, `innerRadius` for a donut) holds **PieSlice** per slice and **PieCenter**, the figure in
-  the middle (the total, the hovered slice's value on hover). **FunnelChart** takes its stages (`label`,
-  `value`), horizontal or vertical, each a step along the chart ramp.
-- AreaChart, PieChart and FunnelChart take an `aria-label` that says what the chart shows, for a screen reader.
-- **ChartStatFlow** is the animated headline number with its label (as a pie's centre), formatted en-GB.
-- The tooltip's parts (**TooltipBox**, **TooltipContent**, also exported as `ChartTooltipContent`, **TooltipDot**,
-  **TooltipIndicator**, **DateTicker**) build a custom tooltip; `useChart`, `useChartHover`, `usePie` and
-  `usePieHover` read the chart's state for a custom child; **ChartConfigProvider** tunes the tooltip and highlight
-  springs; **ChartLegendHoverProvider** links a legend's hover to the series; **StaticChartPreviewProvider** turns
-  the reveal off for a still preview.
-
-Colours are the data colours in `foundations.md`: steps walk `chart-1…5`,
-independent series take `chart-series-1…5`; the grid is the hairline, labels `neutral-600`, the crosshair
-`neutral-300`, a highlighted range the 5% wash; the tooltip is a small surface with a hairline and the `float`
-shadow. A chart sits in a `Card layout="chart"` with its headline figure in the header; it never repeats a stat
-card. On a canvas, draw the chart's lines and fills in these colours over a grid of hairlines, with 11
-`neutral-600` axis labels.
+The chart kit, `continuum/charts`, has a reference of its own: `charts.md`. It holds which chart answers which
+need, the card every chart sits in (ChartFrame, ChartCard, ChartKey), the plot, the marks, colour, hover, motion,
+and an entry per chart: AreaChart, LineChart, BarChart, HorizontalBarChart, DonutChart, Treemap, FunnelChart,
+RadarChart, RoseChart, BulletChart, UptimeStrip, BubbleChart and CandlestickChart.
 
 ## AI
 

@@ -240,8 +240,12 @@
     --color-chart-foreground-muted: var(--color-neutral-600);
     --color-chart-label: var(--color-neutral-600);
     --color-chart-grid: var(--color-neutral-200);
-    --color-chart-band: var(--color-neutral-100);
+    /* A wash of the ink step, not a step of its own: the grid shows through it. */
+    --color-chart-band: color-mix(in oklab, var(--color-neutral-950) 5%, transparent);
     --color-chart-crosshair: var(--color-neutral-300);
+    /* A texture in every tint charts draw: 1 turns it on, 0 leaves the tints plain. */
+    --chart-texture-stripes: 0;
+    --chart-texture-dots: 0;
     --color-chart-brush-border: var(--color-neutral-200);
     --color-chart-line-primary: var(--color-chart-series-1);
     --color-chart-line-secondary: var(--color-chart-series-2);

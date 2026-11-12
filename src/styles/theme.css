@@ -8,8 +8,6 @@
 
 @source "../components";
 @source "../charts";
-/* Temporary, while the new kit is written: dropped with src/charts-legacy. */
-@source "../charts-legacy";
 @source "../lib";
 
 /*
@@ -41,6 +39,30 @@
     --shadow-*: initial;
 
     --ease-out-strong: cubic-bezier(0.22, 1, 0.36, 1);
+
+    /* A chart's marks wiping in from the left, once: animate-reveal. */
+    --animate-reveal: reveal 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+
+    @keyframes reveal {
+        from {
+            clip-path: inset(0 100% 0 0);
+        }
+        to {
+            clip-path: inset(0 0 0 0);
+        }
+    }
+
+    /* A band of light crossing a block that is waiting for its content: animate-shine. */
+    --animate-shine: shine 1.8s ease-in-out infinite;
+
+    @keyframes shine {
+        from {
+            background-position: 180% 0;
+        }
+        to {
+            background-position: -80% 0;
+        }
+    }
 }
 
 /*

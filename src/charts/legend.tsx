@@ -15,8 +15,8 @@ export type ChartLegendItem = {
 const legendVariants = cva('flex min-w-0 text-neutral-600', {
     variants: {
         layout: {
-            // Beside a chart card's title, where it names two or three series in passing.
-            inline: 'flex-wrap items-center gap-x-3 gap-y-1 text-xxs',
+            // A row naming two or three series, in the body size as the card's key is.
+            inline: 'flex-wrap items-center gap-x-4 gap-y-1 text-xs',
             // Under or beside a donut or a breakdown bar, where it carries the figures too.
             list: 'flex-col gap-3 text-xs',
         },
@@ -38,13 +38,13 @@ export const ChartLegend = ({ items, layout, className }: ChartLegendProps) => (
     <ul className={cn(legendVariants({ layout }), className)} data-slot="chart-legend">
         {items.map((item, index) => (
             <li
-                className={cn('flex min-w-0 items-center', layout === 'list' ? 'gap-2' : 'gap-1.5')}
+                className="flex min-w-0 items-center gap-2"
                 data-slot="chart-legend-item"
                 key={`${index}-${String(item.name)}`}
             >
                 <span
                     aria-hidden
-                    className="size-2 shrink-0 rounded-full"
+                    className="h-3 w-0.75 shrink-0 rounded-full"
                     style={{ background: chartColor(item.color ?? `series-${index + 1}`) }}
                 />
                 <span className={cn('truncate', layout === 'list' && 'flex-1')}>{item.name}</span>

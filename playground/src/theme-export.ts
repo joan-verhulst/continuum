@@ -183,6 +183,11 @@ const declare = (name: string, value: string) => `    ${name}: ${value};`;
  * The look as a Tailwind v4 entry: Continuum's tokens under Tailwind's names, resolved to
  * values for the theme, light in the theme and dark wherever data-mode="dark" is set.
  */
+/** The keyframes the animate tokens name, copied from theme.css as they are. */
+const keyframes = [...themeCss.matchAll(/@keyframes [\w-]+ \{[\s\S]*?\n {4}\}/g)]
+    .map(match => match[0].replace(/^ {4}/gm, ''))
+    .join('\n\n');
+
 /** The fixed size grid from theme.css, copied as it is: a project's own utilities need it too. */
 const fixedSizes = (
     /\/\* sizes: start \*\/\n([\s\S]*?)\/\* sizes: end \*\//.exec(themeCss)?.[1] ?? ''
@@ -238,7 +243,11 @@ export const tailwindEntry = (theme: ThemeExport) => {
             ...fixedWhere(name => name.startsWith('--shadow-')),
             ...tokensWhere(name => name.startsWith('--shadow-')),
         ],
-        fixedWhere(name => name.startsWith('--ease-')),
+        [
+            ...fixedWhere(name => name.startsWith('--ease-')),
+            "    /* The charts' two motions: marks wiping in once, and a waiting block's shine. */",
+            ...fixedWhere(name => name.startsWith('--animate-')),
+        ],
         [
             '    /* The spacing unit: p-1 is one unit, gap-3 three. Control heights and panel widths do not follow it. */',
             declare('--spacing', read(light, '--spacing')),
@@ -281,6 +290,8 @@ ${publicNames
     color-scheme: dark;
 ${changed.map(name => declare(name, read(dark, name))).join('\n')}
 }
+
+${keyframes}
 
 ${fixedSizes}
 
@@ -408,7 +419,7 @@ const themeRows = (options: ThemeOptions): [string, string][] => {
             `${
                 (
                     {
-                        tinted: "the page you are on on the primary's 100 with its 700 as text",
+                        tinted: "the page you are on on the primary's 100 with its 700 as text (in dark the 600 at 20% with the 200)",
                         tint: "the page you are on on the primary's 100 with its 700 as text",
                         raised: 'the page you are on raised on the canvas (the surface, a hairline, a faint shadow)',
                     } as Record<string, string>
@@ -471,7 +482,7 @@ The values live in \`src/app.css\`; this file is how to use them. Write the util
 - \`src/app.css\` is the Tailwind entry and the whole theme, in Tailwind's own names: the colour ramps and roles, the font, the type scale, the radii, the shadows, the ${unit}px spacing grid, the content widths and the fixed widths of panels and popups. It puts these in place of Tailwind's palette, type, radii and shadows, so Tailwind's defaults (\`bg-gray-100\`, \`rounded-lg\`) do not exist here.
 - The components live in \`src/components/continuum/\`, copied from the skill's \`assets/continuum/\` with its folders as they are. They read the names \`app.css\` sets, so leave out the copied \`styles/\` folder: \`app.css\` takes its place. Import components from its \`index.ts\` and charts from \`charts/index.ts\`. In a new project, scaffold Vite, React 19, TypeScript and Tailwind v4 first.
 - The app sits inside \`<Theme mode="${mode}">\`. Dark mode is \`mode="dark"\`: the same theme with every ramp reversed, from the \`[data-mode="dark"]\` block in \`app.css\`. Everything styled sits inside the \`Theme\`; portalled parts open it again on their own.
-- Dependencies: \`@base-ui/react class-variance-authority clsx tailwind-merge lucide-react react-day-picker\`${font ? `, and \`${font}\`, imported in the entry script` : ''}. Charts also need visx, d3 and motion; the skill lists them.
+- Dependencies: \`@base-ui/react class-variance-authority clsx tailwind-merge lucide-react react-day-picker\`${font ? `, and \`${font}\`, imported in the entry script` : ''}. The charts need nothing more.
 
 ## The theme
 

@@ -12,15 +12,36 @@
 
 export { AreaChart, type AreaChartProps } from './area-chart';
 export { BarChart, type BarChartProps } from './bar-chart';
+export { BubbleChart, type BubbleChartProps } from './bubble-chart';
+export { BulletChart, type BulletChartProps, type BulletRow } from './bullet-chart';
+export {
+    type Candle,
+    type CandleSpan,
+    CandlestickChart,
+    type CandlestickChartProps,
+} from './candlestick-chart';
 export {
     Cartesian,
     type CartesianProps,
     type ChartKind,
     type ChartMarker,
+    type ChartReading,
     type ChartRow,
     type ChartSeries,
     useChart,
 } from './cartesian';
+export {
+    ChartCard,
+    type ChartCardProps,
+    ChartFrame,
+    type ChartFrameProps,
+    ChartKey,
+    type ChartKeyProps,
+    type ChartTable,
+} from './chart-card';
+export { DonutChart, type DonutChartProps, type DonutSlice } from './donut-chart';
+export { FunnelChart, type FunnelChartProps, type FunnelStep } from './funnel-chart';
+export { HorizontalBarChart, type HorizontalBarChartProps } from './horizontal-bar-chart';
 export { ChartLegend, type ChartLegendItem, type ChartLegendProps } from './legend';
 export {
     CHART_COLORS,
@@ -40,5 +61,15 @@ export {
     formatPercent,
 } from './lib/format';
 export { LineChart, type LineChartProps } from './line-chart';
+export { RadarChart, type RadarChartProps } from './radar-chart';
+export { RoseChart, type RoseChartProps } from './rose-chart';
 /** `ChartTooltipRow` is both the row component and the shape it takes. */
 export { ChartTooltip, type ChartTooltipProps, ChartTooltipRow } from './tooltip';
+export { Treemap, type TreemapItem, type TreemapProps } from './treemap';
+export {
+    type UptimeDay,
+    type UptimeService,
+    type UptimeState,
+    UptimeStrip,
+    type UptimeStripProps,
+} from './uptime-strip';

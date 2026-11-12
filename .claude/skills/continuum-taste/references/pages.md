@@ -97,9 +97,8 @@ Reads how things are going over one period; it holds no create action.
 
 1. Page head: the title, a line, and at the right the **period** picker (a 34 select or date-range picker) and
    any filters.
-2. **The figure that leads**, as a chart card: 20 padding (48 at the bottom under the x labels), 32 between
-   its header and the chart; the header is a 13 regular `neutral-600` label, a 24 medium headline figure, and a
-   delta beside it on the same baseline.
+2. **The figure that leads**, as a chart card full width (its anatomy in `charts.md`): the measure the page is
+   about over the period picked, its figure and change in the card's head, the chart under it.
 3. **Stat cards** in a row, 16 apart, four across (three on a detail): 16 padding; a 13 regular `neutral-600`
    label, the value 18 medium `neutral-950` 4 below, a delta pill (22 high, success or error, neutral when
    flat) 12 below. **A stat card never repeats the chart's figure.**

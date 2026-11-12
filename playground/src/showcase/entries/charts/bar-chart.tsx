@@ -1,5 +1,6 @@
-import { Card, CardTitle, StatCard } from 'continuum';
-import { BarChart, ChartLegend } from 'continuum/charts';
+import { SegmentedControl, SegmentedControlItem, StatCard } from 'continuum';
+import { ChartCard, type ChartSeries } from 'continuum/charts';
+import { Wallet } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 
 /** Revenue per plan in €K, oldest first: the figures the theme preview reports. */
@@ -30,6 +31,20 @@ const barKnobs: Knob[] = [
         default: 'stacked',
     },
     {
+        // A tint marks one series out, so the knob tints the last: on all of them it says nothing.
+        id: 'tint',
+        label: 'Tint',
+        options: [o('none', 'None'), o('one', 'One series')],
+        default: 'none',
+    },
+    {
+        id: 'texture',
+        label: 'Texture',
+        options: [o('none', 'None'), o('stripes', 'Stripes'), o('dots', 'Dots')],
+        default: 'stripes',
+        when: values => values.tint === 'one',
+    },
+    {
         id: 'state',
         label: 'State',
         options: [o('ready', 'Ready'), o('loading', 'Loading'), o('empty', 'No data')],
@@ -37,20 +52,39 @@ const barKnobs: Knob[] = [
     },
 ];
 
-const BarChartPreview = ({ knobs }: PreviewProps) => (
-    <BarChart
-        aria-label="Revenue by plan, June to November"
-        data={knobs.state === 'empty' ? [] : revenue}
-        formatY={formatEuro}
-        height={176}
-        loading={knobs.state === 'loading'}
-        series={
-            knobs.layout === 'one' ? total : knobs.layout === 'grouped' ? plans.slice(0, 3) : plans
-        }
-        stacked={knobs.layout === 'stacked'}
-        x="month"
-    />
-);
+/** The series with the last one drawn as a tint, in the texture asked for. */
+const tintLast = (series: readonly ChartSeries[], texture: string): ChartSeries[] =>
+    series.map((line, i) =>
+        i === series.length - 1
+            ? { ...line, fill: 'tint', texture: texture as ChartSeries['texture'] }
+            : line,
+    );
+
+const BarChartPreview = ({ knobs }: PreviewProps) => {
+    const series =
+        knobs.layout === 'one' ? total : knobs.layout === 'grouped' ? plans.slice(0, 3) : plans;
+
+    const ready = knobs.state === 'ready';
+
+    return (
+        <ChartCard
+            className="w-full max-w-3xl"
+            comparison="on the six months before"
+            data={knobs.state === 'empty' ? [] : revenue}
+            delta={ready ? '+8.4%' : undefined}
+            formatY={formatEuro}
+            height={200}
+            icon={<Wallet />}
+            kind="bar"
+            loading={knobs.state === 'loading'}
+            series={knobs.tint === 'one' ? tintLast(series, String(knobs.texture)) : series}
+            stacked={knobs.layout === 'stacked'}
+            title="Revenue by plan"
+            value={ready ? '€48,260' : '—'}
+            x="month"
+        />
+    );
+};
 
 export const entry: Entry = {
     id: 'bar-chart',
@@ -63,22 +97,27 @@ export const entry: Entry = {
     Preview: BarChartPreview,
 };
 
+// Enterprise is still in its first months, so it alone is drawn as a tint.
 const RevenueCard = () => (
-    <Card layout="chart">
-        <div className="flex items-center justify-between gap-4">
-            <CardTitle>Revenue by plan</CardTitle>
-            <ChartLegend items={plans.map(plan => ({ name: plan.name }))} />
-        </div>
-        <BarChart
-            aria-label="Revenue by plan, June to November"
-            data={revenue}
-            formatY={formatEuro}
-            height={240}
-            series={plans}
-            stacked
-            x="month"
-        />
-    </Card>
+    <ChartCard
+        actions={
+            <SegmentedControl aria-label="Range" defaultValue="6m">
+                <SegmentedControlItem value="6m">6 months</SegmentedControlItem>
+                <SegmentedControlItem value="12m">12 months</SegmentedControlItem>
+            </SegmentedControl>
+        }
+        data={revenue}
+        comparison="on the six months before"
+        delta="+8.4%"
+        formatY={formatEuro}
+        icon={<Wallet />}
+        kind="bar"
+        series={tintLast(plans, 'stripes')}
+        stacked
+        title="Revenue by plan"
+        value="€48,260"
+        x="month"
+    />
 );
 
 const RevenuePage = () => (

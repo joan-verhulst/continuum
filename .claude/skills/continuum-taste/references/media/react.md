@@ -12,8 +12,7 @@ them. Never restyle a component's internals from outside beyond spacing and widt
    (the stylesheet finds the components through `@source "../components"`).
 2. Install `@base-ui/react class-variance-authority clsx tailwind-merge lucide-react react-day-picker`, and the
    font: `@fontsource-variable/geist` (and the package of the theme's font if it picks another; import it in the
-   entry file). React 19. Charts also need `@visx/curve @visx/event @visx/grid @visx/group @visx/responsive
-   @visx/scale @visx/shape d3-array d3-shape motion @number-flow/react`; skip them if the project draws none.
+   entry file). React 19. The charts need nothing more: the kit draws every mark itself.
 3. In the Tailwind entry CSS:
    ```css
    @import "tailwindcss";
@@ -28,7 +27,8 @@ them. Never restyle a component's internals from outside beyond spacing and widt
 4. Wrap the app in `<Theme mode="light">`; add `theme="name"` once a theme block exists. Everything styled sits
    inside a `Theme`; portalled parts re-open it themselves.
 5. Import from the copied folder's `index.ts`, and charts from `charts/index.ts`. The reference screens import
-   from `'continuum'`: rewrite that to the local path, or add a `continuum` path alias.
+   from `'continuum'` and `'continuum/charts'`: rewrite those to the local paths, or add a `continuum` path alias
+   that covers both.
 
 **Route B: React with a host Tailwind theme to keep, or no Tailwind.** Copy `assets/continuum/` and install the
 same dependencies, then import its prebuilt `styles.css` instead of `theme.css`. Components render correctly
@@ -49,7 +49,10 @@ there (a `continuum` folder or a `.continuum` class), skip setup.
 | The action colour                       | `bg-action text-on-action shadow-action [background-image:var(--action-gradient)]`, hover `hover:bg-action-hover hover:[background-image:none]` |
 | Hover wash 5% · table row 3% · canvas-safe fill 4% | `bg-neutral-950/5` · `bg-neutral-950/[0.03]` · `bg-neutral-950/[0.04]` |
 | Selected (7%) · tint                     | `bg-selected` · `bg-tint text-tint-fg`                                  |
-| Data colours: steps · series            | `bg-chart-1` … `bg-chart-5` (and `text-`, `fill-`, `stroke-`) · the series are variables only, not utilities: `var(--color-chart-series-1)` … `-5`, or `fill-(--color-chart-series-1)`; the chart kit reads them itself |
+| Data colours: steps · series            | `bg-chart-1` … `bg-chart-5` (and `text-`, `fill-`, `stroke-`) · the series are variables only, not utilities: `var(--color-chart-series-1)` … `-5`, or `fill-(--color-chart-series-1)`; the chart kit reads them itself, and a chart's `color` takes the names `series-1`, `chart-1`, `success` … rather than a variable |
+| Chart chrome: grid · labels · crosshair · band · the ring round a read point · the plot's frame | `var(--color-chart-grid)` · `var(--color-chart-label)` · `var(--color-chart-crosshair)` · `var(--color-chart-band)` · `var(--color-chart-background)` · `border-neutral-950/8 rounded-item`; the kit uses them itself, these are for a mark drawn beside it |
+| Chart texture (a theme's choice)        | `--chart-texture-stripes: 1` or `--chart-texture-dots: 1` (both 0 by default), set by `chartTexture` in `createThemeCss` and carried into an exported `app.css` |
+| A chart's reveal · a loading block's band of light | `motion-safe:animate-reveal` · `motion-safe:animate-shine`                    |
 | A status badge, a toast's or chat token's tone | `bg-success-500/20 text-success-800` (and so for each ramp: the 800, every tone) |
 | An icon on that tint                    | `text-primary-600` · `text-error-600`; `text-success-700` · `text-warning-700` (the 600 misses 3:1 on their tints) |
 | A delta: rising · falling               | `text-success-800` · `text-error-600`                                    |

@@ -17,7 +17,7 @@ import {
     TableRow,
 } from 'continuum';
 import { Search } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
     DetailHeader,
     type Device,
@@ -242,7 +242,14 @@ const ComponentsGrid = ({ state, kind, onOpen, onSearch: setQuery }: GridProps) 
             <div className="flex min-w-0 flex-col gap-20">
                 {groups.map(group => {
                     const tiles = (
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" key={group.id}>
+                        <div
+                            className={cn(
+                                'grid gap-4 md:grid-cols-2',
+                                // Charts are cards of one size, two to a row; components vary, three.
+                                group.entries[0]?.category !== 'charts' && 'xl:grid-cols-3',
+                            )}
+                            key={group.id}
+                        >
                             {group.entries.map(entry => (
                                 <Tile
                                     entry={entry}
@@ -327,26 +334,85 @@ type TileProps = {
     onOpen: () => void;
 };
 
+/** The width every chart card is laid out at in a tile, before it is scaled to fit. */
+const SHOT_WIDTH = 640;
+
+/**
+ * A chart's card as a shot: every card is laid out at the same width, whatever its own, and
+ * then scaled as one picture to the tile, so a page of them reads as one set. Scaled, not
+ * squeezed: a card pressed into a tile's height would let its chart run out of it.
+ */
+const FitShot = ({ children }: { children: ReactNode }) => {
+    const [room, setRoom] = useState<HTMLDivElement | null>(null);
+    const [subject, setSubject] = useState<HTMLDivElement | null>(null);
+    const [fit, setFit] = useState({ scale: 1, height: 0 });
+
+    useLayoutEffect(() => {
+        if (!room || !subject) return;
+        const fit = () => {
+            // Layout sizes, which the transform leaves alone. Fitted to the tile's width alone,
+            // so every card is as wide as the next; the tile is as tall as its card comes out.
+            const scale = Math.min(1, room.clientWidth / SHOT_WIDTH);
+            setFit({ scale, height: subject.offsetHeight * scale });
+        };
+        fit();
+        const observer = new ResizeObserver(fit);
+        observer.observe(room);
+        observer.observe(subject);
+        return () => observer.disconnect();
+    }, [room, subject]);
+
+    return (
+        <div
+            className="flex w-full min-w-0 items-center justify-center self-center"
+            ref={setRoom}
+            style={{ height: fit.height || undefined }}
+        >
+            <div
+                className="flex shrink-0 items-center justify-center *:w-full *:max-w-none"
+                ref={setSubject}
+                style={{ transform: `scale(${fit.scale})`, width: SHOT_WIDTH }}
+            >
+                {children}
+            </div>
+        </div>
+    );
+};
+
 /** A component's live preview as a tile; the whole tile opens its page. */
 const Tile = ({
     entry: { id, name, description, span, stageClassName, category, knobs, Preview },
     href,
     named,
     onOpen,
-}: TileProps) => (
-    <PreviewTile
-        badge={named ? <Badge>{categoryLabel(category)}</Badge> : undefined}
-        className={cn(span === 2 && 'md:col-span-2', span === 3 && 'md:col-span-2 xl:col-span-3')}
-        description={description}
-        href={href}
-        id={tileId(id)}
-        name={name}
-        onOpen={onOpen}
-        stageClassName={stageClassName}
-    >
-        <Preview knobs={knobDefaults(knobs)} />
-    </PreviewTile>
-);
+}: TileProps) => {
+    // A chart's preview is a whole card: the tile shows all of it, smaller, on a taller stage.
+    const card = category === 'charts';
+
+    return (
+        <PreviewTile
+            badge={named ? <Badge>{categoryLabel(category)}</Badge> : undefined}
+            className={cn(
+                !card && span === 2 && 'md:col-span-2',
+                !card && span === 3 && 'md:col-span-2 xl:col-span-3',
+            )}
+            description={description}
+            href={href}
+            id={tileId(id)}
+            name={name}
+            onOpen={onOpen}
+            stageClassName={cn(stageClassName, card && 'h-auto flex-1 items-stretch p-5')}
+        >
+            {card ? (
+                <FitShot>
+                    <Preview knobs={knobDefaults(knobs)} />
+                </FitShot>
+            ) : (
+                <Preview knobs={knobDefaults(knobs)} />
+            )}
+        </PreviewTile>
+    );
+};
 
 type ComponentPageProps = {
     entry: Entry;

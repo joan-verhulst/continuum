@@ -7,16 +7,15 @@ import {
     useCallback,
     useContext,
     useEffect,
+    useId,
     useMemo,
-    useState,
 } from 'react';
-import { Skeleton } from '../components/skeleton';
 import { cn } from '../lib/cn';
 import { type ChartColor, chartColor, seriesColor } from './lib/color';
 import { formatCompact, formatNumber, formatX as formatXValue } from './lib/format';
+import { PLOT_FRAME } from './lib/frame';
 import {
     areaPath,
-    bandPath,
     curvePath,
     lineAreaPath,
     linePath,
@@ -52,7 +51,18 @@ export type ChartSeries = {
     color?: ChartColor;
     /** Drawn grey and under the rest: the period before, or a series switched off. */
     muted?: boolean;
+    /**
+     * Bars: this series alone drawn as a tint with a solid edge, the chart's `fill` unless
+     * given. A tint says something about one series (a forecast, a plan still in trial); on
+     * every series it says nothing.
+     */
+    fill?: 'solid' | 'tint';
+    /** This series' texture, the chart's `texture` unless given. */
+    texture?: 'none' | 'stripes' | 'dots';
 };
+
+/** What a chart is reading out: the title of the point, and each series' value as written. */
+export type ChartReading = { title: string; values: string[] };
 
 export type ChartMarker = {
     /** The row it marks. */
@@ -65,18 +75,22 @@ export type ChartMarker = {
 
 /** Room for the labels, and the sizes of the marks. Everything else follows the theme. */
 const GUTTER_GAP = 8;
-const AXIS_HEIGHT = 24;
+/** The row of x labels under the plot: the gap to it and one line of labels, no more. */
+const AXIS_HEIGHT = 20;
+/** The room between the plot's frame and the marks in it: none, the frame holds the data tight. */
+const PAD = 0;
 const TOP = 8;
-const TOP_WITH_MARKERS = 36;
+/** A marker's pin: its size, and its inset from the plot's frame. */
+const PIN = 28;
+const PIN_INSET = 4;
 const X_LABEL_GAP = 16;
+const TOOLTIP_OFFSET = 12;
 const DOT_RADIUS = 4;
 const BAR_GAP = 2;
 const BAR_MAX = 28;
 const BAR_MIN = 2;
 /** A bar takes half its slot, and a group of bars seven tenths of it. */
-const BAR_SHARE = 0.6;
-/** A column on its own is a block the width of an icon well, not a stick. */
-const COLUMN_MAX = 40;
+const BAR_SHARE = 0.5;
 const GROUP_SHARE = 0.7;
 /** A date axis is read in five places at most: a reader counts dates, not ticks. */
 const DATE_TICKS = 5;
@@ -176,6 +190,17 @@ export type CartesianProps<Row extends ChartRow, X = unknown> = {
      * nothing and only costs the slope maths.
      */
     curve?: 'smooth' | 'linear' | 'step';
+    /**
+     * A texture in the tint under a line: diagonal stripes or a field of dots. Left out, the
+     * chart follows the theme, which may ask for one (`--chart-texture-stripes: 1` or
+     * `--chart-texture-dots: 1`) and asks for none by default; `none` holds it plain.
+     */
+    texture?: 'none' | 'stripes' | 'dots';
+    /**
+     * Bars: `solid` fills each bar; `tint` draws it as every other mark in the kit is drawn, a
+     * tint of its colour with a solid edge at its data end, and takes the texture.
+     */
+    fill?: 'solid' | 'tint';
     /** A tick at each reading, for a chart whose readings are few and worth pointing out. */
     points?: boolean;
     /** From this row on the line is dashed: the period is not over. */
@@ -186,6 +211,11 @@ export type CartesianProps<Row extends ChartRow, X = unknown> = {
     xAxis?: boolean;
     yAxis?: boolean;
     onSelect?: (row: Row, index: number) => void;
+    /**
+     * Told what is being read, as it is written in the readout, and null when nothing is. A card
+     * that holds the chart shows it in its own header instead of in a panel over the plot.
+     */
+    onRead?: (reading: ChartReading | null) => void;
     /** With no data, the plot is a skeleton; with data, the marks wait at half strength. */
     loading?: boolean;
     emptyLabel?: string;
@@ -198,18 +228,8 @@ export type CartesianProps<Row extends ChartRow, X = unknown> = {
 const toNumber = (value: unknown) =>
     typeof value === 'number' && Number.isFinite(value) ? value : 0;
 
-/*
- * One series is drawn in ink. Everything else in the system that shows an amount, a bar
- * list's bar or a meter's fill, is neutral, and colour is kept for telling things apart; a
- * chart of one measure has nothing to tell apart. Two series and more take the theme's own.
- */
-const INK = 'var(--color-neutral-950)';
-
-const colorOf = (line: ChartSeries, index: number, count: number) => {
-    if (line.muted) return chartColor('neutral');
-    if (line.color) return chartColor(line.color);
-    return count === 1 ? INK : seriesColor(index);
-};
+const colorOf = (line: ChartSeries, index: number) =>
+    line.muted ? chartColor('neutral') : chartColor(line.color ?? seriesColor(index));
 
 /** The indices to label, spread evenly, the first and last always among them. */
 const labelIndices = (count: number, wanted: number) => {
@@ -223,7 +243,7 @@ const labelIndices = (count: number, wanted: number) => {
 
 export const Cartesian = <Row extends ChartRow, X = unknown>({
     'aria-label': label,
-    data,
+    data: rows,
     x: xKey,
     series,
     kind,
@@ -239,34 +259,44 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
     markers,
     curve = 'smooth',
     points: showPoints = false,
+    texture,
+    fill = 'solid',
     incompleteFrom,
     tooltip = true,
     grid = true,
     xAxis = true,
     yAxis = true,
     onSelect,
+    onRead,
     loading = false,
     emptyLabel = 'No data yet',
     className,
     style,
     children,
 }: CartesianProps<Row, X>) => {
+    // React's own ids carry characters a URL fragment should not, so they are stripped.
+    const gradientId = useId().replace(/[^a-zA-Z0-9_-]/g, '');
     const [containerRef, width] = useWidth<HTMLDivElement>();
     const [yProbeRef, yLabelWidth] = useLabelWidth();
     const [xProbeRef, xLabelWidth] = useLabelWidth();
 
+    /*
+     * While it loads a chart draws its skeleton and nothing else. Holding the last rows at half
+     * strength is not a loading state: it is the old answer looking unwell, and a reader cannot
+     * tell whether to trust it.
+     */
+    const data: readonly Row[] = loading ? [] : rows;
     const empty = data.length === 0;
-    const hasMarkers = !!markers?.length;
     const writeAxis = formatY ?? formatCompact;
     const writeValue = formatValue ?? formatY ?? formatNumber;
     const bars = kind === 'bar';
 
     // The plot is what the labels leave. It is known before the marks, because how many marks
     // there is room for decides how the readings are gathered.
-    const left = yAxis && !empty ? yLabelWidth + GUTTER_GAP : 0;
-    const top = hasMarkers ? TOP_WITH_MARKERS : TOP;
-    const bottom = xAxis ? AXIS_HEIGHT : 0;
-    const plotWidth = Math.max(0, width - left);
+    const left = (yAxis && !empty ? yLabelWidth + GUTTER_GAP : 0) + PAD;
+    const top = TOP;
+    const bottom = (xAxis ? AXIS_HEIGHT : 0) + PAD;
+    const plotWidth = Math.max(0, width - left - PAD);
     const plotHeight = Math.max(0, height - top - bottom);
 
     // Every series' numbers as given, before any gathering.
@@ -288,18 +318,6 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
             periods
                 ? readings.map(values => periods.map(period => mean(values, period)))
                 : readings,
-        [periods, readings],
-    );
-    const spread = useMemo(
-        () =>
-            periods
-                ? readings.map(values =>
-                      periods.map(({ from, to }) => {
-                          const slice = values.slice(from, to);
-                          return { low: Math.min(...slice), high: Math.max(...slice) };
-                      }),
-                  )
-                : null,
         [periods, readings],
     );
     /** The row each mark stands for: the reading itself, or the period's first. */
@@ -354,38 +372,15 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
     );
     const yOf = useMemo(
         () => (value: number) => top + scaleY(value, ticks, plotHeight),
-        [plotHeight, ticks, top],
+        [plotHeight, ticks],
     );
     const baseline = yOf(Math.max(ticks.min, 0));
-    // The column a reading is hovered by: a bar's slot less a little air, or the run between
-    // two points of a line, held between a width worth aiming at and one that stays a column.
-    const barsWide =
-        !stacked && series.length > 1
-            ? Math.min(
-                  slots.slot * GROUP_SHARE,
-                  BAR_MAX * series.length + BAR_GAP * (series.length - 1),
-              )
-            : Math.min(slots.slot * BAR_SHARE, COLUMN_MAX);
-    const columnWidth = bars
-        ? Math.min(Math.max(8, slots.slot - 4), barsWide + 16)
-        : Math.max(20, Math.min(40, marksCount > 1 ? plotWidth / (marksCount - 1) : 40));
-    // The readout stands clear of the column it reads, never over it.
-    const readoutGap = columnWidth / 2 + 8;
 
     const { active, handlers } = useActive(marksCount, xOf);
 
-    /*
-     * The marks wipe in from the left once, in the time a reader takes to look at the card.
-     * It says which way the x axis runs before a single label is read. It happens on the
-     * compositor (a clip, not a layout), and reduced motion gets the finished chart.
-     */
-    const [revealed, setRevealed] = useState(false);
-    useEffect(() => {
-        if (width === 0) return;
-        const frame = requestAnimationFrame(() => setRevealed(true));
-        return () => cancelAnimationFrame(frame);
-    }, [width]);
     const readable = tooltip !== false && !empty;
+    // The plot still answers the pointer when a card reads it out in place of the panel.
+    const hoverable = (readable || !!onRead) && !empty;
     const activeRow = active !== null ? rowAt(active) : undefined;
 
     // Only as many x labels as fit without touching, however many were asked for.
@@ -409,13 +404,11 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
         return order.map(({ line, index }) => {
             const column = columns[index] ?? [];
-            const color = colorOf(line, index, series.length);
+            const color = colorOf(line, index);
             const points: Point[] = Array.from({ length: marksCount }, (_, i) => ({
                 x: xOf(i),
                 y: yOf(column[i] ?? 0),
             }));
-            // Two spreads over each other are the mud the gathering was meant to clear up.
-            const band = line.muted || series.length > 1 ? undefined : spread?.[index];
             const solid = cutAt === undefined ? points : points.slice(0, cutAt + 1);
             const dashed = cutAt === undefined ? [] : points.slice(cutAt);
             const dense = marksCount > DENSE;
@@ -434,24 +427,98 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
             return (
                 <g data-slot="chart-series" key={line.key}>
-                    {band && (
-                        // What each average was taken from: the period's low to its high.
-                        <path
-                            d={bandPath(
-                                band.map((at, i) => ({ x: xOf(i), y: yOf(at.high) })),
-                                band.map((at, i) => ({ x: xOf(i), y: yOf(at.low) })),
-                            )}
-                            fill={color}
-                            fillOpacity={0.16}
-                        />
-                    )}
                     {filled && (
-                        // A flat wash, as every fill in the system is; nothing here fades.
-                        <path
-                            d={fillUnder(points, baseline)}
-                            fill={color}
-                            fillOpacity={series.length === 1 ? 0.06 : 0.1}
-                        />
+                        /*
+                         * The tint holds all the way down rather than fading out, and stands
+                         * on a rounded foot: the fill's own edge is the baseline.
+                         */
+                        <g
+                            style={{
+                                clipPath:
+                                    'inset(0 round 0 0 var(--radius-item) var(--radius-item))',
+                            }}
+                        >
+                            <defs>
+                                <linearGradient
+                                    gradientUnits="userSpaceOnUse"
+                                    id={`${gradientId}-${index}`}
+                                    x1={0}
+                                    x2={0}
+                                    y1={yOf(extent(column).max)}
+                                    y2={baseline}
+                                >
+                                    <stop offset="0%" stopColor={color} stopOpacity={0.2} />
+                                    <stop offset="100%" stopColor={color} stopOpacity={0.08} />
+                                </linearGradient>
+                                <pattern
+                                    height={7}
+                                    id={`${gradientId}-${index}-stripes`}
+                                    patternTransform="rotate(45)"
+                                    patternUnits="userSpaceOnUse"
+                                    width={7}
+                                >
+                                    <line
+                                        stroke={color}
+                                        strokeWidth={1.2}
+                                        x1={0}
+                                        x2={0}
+                                        y1={0}
+                                        y2={7}
+                                    />
+                                </pattern>
+                                <pattern
+                                    height={6}
+                                    id={`${gradientId}-${index}-dots`}
+                                    patternUnits="userSpaceOnUse"
+                                    width={6}
+                                >
+                                    <circle cx={3} cy={3} fill={color} r={1.1} />
+                                </pattern>
+                                <linearGradient
+                                    id={`${gradientId}-fade`}
+                                    x1="0"
+                                    x2="0"
+                                    y1="0"
+                                    y2="1"
+                                >
+                                    <stop offset="0%" stopColor="white" stopOpacity={0.55} />
+                                    <stop offset="100%" stopColor="white" stopOpacity={0.12} />
+                                </linearGradient>
+                                <mask
+                                    id={`${gradientId}-${index}-thin`}
+                                    maskContentUnits="objectBoundingBox"
+                                >
+                                    <rect fill={`url(#${gradientId}-fade)`} height={1} width={1} />
+                                </mask>
+                            </defs>
+                            <path
+                                d={fillUnder(points, baseline)}
+                                fill={`url(#${gradientId}-${index})`}
+                            />
+                            {(line.texture ?? texture) !== 'none' &&
+                                (['stripes', 'dots'] as const)
+                                    .filter(
+                                        kindOf =>
+                                            !(line.texture ?? texture) ||
+                                            (line.texture ?? texture) === kindOf,
+                                    )
+                                    .map(kindOf => (
+                                        <path
+                                            d={fillUnder(points, baseline)}
+                                            fill={`url(#${gradientId}-${index}-${kindOf})`}
+                                            key={kindOf}
+                                            mask={`url(#${gradientId}-${index}-thin)`}
+                                            // Asked for outright it shows; otherwise the theme says.
+                                            style={
+                                                (line.texture ?? texture)
+                                                    ? undefined
+                                                    : {
+                                                          opacity: `var(--chart-texture-${kindOf}, 0)`,
+                                                      }
+                                            }
+                                        />
+                                    ))}
+                        </g>
                     )}
                     {points.length === 1 && points[0] ? (
                         // One reading has no line in it; drawn as a line it would be nothing at all.
@@ -502,12 +569,13 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         cutAt,
         empty,
         showPoints,
+        texture,
+        gradientId,
         kind,
         marksCount,
         plotHeight,
         plotWidth,
         series,
-        spread,
         xOf,
         yOf,
     ]);
@@ -518,7 +586,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         const grouped = !stacked && count > 1;
         const groupWidth = grouped
             ? Math.min(slots.slot * GROUP_SHARE, BAR_MAX * count + BAR_GAP * (count - 1))
-            : Math.min(slots.slot * BAR_SHARE, COLUMN_MAX);
+            : Math.min(slots.slot * BAR_SHARE, BAR_MAX);
         const barWidth = Math.max(
             BAR_MIN,
             grouped ? (groupWidth - BAR_GAP * (count - 1)) / count : groupWidth,
@@ -536,9 +604,10 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                     ? center - groupWidth / 2 + index * (barWidth + BAR_GAP)
                     : center - barWidth / 2;
                 const shared = {
-                    row,
                     key: `${row}-${line.key}`,
-                    color: colorOf(line, index, count),
+                    color: colorOf(line, index),
+                    tinted: (line.fill ?? fill) === 'tint',
+                    texture: line.texture ?? texture,
                     width: barWidth,
                     positive,
                     x,
@@ -548,8 +617,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                     return {
                         ...shared,
                         height: size,
-                        first: true,
-                        rounded: true,
+                        head: true,
                         y: positive ? yOf(value) : baseline,
                     };
 
@@ -561,14 +629,27 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                 return {
                     ...shared,
                     height: Math.max(0, size - gap),
-                    first: gap === 0,
-                    // Only the segment on top of the stack is rounded.
-                    rounded: index === count - 1,
+                    // Only the stack's head is rounded; where two segments meet it is square.
+                    head: index === count - 1,
                     y: positive ? from - size : from + gap,
                 };
             });
         });
-    }, [bars, baseline, columns, data, empty, plotWidth, series, slots, stacked, xOf, yOf]);
+    }, [
+        bars,
+        baseline,
+        columns,
+        data,
+        empty,
+        fill,
+        plotWidth,
+        series,
+        slots,
+        stacked,
+        texture,
+        xOf,
+        yOf,
+    ]);
 
     const context: ChartContextValue = {
         data,
@@ -582,7 +663,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
     const tooltipRows = (index: number) =>
         series.map((line, i) => ({
-            color: colorOf(line, i, series.length) as ChartColor,
+            color: (line.muted ? 'neutral' : (line.color ?? seriesColor(i))) as ChartColor,
             name: line.name ?? line.key,
             value: writeValue(columns[i]?.[index] ?? 0),
         }));
@@ -622,6 +703,19 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         if (formatX) return formatX(value as X, row, index);
         return formatXValue(value, true);
     };
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: a reading is told when the point changes, not on every render
+    useEffect(() => {
+        if (!onRead) return;
+        onRead(
+            active === null || !rowAt(active)
+                ? null
+                : {
+                      title: titleOf(active),
+                      values: series.map((_, i) => writeValue(columns[i]?.[active] ?? 0)),
+                  },
+        );
+    }, [active, columns]);
 
     const readoutOf = (index: number) =>
         `${titleOf(index)}: ${series
@@ -670,50 +764,56 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                 >
                     {width > 0 && (
                         <>
-                            {active !== null && !empty && !bars && (
-                                /*
-                                 * What is being read is marked the way a hovered row is: the 5%
-                                 * wash, on item corners, over the reading's own column. No rule
-                                 * is drawn through the data to point at it.
-                                 */
-                                <div
-                                    className="pointer-events-none absolute rounded-item bg-neutral-950/5"
-                                    data-slot="chart-active"
-                                    style={{
-                                        height: plotHeight,
-                                        left: xOf(active) - columnWidth / 2,
-                                        top,
-                                        width: columnWidth,
-                                    }}
-                                />
-                            )}
                             {/* The marks are drawn for the eye; the table below carries the figures. */}
                             <svg
                                 aria-hidden="true"
-                                className="relative block overflow-visible"
+                                className="block overflow-visible"
                                 height={height}
                                 width={width}
                             >
-                                {grid &&
-                                    !empty &&
-                                    ticks.values.map(tick => (
-                                        // Half a pixel off the whole one, so a 1px rule lands crisp.
-                                        <line
-                                            key={tick}
-                                            shapeRendering="crispEdges"
-                                            // The baseline is the hairline every divider in the
-                                            // system is; the rules above it are only a wash.
-                                            stroke={
-                                                tick === Math.max(ticks.min, 0)
-                                                    ? 'var(--color-chart-grid)'
-                                                    : 'color-mix(in oklab, var(--color-neutral-950) 7%, transparent)'
-                                            }
-                                            x1={left}
-                                            x2={width}
-                                            y1={Math.round(yOf(tick)) + 0.5}
-                                            y2={Math.round(yOf(tick)) + 0.5}
+                                {/*
+                                 * The frame's own rect and corner: the marks and their grid are
+                                 * held inside it, so nothing runs past its hairline or its round.
+                                 */}
+                                <defs>
+                                    <clipPath id={`${gradientId}-plot`}>
+                                        <rect
+                                            height={plotHeight}
+                                            style={{
+                                                rx: 'var(--radius-item)',
+                                                ry: 'var(--radius-item)',
+                                            }}
+                                            width={plotWidth}
+                                            x={left}
+                                            y={top}
                                         />
-                                    ))}
+                                    </clipPath>
+                                </defs>
+                                <g clipPath={`url(#${gradientId}-plot)`}>
+                                    {grid &&
+                                        !loading &&
+                                        ticks.values
+                                            .filter(
+                                                tick =>
+                                                    !(
+                                                        kind === 'area' &&
+                                                        series.length <= 2 &&
+                                                        tick === Math.max(ticks.min, 0)
+                                                    ),
+                                            )
+                                            .map(tick => (
+                                                // Half a pixel off the whole one, so a 1px rule lands crisp.
+                                                <line
+                                                    key={tick}
+                                                    shapeRendering="crispEdges"
+                                                    stroke="var(--color-chart-grid)"
+                                                    x1={left}
+                                                    x2={left + plotWidth}
+                                                    y1={Math.round(yOf(tick)) + 0.5}
+                                                    y2={Math.round(yOf(tick)) + 0.5}
+                                                />
+                                            ))}
+                                </g>
 
                                 {yAxis &&
                                     !empty &&
@@ -724,7 +824,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                             fill="var(--color-chart-label)"
                                             key={tick}
                                             textAnchor="end"
-                                            x={left - GUTTER_GAP}
+                                            x={left - PAD - GUTTER_GAP}
                                             y={yOf(tick)}
                                         >
                                             {yLabels[i]}
@@ -744,29 +844,74 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                                   : 'end'
                                         }
                                         x={xOf(index)}
-                                        y={top + plotHeight + AXIS_HEIGHT - GUTTER_GAP}
+                                        y={top + plotHeight + PAD + 16}
                                     >
                                         {xLabels[index]}
                                     </text>
                                 ))}
 
-                                <g
-                                    className="transition-[clip-path] duration-700 ease-out-strong motion-reduce:transition-none"
-                                    opacity={loading ? 0.5 : 1}
-                                    style={{
-                                        clipPath: revealed ? 'inset(0 0 0 0)' : 'inset(0 100% 0 0)',
-                                    }}
-                                >
-                                    {marks}
+                                {/* A hovered bar is marked by its slot, which is easier to aim at. */}
+
+                                {/*
+                                 * The marks wipe in from the left once, in the time a reader
+                                 * takes to look at the card: it says which way the x axis runs
+                                 * before a label is read. A keyframe, not a state flipped on the
+                                 * next frame: a chart in a background tab, a print or a picture
+                                 * of the page never gets that frame, and would stay blank.
+                                 */}
+                                <g clipPath={`url(#${gradientId}-plot)`}>
+                                    <g className="motion-safe:animate-reveal">{marks}</g>
                                 </g>
 
                                 {!bars && active !== null && (
                                     <g data-slot="chart-crosshair">
+                                        {/*
+                                         * The rule fades out at both ends: solid from edge to
+                                         * edge it reads as heavy as the data it is pointing at.
+                                         */}
+                                        <defs>
+                                            <linearGradient
+                                                id={`${gradientId}-crosshair`}
+                                                x1="0"
+                                                x2="0"
+                                                y1="0"
+                                                y2="1"
+                                            >
+                                                <stop
+                                                    offset="0%"
+                                                    stopColor="var(--color-chart-crosshair)"
+                                                    stopOpacity="0"
+                                                />
+                                                <stop
+                                                    offset="14%"
+                                                    stopColor="var(--color-chart-crosshair)"
+                                                    stopOpacity="1"
+                                                />
+                                                <stop
+                                                    offset="86%"
+                                                    stopColor="var(--color-chart-crosshair)"
+                                                    stopOpacity="1"
+                                                />
+                                                <stop
+                                                    offset="100%"
+                                                    stopColor="var(--color-chart-crosshair)"
+                                                    stopOpacity="0"
+                                                />
+                                            </linearGradient>
+                                        </defs>
+                                        <rect
+                                            fill={`url(#${gradientId}-crosshair)`}
+                                            height={plotHeight}
+                                            shapeRendering="crispEdges"
+                                            width={1}
+                                            x={Math.round(xOf(active))}
+                                            y={top}
+                                        />
                                         {series.map((line, index) => (
                                             <circle
                                                 cx={xOf(active)}
                                                 cy={yOf(columns[index]?.[active] ?? 0)}
-                                                fill={colorOf(line, index, series.length)}
+                                                fill={colorOf(line, index)}
                                                 key={line.key}
                                                 r={DOT_RADIUS}
                                                 stroke="var(--color-chart-background)"
@@ -776,74 +921,108 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                     </g>
                                 )}
 
-                                {markers?.map(marker => (
-                                    <line
-                                        key={`${marker.index}-${marker.label}`}
-                                        shapeRendering="crispEdges"
-                                        stroke="var(--color-neutral-400)"
-                                        x1={Math.round(xOf(markOf(marker.index))) + 0.5}
-                                        x2={Math.round(xOf(markOf(marker.index))) + 0.5}
-                                        y1={top - 6}
-                                        y2={top + plotHeight}
-                                    />
-                                ))}
+                                {markers?.map(marker => {
+                                    const at = markOf(marker.index);
+                                    const cx = xOf(at);
+                                    const foot = top + plotHeight;
+
+                                    return (
+                                        <g key={`${marker.index}-${marker.label}`}>
+                                            <line
+                                                shapeRendering="crispEdges"
+                                                stroke="var(--color-neutral-400)"
+                                                x1={Math.round(cx) + 0.5}
+                                                x2={Math.round(cx) + 0.5}
+                                                y1={top + PIN_INSET + PIN}
+                                                y2={foot}
+                                            />
+                                            <path
+                                                d={`M${cx - 5},${foot + 1} l5,-6 l5,6 Z`}
+                                                fill="var(--color-neutral-950)"
+                                            />
+                                        </g>
+                                    );
+                                })}
 
                                 {children}
                             </svg>
 
                             {bars && (
+                                // Held to the frame's rect and corner, as the SVG marks are.
                                 <div
-                                    className={cn(
-                                        'pointer-events-none absolute inset-0',
-                                        loading && 'opacity-50',
-                                    )}
+                                    className="pointer-events-none absolute overflow-hidden rounded-item"
                                     data-slot="chart-bars"
+                                    style={{ height: plotHeight, left, top, width: plotWidth }}
                                 >
-                                    {barLayout
-                                        .filter(bar => bar.first)
-                                        .map(bar => (
-                                            // The column's track: the amount is read against it,
-                                            // and it darkens under the pointer as a row does.
-                                            <div
-                                                className={cn(
-                                                    'absolute transition-colors duration-150 motion-reduce:transition-none',
-                                                    bar.row === active
-                                                        ? 'bg-neutral-950/8'
-                                                        : 'bg-neutral-950/4',
-                                                )}
-                                                key={`track-${bar.key}`}
-                                                style={{
-                                                    borderRadius: `min(var(--radius-item), ${bar.width / 2}px)`,
-                                                    height: plotHeight,
-                                                    left: bar.x,
-                                                    top,
-                                                    width: bar.width,
-                                                }}
-                                            />
-                                        ))}
+                                    {active !== null && (
+                                        // The hovered slot, on the item corner as a hovered row is.
+                                        <div
+                                            className="absolute rounded-item"
+                                            style={{
+                                                background: 'var(--color-chart-band)',
+                                                height: plotHeight,
+                                                left: slots.slot * active + 2,
+                                                top: 0,
+                                                width: Math.max(0, slots.slot - 4),
+                                            }}
+                                        />
+                                    )}
                                     {barLayout.map(bar => {
-                                        const corner = `min(var(--radius-item), ${bar.width / 2}px)`;
-                                        const head = bar.rounded ? corner : '0px';
-                                        const foot = bar.first ? corner : '0px';
+                                        /*
+                                         * A bar stands flat on the baseline and is rounded at its
+                                         * head, on the item corner: rounded at one end, it never
+                                         * turns into a pill.
+                                         */
+                                        const head = bar.head
+                                            ? `min(var(--radius-item), ${bar.width / 2}px)`
+                                            : '0px';
+                                        const { tinted, texture: grain } = bar;
 
                                         return (
                                             <div
-                                                className="absolute"
+                                                className="absolute overflow-hidden"
                                                 key={bar.key}
                                                 style={{
-                                                    background: bar.color,
-                                                    // A block on the system's own corner, whole
-                                                    // where it stands alone and squared only
-                                                    // where it meets the next segment of a stack.
+                                                    background: tinted
+                                                        ? `color-mix(in oklab, ${bar.color} 20%, transparent)`
+                                                        : bar.color,
                                                     borderRadius: bar.positive
-                                                        ? `${head} ${head} ${foot} ${foot}`
-                                                        : `${foot} ${foot} ${head} ${head}`,
+                                                        ? `${head} ${head} 0 0`
+                                                        : `0 0 ${head} ${head}`,
+                                                    // The bar's own line at its data end, as a
+                                                    // line stands over the tint under it.
+                                                    boxShadow: tinted
+                                                        ? `inset 0 ${bar.positive ? 2 : -2}px 0 ${bar.color}`
+                                                        : undefined,
                                                     height: bar.height,
-                                                    left: bar.x,
-                                                    top: bar.y,
+                                                    left: bar.x - left,
+                                                    top: bar.y - top,
                                                     width: bar.width,
                                                 }}
-                                            />
+                                            >
+                                                {tinted &&
+                                                    grain !== 'none' &&
+                                                    (['stripes', 'dots'] as const)
+                                                        .filter(
+                                                            kindOf => !grain || grain === kindOf,
+                                                        )
+                                                        .map(kindOf => (
+                                                            <span
+                                                                aria-hidden
+                                                                className="absolute inset-0"
+                                                                key={kindOf}
+                                                                style={{
+                                                                    background: TEXTURES[kindOf](
+                                                                        bar.color,
+                                                                    ),
+                                                                    // Asked for outright it shows; otherwise the theme says.
+                                                                    opacity: grain
+                                                                        ? 1
+                                                                        : `var(--chart-texture-${kindOf}, 0)`,
+                                                                }}
+                                                            />
+                                                        ))}
+                                            </div>
                                         );
                                     })}
                                 </div>
@@ -853,21 +1032,45 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                 <ChartMarkerPin
                                     key={`${marker.index}-${marker.label}`}
                                     marker={marker}
-                                    x={xOf(markOf(marker.index))}
-                                    y={top / 2}
+                                    // Inside the plot's frame, held off its sides at the first and last point.
+                                    x={Math.min(
+                                        Math.max(
+                                            xOf(markOf(marker.index)),
+                                            left + PIN / 2 + PIN_INSET,
+                                        ),
+                                        left + plotWidth - PIN / 2 - PIN_INSET,
+                                    )}
+                                    y={top + PIN_INSET + PIN / 2}
                                 />
                             ))}
 
-                            {loading && empty && (
-                                <Skeleton
-                                    className="absolute"
-                                    style={{ height: plotHeight, left, top, width: plotWidth }}
+                            {!empty && (
+                                // The plot's own place in the card: the marks and their grid inside, the labels out.
+                                <div
+                                    aria-hidden
+                                    className={PLOT_FRAME}
+                                    data-slot="chart-plot"
+                                    style={{
+                                        height: plotHeight + PAD * 2,
+                                        left: left - PAD,
+                                        top: top - PAD,
+                                        width: plotWidth + PAD * 2,
+                                    }}
+                                />
+                            )}
+
+                            {loading && (
+                                <ChartSkeleton
+                                    height={plotHeight}
+                                    left={left}
+                                    top={top}
+                                    width={plotWidth}
                                 />
                             )}
 
                             {empty && !loading && (
                                 <p
-                                    className="absolute flex items-center justify-center rounded-item border border-neutral-200 border-dashed text-neutral-600 text-xs"
+                                    className="absolute flex items-center justify-center text-neutral-600 text-xs"
                                     style={{ height: plotHeight, left, top, width: plotWidth }}
                                 >
                                     {emptyLabel}
@@ -888,10 +1091,10 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                         left:
                                             xOf(active) > width / 2
                                                 ? undefined
-                                                : xOf(active) + readoutGap,
+                                                : xOf(active) + TOOLTIP_OFFSET,
                                         right:
                                             xOf(active) > width / 2
-                                                ? width - (xOf(active) - readoutGap)
+                                                ? width - (xOf(active) - TOOLTIP_OFFSET)
                                                 : undefined,
                                         top,
                                     }}
@@ -910,13 +1113,21 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                                 )
                                             }
                                             rows={tooltipRows(active)}
+                                            // A bubble only where there is a rule to say it from.
+                                            tail={
+                                                bars
+                                                    ? 'none'
+                                                    : xOf(active) > width / 2
+                                                      ? 'right'
+                                                      : 'left'
+                                            }
                                             title={titleOf(active)}
                                         />
                                     )}
                                 </div>
                             )}
 
-                            {readable && (
+                            {hoverable && (
                                 // One tab stop over the plot: the arrow keys walk the points, and
                                 // Enter picks the one being read, as a click on it would.
                                 <button
@@ -950,32 +1161,71 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                 </p>
 
                 {/* The figures themselves, for a reader who cannot see the marks. */}
-                <table className="sr-only">
-                    <caption>{label}</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">{xKey}</th>
-                            {series.map(line => (
-                                <th key={line.key} scope="col">
-                                    {line.name ?? line.key}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {rawLabels.map((text, index) => (
-                            <tr key={`${index}-${text}`}>
-                                <th scope="row">{text}</th>
-                                {series.map((line, i) => (
-                                    <td key={line.key}>{writeValue(readings[i]?.[index] ?? 0)}</td>
+                <div className="sr-only">
+                    <table>
+                        <caption>{label}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">{xKey}</th>
+                                {series.map(line => (
+                                    <th key={line.key} scope="col">
+                                        {line.name ?? line.key}
+                                    </th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {rawLabels.map((text, index) => (
+                                <tr key={`${index}-${text}`}>
+                                    <th scope="row">{text}</th>
+                                    {series.map((line, i) => (
+                                        <td key={line.key}>
+                                            {writeValue(readings[i]?.[index] ?? 0)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </figure>
         </ChartContext.Provider>
     );
+};
+
+/**
+ * A chart that is loading: the plot as one quiet block with a band of light crossing it. It
+ * does not pretend to be a chart while it waits. No stand-in line, no grid, no fade: only the
+ * room the plot will take, so nothing moves when the data lands.
+ */
+const ChartSkeleton = ({
+    left,
+    top,
+    width,
+    height,
+}: {
+    left: number;
+    top: number;
+    width: number;
+    height: number;
+}) =>
+    width > 0 && height > 0 ? (
+        <div
+            aria-hidden
+            className="absolute overflow-hidden rounded-item bg-neutral-950/4"
+            data-slot="chart-skeleton"
+            style={{ height, left, top, width }}
+        >
+            <div className="absolute inset-0 bg-[linear-gradient(100deg,transparent_38%,color-mix(in_oklab,var(--color-neutral-50)_85%,transparent)_50%,transparent_62%)] bg-size-[250%_100%] bg-no-repeat motion-safe:animate-shine" />
+        </div>
+    ) : null;
+
+/** The two textures as CSS, for marks drawn in HTML: the same stripes and dots as the SVG fills. */
+const TEXTURES = {
+    stripes: (color: string) =>
+        `repeating-linear-gradient(135deg, color-mix(in oklab, ${color} 50%, transparent) 0 1.2px, transparent 1.2px 6px)`,
+    dots: (color: string) =>
+        `radial-gradient(color-mix(in oklab, ${color} 55%, transparent) 1.1px, transparent 1.4px) 0 0 / 6px 6px`,
 };
 
 const ChartTooltipTotal = ({ value }: { value: string }) => (
@@ -993,16 +1243,14 @@ const toneFill: Record<string, string> = {
 };
 
 /*
- * A marker sits in the band above the plot rather than across its top rule, so it reads as a
- * note in the margin and not as a stray mark on the data. It is the system's icon tile at a
- * marker's size: chip corners, a hairline well, or the tone at 20% behind its own glyph as an
- * alert's well is. Its label is the tooltip's chip.
+ * A marker sits just inside the plot's top edge, within the chart's frame, and it carries its
+ * tone: a release and an outage are not the same news.
  */
-const toneWell: Record<string, string> = {
-    success: 'bg-success-500/20',
-    warning: 'bg-warning-500/20',
-    error: 'bg-error-500/20',
-    neutral: 'border border-neutral-200 bg-neutral-50 group-hover:bg-neutral-100',
+const toneRing: Record<string, string> = {
+    success: 'border-success-500/40',
+    warning: 'border-warning-500/40',
+    error: 'border-error-500/40',
+    neutral: 'border-neutral-300',
 };
 
 const toneInk: Record<string, string> = {
@@ -1014,28 +1262,30 @@ const toneInk: Record<string, string> = {
 /** What a marker puts on the plot's top edge: a disc round its icon, or a bulb in its tone. */
 const ChartMarkerPin = ({ marker, x, y }: { marker: ChartMarker; x: number; y: number }) => (
     <button
-        className="group absolute flex size-6 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-chip outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:outline-offset-2"
+        className="group absolute z-10 flex size-7 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:outline-offset-2"
         data-slot="chart-marker"
         style={{ left: x, top: y }}
         type="button"
     >
         <span
             className={cn(
-                'flex size-6 items-center justify-center rounded-chip transition-colors duration-150 motion-reduce:transition-none [&_svg]:size-3.5',
-                toneWell[marker.tone ?? 'neutral'],
+                // Big enough to read the icon and to aim at, and lifted off the plot so it is
+                // plainly a note about the data and not a part of it.
+                'flex size-7 items-center justify-center rounded-full border bg-neutral-50 shadow-float transition-colors duration-150 group-hover:bg-neutral-100 motion-reduce:transition-none [&_svg]:size-4',
+                toneRing[marker.tone ?? 'neutral'],
                 marker.tone && marker.tone !== 'neutral'
                     ? toneInk[marker.tone]
                     : 'text-neutral-700',
             )}
         >
             {marker.icon ?? (
-                <span className={cn('size-2 rounded-full', toneFill[marker.tone ?? 'neutral'])} />
+                <span className={cn('size-2.5 rounded-full', toneFill[marker.tone ?? 'neutral'])} />
             )}
         </span>
         <span className="sr-only">{marker.label}</span>
         <span
             aria-hidden
-            className="pointer-events-none absolute top-full left-1/2 z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-chip bg-neutral-950 px-2 py-1 font-medium text-neutral-50 text-xxs opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+            className="pointer-events-none absolute top-full left-1/2 z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-item border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 font-medium text-neutral-950 text-xxs opacity-0 shadow-float transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
         >
             {marker.label}
         </span>
