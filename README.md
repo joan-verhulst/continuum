@@ -42,6 +42,11 @@ This is a private workspace package, not on npm (see the licence). Two ways in:
 Peer dependencies: `react` and `react-dom` 19. The date picker needs `react-day-picker`; the charts need nothing
 more.
 
+Load the font yourself: Continuum is drawn in Geist, which is not bundled. Add `@fontsource-variable/geist` and
+import it once in the entry script (`import '@fontsource-variable/geist';`), or set `--font-geist` from
+`next/font`. Without it the type falls back to the system font and the spacing reads off. To only look at it,
+clone the repository and run the playground (below): it loads Geist already.
+
 ### (a) In a Tailwind v4 app
 
 Import the theme into your Tailwind entry and point Tailwind at the package so it generates the classes the
