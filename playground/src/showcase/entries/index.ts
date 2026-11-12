@@ -10,6 +10,7 @@ import * as breadcrumb from './breadcrumb';
 import * as button from './button';
 import * as card from './card';
 import * as areaChart from './charts/area-chart';
+import * as barChart from './charts/bar-chart';
 import * as chartLoading from './charts/chart-loading';
 import * as funnelChart from './charts/funnel-chart';
 import * as pieChart from './charts/pie-chart';
@@ -141,6 +142,7 @@ export const entries: Entry[] = [
     toast.entry,
     emptyState.entry,
     areaChart.entry,
+    barChart.entry,
     pieChart.entry,
     funnelChart.entry,
     chartLoading.entry,
@@ -210,6 +212,7 @@ export const inUse: Record<string, InUse> = {
     'icon-tile': iconTile.inUse,
     'bar-list': barList.inUse,
     'area-chart': areaChart.inUse,
+    'bar-chart': barChart.inUse,
     'pie-chart': pieChart.inUse,
     'funnel-chart': funnelChart.inUse,
     'chart-loading': chartLoading.inUse,

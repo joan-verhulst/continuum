@@ -9,7 +9,7 @@ import { CURRENT_PROJECT } from './project-switcher';
 import { appliedThemeId, useProjects } from './projects';
 import { RasterLab } from './raster/lab';
 import { Shell } from './shell';
-import { Components } from './showcase';
+import { Charts, Components } from './showcase';
 import { Projects } from './theme-editor';
 
 /** Where the mode is kept, so a fresh visit opens in the one used last. */
@@ -223,6 +223,7 @@ export const App = () => {
                         {state.view === 'components' && (
                             <Components onChange={navigate} state={state} />
                         )}
+                        {state.view === 'charts' && <Charts onChange={navigate} state={state} />}
                         {state.view === 'patterns' && (
                             <Patterns onChange={navigate} state={state} />
                         )}

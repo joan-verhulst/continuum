@@ -97,6 +97,7 @@
     --font-mono: ui-monospace, "SFMono-Regular", Menlo, monospace;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
+    --radius-xs: 4px;
     --radius-full: 9999px;
     --ease-out-strong: cubic-bezier(.22, 1, .36, 1);
   }
@@ -630,6 +631,10 @@
     margin: calc(var(--spacing) * -1);
   }
 
+  .continuum .m-0, .continuum.m-0 {
+    margin: 0;
+  }
+
   .continuum .m-2, .continuum.m-2 {
     margin: calc(var(--spacing) * 2);
   }
@@ -708,6 +713,10 @@
 
   .continuum .mt-0\.5, .continuum.mt-0\.5 {
     margin-top: var(--spacing-0\.5, var(--spacing-0\.5));
+  }
+
+  .continuum .mt-1, .continuum.mt-1 {
+    margin-top: var(--spacing);
   }
 
   .continuum .mt-2, .continuum.mt-2 {
@@ -1319,6 +1328,10 @@
     width: 100%;
   }
 
+  .continuum .w-max, .continuum.w-max {
+    width: max-content;
+  }
+
   .continuum .w-popover, .continuum.w-popover {
     width: var(--spacing-popover, var(--spacing-popover));
   }
@@ -1447,6 +1460,11 @@
     min-width: 64px;
   }
 
+  .continuum .min-w-35, .continuum.min-w-35 {
+    min-width: calc(var(--spacing) * 35);
+    min-width: 140px;
+  }
+
   .continuum .min-w-chart-tooltip, .continuum.min-w-chart-tooltip {
     min-width: var(--spacing-chart-tooltip, var(--spacing-chart-tooltip));
   }
@@ -1545,6 +1563,11 @@
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
+  .continuum .-translate-y-1\/2, .continuum.-translate-y-1\/2 {
+    --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+
   .continuum .-translate-y-full, .continuum.-translate-y-full {
     --tw-translate-y: -100%;
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -1597,6 +1620,10 @@
 
   .continuum .cursor-crosshair, .continuum.cursor-crosshair {
     cursor: crosshair;
+  }
+
+  .continuum .cursor-default, .continuum.cursor-default {
+    cursor: default;
   }
 
   .continuum .cursor-grab, .continuum.cursor-grab {
@@ -1779,6 +1806,10 @@
     margin-inline-end: calc(-8px * calc(1 - var(--tw-space-x-reverse)));
   }
 
+  .continuum .gap-y-1, .continuum.gap-y-1 {
+    row-gap: var(--spacing);
+  }
+
   .continuum .gap-y-2, .continuum.gap-y-2 {
     row-gap: calc(var(--spacing) * 2);
   }
@@ -1913,6 +1944,15 @@
     border-radius: var(--radius-pill, var(--radius-pill));
   }
 
+  .continuum .rounded-xs, .continuum.rounded-xs {
+    border-radius: var(--radius-xs);
+  }
+
+  .continuum .rounded-t-\[min\(4px\,var\(--radius-chip\)\)\],.continuum.rounded-t-\[min\(4px\,var\(--radius-chip\)\)\] {
+    border-top-left-radius: min(4px, var(--radius-chip));
+    border-top-right-radius: min(4px, var(--radius-chip));
+  }
+
   .continuum .rounded-t-item, .continuum.rounded-t-item {
     border-top-left-radius: var(--radius-item, var(--radius-item));
     border-top-right-radius: var(--radius-item, var(--radius-item));
@@ -1920,6 +1960,11 @@
 
   .continuum .rounded-tl-none, .continuum.rounded-tl-none {
     border-top-left-radius: 0;
+  }
+
+  .continuum .rounded-b-\[min\(4px\,var\(--radius-chip\)\)\],.continuum.rounded-b-\[min\(4px\,var\(--radius-chip\)\)\] {
+    border-bottom-right-radius: min(4px, var(--radius-chip));
+    border-bottom-left-radius: min(4px, var(--radius-chip));
   }
 
   .continuum .rounded-b-item, .continuum.rounded-b-item {
@@ -2095,6 +2140,10 @@
 
   .continuum .bg-neutral-300, .continuum.bg-neutral-300 {
     background-color: var(--color-neutral-300, var(--color-neutral-300));
+  }
+
+  .continuum .bg-neutral-400, .continuum.bg-neutral-400 {
+    background-color: var(--color-neutral-400, var(--color-neutral-400));
   }
 
   .continuum .bg-neutral-500, .continuum.bg-neutral-500, .continuum .bg-neutral-500\/20, .continuum.bg-neutral-500\/20 {
@@ -3011,6 +3060,12 @@
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
 
+  .continuum .transition-\[clip-path\], .continuum.transition-\[clip-path\] {
+    transition-property: clip-path;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+
   .continuum .transition-\[color\], .continuum.transition-\[color\] {
     transition-property: color;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
@@ -3123,6 +3178,11 @@
   .continuum .duration-300, .continuum.duration-300 {
     --tw-duration: .3s;
     transition-duration: .3s;
+  }
+
+  .continuum .duration-700, .continuum.duration-700 {
+    --tw-duration: .7s;
+    transition-duration: .7s;
   }
 
   .continuum .ease-in-out, .continuum.ease-in-out {
@@ -3368,6 +3428,10 @@
     .continuum .group-hover\/input\:text-neutral-700:is(:where(.group\/input):hover *), .continuum.group-hover\/input\:text-neutral-700:is(:where(.group\/input):hover *) {
       color: var(--color-neutral-700, var(--color-neutral-700));
     }
+  }
+
+  .continuum .group-focus-visible\:opacity-100:is(:where(.group):focus-visible *), .continuum.group-focus-visible\:opacity-100:is(:where(.group):focus-visible *) {
+    opacity: 1;
   }
 
   .continuum .group-has-data-\[slot\=combobox-clear\]\/input\:hidden:is(:where(.group\/input):has([data-slot="combobox-clear"]) *), .continuum.group-has-data-\[slot\=combobox-clear\]\/input\:hidden:is(:where(.group\/input):has([data-slot="combobox-clear"]) *) {
@@ -5151,6 +5215,11 @@
 
   .continuum .\[\&_img\]\:object-cover img, .continuum.\[\&_img\]\:object-cover img {
     object-fit: cover;
+  }
+
+  .continuum .\[\&_svg\]\:size-3 svg, .continuum.\[\&_svg\]\:size-3 svg {
+    width: 12px;
+    height: 12px;
   }
 
   .continuum .\[\&_svg\]\:size-3\! svg, .continuum.\[\&_svg\]\:size-3\! svg {

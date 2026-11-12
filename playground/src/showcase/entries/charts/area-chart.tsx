@@ -9,50 +9,120 @@ import {
     SegmentedControlItem,
     StatCard,
 } from 'continuum';
-import { Area, AreaChart, ChartTooltip, Grid, XAxis, YAxis } from 'continuum/charts-legacy';
-import { chartMargin, formatWeekday, reportWeek, seriesRows } from '../../../screens/shared';
-import { AppWindow, type Entry, type InUse } from '../../kit';
+import { AreaChart, ChartLegend } from 'continuum/charts';
+import { Rocket } from 'lucide-react';
+import { formatWeekday, reportWeek } from '../../../screens/shared';
+import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 
-// The library page's two series, shortened to the tile.
+// The week the analytics screens report on, with the Friday release the marker points at.
 const traffic = reportWeek.map((date, i) => ({
     date,
     visitors: [4200, 5100, 4800, 6300, 5900, 3600, 4100][i] ?? 0,
     returning: [1800, 2300, 2100, 2900, 2600, 1500, 1700][i] ?? 0,
 }));
 
-const trafficSeries = [
-    { key: 'visitors', label: 'Visitors', color: 'var(--color-chart-line-primary)' },
-    { key: 'returning', label: 'Returning', color: 'var(--color-chart-line-secondary)' },
+/*
+ * A year of the same measure, a reading a day, so the kit can be judged at the density a real
+ * report runs at: a slow climb, a summer dip, a weekly rhythm and one bad week in November.
+ * Made here rather than drawn at random, so the chart is the same every time it is looked at.
+ */
+const wave = (i: number, period: number, size: number) =>
+    Math.sin((i / period) * Math.PI * 2) * size;
+
+const year = Array.from({ length: 365 }, (_, i) => {
+    const date = new Date(2025, 10, 12);
+    date.setDate(date.getDate() - (364 - i));
+    const trend = 2600 + i * 7;
+    const season = wave(i, 365, 900);
+    const week = wave(i, 7, 420);
+    const slump = i > 196 && i < 232 ? -700 : 0;
+    const outage = i > 300 && i < 309 ? -1500 : 0;
+    const visitors = Math.max(400, Math.round(trend + season + week + slump + outage));
+    return { date, visitors, returning: Math.round(visitors * 0.42 + wave(i, 7, 120)) };
+});
+
+const both = [
+    { key: 'visitors', name: 'Visitors' },
+    { key: 'returning', name: 'Returning' },
+];
+const one = [{ key: 'visitors', name: 'Visitors' }];
+
+const formatMonth = (date: Date) => date.toLocaleDateString('en-GB', { month: 'short' });
+
+const areaKnobs: Knob[] = [
+    {
+        id: 'range',
+        label: 'Range',
+        options: [o('week', 'A week · 7'), o('year', 'A year · 365')],
+        default: 'week',
+    },
+    {
+        id: 'series',
+        label: 'Series',
+        options: [o('one', 'One'), o('two', 'Two')],
+        default: 'two',
+    },
+    {
+        id: 'state',
+        label: 'State',
+        options: [o('ready', 'Ready'), o('loading', 'Loading'), o('empty', 'No data')],
+        default: 'ready',
+    },
+    {
+        id: 'marker',
+        label: 'Marker',
+        switch: true,
+        default: false,
+        when: values => values.state === 'ready',
+    },
+    {
+        // The week is not over, so its last stretch is drawn as not yet measured.
+        id: 'incomplete',
+        label: 'Period unfinished',
+        switch: true,
+        default: false,
+        when: values => values.state === 'ready',
+    },
 ];
 
-const AreaChartPreview = () => (
-    <div aria-label="Visitors and returning visitors per day" className="w-full" role="img">
+const AreaChartPreview = ({ knobs }: PreviewProps) => {
+    const long = knobs.range === 'year';
+    const rows = long ? year : traffic;
+
+    return (
         <AreaChart
-            data={traffic}
-            formatXLabel={formatWeekday}
-            margin={chartMargin}
-            style={{ height: 176 }}
-        >
-            <Grid />
-            {trafficSeries.map(series => (
-                <Area dataKey={series.key} fill={series.color} key={series.key} />
-            ))}
-            <XAxis numTicks={traffic.length} />
-            <YAxis formatValue={value => (value === 0 ? '0' : `${value / 1000}k`)} />
-            <ChartTooltip
-                rows={seriesRows(trafficSeries, value => value.toLocaleString('en-GB'))}
-            />
-        </AreaChart>
-    </div>
-);
+            aria-label={`Visitors and returning visitors per day, ${long ? 'over a year' : 'this week'}`}
+            data={knobs.state === 'empty' ? [] : rows}
+            formatX={long ? formatMonth : formatWeekday}
+            height={176}
+            incompleteFrom={knobs.incomplete ? rows.length - 2 : undefined}
+            loading={knobs.state === 'loading'}
+            markers={
+                knobs.marker
+                    ? [
+                          {
+                              index: long ? 304 : 4,
+                              label: long ? 'Outage, 9 September' : 'Release 2.4',
+                              icon: <Rocket />,
+                          },
+                      ]
+                    : undefined
+            }
+            series={knobs.series === 'one' ? one : both}
+            x="date"
+            xTicks={long ? 6 : rows.length}
+        />
+    );
+};
 
 export const entry: Entry = {
     id: 'area-chart',
     name: 'Area chart',
     category: 'charts',
-    description: 'Monotone lines over fading fills, with a tooltip that follows the pointer.',
+    description: 'A measure over time: monotone lines over a wash, read out at the nearest point.',
     span: 2,
     stageClassName: 'items-stretch',
+    knobs: areaKnobs,
     Preview: AreaChartPreview,
 };
 
@@ -66,37 +136,18 @@ const VisitorsChart = () => (
                     <CardDelta>+10.7% on last week</CardDelta>
                 </CardFigure>
             </div>
-            <div className="flex items-center gap-4 pt-1 text-neutral-600 text-xs">
-                {trafficSeries.map(series => (
-                    <span className="flex items-center gap-1.5" key={series.key}>
-                        {/* The series' own colour, so the key matches the line in every theme. */}
-                        <span
-                            className="size-2 rounded-full"
-                            style={{ background: series.color }}
-                        />
-                        {series.label}
-                    </span>
-                ))}
-            </div>
+            {/* Two series, so the key names them; it sits in the header, never over the plot. */}
+            <ChartLegend className="pt-1" items={both.map(series => ({ name: series.name }))} />
         </CardHeader>
-        <div aria-label="Visitors and returning visitors per day" className="w-full" role="img">
-            <AreaChart
-                data={traffic}
-                formatXLabel={formatWeekday}
-                margin={chartMargin}
-                style={{ height: 240 }}
-            >
-                <Grid />
-                {trafficSeries.map(series => (
-                    <Area dataKey={series.key} fill={series.color} key={series.key} />
-                ))}
-                <XAxis numTicks={traffic.length} />
-                <YAxis formatValue={value => (value === 0 ? '0' : `${value / 1000}k`)} />
-                <ChartTooltip
-                    rows={seriesRows(trafficSeries, value => value.toLocaleString('en-GB'))}
-                />
-            </AreaChart>
-        </div>
+        <AreaChart
+            aria-label="Visitors and returning visitors per day, this week"
+            data={traffic}
+            formatX={formatWeekday}
+            height={240}
+            series={both}
+            x="date"
+            xTicks={traffic.length}
+        />
     </Card>
 );
 

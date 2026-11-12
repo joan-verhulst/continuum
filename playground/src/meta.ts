@@ -4,6 +4,7 @@ export const views = [
     'home',
     'foundations',
     'components',
+    'charts',
     'patterns',
     'projects',
     'raster',

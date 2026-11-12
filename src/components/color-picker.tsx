@@ -25,8 +25,9 @@ import { StatusDot } from './status-dot';
 /*
  * A colour typed or pasted by hand, in the notation the person has it in: hex, rgb, hsl or oklch.
  * The theme keeps the colour as hex, so whatever is typed is read, brought inside sRGB and written
- * as hex; the field then shows that hex back in the notation picked. A value still being typed is
- * left alone until it reads as a whole colour.
+ * as hex; the field then shows that hex back in the notation picked, once the field is let go. A
+ * value still being typed is left alone until it reads as a whole colour, and the text stays as
+ * typed while it is being typed.
  */
 
 export type ColorFormat = 'hex' | 'rgb' | 'hsl' | 'oklch';
@@ -55,6 +56,13 @@ const toHex = ([r, g, b]: Rgb) =>
                 .padStart(2, '0'),
         )
         .join('')}`;
+
+/** Whether two hexes are the same colour to within a step of rounding on each channel. */
+const sameHex = (a: string, b: string) => {
+    const x = toRgb(a);
+    const y = toRgb(b);
+    return x.every((v, i) => Math.abs(v - (y[i] ?? 0)) <= 1.5);
+};
 
 const rgbToHsl = ([r, g, b]: Rgb): Rgb => {
     const [rn, gn, bn] = [r / 255, g / 255, b / 255];
@@ -110,6 +118,8 @@ const parseColor = (text: string, format: ColorFormat): string | null => {
     const named = /^(rgb|hsl|oklch)a?\(/.exec(typed)?.[1] as ColorFormat | undefined;
     const kind = named ?? format;
     if (kind === 'hex') return null;
+    // A notation opened and not closed is still being written: "rgb(120 30 2" is on its way to 200.
+    if (typed.includes('(') && !typed.includes(')')) return null;
     // The body only, so the "3" of "p3" or a name's digits are never read as a channel.
     const body = typed.replace(/^[a-z]+\(/, '').replace(/\).*$/, '');
     const [a, b, c] = numbers(body);
@@ -138,6 +148,139 @@ let lastFormat: ColorFormat = 'hex';
 /** The notation last picked anywhere, for a field or a picker that opens. */
 const sharedFormat = () => lastFormat;
 
+/* ---------- The value by hand ---------- */
+
+/** One number of a notation: what it is called, how far it runs, and how it is written out. */
+type Channel = {
+    label: string;
+    min: number;
+    max: number;
+    /** What an arrow moves it by; Shift takes ten of them. */
+    step: number;
+    show: (value: number) => string;
+};
+
+const round = (value: number) => String(Math.round(value));
+
+/**
+ * The notations that are three numbers, each read off a hex and written back to one. The numbers
+ * are read at full precision and only rounded for the box, so editing one leaves the others where
+ * they were rather than nudging the colour by a step of rounding each time.
+ */
+const channelSets: Record<
+    Exclude<ColorFormat, 'hex'>,
+    { channels: Channel[]; read: (hex: string) => number[]; write: (values: number[]) => string }
+> = {
+    rgb: {
+        channels: (['Red', 'Green', 'Blue'] as const).map(label => ({
+            label,
+            min: 0,
+            max: 255,
+            step: 1,
+            show: round,
+        })),
+        read: hex => toRgb(hex),
+        write: ([r = 0, g = 0, b = 0]) => toHex([r, g, b]),
+    },
+    hsl: {
+        channels: [
+            { label: 'Hue', min: 0, max: 360, step: 1, show: round },
+            { label: 'Saturation', min: 0, max: 100, step: 1, show: round },
+            { label: 'Lightness', min: 0, max: 100, step: 1, show: round },
+        ],
+        read: hex => rgbToHsl(toRgb(hex)),
+        write: ([h = 0, s = 0, l = 0]) => toHex(hslToRgb([h, s, l])),
+    },
+    oklch: {
+        channels: [
+            { label: 'Lightness', min: 0, max: 100, step: 1, show: n => n.toFixed(1) },
+            { label: 'Chroma', min: 0, max: 0.4, step: 0.005, show: n => n.toFixed(3) },
+            { label: 'Hue', min: 0, max: 360, step: 1, show: n => n.toFixed(1) },
+        ],
+        read: hex => {
+            const color = hexToOklch(hex) ?? { l: 0.5, c: 0, h: 0 };
+            return [color.l * 100, color.c, color.h];
+        },
+        write: ([l = 0, c = 0, h = 0]) => oklchToHex({ l: l / 100, c, h }),
+    },
+};
+
+/**
+ * One channel's box: a number, taken as it is typed and kept inside the channel's range, with the
+ * arrows moving it a step (Shift, ten). A whole colour pasted into it is taken as the colour, so a
+ * paste lands wherever in the row it is dropped. As the field itself, the text stays as typed until
+ * the box is let go.
+ */
+const ChannelInput = ({
+    channel,
+    label,
+    value,
+    format,
+    onChange,
+    onWhole,
+}: {
+    channel: Channel;
+    /** What the colour is, so the box is named "Primary hue". */
+    label: string;
+    value: number;
+    format: ColorFormat;
+    onChange: (value: number) => void;
+    onWhole: (hex: string) => void;
+}) => {
+    const shown = channel.show(value);
+    const [draft, setDraft] = useState(shown);
+    const typing = useRef(false);
+
+    useEffect(() => {
+        if (!typing.current) setDraft(shown);
+    }, [shown]);
+
+    const typed = (text: string) =>
+        text.trim() !== '' && Number.isFinite(Number(text)) ? Number(text) : null;
+
+    const step = (by: number) => {
+        const from = typed(draft) ?? value;
+        // Back off the floating point the step leaves behind, so 0.185 + 0.005 is 0.19 and not 0.19000000000000003.
+        const next = clamp(Number((from + by).toFixed(4)), channel.min, channel.max);
+        typing.current = false;
+        setDraft(channel.show(next));
+        onChange(next);
+    };
+
+    return (
+        <Input
+            aria-label={`${label} ${channel.label.toLowerCase()}`}
+            className="min-w-0 flex-1 px-1.5"
+            inputClassName="text-center tabular-nums"
+            inputMode="decimal"
+            onBlur={() => {
+                typing.current = false;
+                setDraft(shown);
+            }}
+            onChange={event => {
+                const next = event.target.value;
+                typing.current = true;
+                setDraft(next);
+                // A colour pasted over a number is the colour; a number is this channel's.
+                const pasted = parseColor(next, format);
+                if (pasted) return onWhole(pasted);
+                const number = typed(next);
+                if (number !== null) onChange(clamp(number, channel.min, channel.max));
+            }}
+            onKeyDown={event => {
+                if (event.key === 'Enter') return event.currentTarget.blur();
+                const way = event.key === 'ArrowUp' ? 1 : event.key === 'ArrowDown' ? -1 : 0;
+                if (!way) return;
+                event.preventDefault();
+                step(way * channel.step * (event.shiftKey ? 10 : 1));
+            }}
+            size="sm"
+            spellCheck={false}
+            value={draft}
+        />
+    );
+};
+
 export type ColorFieldProps = {
     /** The colour as hex. */
     value: string;
@@ -148,7 +291,11 @@ export type ColorFieldProps = {
     onFormat?: (format: ColorFormat) => void;
 };
 
-/** The notation and the value: a short select beside the field it sets the notation of. */
+/**
+ * The notation and the value: a short select beside the value it sets the notation of. Hex is one
+ * box, since it is one word; the notations that are three numbers get a box each, as a colour is
+ * read and corrected a channel at a time.
+ */
 export const ColorField = ({
     value,
     onChange,
@@ -158,11 +305,19 @@ export const ColorField = ({
 }: ColorFieldProps) => {
     const [own, setOwn] = useState<ColorFormat>(lastFormat);
     const format = given ?? own;
+    const set = format === 'hex' ? null : channelSets[format];
+    const values = set?.read(value);
     const shown = formatColor(value, format);
     const [draft, setDraft] = useState(shown);
+    // While the field has the hand, its text is its own: the colour it just wrote comes back
+    // written out in full ("#abc" as "#aabbcc", "rgb(1 2 3)" with its spacing), and that must not
+    // be dropped under the caret mid-word. It is shown on letting go.
+    const typing = useRef(false);
 
     // A colour from elsewhere (the plane, another field) replaces whatever was being typed.
-    useEffect(() => setDraft(shown), [shown]);
+    useEffect(() => {
+        if (!typing.current) setDraft(shown);
+    }, [shown]);
 
     return (
         <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -186,23 +341,50 @@ export const ColorField = ({
                     ))}
                 </SelectContent>
             </Select>
-            <Input
-                aria-label={`${label} as ${format}`}
-                className="min-w-0 flex-1 font-mono"
-                onBlur={() => setDraft(shown)}
-                onChange={event => {
-                    const next = event.target.value;
-                    setDraft(next);
-                    const hex = parseColor(next, format);
-                    if (hex && hex !== value) onChange(hex);
-                }}
-                onKeyDown={event => {
-                    if (event.key === 'Enter') event.currentTarget.blur();
-                }}
-                size="sm"
-                spellCheck={false}
-                value={draft}
-            />
+            {set && values ? (
+                <div className="flex min-w-0 flex-1 items-center gap-1">
+                    {set.channels.map((channel, i) => (
+                        <ChannelInput
+                            channel={channel}
+                            format={format}
+                            key={`${format}-${channel.label}`}
+                            label={label}
+                            onChange={next => {
+                                const edited = [...values];
+                                edited[i] = next;
+                                const hex = set.write(edited);
+                                if (hex !== value) onChange(hex);
+                            }}
+                            onWhole={hex => {
+                                if (hex !== value) onChange(hex);
+                            }}
+                            value={values[i] ?? 0}
+                        />
+                    ))}
+                </div>
+            ) : (
+                <Input
+                    aria-label={`${label} as ${format}`}
+                    className="min-w-0 flex-1 font-mono"
+                    onBlur={() => {
+                        typing.current = false;
+                        setDraft(shown);
+                    }}
+                    onChange={event => {
+                        const next = event.target.value;
+                        typing.current = true;
+                        setDraft(next);
+                        const hex = parseColor(next, format);
+                        if (hex && hex !== value) onChange(hex);
+                    }}
+                    onKeyDown={event => {
+                        if (event.key === 'Enter') event.currentTarget.blur();
+                    }}
+                    size="sm"
+                    spellCheck={false}
+                    value={draft}
+                />
+            )}
         </div>
     );
 };
@@ -954,13 +1136,6 @@ const Reading = ({
 const srgbHueBand =
     'linear-gradient(90deg, #f00, #ff0 16.67%, #0f0 33.33%, #0ff 50%, #00f 66.67%, #f0f 83.33%, #f00)';
 
-/** Whether two hexes are the same colour to within a step of rounding on each channel. */
-const sameHex = (a: string, b: string) => {
-    const x = channelsOf(a);
-    const y = channelsOf(b);
-    return x.every((v, i) => Math.abs(v - (y[i] ?? 0)) <= 1.5 / 255);
-};
-
 const PickerBody = ({ value, onChange, onLive, label, hue, handleRef, surfaces }: PickerProps) => {
     // The colour as picked: its chroma may run past the edge after a turn of hue, and comes back
     // when the hue does. What is shown and written is the colour fitted inside sRGB.
@@ -1175,14 +1350,25 @@ export const ColorPicker = ({
             <PopoverTrigger
                 aria-label={`Pick the ${label.toLowerCase()}`}
                 className={cn(
-                    'size-control shrink-0 cursor-pointer rounded-control ring-1 ring-neutral-950/10 ring-inset',
+                    // The box is Input's: the same border, shadow and corners, so it sits in a row
+                    // of controls as one of them rather than as a slab of colour.
+                    'size-control shrink-0 cursor-pointer rounded-control border border-neutral-200 p-[3px] shadow-control transition-[border-color] duration-150 hover:border-neutral-300',
                     'outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:outline-offset-2',
                     'data-popup-open:outline-2 data-popup-open:outline-neutral-300 data-popup-open:outline-solid data-popup-open:outline-offset-2',
                     className,
                 )}
                 data-slot="color-picker"
-                style={{ background: live ?? value }}
-            />
+            >
+                {/* The colour inset in the box, as the segmented control insets its segment: a fixed
+                    3px at every size, with its corner the box's less that inset. No edge of its own:
+                    the box's border is the one that holds it. */}
+                <span
+                    aria-hidden
+                    className="block size-full rounded-[calc(var(--radius-control)-3px)]"
+                    data-slot="color-picker-swatch"
+                    style={{ background: live ?? value }}
+                />
+            </PopoverTrigger>
             <PopoverContent align="start" aria-label={label} initialFocus={handleRef}>
                 <PickerBody
                     handleRef={handleRef}

@@ -36,6 +36,7 @@ import {
     useToast,
 } from 'continuum';
 import {
+    ChartLine,
     ChevronRight,
     Download,
     FolderKanban,
@@ -76,6 +77,7 @@ const viewMeta: Record<View, { label: string; icon: ReactNode }> = {
     home: { label: 'Continuum', icon: <House {...icon} /> },
     foundations: { label: 'Foundations', icon: <Palette {...icon} /> },
     components: { label: 'Components', icon: <LayoutGrid {...icon} /> },
+    charts: { label: 'Charts', icon: <ChartLine {...icon} /> },
     patterns: { label: 'Patterns', icon: <LayoutTemplate {...icon} /> },
     projects: { label: 'Projects', icon: <SwatchBook {...icon} /> },
     raster: { label: 'Raster lab', icon: <Grid3x3 {...icon} /> },
@@ -124,7 +126,10 @@ const ShellFrame = ({ state, onChange, children }: ShellProps) => {
     const [backFrom, setBackFrom] = useState<View>();
     // The docs pages keep their index in the dock; a project's page has its own bar at the foot.
     const hasDock =
-        state.view === 'foundations' || state.view === 'components' || state.view === 'patterns';
+        state.view === 'foundations' ||
+        state.view === 'components' ||
+        state.view === 'charts' ||
+        state.view === 'patterns';
 
     // A new page starts at its top, whether picked here or reached through the hash.
     // biome-ignore lint/correctness/useExhaustiveDependencies: runs on a page change only
@@ -231,7 +236,7 @@ type PlaygroundSidebarProps = Omit<ShellProps, 'children'> & {
     atTop: boolean;
 };
 
-const libraryViews: View[] = ['foundations', 'components', 'patterns'];
+const libraryViews: View[] = ['foundations', 'components', 'charts', 'patterns'];
 
 /** The views with an index of their own, which the sidebar drills into. */
 const indexed = new Set<View>(libraryViews);

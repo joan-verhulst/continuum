@@ -1,5 +1,12 @@
 import { cn, focusRing } from 'continuum';
-import { ArrowRight, LayoutGrid, LayoutTemplate, Palette, SwatchBook } from 'lucide-react';
+import {
+    ArrowRight,
+    ChartLine,
+    LayoutGrid,
+    LayoutTemplate,
+    Palette,
+    SwatchBook,
+} from 'lucide-react';
 import type { ReactNode } from 'react';
 import { ArticleSection, column, Figure } from './article';
 import { exampleSections } from './examples';
@@ -8,6 +15,10 @@ import { type AppState, toHash } from './meta';
 import { screens } from './screens';
 import { Overview } from './screens/overview';
 import { entries } from './showcase/entries';
+
+/** Charts have their own way in, so the component count never counts them. */
+const chartEntries = entries.filter(entry => entry.category === 'charts');
+const uiEntries = entries.filter(entry => entry.category !== 'charts');
 
 const icon = { strokeWidth: 2 } as const;
 
@@ -41,9 +52,15 @@ export const Home = ({ state, onChange }: HomeProps) => {
         },
         {
             title: 'Components',
-            description: `${entries.length} components, live, each with its variants and states.`,
+            description: `${uiEntries.length} components, live, each with its variants and states.`,
             icon: <LayoutGrid {...icon} />,
             patch: { view: 'components' },
+        },
+        {
+            title: 'Charts',
+            description: `${chartEntries.length} charts, a separate entry from the library, on the theme's own data colours.`,
+            icon: <ChartLine {...icon} />,
+            patch: { view: 'charts' },
         },
         {
             title: 'Patterns',

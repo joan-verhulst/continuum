@@ -64,14 +64,47 @@ const gridMemory: { showGaps: boolean; opened?: string } = {
 
 const tileId = (id: string) => `c-${id}`;
 
-type ComponentsProps = {
+/*
+ * Charts are kept apart from the components everywhere, and the playground is no exception:
+ * the same machinery draws both views, over its own half of the entries.
+ */
+type Kind = 'components' | 'charts';
+
+const shelf: Record<Kind, { title: string; description: string; label: string }> = {
+    components: {
+        title: 'Components',
+        label: 'Components',
+        description:
+            'Every component, live, in the theme of the project picked at the top of the sidebar. Open one for its variants and states.',
+    },
+    charts: {
+        title: 'Charts',
+        label: 'Charts',
+        description:
+            'The chart kit, a separate entry from the library (continuum/charts), live in the theme of the project picked at the top of the sidebar. Open one for its variants and states.',
+    },
+};
+
+const entriesOf = (kind: Kind) =>
+    entries.filter(entry => (entry.category === 'charts') === (kind === 'charts'));
+
+const gapsOf = (kind: Kind) =>
+    gaps.filter(gap => (gap.category === 'charts') === (kind === 'charts'));
+
+type ShowcaseProps = {
     state: AppState;
     onChange: (patch: Partial<AppState>) => void;
 };
 
 /** Every component as a tile; a tile opens the component's own page, with its variants and states. */
-export const Components = ({ state, onChange }: ComponentsProps) => {
-    const entry = entries.find(item => item.id === state.component);
+export const Components = (props: ShowcaseProps) => <Showcase {...props} kind="components" />;
+
+/** The chart kit, the same way: its own tab, never mixed in with the parts. */
+export const Charts = (props: ShowcaseProps) => <Showcase {...props} kind="charts" />;
+
+const Showcase = ({ state, onChange, kind }: ShowcaseProps & { kind: Kind }) => {
+    const shown = useMemo(() => entriesOf(kind), [kind]);
+    const entry = shown.find(item => item.id === state.component);
     const { setIndex, setActive } = usePageIndex();
     const open = useCallback(
         (id?: string) => {
@@ -81,21 +114,21 @@ export const Components = ({ state, onChange }: ComponentsProps) => {
         [onChange],
     );
 
-    // The sidebar lists every component; picking one opens its page.
+    // The sidebar lists this view's own entries; picking one opens its page.
     useEffect(() => {
         setIndex(
-            entries.map(item => ({
+            shown.map(item => ({
                 id: item.id,
                 title: item.name,
                 group: categoryLabel(item.category),
             })),
-            { label: 'Components', onSelect: open },
+            { label: shelf[kind].label, onSelect: open },
         );
         return () => {
             setIndex([]);
             setActive(undefined);
         };
-    }, [open, setIndex, setActive]);
+    }, [kind, open, setIndex, setActive, shown]);
 
     useEffect(() => {
         setActive(entry?.id);
@@ -104,18 +137,24 @@ export const Components = ({ state, onChange }: ComponentsProps) => {
     return entry ? (
         <ComponentPage entry={entry} key={entry.id} onOpen={open} />
     ) : (
-        <ComponentsGrid onOpen={open} onSearch={search => onChange({ search })} state={state} />
+        <ComponentsGrid
+            kind={kind}
+            onOpen={open}
+            onSearch={search => onChange({ search })}
+            state={state}
+        />
     );
 };
 
 type GridProps = {
     state: AppState;
+    kind: Kind;
     onOpen: (id?: string) => void;
     /** The search changed; the sidebar's list follows it. */
     onSearch: (search: string) => void;
 };
 
-const ComponentsGrid = ({ state, onOpen, onSearch: setQuery }: GridProps) => {
+const ComponentsGrid = ({ state, kind, onOpen, onSearch: setQuery }: GridProps) => {
     const query = state.search ?? '';
     const [showGaps, setShowGaps] = useState(gridMemory.showGaps);
     const q = query.trim().toLowerCase();
@@ -137,9 +176,9 @@ const ComponentsGrid = ({ state, onOpen, onSearch: setQuery }: GridProps) => {
         return () => cancelAnimationFrame(frame);
     }, []);
 
-    const shown = entries.filter(entry => matches(q, entry.name, entry.description));
+    const shown = entriesOf(kind).filter(entry => matches(q, entry.name, entry.description));
     const missing = showGaps
-        ? gaps.filter(gap => matches(q, gap.name, gap.description, gap.from))
+        ? gapsOf(kind).filter(gap => matches(q, gap.name, gap.description, gap.from))
         : [];
     const groups = categories
         .map(({ id, label }) => ({
@@ -160,12 +199,12 @@ const ComponentsGrid = ({ state, onOpen, onSearch: setQuery }: GridProps) => {
             <PageHeader
                 aside={
                     <dl className="flex gap-10">
-                        <Count label="Components" value={entries.length} />
-                        <Count label="Not built yet" value={gaps.length} />
+                        <Count label={shelf[kind].label} value={entriesOf(kind).length} />
+                        <Count label="Not built yet" value={gapsOf(kind).length} />
                     </dl>
                 }
-                description="Every component, live, in the theme of the project picked at the top of the sidebar. Open one for its variants and states."
-                title="Components"
+                description={shelf[kind].description}
+                title={shelf[kind].title}
             />
             {groups.length > 1 && (
                 <PageDock>
@@ -186,11 +225,11 @@ const ComponentsGrid = ({ state, onOpen, onSearch: setQuery }: GridProps) => {
             )}
             <div className="-mt-6 flex flex-wrap items-center gap-3">
                 <Input
-                    aria-label="Search components"
+                    aria-label={`Search ${shelf[kind].label.toLowerCase()}`}
                     className="w-full sm:w-60"
                     leadingIcon={<Search {...icon} />}
                     onChange={event => setQuery(event.target.value)}
-                    placeholder="Search components"
+                    placeholder={`Search ${shelf[kind].label.toLowerCase()}`}
                     size="sm"
                     value={query}
                 />
@@ -201,29 +240,41 @@ const ComponentsGrid = ({ state, onOpen, onSearch: setQuery }: GridProps) => {
             </div>
 
             <div className="flex min-w-0 flex-col gap-20">
-                {groups.map(group => (
-                    <Section
-                        id={`s-${group.id}`}
-                        key={group.id}
-                        title={
-                            <span className="flex items-center gap-2.5">
-                                {group.label}
-                                <Badge variant="count">{group.entries.length}</Badge>
-                            </span>
-                        }
-                    >
-                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                {groups.map(group => {
+                    const tiles = (
+                        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3" key={group.id}>
                             {group.entries.map(entry => (
                                 <Tile
                                     entry={entry}
                                     href={toHash({ ...state, component: entry.id })}
                                     key={entry.id}
+                                    named={groups.length > 1}
                                     onOpen={() => onOpen(entry.id)}
                                 />
                             ))}
                         </div>
-                    </Section>
-                ))}
+                    );
+
+                    // One group is the view itself: its heading would only repeat the page's title.
+                    return groups.length === 1 ? (
+                        <div id={`s-${group.id}`} key={group.id}>
+                            {tiles}
+                        </div>
+                    ) : (
+                        <Section
+                            id={`s-${group.id}`}
+                            key={group.id}
+                            title={
+                                <span className="flex items-center gap-2.5">
+                                    {group.label}
+                                    <Badge variant="count">{group.entries.length}</Badge>
+                                </span>
+                            }
+                        >
+                            {tiles}
+                        </Section>
+                    );
+                })}
 
                 {missing.length > 0 && (
                     <Section
@@ -271,6 +322,8 @@ const Count = ({ label, value }: { label: string; value: number }) => (
 type TileProps = {
     entry: Entry;
     href: string;
+    /** Whether the tile wears its category: on a page of one category it would say the same thing. */
+    named: boolean;
     onOpen: () => void;
 };
 
@@ -278,10 +331,11 @@ type TileProps = {
 const Tile = ({
     entry: { id, name, description, span, stageClassName, category, knobs, Preview },
     href,
+    named,
     onOpen,
 }: TileProps) => (
     <PreviewTile
-        badge={<Badge>{categoryLabel(category)}</Badge>}
+        badge={named ? <Badge>{categoryLabel(category)}</Badge> : undefined}
         className={cn(span === 2 && 'md:col-span-2', span === 3 && 'md:col-span-2 xl:col-span-3')}
         description={description}
         href={href}

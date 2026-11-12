@@ -14,8 +14,8 @@ import {
     SelectValue,
     Switch,
 } from 'continuum';
-import { ArrowLeft, ArrowRight, RotateCcw } from 'lucide-react';
-import { type ReactNode, useState } from 'react';
+import { ArrowLeft, ArrowRight, PanelLeftClose, RotateCcw, SlidersHorizontal } from 'lucide-react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { Stage } from '../layout';
 import { type Knob, type KnobValues, knobDefaults } from './kit';
 
@@ -212,16 +212,49 @@ const fitsSegments = (options: readonly { label: string }[]) =>
     options.length <= 4 &&
     options.reduce((sum, option) => sum + option.label.length * 6.6 + 20, 4) <= 214;
 
+/*
+ * Whether the panel is folded away, kept outside it so it stays that way from one component
+ * to the next: a reader who folded it to see a wide preview wants it folded on the next one.
+ */
+const panelMemory = { folded: false };
+
 /**
  * The knobs, as a narrow panel floating over the stage's top-left corner: a choice is a
  * segmented control when its options fit, a select when they do not; a yes or no is a switch.
- * It overlays the stage and takes no room from the preview.
+ * It overlays the stage and takes no room from the preview, and folds to a single button
+ * where it would cover something worth seeing, as a wide chart's left edge.
  */
 const KnobPanel = ({ knobs, values, changed, onChange, onReset, className }: KnobPanelProps) => {
     // A knob the others make meaningless (an icon on an icon-only button) leaves the panel.
     const live = knobs.filter(knob => !knob.when || knob.when(values));
     const choices = live.filter(knob => !('switch' in knob));
     const switches = live.filter(knob => 'switch' in knob);
+    const [folded, setFolded] = useState(panelMemory.folded);
+
+    useEffect(() => {
+        panelMemory.folded = folded;
+    }, [folded]);
+
+    if (folded) {
+        return (
+            <div
+                className={cn(
+                    'absolute top-4 left-4 z-10 rounded-item border border-neutral-200 bg-neutral-50 shadow-float',
+                    className,
+                )}
+            >
+                <Button
+                    aria-expanded={false}
+                    aria-label="Show the properties"
+                    onClick={() => setFolded(false)}
+                    size="icon-sm"
+                    variant="ghost"
+                >
+                    <SlidersHorizontal {...icon} />
+                </Button>
+            </div>
+        );
+    }
 
     return (
         <fieldset
@@ -231,8 +264,8 @@ const KnobPanel = ({ knobs, values, changed, onChange, onReset, className }: Kno
                 className,
             )}
         >
-            <div className="flex h-11 shrink-0 items-center justify-between gap-3 border-neutral-200 border-b pr-2 pl-3">
-                <span className="font-medium text-neutral-950 text-xs">Properties</span>
+            <div className="flex h-11 shrink-0 items-center justify-between gap-1 border-neutral-200 border-b pr-2 pl-3">
+                <span className="mr-auto font-medium text-neutral-950 text-xs">Properties</span>
                 <Button
                     aria-label="Reset the properties"
                     disabled={!changed}
@@ -241,6 +274,15 @@ const KnobPanel = ({ knobs, values, changed, onChange, onReset, className }: Kno
                     variant="ghost"
                 >
                     <RotateCcw {...icon} />
+                </Button>
+                <Button
+                    aria-expanded
+                    aria-label="Fold the properties away"
+                    onClick={() => setFolded(true)}
+                    size="icon-sm"
+                    variant="ghost"
+                >
+                    <PanelLeftClose {...icon} />
                 </Button>
             </div>
             <div className="flex min-h-0 flex-col gap-4 overflow-y-auto p-3">
