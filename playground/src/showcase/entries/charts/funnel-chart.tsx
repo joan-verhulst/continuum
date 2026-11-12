@@ -12,8 +12,8 @@ import {
     SelectValue,
     StatCard,
 } from 'continuum';
-import { FunnelChart } from 'continuum/charts';
-import { AppWindow, type Entry, type InUse } from '../kit';
+import { FunnelChart } from 'continuum/charts-legacy';
+import { AppWindow, type Entry, type InUse } from '../../kit';
 
 const FunnelPreview = () => (
     <div className="w-full overflow-x-auto">

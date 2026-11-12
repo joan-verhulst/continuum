@@ -12,7 +12,7 @@ import {
     SelectValue,
     StatCard,
 } from 'continuum';
-import { Area, AreaChart, ChartTooltip, Grid, XAxis, YAxis } from 'continuum/charts';
+import { Area, AreaChart, ChartTooltip, Grid, XAxis, YAxis } from 'continuum/charts-legacy';
 import { CircleAlert, Sparkles, UserPlus, UserRoundX } from 'lucide-react';
 import { useState } from 'react';
 import { ChartCardHeader, chartMargin, seriesRows } from './shared';

@@ -33,7 +33,7 @@ import {
     PieSlice,
     XAxis,
     YAxis,
-} from 'continuum/charts';
+} from 'continuum/charts-legacy';
 import {
     Calendar,
     ChartLine,

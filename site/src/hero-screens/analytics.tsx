@@ -20,7 +20,7 @@ import {
     TableHeader,
     TableRow,
 } from 'continuum';
-import { Area, AreaChart, Grid, XAxis, YAxis } from 'continuum/charts';
+import { Area, AreaChart, Grid, XAxis, YAxis } from 'continuum/charts-legacy';
 import { Download, GitBranch, Globe, Link2, Mail, Rocket, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Column, Frame, icon, PageHead } from './shell';

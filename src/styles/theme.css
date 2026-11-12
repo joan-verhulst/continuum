@@ -8,6 +8,8 @@
 
 @source "../components";
 @source "../charts";
+/* Temporary, while the new kit is written: dropped with src/charts-legacy. */
+@source "../charts-legacy";
 @source "../lib";
 
 /*

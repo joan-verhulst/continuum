@@ -11,6 +11,7 @@
     "exports": {
         ".": "./src/index.ts",
         "./charts": "./src/charts/index.ts",
+        "./charts-legacy": "./src/charts-legacy/index.ts",
         "./styles.css": "./dist/styles.css",
         "./theme.css": "./src/styles/theme.css",
         "./tokens.css": "./src/styles/tokens.css"

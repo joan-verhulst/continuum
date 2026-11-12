@@ -21,7 +21,7 @@ import {
     SidebarAccount,
     SidebarFooter,
 } from 'continuum';
-import { type TooltipRow, useChartStable } from 'continuum/charts';
+import { type TooltipRow, useChartStable } from 'continuum/charts-legacy';
 import {
     Bell,
     ChartColumn,

@@ -3,7 +3,7 @@
 import { curveMonotoneX, line as linePath } from 'd3-shape';
 import { ArrowUpRight, ListFilter, Plus, Search } from 'lucide-react';
 import { type ReactNode, useEffect, useId, useMemo, useRef, useState } from 'react';
-import { PieChart, PieSlice } from '../../src/charts';
+import { PieChart, PieSlice } from '../../src/charts-legacy';
 import { focusRing } from '../../src/components/button';
 import {
     DropdownMenu,

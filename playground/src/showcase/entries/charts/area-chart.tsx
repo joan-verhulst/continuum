@@ -9,9 +9,9 @@ import {
     SegmentedControlItem,
     StatCard,
 } from 'continuum';
-import { Area, AreaChart, ChartTooltip, Grid, XAxis, YAxis } from 'continuum/charts';
-import { chartMargin, formatWeekday, reportWeek, seriesRows } from '../../screens/shared';
-import { AppWindow, type Entry, type InUse } from '../kit';
+import { Area, AreaChart, ChartTooltip, Grid, XAxis, YAxis } from 'continuum/charts-legacy';
+import { chartMargin, formatWeekday, reportWeek, seriesRows } from '../../../screens/shared';
+import { AppWindow, type Entry, type InUse } from '../../kit';
 
 // The library page's two series, shortened to the tile.
 const traffic = reportWeek.map((date, i) => ({

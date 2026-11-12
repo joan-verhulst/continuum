@@ -7,10 +7,10 @@ import {
     SegmentedControlItem,
     StatCard,
 } from 'continuum';
-import { AreaChartLoading } from 'continuum/charts';
+import { AreaChartLoading } from 'continuum/charts-legacy';
 import { Download } from 'lucide-react';
-import { chartMargin } from '../../screens/shared';
-import { AppWindow, type Entry, type InUse, icon } from '../kit';
+import { chartMargin } from '../../../screens/shared';
+import { AppWindow, type Entry, type InUse, icon } from '../../kit';
 
 const ChartLoadingPreview = () => (
     <AreaChartLoading className="h-38 w-full" label="Loading" margin={chartMargin} />

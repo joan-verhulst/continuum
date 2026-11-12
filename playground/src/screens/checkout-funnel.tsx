@@ -16,7 +16,7 @@ import {
     Grid,
     XAxis,
     YAxis,
-} from 'continuum/charts';
+} from 'continuum/charts-legacy';
 import { UserCheck, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
 import {

@@ -13,8 +13,8 @@ import {
     PieChart,
     PieChart as PieChartRoot,
     PieSlice,
-} from 'continuum/charts';
-import { AppWindow, type Entry, type InUse } from '../kit';
+} from 'continuum/charts-legacy';
+import { AppWindow, type Entry, type InUse } from '../../kit';
 
 const deviceSessions = [
     { label: 'Desktop', value: 7688 },
