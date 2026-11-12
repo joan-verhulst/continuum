@@ -763,6 +763,10 @@
     margin-bottom: -1px;
   }
 
+  .continuum .mb-1\.5, .continuum.mb-1\.5 {
+    margin-bottom: var(--spacing-1\.5, var(--spacing-1\.5));
+  }
+
   .continuum .mb-2, .continuum.mb-2 {
     margin-bottom: calc(var(--spacing) * 2);
   }
@@ -2030,14 +2034,8 @@
     border-color: var(--color-action, var(--color-action));
   }
 
-  .continuum .border-error-500, .continuum.border-error-500, .continuum .border-error-500\/40, .continuum.border-error-500\/40 {
+  .continuum .border-error-500, .continuum.border-error-500 {
     border-color: var(--color-error-500, var(--color-error-500));
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .continuum .border-error-500\/40, .continuum.border-error-500\/40 {
-      border-color: color-mix(in oklab, var(--color-error-500, var(--color-error-500)) 40%, transparent);
-    }
   }
 
   .continuum .border-neutral-50, .continuum.border-neutral-50 {
@@ -2056,28 +2054,8 @@
     border-color: var(--color-neutral-300, var(--color-neutral-300));
   }
 
-  .continuum .border-success-500\/40, .continuum.border-success-500\/40 {
-    border-color: var(--color-success-500, var(--color-success-500));
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .continuum .border-success-500\/40, .continuum.border-success-500\/40 {
-      border-color: color-mix(in oklab, var(--color-success-500, var(--color-success-500)) 40%, transparent);
-    }
-  }
-
   .continuum .border-transparent, .continuum.border-transparent {
     border-color: #0000;
-  }
-
-  .continuum .border-warning-500\/40, .continuum.border-warning-500\/40 {
-    border-color: var(--color-warning-500, var(--color-warning-500));
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .continuum .border-warning-500\/40, .continuum.border-warning-500\/40 {
-      border-color: color-mix(in oklab, var(--color-warning-500, var(--color-warning-500)) 40%, transparent);
-    }
   }
 
   .continuum .border-white, .continuum.border-white {
@@ -2203,6 +2181,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .continuum .bg-neutral-950\/4, .continuum.bg-neutral-950\/4 {
       background-color: color-mix(in oklab, var(--color-neutral-950, var(--color-neutral-950)) 4%, transparent);
+    }
+  }
+
+  .continuum .bg-neutral-950\/5, .continuum.bg-neutral-950\/5 {
+    background-color: var(--color-neutral-950, var(--color-neutral-950));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .continuum .bg-neutral-950\/5, .continuum.bg-neutral-950\/5 {
+      background-color: color-mix(in oklab, var(--color-neutral-950, var(--color-neutral-950)) 5%, transparent);
     }
   }
 
@@ -3439,8 +3427,8 @@
   }
 
   @media (hover: hover) {
-    .continuum .group-hover\:bg-neutral-100:is(:where(.group):hover *), .continuum.group-hover\:bg-neutral-100:is(:where(.group):hover *) {
-      background-color: var(--color-neutral-100, var(--color-neutral-100));
+    .continuum .group-hover\:bg-neutral-200:is(:where(.group):hover *), .continuum.group-hover\:bg-neutral-200:is(:where(.group):hover *) {
+      background-color: var(--color-neutral-200, var(--color-neutral-200));
     }
 
     .continuum .group-hover\:opacity-100:is(:where(.group):hover *), .continuum.group-hover\:opacity-100:is(:where(.group):hover *) {
@@ -5247,9 +5235,9 @@
     object-fit: cover;
   }
 
-  .continuum .\[\&_svg\]\:size-2\.5 svg, .continuum.\[\&_svg\]\:size-2\.5 svg {
-    width: 10px;
-    height: 10px;
+  .continuum .\[\&_svg\]\:size-3 svg, .continuum.\[\&_svg\]\:size-3 svg {
+    width: 12px;
+    height: 12px;
   }
 
   .continuum .\[\&_svg\]\:size-3\! svg, .continuum.\[\&_svg\]\:size-3\! svg {

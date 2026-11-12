@@ -70,7 +70,6 @@ const AXIS_HEIGHT = 24;
 const TOP = 8;
 const TOP_WITH_MARKERS = 28;
 const X_LABEL_GAP = 16;
-const TOOLTIP_OFFSET = 12;
 const DOT_RADIUS = 4;
 const BAR_GAP = 2;
 const BAR_MAX = 28;
@@ -349,6 +348,20 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         [plotHeight, ticks, top],
     );
     const baseline = yOf(Math.max(ticks.min, 0));
+    // The column a reading is hovered by: a bar's slot less a little air, or the run between
+    // two points of a line, held between a width worth aiming at and one that stays a column.
+    const barsWide =
+        !stacked && series.length > 1
+            ? Math.min(
+                  slots.slot * GROUP_SHARE,
+                  BAR_MAX * series.length + BAR_GAP * (series.length - 1),
+              )
+            : Math.min(slots.slot * BAR_SHARE, BAR_MAX);
+    const columnWidth = bars
+        ? Math.min(Math.max(8, slots.slot - 4), barsWide + 16)
+        : Math.max(20, Math.min(40, marksCount > 1 ? plotWidth / (marksCount - 1) : 40));
+    // The readout stands clear of the column it reads, never over it.
+    const readoutGap = columnWidth / 2 + 8;
 
     const { active, handlers } = useActive(marksCount, xOf);
 
@@ -659,20 +672,44 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                 >
                     {width > 0 && (
                         <>
+                            {active !== null && !empty && (
+                                /*
+                                 * What is being read is marked the way a hovered row is: the 5%
+                                 * wash, on item corners, over the reading's own column. No rule
+                                 * is drawn through the data to point at it.
+                                 */
+                                <div
+                                    className="pointer-events-none absolute rounded-item bg-neutral-950/5"
+                                    data-slot="chart-active"
+                                    style={{
+                                        height: plotHeight,
+                                        left: xOf(active) - columnWidth / 2,
+                                        top,
+                                        width: columnWidth,
+                                    }}
+                                />
+                            )}
                             {/* The marks are drawn for the eye; the table below carries the figures. */}
                             <svg
                                 aria-hidden="true"
-                                className="block overflow-visible"
+                                className="relative block overflow-visible"
                                 height={height}
                                 width={width}
                             >
                                 {grid &&
+                                    !empty &&
                                     ticks.values.map(tick => (
                                         // Half a pixel off the whole one, so a 1px rule lands crisp.
                                         <line
                                             key={tick}
                                             shapeRendering="crispEdges"
-                                            stroke="var(--color-chart-grid)"
+                                            // The baseline is the hairline every divider in the
+                                            // system is; the rules above it are only a wash.
+                                            stroke={
+                                                tick === Math.max(ticks.min, 0)
+                                                    ? 'var(--color-chart-grid)'
+                                                    : 'color-mix(in oklab, var(--color-neutral-950) 7%, transparent)'
+                                            }
                                             x1={left}
                                             x2={width}
                                             y1={Math.round(yOf(tick)) + 0.5}
@@ -715,17 +752,6 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                     </text>
                                 ))}
 
-                                {/* A hovered bar is marked by its slot, which is easier to aim at. */}
-                                {bars && active !== null && (
-                                    <rect
-                                        fill="var(--color-chart-band)"
-                                        height={plotHeight}
-                                        width={slots.slot}
-                                        x={left + slots.slot * active}
-                                        y={top}
-                                    />
-                                )}
-
                                 <g
                                     className="transition-[clip-path] duration-700 ease-out-strong motion-reduce:transition-none"
                                     opacity={loading ? 0.5 : 1}
@@ -738,48 +764,6 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
                                 {!bars && active !== null && (
                                     <g data-slot="chart-crosshair">
-                                        {/*
-                                         * The rule fades out at both ends: solid from edge to
-                                         * edge it reads as heavy as the data it is pointing at.
-                                         */}
-                                        <defs>
-                                            <linearGradient
-                                                id={`${gradientId}-crosshair`}
-                                                x1="0"
-                                                x2="0"
-                                                y1="0"
-                                                y2="1"
-                                            >
-                                                <stop
-                                                    offset="0%"
-                                                    stopColor="var(--color-chart-crosshair)"
-                                                    stopOpacity="0"
-                                                />
-                                                <stop
-                                                    offset="14%"
-                                                    stopColor="var(--color-chart-crosshair)"
-                                                    stopOpacity="1"
-                                                />
-                                                <stop
-                                                    offset="86%"
-                                                    stopColor="var(--color-chart-crosshair)"
-                                                    stopOpacity="1"
-                                                />
-                                                <stop
-                                                    offset="100%"
-                                                    stopColor="var(--color-chart-crosshair)"
-                                                    stopOpacity="0"
-                                                />
-                                            </linearGradient>
-                                        </defs>
-                                        <rect
-                                            fill={`url(#${gradientId}-crosshair)`}
-                                            height={plotHeight}
-                                            shapeRendering="crispEdges"
-                                            width={1}
-                                            x={Math.round(xOf(active))}
-                                            y={top}
-                                        />
                                         {series.map((line, index) => (
                                             <circle
                                                 cx={xOf(active)}
@@ -859,7 +843,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
                             {empty && !loading && (
                                 <p
-                                    className="absolute flex items-center justify-center text-neutral-600 text-xs"
+                                    className="absolute flex items-center justify-center rounded-item border border-neutral-200 border-dashed text-neutral-600 text-xs"
                                     style={{ height: plotHeight, left, top, width: plotWidth }}
                                 >
                                     {emptyLabel}
@@ -880,10 +864,10 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                         left:
                                             xOf(active) > width / 2
                                                 ? undefined
-                                                : xOf(active) + TOOLTIP_OFFSET,
+                                                : xOf(active) + readoutGap,
                                         right:
                                             xOf(active) > width / 2
-                                                ? width - (xOf(active) - TOOLTIP_OFFSET)
+                                                ? width - (xOf(active) - readoutGap)
                                                 : undefined,
                                         top,
                                     }}
@@ -986,14 +970,15 @@ const toneFill: Record<string, string> = {
 
 /*
  * A marker sits in the band above the plot rather than across its top rule, so it reads as a
- * note in the margin and not as a stray mark on the data, and it carries its tone: a release
- * and an outage are not the same news.
+ * note in the margin and not as a stray mark on the data. It is the system's icon tile at a
+ * marker's size: chip corners, a hairline well, or the tone at 20% behind its own glyph as an
+ * alert's well is. Its label is the tooltip's chip.
  */
-const toneRing: Record<string, string> = {
-    success: 'border-success-500/40',
-    warning: 'border-warning-500/40',
-    error: 'border-error-500/40',
-    neutral: 'border-neutral-300',
+const toneWell: Record<string, string> = {
+    success: 'bg-success-500/20',
+    warning: 'bg-warning-500/20',
+    error: 'bg-error-500/20',
+    neutral: 'border border-neutral-200 bg-neutral-100 group-hover:bg-neutral-200',
 };
 
 const toneInk: Record<string, string> = {
@@ -1005,15 +990,15 @@ const toneInk: Record<string, string> = {
 /** What a marker puts on the plot's top edge: a disc round its icon, or a bulb in its tone. */
 const ChartMarkerPin = ({ marker, x, y }: { marker: ChartMarker; x: number; y: number }) => (
     <button
-        className="group absolute flex size-6 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:outline-offset-2"
+        className="group absolute flex size-6 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-chip outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:outline-offset-2"
         data-slot="chart-marker"
         style={{ left: x, top: y }}
         type="button"
     >
         <span
             className={cn(
-                'flex size-5 items-center justify-center rounded-full border bg-neutral-50 transition-colors duration-150 group-hover:bg-neutral-100 motion-reduce:transition-none [&_svg]:size-2.5',
-                toneRing[marker.tone ?? 'neutral'],
+                'flex size-5 items-center justify-center rounded-chip transition-colors duration-150 motion-reduce:transition-none [&_svg]:size-3',
+                toneWell[marker.tone ?? 'neutral'],
                 marker.tone && marker.tone !== 'neutral'
                     ? toneInk[marker.tone]
                     : 'text-neutral-700',
@@ -1026,7 +1011,7 @@ const ChartMarkerPin = ({ marker, x, y }: { marker: ChartMarker; x: number; y: n
         <span className="sr-only">{marker.label}</span>
         <span
             aria-hidden
-            className="pointer-events-none absolute top-full left-1/2 z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-item border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 font-medium text-neutral-950 text-xxs opacity-0 shadow-float transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
+            className="pointer-events-none absolute top-full left-1/2 z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-chip bg-neutral-950 px-2 py-1 font-medium text-neutral-50 text-xxs opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
         >
             {marker.label}
         </span>

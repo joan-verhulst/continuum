@@ -1,6 +1,7 @@
 'use client';
 
 import type { ReactNode } from 'react';
+import { Theme, useTheme } from '../components/theme';
 import { cn } from '../lib/cn';
 import { type ChartColor, chartColor } from './lib/color';
 
@@ -28,41 +29,48 @@ export type ChartTooltipProps = {
  * The value leads and the name follows, the legend's order inverted: here the reader
  * already knows which series they are on and wants the figure.
  */
-export const ChartTooltip = ({ title, rows, footer, children, className }: ChartTooltipProps) => (
-    <div
-        className={cn(
-            'min-w-35 rounded-item border border-neutral-200 bg-neutral-50 px-3 py-2.5 shadow-float',
-            className,
-        )}
-        data-slot="chart-tooltip"
-    >
-        {title != null && (
-            <p
-                className="mb-2 font-medium text-neutral-950 text-xs"
-                data-slot="chart-tooltip-title"
-            >
-                {title}
-            </p>
-        )}
-        {rows && rows.length > 0 && (
-            <ul className="flex flex-col gap-1.5" data-slot="chart-tooltip-rows">
-                {rows.map((row, index) => (
-                    <ChartTooltipRow
-                        // A row is its series; two series may share a name, so the place is the key.
-                        key={`${index}-${String(row.name)}`}
-                        {...row}
-                    />
-                ))}
-            </ul>
-        )}
-        {footer != null && (
-            <div className="mt-2 border-neutral-200 border-t pt-2" data-slot="chart-tooltip-footer">
-                {footer}
-            </div>
-        )}
-        {children}
-    </div>
-);
+export const ChartTooltip = ({ title, rows, footer, children, className }: ChartTooltipProps) => {
+    const { mode } = useTheme();
+
+    return (
+        // Drawn in the mode opposite the page's, as a toast and a tooltip are: it stands off the
+        // plot by its surface alone, with no shadow, and the dots take that mode's own steps.
+        <Theme
+            className={cn(
+                'min-w-35 rounded-item border border-neutral-200 bg-neutral-50 px-2.5 py-2',
+                className,
+            )}
+            data-slot="chart-tooltip"
+            mode={mode === 'dark' ? 'light' : 'dark'}
+        >
+            {title != null && (
+                <p className="mb-1.5 text-neutral-600 text-xxs" data-slot="chart-tooltip-title">
+                    {title}
+                </p>
+            )}
+            {rows && rows.length > 0 && (
+                <ul className="flex flex-col gap-1.5" data-slot="chart-tooltip-rows">
+                    {rows.map((row, index) => (
+                        <ChartTooltipRow
+                            // A row is its series; two series may share a name, so the place is the key.
+                            key={`${index}-${String(row.name)}`}
+                            {...row}
+                        />
+                    ))}
+                </ul>
+            )}
+            {footer != null && (
+                <div
+                    className="mt-2 border-neutral-200 border-t pt-2"
+                    data-slot="chart-tooltip-footer"
+                >
+                    {footer}
+                </div>
+            )}
+            {children}
+        </Theme>
+    );
+};
 
 /** One series at the read x: its dot and name, then its value. */
 export const ChartTooltipRow = ({ name, value, color }: ChartTooltipRow) => (
