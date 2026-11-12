@@ -4,6 +4,7 @@ import {
     type CSSProperties,
     createContext,
     type ReactNode,
+    useCallback,
     useContext,
     useEffect,
     useId,
@@ -14,7 +15,7 @@ import { Skeleton } from '../components/skeleton';
 import { cn } from '../lib/cn';
 import { type ChartColor, chartColor, seriesColor } from './lib/color';
 import { formatCompact, formatNumber, formatX as formatXValue } from './lib/format';
-import { areaPath, curvePath, lineAreaPath, linePath, type Point } from './lib/path';
+import { areaPath, bandPath, curvePath, lineAreaPath, linePath, type Point } from './lib/path';
 import { extent, niceTicks, scalePoint, scaleY, slotScale } from './lib/scale';
 import { useActive } from './lib/use-active';
 import { useLabelWidth, useWidth } from './lib/use-size';
@@ -76,6 +77,42 @@ const DATE_TICKS = 5;
  * its own weight. The hairline the rest of the system is built from is right at that density.
  */
 const DENSE = 120;
+/**
+ * The most marks a plot draws. Past this the readings are gathered into even periods and the
+ * period's average is drawn, because a year of daily readings has a weekly rhythm in it and
+ * that rhythm is all a reader sees: the trend, the slump and the bad week it is made of are
+ * lost inside a sawtooth. The spread each average came from is drawn behind it, so nothing
+ * is hidden — the shape of the data is the band, not a line through the middle of it.
+ */
+const MARKS = 60;
+/**
+ * The least a mark may be given. Sixty readings are comfortable across a card and a crowd on a
+ * phone, so how many are drawn follows the room there is: the same data gathers into longer
+ * periods on a narrow plot rather than turning to hatching.
+ */
+const MARK_GAP = 8;
+const LEAST_MARKS = 12;
+
+/** The row a period is drawn as: its average per series, and where it came from. */
+type Period = { from: number; to: number };
+
+/** Nothing to gather while the readings are few enough for the room to draw one by one. */
+const periodsFor = (count: number, plotWidth: number): Period[] | null => {
+    const marks = Math.max(LEAST_MARKS, Math.min(MARKS, Math.floor(plotWidth / MARK_GAP)));
+    // Gathering two readings into one is not worth the lie; it starts once there are half again.
+    if (count <= marks * 1.5) return null;
+    const size = count / marks;
+    return Array.from({ length: marks }, (_, i) => ({
+        from: Math.round(i * size),
+        to: Math.max(Math.round(i * size) + 1, Math.round((i + 1) * size)),
+    }));
+};
+
+const mean = (values: readonly number[], { from, to }: Period) => {
+    let total = 0;
+    for (let i = from; i < to; i++) total += values[i] ?? 0;
+    return total / Math.max(1, to - from);
+};
 
 type ChartContextValue = {
     data: readonly ChartRow[];
@@ -195,11 +232,63 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
     const writeValue = formatValue ?? formatY ?? formatNumber;
     const bars = kind === 'bar';
 
-    // Every series' numbers, and the stack they add up to where they are stacked.
-    const columns = useMemo(
+    // The plot is what the labels leave. It is known before the marks, because how many marks
+    // there is room for decides how the readings are gathered.
+    const left = yAxis && !empty ? yLabelWidth + GUTTER_GAP : 0;
+    const top = hasMarkers ? TOP_WITH_MARKERS : TOP;
+    const bottom = xAxis ? AXIS_HEIGHT : 0;
+    const plotWidth = Math.max(0, width - left);
+    const plotHeight = Math.max(0, height - top - bottom);
+
+    // Every series' numbers as given, before any gathering.
+    const readings = useMemo(
         () => series.map(line => data.map(row => toNumber(row[line.key]))),
         [data, series],
     );
+
+    /*
+     * What is actually drawn. Few enough readings and it is the readings themselves; past that
+     * it is one mark per period, holding the period's average and the spread it came from.
+     */
+    const periods = useMemo(
+        () => (bars ? null : periodsFor(data.length, plotWidth)),
+        [bars, data.length, plotWidth],
+    );
+    const columns = useMemo(
+        () =>
+            periods
+                ? readings.map(values => periods.map(period => mean(values, period)))
+                : readings,
+        [periods, readings],
+    );
+    const spread = useMemo(
+        () =>
+            periods
+                ? readings.map(values =>
+                      periods.map(({ from, to }) => {
+                          const slice = values.slice(from, to);
+                          return { low: Math.min(...slice), high: Math.max(...slice) };
+                      }),
+                  )
+                : null,
+        [periods, readings],
+    );
+    /** The row each mark stands for: the reading itself, or the period's first. */
+    const rowAt = useCallback(
+        (index: number) => data[periods ? (periods[index]?.from ?? 0) : index],
+        [data, periods],
+    );
+    const marksCount = periods ? periods.length : data.length;
+    /**
+     * A row of the data as the mark that now carries it. Anything a caller points at — a marker,
+     * the row a period stops being measured at — names a row, and must follow it into its period.
+     */
+    const markOf = (row: number) => {
+        if (!periods) return Math.max(0, Math.min(marksCount - 1, row));
+        const found = periods.findIndex(period => row < period.to);
+        return found === -1 ? periods.length - 1 : found;
+    };
+    const cutAt = incompleteFrom === undefined ? undefined : markOf(incompleteFrom);
     const sums = useMemo(
         () =>
             stacked && bars
@@ -214,27 +303,25 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
     }, [bars, columns, stacked, sums, yMax, yTicks]);
 
     const yLabels = useMemo(() => ticks.values.map(writeAxis), [ticks, writeAxis]);
-    const xLabels = useMemo(
-        () =>
-            data.map((row, i) => {
-                const value = row[xKey];
-                return formatX ? formatX(value as X, row, i) : formatXValue(value);
-            }),
-        [data, formatX, xKey],
+    const labelOf = useCallback(
+        (row: Row | undefined, i: number) => {
+            const value = row?.[xKey];
+            return row && formatX ? formatX(value as X, row, i) : formatXValue(value);
+        },
+        [formatX, xKey],
     );
-
-    // The plot is what the labels leave.
-    const left = yAxis && !empty ? yLabelWidth + GUTTER_GAP : 0;
-    const top = hasMarkers ? TOP_WITH_MARKERS : TOP;
-    const bottom = xAxis ? AXIS_HEIGHT : 0;
-    const plotWidth = Math.max(0, width - left);
-    const plotHeight = Math.max(0, height - top - bottom);
+    // One label per mark; the table below keeps a label for every reading.
+    const xLabels = useMemo(
+        () => Array.from({ length: marksCount }, (_, i) => labelOf(rowAt(i), i)),
+        [labelOf, marksCount, rowAt],
+    );
+    const rawLabels = useMemo(() => data.map(labelOf), [data, labelOf]);
 
     const slots = useMemo(() => slotScale(data.length, plotWidth), [data.length, plotWidth]);
     const xOf = useMemo(
         () => (index: number) =>
-            left + (bars ? slots.center(index) : scalePoint(index, data.length, plotWidth)),
-        [bars, data.length, left, plotWidth, slots],
+            left + (bars ? slots.center(index) : scalePoint(index, marksCount, plotWidth)),
+        [bars, marksCount, left, plotWidth, slots],
     );
     const yOf = useMemo(
         () => (value: number) => top + scaleY(value, ticks, plotHeight),
@@ -242,7 +329,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
     );
     const baseline = yOf(Math.max(ticks.min, 0));
 
-    const { active, handlers } = useActive(data.length, xOf);
+    const { active, handlers } = useActive(marksCount, xOf);
 
     /*
      * The marks wipe in from the left once, in the time a reader takes to look at the card.
@@ -256,7 +343,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         return () => cancelAnimationFrame(frame);
     }, [width]);
     const readable = tooltip !== false && !empty;
-    const activeRow = active !== null ? data[active] : undefined;
+    const activeRow = active !== null ? rowAt(active) : undefined;
 
     // Only as many x labels as fit without touching, however many were asked for.
     const shown = useMemo(() => {
@@ -266,9 +353,9 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
             Math.floor((plotWidth + X_LABEL_GAP) / Math.max(1, xLabelWidth + X_LABEL_GAP)),
         );
         const dates = data[0]?.[xKey] instanceof Date;
-        const wanted = xTicks ?? (dates ? DATE_TICKS : data.length);
-        return labelIndices(data.length, Math.min(wanted, room));
-    }, [data, empty, plotWidth, xAxis, xKey, xLabelWidth, xTicks]);
+        const wanted = xTicks ?? (dates ? DATE_TICKS : marksCount);
+        return labelIndices(marksCount, Math.min(wanted, room));
+    }, [data, empty, marksCount, plotWidth, xAxis, xKey, xLabelWidth, xTicks]);
 
     // The marks do not depend on the pointer, so moving it never redraws them.
     const marks = useMemo(() => {
@@ -280,11 +367,15 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         return order.map(({ line, index }) => {
             const column = columns[index] ?? [];
             const color = colorOf(line, index);
-            const points: Point[] = data.map((_, i) => ({ x: xOf(i), y: yOf(column[i] ?? 0) }));
-            const solid =
-                incompleteFrom === undefined ? points : points.slice(0, incompleteFrom + 1);
-            const dashed = incompleteFrom === undefined ? [] : points.slice(incompleteFrom);
-            const dense = data.length > DENSE;
+            const points: Point[] = Array.from({ length: marksCount }, (_, i) => ({
+                x: xOf(i),
+                y: yOf(column[i] ?? 0),
+            }));
+            // Two spreads over each other are the mud the gathering was meant to clear up.
+            const band = line.muted || series.length > 1 ? undefined : spread?.[index];
+            const solid = cutAt === undefined ? points : points.slice(0, cutAt + 1);
+            const dashed = cutAt === undefined ? [] : points.slice(cutAt);
+            const dense = marksCount > DENSE;
             const stroke = dense ? 1 : line.muted ? 1.5 : 2;
             const draw = dense ? linePath : curvePath;
             const fillUnder = dense ? lineAreaPath : areaPath;
@@ -297,6 +388,17 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
             return (
                 <g data-slot="chart-series" key={line.key}>
+                    {band && (
+                        // What each average was taken from: the period's low to its high.
+                        <path
+                            d={bandPath(
+                                band.map((at, i) => ({ x: xOf(i), y: yOf(at.high) })),
+                                band.map((at, i) => ({ x: xOf(i), y: yOf(at.low) })),
+                            )}
+                            fill={color}
+                            fillOpacity={0.16}
+                        />
+                    )}
                     {filled && (
                         <>
                             <defs>
@@ -318,14 +420,19 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                             />
                         </>
                     )}
-                    <path
-                        d={draw(solid)}
-                        fill="none"
-                        stroke={color}
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={stroke}
-                    />
+                    {points.length === 1 && points[0] ? (
+                        // One reading has no line in it; drawn as a line it would be nothing at all.
+                        <circle cx={points[0].x} cy={points[0].y} fill={color} r={3} />
+                    ) : (
+                        <path
+                            d={draw(solid)}
+                            fill="none"
+                            stroke={color}
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={stroke}
+                        />
+                    )}
                     {dashed.length > 1 && (
                         // The period is not over, so its last stretch is not a measured value.
                         <path
@@ -344,14 +451,15 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         bars,
         baseline,
         columns,
-        data,
+        cutAt,
         empty,
         gradientId,
-        incompleteFrom,
         kind,
+        marksCount,
         plotHeight,
         plotWidth,
         series,
+        spread,
         xOf,
         yOf,
     ]);
@@ -429,7 +537,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         }));
 
     const titleOf = (index: number) => {
-        const row = data[index];
+        const row = rowAt(index);
         if (!row) return '';
         const value = row[xKey];
         if (formatTitle) return formatTitle(value as X, row, index);
@@ -625,8 +733,8 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                         shapeRendering="crispEdges"
                                         stroke="var(--color-neutral-300)"
                                         strokeDasharray="3 4"
-                                        x1={Math.round(xOf(marker.index)) + 0.5}
-                                        x2={Math.round(xOf(marker.index)) + 0.5}
+                                        x1={Math.round(xOf(markOf(marker.index))) + 0.5}
+                                        x2={Math.round(xOf(markOf(marker.index))) + 0.5}
                                         y1={top}
                                         y2={top + plotHeight}
                                     />
@@ -670,7 +778,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                 <ChartMarkerPin
                                     key={`${marker.index}-${marker.label}`}
                                     marker={marker}
-                                    x={xOf(marker.index)}
+                                    x={xOf(markOf(marker.index))}
                                     y={top}
                                 />
                             ))}
@@ -778,11 +886,11 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                         </tr>
                     </thead>
                     <tbody>
-                        {xLabels.map((text, index) => (
+                        {rawLabels.map((text, index) => (
                             <tr key={`${index}-${text}`}>
-                                <th scope="row">{titleOf(index)}</th>
+                                <th scope="row">{text}</th>
                                 {series.map((line, i) => (
-                                    <td key={line.key}>{writeValue(columns[i]?.[index] ?? 0)}</td>
+                                    <td key={line.key}>{writeValue(readings[i]?.[index] ?? 0)}</td>
                                 ))}
                             </tr>
                         ))}

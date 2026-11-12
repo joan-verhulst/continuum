@@ -102,6 +102,17 @@ export const areaPath = (points: readonly Point[], baseline: number) => {
     return `M${round(first.x)},${round(baseline)} L${round(first.x)},${round(first.y)}${segments(points)} L${round(last.x)},${round(baseline)} Z`;
 };
 
+/**
+ * One shape between a high edge and a low edge: out along the highs and back along the lows.
+ * It draws the spread a set of averages was taken from, so the line is read as the middle of
+ * something rather than as the whole of it.
+ */
+export const bandPath = (high: readonly Point[], low: readonly Point[]) => {
+    if (high.length < 2 || low.length !== high.length) return '';
+    const back = [...low].reverse();
+    return `${linePath(high)}${back.map(point => ` L${round(point.x)},${round(point.y)}`).join('')} Z`;
+};
+
 const polar = (cx: number, cy: number, radius: number, angle: number) => ({
     x: cx + radius * Math.sin(angle),
     y: cy - radius * Math.cos(angle),
