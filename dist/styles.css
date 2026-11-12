@@ -1952,11 +1952,6 @@
     border-radius: var(--radius-xs);
   }
 
-  .continuum .rounded-t-\[min\(4px\,var\(--radius-chip\)\)\],.continuum.rounded-t-\[min\(4px\,var\(--radius-chip\)\)\] {
-    border-top-left-radius: min(4px, var(--radius-chip));
-    border-top-right-radius: min(4px, var(--radius-chip));
-  }
-
   .continuum .rounded-t-item, .continuum.rounded-t-item {
     border-top-left-radius: var(--radius-item, var(--radius-item));
     border-top-right-radius: var(--radius-item, var(--radius-item));
@@ -1964,11 +1959,6 @@
 
   .continuum .rounded-tl-none, .continuum.rounded-tl-none {
     border-top-left-radius: 0;
-  }
-
-  .continuum .rounded-b-\[min\(4px\,var\(--radius-chip\)\)\],.continuum.rounded-b-\[min\(4px\,var\(--radius-chip\)\)\] {
-    border-bottom-right-radius: min(4px, var(--radius-chip));
-    border-bottom-left-radius: min(4px, var(--radius-chip));
   }
 
   .continuum .rounded-b-item, .continuum.rounded-b-item {
@@ -2201,6 +2191,16 @@
   @supports (color: color-mix(in lab, red, red)) {
     .continuum .bg-neutral-950\/7, .continuum.bg-neutral-950\/7 {
       background-color: color-mix(in oklab, var(--color-neutral-950, var(--color-neutral-950)) 7%, transparent);
+    }
+  }
+
+  .continuum .bg-neutral-950\/8, .continuum.bg-neutral-950\/8 {
+    background-color: var(--color-neutral-950, var(--color-neutral-950));
+  }
+
+  @supports (color: color-mix(in lab, red, red)) {
+    .continuum .bg-neutral-950\/8, .continuum.bg-neutral-950\/8 {
+      background-color: color-mix(in oklab, var(--color-neutral-950, var(--color-neutral-950)) 8%, transparent);
     }
   }
 
@@ -3427,8 +3427,8 @@
   }
 
   @media (hover: hover) {
-    .continuum .group-hover\:bg-neutral-200:is(:where(.group):hover *), .continuum.group-hover\:bg-neutral-200:is(:where(.group):hover *) {
-      background-color: var(--color-neutral-200, var(--color-neutral-200));
+    .continuum .group-hover\:bg-neutral-100:is(:where(.group):hover *), .continuum.group-hover\:bg-neutral-100:is(:where(.group):hover *) {
+      background-color: var(--color-neutral-100, var(--color-neutral-100));
     }
 
     .continuum .group-hover\:opacity-100:is(:where(.group):hover *), .continuum.group-hover\:opacity-100:is(:where(.group):hover *) {
@@ -5233,11 +5233,6 @@
 
   .continuum .\[\&_img\]\:object-cover img, .continuum.\[\&_img\]\:object-cover img {
     object-fit: cover;
-  }
-
-  .continuum .\[\&_svg\]\:size-3 svg, .continuum.\[\&_svg\]\:size-3 svg {
-    width: 12px;
-    height: 12px;
   }
 
   .continuum .\[\&_svg\]\:size-3\! svg, .continuum.\[\&_svg\]\:size-3\! svg {

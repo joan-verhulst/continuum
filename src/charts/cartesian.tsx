@@ -7,7 +7,6 @@ import {
     useCallback,
     useContext,
     useEffect,
-    useId,
     useMemo,
     useState,
 } from 'react';
@@ -68,14 +67,16 @@ export type ChartMarker = {
 const GUTTER_GAP = 8;
 const AXIS_HEIGHT = 24;
 const TOP = 8;
-const TOP_WITH_MARKERS = 28;
+const TOP_WITH_MARKERS = 36;
 const X_LABEL_GAP = 16;
 const DOT_RADIUS = 4;
 const BAR_GAP = 2;
 const BAR_MAX = 28;
 const BAR_MIN = 2;
 /** A bar takes half its slot, and a group of bars seven tenths of it. */
-const BAR_SHARE = 0.5;
+const BAR_SHARE = 0.6;
+/** A column on its own is a block the width of an icon well, not a stick. */
+const COLUMN_MAX = 40;
 const GROUP_SHARE = 0.7;
 /** A date axis is read in five places at most: a reader counts dates, not ticks. */
 const DATE_TICKS = 5;
@@ -197,8 +198,18 @@ export type CartesianProps<Row extends ChartRow, X = unknown> = {
 const toNumber = (value: unknown) =>
     typeof value === 'number' && Number.isFinite(value) ? value : 0;
 
-const colorOf = (line: ChartSeries, index: number) =>
-    line.muted ? chartColor('neutral') : chartColor(line.color ?? seriesColor(index));
+/*
+ * One series is drawn in ink. Everything else in the system that shows an amount, a bar
+ * list's bar or a meter's fill, is neutral, and colour is kept for telling things apart; a
+ * chart of one measure has nothing to tell apart. Two series and more take the theme's own.
+ */
+const INK = 'var(--color-neutral-950)';
+
+const colorOf = (line: ChartSeries, index: number, count: number) => {
+    if (line.muted) return chartColor('neutral');
+    if (line.color) return chartColor(line.color);
+    return count === 1 ? INK : seriesColor(index);
+};
 
 /** The indices to label, spread evenly, the first and last always among them. */
 const labelIndices = (count: number, wanted: number) => {
@@ -240,8 +251,6 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
     style,
     children,
 }: CartesianProps<Row, X>) => {
-    // React's own ids carry characters a URL fragment should not, so they are stripped.
-    const gradientId = useId().replace(/[^a-zA-Z0-9_-]/g, '');
     const [containerRef, width] = useWidth<HTMLDivElement>();
     const [yProbeRef, yLabelWidth] = useLabelWidth();
     const [xProbeRef, xLabelWidth] = useLabelWidth();
@@ -356,7 +365,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                   slots.slot * GROUP_SHARE,
                   BAR_MAX * series.length + BAR_GAP * (series.length - 1),
               )
-            : Math.min(slots.slot * BAR_SHARE, BAR_MAX);
+            : Math.min(slots.slot * BAR_SHARE, COLUMN_MAX);
     const columnWidth = bars
         ? Math.min(Math.max(8, slots.slot - 4), barsWide + 16)
         : Math.max(20, Math.min(40, marksCount > 1 ? plotWidth / (marksCount - 1) : 40));
@@ -400,7 +409,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
         return order.map(({ line, index }) => {
             const column = columns[index] ?? [];
-            const color = colorOf(line, index);
+            const color = colorOf(line, index, series.length);
             const points: Point[] = Array.from({ length: marksCount }, (_, i) => ({
                 x: xOf(i),
                 y: yOf(column[i] ?? 0),
@@ -437,25 +446,12 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                         />
                     )}
                     {filled && (
-                        <>
-                            <defs>
-                                <linearGradient
-                                    gradientUnits="userSpaceOnUse"
-                                    id={`${gradientId}-${index}`}
-                                    x1={0}
-                                    x2={0}
-                                    y1={yOf(extent(column).max)}
-                                    y2={baseline}
-                                >
-                                    <stop offset="0%" stopColor={color} stopOpacity={0.18} />
-                                    <stop offset="100%" stopColor={color} stopOpacity={0} />
-                                </linearGradient>
-                            </defs>
-                            <path
-                                d={fillUnder(points, baseline)}
-                                fill={`url(#${gradientId}-${index})`}
-                            />
-                        </>
+                        // A flat wash, as every fill in the system is; nothing here fades.
+                        <path
+                            d={fillUnder(points, baseline)}
+                            fill={color}
+                            fillOpacity={series.length === 1 ? 0.06 : 0.1}
+                        />
                     )}
                     {points.length === 1 && points[0] ? (
                         // One reading has no line in it; drawn as a line it would be nothing at all.
@@ -506,7 +502,6 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         cutAt,
         empty,
         showPoints,
-        gradientId,
         kind,
         marksCount,
         plotHeight,
@@ -523,7 +518,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
         const grouped = !stacked && count > 1;
         const groupWidth = grouped
             ? Math.min(slots.slot * GROUP_SHARE, BAR_MAX * count + BAR_GAP * (count - 1))
-            : Math.min(slots.slot * BAR_SHARE, BAR_MAX);
+            : Math.min(slots.slot * BAR_SHARE, COLUMN_MAX);
         const barWidth = Math.max(
             BAR_MIN,
             grouped ? (groupWidth - BAR_GAP * (count - 1)) / count : groupWidth,
@@ -541,8 +536,9 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                     ? center - groupWidth / 2 + index * (barWidth + BAR_GAP)
                     : center - barWidth / 2;
                 const shared = {
+                    row,
                     key: `${row}-${line.key}`,
-                    color: colorOf(line, index),
+                    color: colorOf(line, index, count),
                     width: barWidth,
                     positive,
                     x,
@@ -552,6 +548,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                     return {
                         ...shared,
                         height: size,
+                        first: true,
                         rounded: true,
                         y: positive ? yOf(value) : baseline,
                     };
@@ -564,6 +561,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                 return {
                     ...shared,
                     height: Math.max(0, size - gap),
+                    first: gap === 0,
                     // Only the segment on top of the stack is rounded.
                     rounded: index === count - 1,
                     y: positive ? from - size : from + gap,
@@ -584,7 +582,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
     const tooltipRows = (index: number) =>
         series.map((line, i) => ({
-            color: (line.muted ? 'neutral' : (line.color ?? seriesColor(i))) as ChartColor,
+            color: colorOf(line, i, series.length) as ChartColor,
             name: line.name ?? line.key,
             value: writeValue(columns[i]?.[index] ?? 0),
         }));
@@ -672,7 +670,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                 >
                     {width > 0 && (
                         <>
-                            {active !== null && !empty && (
+                            {active !== null && !empty && !bars && (
                                 /*
                                  * What is being read is marked the way a hovered row is: the 5%
                                  * wash, on item corners, over the reading's own column. No rule
@@ -768,7 +766,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                             <circle
                                                 cx={xOf(active)}
                                                 cy={yOf(columns[index]?.[active] ?? 0)}
-                                                fill={colorOf(line, index)}
+                                                fill={colorOf(line, index, series.length)}
                                                 key={line.key}
                                                 r={DOT_RADIUS}
                                                 stroke="var(--color-chart-background)"
@@ -782,11 +780,10 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                     <line
                                         key={`${marker.index}-${marker.label}`}
                                         shapeRendering="crispEdges"
-                                        stroke="var(--color-neutral-300)"
-                                        strokeDasharray="3 4"
+                                        stroke="var(--color-neutral-400)"
                                         x1={Math.round(xOf(markOf(marker.index))) + 0.5}
                                         x2={Math.round(xOf(markOf(marker.index))) + 0.5}
-                                        y1={top}
+                                        y1={top - 6}
                                         y2={top + plotHeight}
                                     />
                                 ))}
@@ -802,26 +799,53 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                     )}
                                     data-slot="chart-bars"
                                 >
-                                    {barLayout.map(bar => (
-                                        <div
-                                            className={cn(
-                                                'absolute',
-                                                // The data end is rounded; the baseline end stays square.
-                                                bar.rounded &&
-                                                    (bar.positive
-                                                        ? 'rounded-t-[min(4px,var(--radius-chip))]'
-                                                        : 'rounded-b-[min(4px,var(--radius-chip))]'),
-                                            )}
-                                            key={bar.key}
-                                            style={{
-                                                background: bar.color,
-                                                height: bar.height,
-                                                left: bar.x,
-                                                top: bar.y,
-                                                width: bar.width,
-                                            }}
-                                        />
-                                    ))}
+                                    {barLayout
+                                        .filter(bar => bar.first)
+                                        .map(bar => (
+                                            // The column's track: the amount is read against it,
+                                            // and it darkens under the pointer as a row does.
+                                            <div
+                                                className={cn(
+                                                    'absolute transition-colors duration-150 motion-reduce:transition-none',
+                                                    bar.row === active
+                                                        ? 'bg-neutral-950/8'
+                                                        : 'bg-neutral-950/4',
+                                                )}
+                                                key={`track-${bar.key}`}
+                                                style={{
+                                                    borderRadius: `min(var(--radius-item), ${bar.width / 2}px)`,
+                                                    height: plotHeight,
+                                                    left: bar.x,
+                                                    top,
+                                                    width: bar.width,
+                                                }}
+                                            />
+                                        ))}
+                                    {barLayout.map(bar => {
+                                        const corner = `min(var(--radius-item), ${bar.width / 2}px)`;
+                                        const head = bar.rounded ? corner : '0px';
+                                        const foot = bar.first ? corner : '0px';
+
+                                        return (
+                                            <div
+                                                className="absolute"
+                                                key={bar.key}
+                                                style={{
+                                                    background: bar.color,
+                                                    // A block on the system's own corner, whole
+                                                    // where it stands alone and squared only
+                                                    // where it meets the next segment of a stack.
+                                                    borderRadius: bar.positive
+                                                        ? `${head} ${head} ${foot} ${foot}`
+                                                        : `${foot} ${foot} ${head} ${head}`,
+                                                    height: bar.height,
+                                                    left: bar.x,
+                                                    top: bar.y,
+                                                    width: bar.width,
+                                                }}
+                                            />
+                                        );
+                                    })}
                                 </div>
                             )}
 
@@ -978,7 +1002,7 @@ const toneWell: Record<string, string> = {
     success: 'bg-success-500/20',
     warning: 'bg-warning-500/20',
     error: 'bg-error-500/20',
-    neutral: 'border border-neutral-200 bg-neutral-100 group-hover:bg-neutral-200',
+    neutral: 'border border-neutral-200 bg-neutral-50 group-hover:bg-neutral-100',
 };
 
 const toneInk: Record<string, string> = {
@@ -997,7 +1021,7 @@ const ChartMarkerPin = ({ marker, x, y }: { marker: ChartMarker; x: number; y: n
     >
         <span
             className={cn(
-                'flex size-5 items-center justify-center rounded-chip transition-colors duration-150 motion-reduce:transition-none [&_svg]:size-3',
+                'flex size-6 items-center justify-center rounded-chip transition-colors duration-150 motion-reduce:transition-none [&_svg]:size-3.5',
                 toneWell[marker.tone ?? 'neutral'],
                 marker.tone && marker.tone !== 'neutral'
                     ? toneInk[marker.tone]
@@ -1005,7 +1029,7 @@ const ChartMarkerPin = ({ marker, x, y }: { marker: ChartMarker; x: number; y: n
             )}
         >
             {marker.icon ?? (
-                <span className={cn('size-1.5 rounded-full', toneFill[marker.tone ?? 'neutral'])} />
+                <span className={cn('size-2 rounded-full', toneFill[marker.tone ?? 'neutral'])} />
             )}
         </span>
         <span className="sr-only">{marker.label}</span>
