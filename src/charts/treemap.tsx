@@ -27,8 +27,22 @@ export type TreemapProps = {
     height?: number;
     /** Writes a tile's figure; its share of the whole unless given. */
     formatValue?: (value: number, share: number) => string;
+    /** While the data loads: the chart's own shape stands in, in the skeleton wash, at the size it will have. */
+    loading?: boolean;
     className?: string;
 };
+
+/**
+ * The stand-in's shares: one part that takes most, a few middling and a small one, as spending
+ * or traffic tends to split, so the tiles read as data waiting and not as a grid.
+ */
+const SKELETON_SHARES = [44, 18, 13, 11, 8, 6];
+
+/** The widths of the stand-in's names, in the tiles large enough to write one. */
+const SKELETON_NAMES = [72, 88, 64, 80, 56, 68];
+
+/** A bar on a stand-in tile, a step stronger than the tile's own wash so it reads over it. */
+const SKELETON_BAR = 'color-mix(in oklab, var(--color-neutral-950) 7%, transparent)';
 
 const GAP = 4;
 /**
@@ -46,23 +60,23 @@ export const Treemap = ({
     data,
     height = 280,
     formatValue,
+    loading = false,
     className,
 }: TreemapProps) => {
     const [ref, width] = useWidth<HTMLDivElement>();
     const [active, setActive] = useState<number | null>(null);
     const total = data.reduce((sum, item) => sum + Math.max(0, item.value), 0);
-    const tiles = squarify(
-        data.map(item => item.value),
-        {
-            x: INSET,
-            y: INSET,
-            width: Math.max(0, width - INSET * 2) + GAP,
-            height: Math.max(0, height - INSET * 2) + GAP,
-        },
-    );
+    // While it loads, the stand-in's shares are tiled as the data will be, by the same layout.
+    const tiles = squarify(loading ? SKELETON_SHARES : data.map(item => item.value), {
+        x: INSET,
+        y: INSET,
+        width: Math.max(0, width - INSET * 2) + GAP,
+        height: Math.max(0, height - INSET * 2) + GAP,
+    });
 
     return (
         <figure
+            aria-busy={loading || undefined}
             aria-label={label}
             className={cn('relative m-0 min-w-0', className)}
             data-slot="treemap"
@@ -73,7 +87,52 @@ export const Treemap = ({
                     className="absolute inset-0 overflow-hidden"
                     style={{ borderRadius: `calc(var(--radius-item) + ${INSET}px)` }}
                 >
+                    {width > 0 && loading && (
+                        <div aria-hidden className="absolute inset-0" data-slot="chart-skeleton">
+                            {tiles.map((tile, index) => {
+                                if (tile.width <= GAP || tile.height <= GAP) return null;
+                                const w = tile.width - GAP;
+                                const h = tile.height - GAP;
+                                return (
+                                    <div
+                                        className="skeleton absolute flex flex-col justify-between overflow-hidden rounded-item p-5"
+                                        // biome-ignore lint/suspicious/noArrayIndexKey: the stand-in never reorders
+                                        key={index}
+                                        style={{ height: h, left: tile.x, top: tile.y, width: w }}
+                                    >
+                                        {/*
+                                         * Where a tile would write its name and figure, a bar
+                                         * holds each line at its height, a step firmer than
+                                         * the tile it sits on.
+                                         */}
+                                        {w >= 96 && h >= 56 && (
+                                            <span className="flex min-w-0 items-center text-xs">
+                                                <span className="invisible w-0">0</span>
+                                                <span
+                                                    className="skeleton h-2.5 min-w-0 rounded-chip"
+                                                    style={{
+                                                        backgroundColor: SKELETON_BAR,
+                                                        width: SKELETON_NAMES[index] ?? 64,
+                                                    }}
+                                                />
+                                            </span>
+                                        )}
+                                        {h >= 84 && w >= 80 && (
+                                            <span className="flex min-w-0 items-center text-lg">
+                                                <span className="invisible w-0">0</span>
+                                                <span
+                                                    className="skeleton h-[0.75em] w-12 min-w-0 rounded-chip"
+                                                    style={{ backgroundColor: SKELETON_BAR }}
+                                                />
+                                            </span>
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
                     {width > 0 &&
+                        !loading &&
                         data.map((item, index) => {
                             const tile = tiles[index];
                             if (!tile || tile.width <= GAP || tile.height <= GAP) return null;
@@ -154,7 +213,7 @@ export const Treemap = ({
                 {(() => {
                     // A tile too small to write its own name and figure is read out beside it, in
                     // the readout every chart uses.
-                    const tile = active !== null ? tiles[active] : undefined;
+                    const tile = active !== null && !loading ? tiles[active] : undefined;
                     const item = active !== null ? data[active] : undefined;
                     if (!tile || !item) return null;
                     const w = tile.width - GAP;
@@ -193,7 +252,7 @@ export const Treemap = ({
                     style={{ borderRadius: `calc(var(--radius-item) + ${INSET}px)` }}
                 />
             </div>
-            <div className="sr-only">
+            <div className={cn('sr-only', loading && 'hidden')}>
                 <table>
                     <caption>{label}</caption>
                     <tbody>

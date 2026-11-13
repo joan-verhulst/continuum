@@ -1,6 +1,6 @@
 'use client';
 
-import { type CSSProperties, type PointerEvent, useId, useState } from 'react';
+import { type CSSProperties, Fragment, type PointerEvent, useId, useState } from 'react';
 import { cn } from '../lib/cn';
 import type { ChartRow, ChartSeries } from './cartesian';
 import { chartColor, seriesColor } from './lib/color';
@@ -51,6 +51,8 @@ export type BubbleChartProps<Row extends ChartRow> = {
     height?: number;
     /** `tint`, the kit's look, a tint of each colour with a solid edge; `solid` fills each bubble. */
     fill?: 'tint' | 'solid';
+    /** While the data loads: the chart's own shape stands in, in the skeleton wash, at the size it will have. */
+    loading?: boolean;
     /** What the chart says when there is nothing to draw. */
     emptyLabel?: string;
     className?: string;
@@ -139,7 +141,7 @@ const overlaps = (a: Box, b: Box) =>
  */
 export const BubbleChart = <Row extends ChartRow>({
     'aria-label': label,
-    data,
+    data: given,
     name: nameKey,
     x: xKey,
     y: yKey,
@@ -158,6 +160,7 @@ export const BubbleChart = <Row extends ChartRow>({
     sizeKey: showSizeKey = true,
     height = 340,
     fill = 'tint',
+    loading = false,
     emptyLabel = 'Nothing to show yet',
     className,
 }: BubbleChartProps<Row>) => {
@@ -165,6 +168,8 @@ export const BubbleChart = <Row extends ChartRow>({
     const [ref, width] = useWidth<HTMLDivElement>();
     const [active, setActive] = useState<number | null>(null);
 
+    // While it loads the chart draws its stand-in, and nothing of the old answer.
+    const data: readonly Row[] = loading ? [] : given;
     const points = data
         .map((row, index) => ({
             index,
@@ -197,9 +202,10 @@ export const BubbleChart = <Row extends ChartRow>({
         yScale === 'log',
         Math.max(2, Math.floor(plotHeight / 36)),
     );
-    // The y values' gutter, as wide as the widest of them.
-    const gutter =
-        Math.ceil(Math.max(1, ...ys.values.map(tick => yTick(tick).length)) * CHAR) + 8 + PAD;
+    // The y values' gutter, as wide as the widest of them; while loading, as wide as a short figure.
+    const gutter = loading
+        ? SKELETON_GUTTER
+        : Math.ceil(Math.max(1, ...ys.values.map(tick => yTick(tick).length)) * CHAR) + 8 + PAD;
     const plotWidth = Math.max(0, width - gutter - PAD);
     const xs = scaleOf(
         points.map(point => point.x),
@@ -373,17 +379,18 @@ export const BubbleChart = <Row extends ChartRow>({
 
     return (
         <figure
+            aria-busy={loading || undefined}
             aria-label={label}
             className={cn('relative m-0 min-w-0', className)}
             data-slot="bubble-chart"
         >
             <div className="relative" ref={ref} style={{ height }}>
-                {width > 0 && empty && (
+                {width > 0 && empty && !loading && (
                     <p className="absolute inset-0 flex items-center justify-center rounded-item border border-neutral-200 border-dashed text-neutral-600 text-xs">
                         {emptyLabel}
                     </p>
                 )}
-                {width > 0 && !empty && (
+                {width > 0 && (!empty || loading) && (
                     // The plot's own place in the card: the bubbles and rules inside, the labels out.
                     <div
                         aria-hidden
@@ -395,6 +402,17 @@ export const BubbleChart = <Row extends ChartRow>({
                             top: TOP,
                             width: plotWidth + PAD * 2,
                         }}
+                    />
+                )}
+                {width > 0 && loading && (
+                    <BubbleSkeleton
+                        gutter={gutter}
+                        height={plotHeight}
+                        most={most}
+                        names={Math.min(3, Math.max(0, labels))}
+                        top={plotTop}
+                        width={plotWidth}
+                        yLabel={yLabel}
                     />
                 )}
                 {width > 0 && !empty && (
@@ -624,6 +642,194 @@ export const BubbleChart = <Row extends ChartRow>({
                 </table>
             </div>
         </figure>
+    );
+};
+
+/** The stand-in's y gutter: room for a figure of six characters, "10,000", as most axes need. */
+const SKELETON_GUTTER = Math.ceil(6 * CHAR) + 8 + PAD;
+
+/** Where the stand-in's rules sit up the plot, as shares of its height: three, as a loaded one has. */
+const SKELETON_RULES = [0.25, 0.5, 0.75];
+
+/** The room between the stand-in's rules across, near what the loaded axis keeps between its values. */
+const SKELETON_STEP = 96;
+
+/** The stand-in's values, as widths: figures up the side, and shorter counts along the foot. */
+const SKELETON_FIGURES = [24, 32, 36];
+const SKELETON_COUNTS = [12, 16, 20, 16];
+
+/**
+ * The stand-in's bubbles, largest first, as shares of the plot (`x` across, `y` up) and of the
+ * largest radius: a loose climb from small at the foot to large at the top, as three measures of
+ * one thing tend to run together. The largest carry a name's width and the side it stands on.
+ */
+const SKELETON_BUBBLES: {
+    x: number;
+    y: number;
+    size: number;
+    name?: { width: number; side: 'start' | 'end' };
+}[] = [
+    { x: 0.9, y: 0.86, size: 1, name: { width: 52, side: 'end' } },
+    { x: 0.66, y: 0.6, size: 0.8, name: { width: 40, side: 'start' } },
+    { x: 0.44, y: 0.5, size: 0.6, name: { width: 44, side: 'end' } },
+    { x: 0.58, y: 0.26, size: 0.44 },
+    { x: 0.26, y: 0.36, size: 0.38 },
+    { x: 0.14, y: 0.12, size: 0.28 },
+    { x: 0.34, y: 0.1, size: 0.22 },
+];
+
+/** The stand-in's edges, a step stronger than its wash, as a bubble's edge is over its tint. */
+const SKELETON_EDGE = 'color-mix(in oklab, var(--color-neutral-950) 14%, transparent)';
+
+/** A circle's 1.5px edge alone, as a mask: the bubble's own edge over its tint. */
+const SKELETON_RING =
+    'radial-gradient(closest-side, transparent calc(100% - 2px), black calc(100% - 1.25px))';
+
+/**
+ * A bubble chart that is loading, with the depth of a loaded one: its frame and grid stay, its
+ * axis keeps its name, and bubbles of several sizes stand in the skeleton wash, each with its
+ * edge, spread as data spreads. Short bars stand where the axes' values and the largest names
+ * will. It takes the plot's room, so nothing moves when the data lands.
+ */
+const BubbleSkeleton = ({
+    gutter,
+    top,
+    width,
+    height,
+    most,
+    names,
+    yLabel,
+}: {
+    gutter: number;
+    top: number;
+    width: number;
+    height: number;
+    most: number;
+    names: number;
+    yLabel: string;
+}) => {
+    if (width <= 0 || height <= 0) return null;
+    // The same room at the plot's ends as the loaded chart keeps, so the bubbles stay whole.
+    const low = LEAST + 8;
+    const high = most + 8;
+    const bubbles = SKELETON_BUBBLES.map(item => ({
+        ...item,
+        cx: gutter + low + item.x * Math.max(0, width - low - high),
+        cy: top + height - low - item.y * Math.max(0, height - low - high),
+        r: Math.max(LEAST, item.size * most),
+    }));
+    const across = Math.max(3, Math.round(width / SKELETON_STEP));
+    const columns = Array.from({ length: across }, (_, i) => (i + 1) / (across + 1));
+
+    return (
+        <div aria-hidden className="absolute inset-0" data-slot="chart-skeleton">
+            <svg
+                aria-hidden="true"
+                className="absolute top-0 left-0 overflow-visible"
+                height={top + height}
+                width={gutter + width}
+            >
+                <text
+                    className="text-xxs"
+                    dominantBaseline="middle"
+                    fill="var(--color-chart-label)"
+                    x={gutter + 10}
+                    y={top + 14}
+                >
+                    {yLabel}
+                </text>
+                <g stroke="var(--color-chart-grid)">
+                    {SKELETON_RULES.map(share => (
+                        <line
+                            key={`y-${share}`}
+                            x1={gutter}
+                            x2={gutter + width}
+                            y1={Math.round(top + height * (1 - share)) + 0.5}
+                            y2={Math.round(top + height * (1 - share)) + 0.5}
+                        />
+                    ))}
+                    {columns.map(share => (
+                        <line
+                            key={`x-${share}`}
+                            x1={Math.round(gutter + width * share) + 0.5}
+                            x2={Math.round(gutter + width * share) + 0.5}
+                            y1={top}
+                            y2={top + height}
+                        />
+                    ))}
+                </g>
+            </svg>
+            {SKELETON_RULES.map((share, i) => {
+                const wide = SKELETON_FIGURES[i] ?? 24;
+                return (
+                    <div
+                        className="skeleton absolute h-2 rounded-chip"
+                        key={share}
+                        style={{
+                            left: gutter - 8 - wide,
+                            top: top + height * (1 - share) - 4,
+                            width: wide,
+                        }}
+                    />
+                );
+            })}
+            {columns.map((share, i) => {
+                const wide = SKELETON_COUNTS[i % SKELETON_COUNTS.length] ?? 12;
+                return (
+                    <div
+                        className="skeleton absolute h-2 rounded-chip"
+                        key={share}
+                        style={{
+                            left: gutter + width * share - wide / 2,
+                            top: top + height + 8,
+                            width: wide,
+                        }}
+                    />
+                );
+            })}
+            {bubbles.map(bubble => {
+                const place = {
+                    height: bubble.r * 2,
+                    left: bubble.cx - bubble.r,
+                    top: bubble.cy - bubble.r,
+                    width: bubble.r * 2,
+                };
+                return (
+                    <Fragment key={`${bubble.x}-${bubble.y}`}>
+                        {/* The chart's ground under the wash, so the rules stop at a bubble as they do at a loaded one. */}
+                        <div
+                            className="absolute rounded-full"
+                            style={{ ...place, backgroundColor: 'var(--color-chart-background)' }}
+                        />
+                        <div className="skeleton absolute rounded-full" style={place} />
+                        <div
+                            className="skeleton absolute rounded-full"
+                            style={{
+                                ...place,
+                                backgroundColor: SKELETON_EDGE,
+                                maskImage: SKELETON_RING,
+                            }}
+                        />
+                    </Fragment>
+                );
+            })}
+            {bubbles.slice(0, names).map(bubble =>
+                bubble.name ? (
+                    <div
+                        className="skeleton absolute h-2 rounded-chip"
+                        key={`${bubble.x}-${bubble.y}`}
+                        style={{
+                            left:
+                                bubble.name.side === 'start'
+                                    ? bubble.cx + bubble.r + 4
+                                    : bubble.cx - bubble.r - 4 - bubble.name.width,
+                            top: bubble.cy - 4,
+                            width: bubble.name.width,
+                        }}
+                    />
+                ) : null,
+            )}
+        </div>
     );
 };
 

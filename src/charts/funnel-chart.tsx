@@ -16,6 +16,8 @@ export type FunnelChartProps = {
     /** The shape's height, under the steps' figures. */
     height?: number;
     formatValue?: (value: number) => string;
+    /** While the data loads: the chart's own shape stands in, in the skeleton wash, at the size it will have. */
+    loading?: boolean;
     className?: string;
 };
 
@@ -65,11 +67,24 @@ const LINE = 2;
 const PAD_X = BORDER;
 const PAD_Y = BORDER + LINE / 2;
 
+/**
+ * The stand-in's steps, as shares of the first: a funnel that loses most at its second step and
+ * less at each after, as a funnel tends to, so the shape reads as data waiting.
+ */
+const SKELETON_STEPS = [1, 0.62, 0.49, 0.4, 0.33, 0.28, 0.24, 0.21];
+
+/** The widths of the stand-in's names: names differ in length, so the bars do too. */
+const SKELETON_NAMES = [56, 76, 64, 68, 80, 60, 72, 64];
+
+/** The edge of the stand-in's shape, a step stronger than its wash, as the line is over its tint. */
+const SKELETON_EDGE = 'color-mix(in oklab, var(--color-neutral-950) 14%, transparent)';
+
 export const FunnelChart = ({
     'aria-label': label,
-    data,
+    data: rows,
     height = 160,
     formatValue = formatNumber,
+    loading = false,
     className,
 }: FunnelChartProps) => {
     const [ref, width] = useWidth<HTMLDivElement>();
@@ -80,6 +95,16 @@ export const FunnelChart = ({
             'transition-opacity duration-150 motion-reduce:transition-none',
             active !== null && active !== i && 'opacity-35',
         );
+    /*
+     * While it loads, the stand-in's steps take the data's place, as many as are asked for (five
+     * when none are yet), so the columns and the shape are where the loaded ones will be.
+     */
+    const data: readonly FunnelStep[] = loading
+        ? Array.from({ length: rows.length || 5 }, (_, i) => ({
+              name: `skeleton-${i}`,
+              value: SKELETON_STEPS[i] ?? SKELETON_STEPS.at(-1) ?? 0,
+          }))
+        : rows;
     const first = data[0]?.value ?? 0;
     const id = useId().replace(/[^a-zA-Z0-9_-]/g, '');
     // The drawing is the frame's inside; the columns share it.
@@ -95,18 +120,19 @@ export const FunnelChart = ({
     const reach = height / 2 - PAD_Y;
     const half = (value: number, share = 1) =>
         Math.max(2, first > 0 ? (value / first) * reach * share : 2);
-    const edge = (share: number, side: 1 | -1) => {
+    // `grow` moves the edge out from the middle by so many pixels, or in when it is below zero.
+    const edge = (share: number, side: 1 | -1, grow = 0) => {
         let d = '';
         data.forEach((step, i) => {
             const x0 = PAD_X + i * column;
             const hold = x0 + column * 0.5;
             const x1 = PAD_X + (i + 1) * column;
-            const yy = middle - side * half(step.value, share);
+            const yy = middle - side * (half(step.value, share) + grow);
             const next = data[i + 1];
             d += i === 0 ? `M${x0},${yy} ` : '';
             d += `L${hold},${yy} `;
             if (next) {
-                const ny = middle - side * half(next.value, share);
+                const ny = middle - side * (half(next.value, share) + grow);
                 const pull = (x1 - hold) / 2;
                 d += `C${hold + pull},${yy} ${x1 - pull},${ny} ${x1},${ny} `;
             } else d += `L${x1},${yy} `;
@@ -119,12 +145,16 @@ export const FunnelChart = ({
         const bottomPoints = edge(share, -1);
         return `${top} L${PAD_X + inner},${middle + half(data.at(-1)?.value ?? 0, share)} ${reverse(bottomPoints)} Z`;
     };
+    // An edge as a shape the line's width across, for the stand-in, which is drawn in HTML.
+    const ribbon = (side: 1 | -1) =>
+        `${edge(1, side, LINE / 2)} ${reverse(edge(1, side, -LINE / 2))} Z`;
 
     // Where two steps meet: a faint rule from the frame's top to its foot.
     const divider = (i: number) => Math.round(PAD_X + (i + 1) * column - GAP / 2);
 
     return (
         <figure
+            aria-busy={loading || undefined}
             aria-label={label}
             className={cn('m-0 flex min-w-0 flex-col gap-2', className)}
             data-slot="funnel-chart"
@@ -138,6 +168,7 @@ export const FunnelChart = ({
                 }}
             >
                 {data.map((step, i) => {
+                    if (loading) return <SkeletonStep index={i} key={step.name} />;
                     const before = data[i - 1];
                     const lost = before && before.value > 0 ? 1 - step.value / before.value : 0;
                     return (
@@ -175,7 +206,55 @@ export const FunnelChart = ({
                 })}
             </ol>
             <div className="relative" ref={ref} style={{ height }}>
-                {width > 0 && (
+                {width > 0 && loading && (
+                    <div
+                        aria-hidden
+                        className="absolute inset-0 overflow-hidden"
+                        data-slot="chart-skeleton"
+                        style={{ borderRadius: 'var(--radius-item)' }}
+                    >
+                        {/*
+                         * The shape as the loaded one is drawn, each step its own stretch two
+                         * pixels clear of the next: the outer wash, the core over it for depth,
+                         * and the edges a step firmer.
+                         */}
+                        {data.map((step, i) => {
+                            const x = PAD_X + i * column;
+                            const layer = { height, left: -x, top: 0, width };
+                            return (
+                                <div
+                                    className="absolute inset-y-0 overflow-hidden"
+                                    key={step.name}
+                                    style={{
+                                        left: x,
+                                        width: Math.max(
+                                            0,
+                                            column - (i < data.length - 1 ? GAP : 0),
+                                        ),
+                                    }}
+                                >
+                                    <div
+                                        className="skeleton absolute"
+                                        style={{ ...layer, clipPath: `path('${body(1)}')` }}
+                                    />
+                                    <div
+                                        className="skeleton absolute"
+                                        style={{ ...layer, clipPath: `path('${body(0.55)}')` }}
+                                    />
+                                    <div
+                                        className="skeleton absolute"
+                                        style={{
+                                            ...layer,
+                                            backgroundColor: SKELETON_EDGE,
+                                            clipPath: `path('${ribbon(1)} ${ribbon(-1)}')`,
+                                        }}
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+                {width > 0 && !loading && (
                     <svg
                         aria-hidden="true"
                         className="block overflow-visible"
@@ -265,3 +344,30 @@ export const FunnelChart = ({
         </figure>
     );
 };
+
+/**
+ * A step's figures while the data loads: each line kept at its own height, so nothing moves
+ * when they land, and a bar in the skeleton wash where its words will be.
+ */
+const SkeletonStep = ({ index }: { index: number }) => (
+    <li aria-hidden className="flex min-w-0 flex-col gap-1 pr-3">
+        <span className="flex min-w-0 items-center gap-2 text-xs">
+            <span className="invisible w-0">0</span>
+            <span className="skeleton h-3 w-0.75 shrink-0 rounded-full" />
+            <span
+                className="skeleton h-2.5 min-w-0 rounded-chip"
+                style={{ width: SKELETON_NAMES[index % SKELETON_NAMES.length] }}
+            />
+        </span>
+        <span className="flex flex-col gap-0.5">
+            <span className="flex items-center text-lg">
+                <span className="invisible w-0">0</span>
+                <span className="skeleton h-[0.75em] w-14 min-w-0 rounded-chip" />
+            </span>
+            <span className="flex items-center text-xxs">
+                <span className="invisible w-0">0</span>
+                <span className="skeleton h-2 w-10 min-w-0 rounded-chip" />
+            </span>
+        </span>
+    </li>
+);

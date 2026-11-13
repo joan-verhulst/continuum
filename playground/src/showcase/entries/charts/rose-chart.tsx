@@ -55,6 +55,12 @@ const roseKnobs: Knob[] = [
         options: [o('tint', 'Tint'), o('solid', 'Solid')],
         default: 'tint',
     },
+    {
+        id: 'state',
+        label: 'State',
+        options: [o('ready', 'Ready'), o('loading', 'Loading')],
+        default: 'ready',
+    },
 ];
 
 const sum = (rows: readonly Record<string, string | number>[], keys: readonly string[]) =>
@@ -66,12 +72,14 @@ const RoseCard = ({
     stacked = false,
     fill,
     height = 320,
+    loading = false,
     className,
 }: {
     height?: number;
     kind?: Kind;
     stacked?: boolean;
     fill?: 'tint' | 'solid';
+    loading?: boolean;
     className?: string;
 }) => {
     const byHour = kind === 'hours';
@@ -90,6 +98,7 @@ const RoseCard = ({
             delta={byHour ? '−4.1%' : '+8.6%'}
             icon={byHour ? <Clock /> : <CalendarDays />}
             legend={stacked ? <ChartKey series={series} /> : undefined}
+            loading={loading}
             table={{
                 columns: [byHour ? 'Hour' : 'Month', ...all.map(line => line.name)],
                 rows: byHour
@@ -108,6 +117,7 @@ const RoseCard = ({
                 data={data}
                 fill={fill}
                 height={height}
+                loading={loading}
                 series={series}
                 x={x}
             />
@@ -120,6 +130,7 @@ const RosePreview = ({ knobs }: PreviewProps) => (
         className="w-full max-w-lg"
         fill={knobs.fill as 'tint' | 'solid'}
         kind={knobs.kind as Kind}
+        loading={knobs.state === 'loading'}
         stacked={knobs.stacked === true}
     />
 );

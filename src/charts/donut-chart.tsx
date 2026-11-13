@@ -29,6 +29,8 @@ export type DonutChartProps = {
     formatValue?: (value: number) => string;
     /** `tint`, the kit's look, a tint of each colour with a solid edge; `solid` fills each slice. */
     fill?: 'tint' | 'solid';
+    /** While the data loads: the chart's own shape stands in, in the skeleton wash, at the size it will have. */
+    loading?: boolean;
     className?: string;
 };
 
@@ -38,6 +40,12 @@ const GAP = 0.04;
 const EDGE = 2.5;
 /** The corner of each slice, on all four of its ends. */
 const CORNER = 4;
+
+/** The stand-in's slices, as shares of the ring: one large, one middling, two small. */
+const SKELETON_SHARES = [0.44, 0.27, 0.18, 0.11];
+
+/** The stand-in's edge, a step stronger than its wash, as a slice's line is over its tint. */
+const SKELETON_EDGE = 'color-mix(in oklab, var(--color-neutral-950) 14%, transparent)';
 
 /**
  * Shares of a whole as a ring, drawn the way every chart in the kit is: each slice a tint of
@@ -55,6 +63,7 @@ export const DonutChart = ({
     total: showTotal = true,
     formatValue = formatNumber,
     fill = 'tint',
+    loading = false,
     className,
 }: DonutChartProps) => {
     const [active, setActive] = useState<number | null>(null);
@@ -98,13 +107,14 @@ export const DonutChart = ({
 
     return (
         <figure
+            aria-busy={loading || undefined}
             aria-label={label}
             className={cn('relative m-0 shrink-0', className)}
             data-slot="donut-chart"
             style={{ height, width: size }}
         >
             <svg aria-hidden="true" className="block" height={height} width={size}>
-                {total <= 0 ? (
+                {loading ? null : total <= 0 ? (
                     <path
                         d={ringSegmentPath(
                             outer,
@@ -156,6 +166,16 @@ export const DonutChart = ({
                     )
                 )}
             </svg>
+            {loading && (
+                <DonutSkeleton
+                    fill={fill}
+                    height={height}
+                    inner={inner}
+                    origin={origin}
+                    outer={outer}
+                    turn={turn}
+                />
+            )}
             <figcaption
                 aria-live="polite"
                 className={cn(
@@ -164,7 +184,22 @@ export const DonutChart = ({
                     half ? 'bottom-0 justify-end' : 'inset-y-0 justify-center',
                 )}
             >
-                {(shown || showTotal) && (
+                {loading && showTotal && (
+                    <>
+                        {/* The figure's own line, so nothing moves when it lands; what it counts stays. */}
+                        <span aria-hidden className="flex items-center text-lg">
+                            <span className="invisible w-0">0</span>
+                            <span className="skeleton h-[0.75em] w-12 rounded-chip" />
+                        </span>
+                        <span
+                            className="truncate text-neutral-600 text-xxs"
+                            style={{ maxWidth: Math.max(0, inner * 2 - 16) }}
+                        >
+                            {caption}
+                        </span>
+                    </>
+                )}
+                {!loading && (shown || showTotal) && (
                     <>
                         <span className="font-medium text-lg text-neutral-950 tabular-nums">
                             {shown ? formatValue(shown.value) : formatCompact(total)}
@@ -180,19 +215,84 @@ export const DonutChart = ({
                     </>
                 )}
             </figcaption>
-            <div className="sr-only">
-                <table>
-                    <caption>{label}</caption>
-                    <tbody>
-                        {slices.map(slice => (
-                            <tr key={slice.name}>
-                                <th scope="row">{slice.name}</th>
-                                <td>{formatValue(slice.value)}</td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+            {!loading && (
+                <div className="sr-only">
+                    <table>
+                        <caption>{label}</caption>
+                        <tbody>
+                            {slices.map(slice => (
+                                <tr key={slice.name}>
+                                    <th scope="row">{slice.name}</th>
+                                    <td>{formatValue(slice.value)}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </figure>
+    );
+};
+
+/**
+ * A ring that is loading: the ring at its own radii, split into a few slices a little apart, in
+ * the skeleton wash with the light crossing it, and with the slices' edges along the outside
+ * when the loaded ring has them. It is drawn where the ring will be, so nothing moves when the
+ * data lands.
+ */
+const DonutSkeleton = ({
+    outer,
+    inner,
+    origin,
+    turn,
+    height,
+    fill,
+}: {
+    outer: number;
+    inner: number;
+    origin: number;
+    turn: number;
+    height: number;
+    fill: 'tint' | 'solid';
+}) => {
+    let start = origin;
+    const arcs = SKELETON_SHARES.map(share => {
+        const from = start + GAP / 2;
+        start += share * turn;
+        return { from, to: start - GAP / 2 };
+    });
+    const wash = arcs
+        .map(arc => ringSegmentPath(outer, outer, outer, inner, arc.from, arc.to, CORNER))
+        .join(' ');
+    // The edge as the loaded one is drawn: a band along the outside with round ends, short of the corners.
+    const edge = arcs
+        .map(arc =>
+            ringSegmentPath(
+                outer,
+                outer,
+                outer,
+                outer - EDGE,
+                arc.from + 0.02,
+                arc.to - 0.02,
+                EDGE / 2,
+            ),
+        )
+        .join(' ');
+
+    return (
+        <div
+            aria-hidden
+            className="absolute inset-x-0 top-0"
+            data-slot="chart-skeleton"
+            style={{ height }}
+        >
+            <div className="skeleton absolute inset-0" style={{ clipPath: `path('${wash}')` }} />
+            {fill === 'tint' && (
+                <div
+                    className="skeleton absolute inset-0"
+                    style={{ backgroundColor: SKELETON_EDGE, clipPath: `path('${edge}')` }}
+                />
+            )}
+        </div>
     );
 };

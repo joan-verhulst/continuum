@@ -1,3 +1,4 @@
+import { Skeleton } from 'continuum';
 import { ChartFrame, ChartLegend, DonutChart } from 'continuum/charts';
 import { Globe, Monitor } from 'lucide-react';
 import type { ReactNode } from 'react';
@@ -31,6 +32,21 @@ const folded = (data: readonly Share[]): Share[] =>
           ]
         : [...data];
 
+/** The key's rows while the shares load: a swatch, a name and a figure, each a short bar. */
+const LegendSkeleton = () => (
+    <ul aria-hidden className="flex min-w-0 flex-1 flex-col gap-3 text-xs">
+        {[64, 48, 56, 40].map(width => (
+            <li className="flex min-w-0 items-center gap-2" key={width}>
+                {/* The line's own height, so the rows stand as tall as the names will. */}
+                <span className="invisible w-0">0</span>
+                <Skeleton className="h-3 w-0.75 shrink-0 rounded-full" />
+                <Skeleton className="h-2.5 rounded-chip" style={{ width }} />
+                <Skeleton className="ml-auto h-2.5 w-7 shrink-0 rounded-chip" />
+            </li>
+        ))}
+    </ul>
+);
+
 /** A breakdown in its card: the total at its head, the ring and its key with the shares. */
 const ShareCard = ({
     title,
@@ -39,6 +55,7 @@ const ShareCard = ({
     delta,
     what,
     half = false,
+    loading = false,
     className,
 }: {
     title: string;
@@ -47,6 +64,7 @@ const ShareCard = ({
     delta: string;
     what: string;
     half?: boolean;
+    loading?: boolean;
     className?: string;
 }) => {
     const sum = data.reduce((all, item) => all + item.value, 0);
@@ -56,6 +74,7 @@ const ShareCard = ({
             comparison="on September"
             delta={delta}
             icon={icon}
+            loading={loading}
             table={{
                 columns: [what, 'Sessions'],
                 rows: data.map(item => [item.name, item.value]),
@@ -68,17 +87,22 @@ const ShareCard = ({
                     aria-label={`Sessions by ${what.toLowerCase()}`}
                     data={data}
                     half={half}
+                    loading={loading}
                     size={half ? 184 : 132}
                     total={false}
                 />
-                <ChartLegend
-                    className="min-w-0 flex-1"
-                    items={folded(data).map(item => ({
-                        name: item.name,
-                        value: `${Math.round((item.value / sum) * 100)}%`,
-                    }))}
-                    layout="list"
-                />
+                {loading ? (
+                    <LegendSkeleton />
+                ) : (
+                    <ChartLegend
+                        className="min-w-0 flex-1"
+                        items={folded(data).map(item => ({
+                            name: item.name,
+                            value: `${Math.round((item.value / sum) * 100)}%`,
+                        }))}
+                        layout="list"
+                    />
+                )}
             </div>
         </ChartFrame>
     );
@@ -97,6 +121,12 @@ const donutKnobs: Knob[] = [
         options: [o('ring', 'Ring'), o('half', 'Half')],
         default: 'ring',
     },
+    {
+        id: 'state',
+        label: 'State',
+        options: [o('ready', 'Ready'), o('loading', 'Loading')],
+        default: 'ready',
+    },
 ];
 
 const DonutPreview = ({ knobs }: PreviewProps) => (
@@ -106,6 +136,7 @@ const DonutPreview = ({ knobs }: PreviewProps) => (
         delta="+6.2%"
         half={knobs.shape === 'half'}
         icon={<Monitor />}
+        loading={knobs.state === 'loading'}
         title="Devices"
         what="Device"
     />

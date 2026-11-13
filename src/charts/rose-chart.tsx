@@ -29,6 +29,8 @@ export type RoseChartProps<Row extends ChartRow> = {
     fill?: 'tint' | 'solid';
     /** What the chart says when there is nothing to draw. */
     emptyLabel?: string;
+    /** While the data loads: the chart's own shape stands in, in the skeleton wash, at the size it will have. */
+    loading?: boolean;
     className?: string;
 };
 
@@ -61,6 +63,34 @@ const outsideFrame = (cx: number, cy: number, half: number, dx: number, dy: numb
 });
 
 /**
+ * How many categories go by between two names: every second, third or fourth when the circle is
+ * crowded, counting in a step that goes into the whole, so 24 hours read 00, 03, 06 and never
+ * 00, 05, 10.
+ */
+const labelStep = (count: number, half: number) => {
+    const room = ((half + LABEL_GAP) * Math.PI * 2) / Math.max(1, count);
+    return (
+        [1, 2, 3, 4, 6, 8, 12].find(n => count % n === 0 && room * n >= LABEL_SPACING) ??
+        Math.ceil(LABEL_SPACING / Math.max(1, room))
+    );
+};
+
+/** The wedge whose spoke lies between the two quietest neighbours, where the rings' values go. */
+const quietestSpoke = (totals: readonly number[]) => {
+    const count = totals.length;
+    let quiet = 0;
+    let quietest = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < count; i++) {
+        const loud = Math.max(totals[i] ?? 0, totals[(i - 1 + count) % count] ?? 0);
+        if (loud < quietest - 1e-9) {
+            quietest = loud;
+            quiet = i;
+        }
+    }
+    return quiet;
+};
+
+/**
  * Amounts by a category that goes round, such as the hours of a day or the months of a year:
  * each category a wedge at its own place on the clock, reaching out as far as its value.
  *
@@ -79,6 +109,7 @@ export const RoseChart = <Row extends ChartRow>({
     formatValue = formatNumber,
     fill = 'tint',
     emptyLabel = 'Nothing to show yet',
+    loading = false,
     className,
 }: RoseChartProps<Row>) => {
     const id = useId().replace(/[^a-zA-Z0-9_-]/g, '');
@@ -89,7 +120,9 @@ export const RoseChart = <Row extends ChartRow>({
     const values = series.map(line => data.map(row => Math.max(0, Number(row[line.key]) || 0)));
     const totals = data.map((_, i) => values.reduce((sum, column) => sum + (column[i] ?? 0), 0));
     const peak = Math.max(0, ...totals);
-    const empty = count === 0 || peak <= 0;
+    // While it loads the chart draws its stand-in and nothing else, never the last rows.
+    const empty = !loading && (count === 0 || peak <= 0);
+    const drawn = !loading && !empty;
     const ticks = niceTicks(0, peak, 3);
 
     const cx = width / 2;
@@ -116,24 +149,9 @@ export const RoseChart = <Row extends ChartRow>({
         y: cy - radius * Math.cos(angle),
     });
 
-    // The names thinned to every second, third or fourth when the circle is crowded, counting
-    // in a step that goes into the whole, so 24 hours read 00, 03, 06 and never 00, 05, 10.
-    const room = ((half + LABEL_GAP) * Math.PI * 2) / Math.max(1, count);
-    const every =
-        [1, 2, 3, 4, 6, 8, 12].find(n => count % n === 0 && room * n >= LABEL_SPACING) ??
-        Math.ceil(LABEL_SPACING / Math.max(1, room));
-
+    const every = labelStep(count, half);
     // The ring values go along the spoke between the two quietest neighbours, clear of the wedges.
-    let quiet = 0;
-    let quietest = Number.POSITIVE_INFINITY;
-    for (let i = 0; i < count; i++) {
-        const loud = Math.max(totals[i] ?? 0, totals[(i - 1 + count) % count] ?? 0);
-        if (loud < quietest - 1e-9) {
-            quietest = loud;
-            quiet = i;
-        }
-    }
-    const spoke = startOf(quiet);
+    const spoke = startOf(quietestSpoke(totals));
 
     const onPointerMove = (event: PointerEvent<SVGSVGElement>) => {
         const box = event.currentTarget.getBoundingClientRect();
@@ -157,6 +175,7 @@ export const RoseChart = <Row extends ChartRow>({
 
     return (
         <figure
+            aria-busy={loading || undefined}
             aria-label={label}
             className={cn('relative m-0 min-w-0', className)}
             data-slot="rose-chart"
@@ -167,7 +186,10 @@ export const RoseChart = <Row extends ChartRow>({
                         {emptyLabel}
                     </p>
                 )}
-                {width > 0 && !empty && (
+                {width > 0 && loading && (
+                    <RoseSkeleton fill={fill} half={half} height={height} width={width} />
+                )}
+                {width > 0 && drawn && (
                     <svg
                         aria-hidden="true"
                         className="block overflow-visible"
@@ -296,7 +318,7 @@ export const RoseChart = <Row extends ChartRow>({
 
                 {/* The rings' values, once, along the quietest spoke. */}
                 {width > 0 &&
-                    !empty &&
+                    drawn &&
                     ticks.values.slice(1).map(tick => {
                         const at = point(radiusOf(tick), spoke);
                         return (
@@ -310,7 +332,7 @@ export const RoseChart = <Row extends ChartRow>({
                         );
                     })}
 
-                {shown !== null && tip && (
+                {drawn && shown !== null && tip && (
                     <div
                         className="pointer-events-none absolute z-10"
                         style={{
@@ -341,31 +363,191 @@ export const RoseChart = <Row extends ChartRow>({
                     </div>
                 )}
             </div>
-            <div className="sr-only">
-                <table>
-                    <caption>{label}</caption>
-                    <thead>
-                        <tr>
-                            <th scope="col">{xKey}</th>
-                            {series.map(line => (
-                                <th key={line.key} scope="col">
-                                    {line.name ?? line.key}
-                                </th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {data.map((row, i) => (
-                            <tr key={String(row[xKey])}>
-                                <th scope="row">{String(row[xKey])}</th>
-                                {series.map((line, index) => (
-                                    <td key={line.key}>{formatValue(values[index]?.[i] ?? 0)}</td>
+            {!loading && (
+                <div className="sr-only">
+                    <table>
+                        <caption>{label}</caption>
+                        <thead>
+                            <tr>
+                                <th scope="col">{xKey}</th>
+                                {series.map(line => (
+                                    <th key={line.key} scope="col">
+                                        {line.name ?? line.key}
+                                    </th>
                                 ))}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
+                        </thead>
+                        <tbody>
+                            {data.map((row, i) => (
+                                <tr key={String(row[xKey])}>
+                                    <th scope="row">{String(row[xKey])}</th>
+                                    {series.map((line, index) => (
+                                        <td key={line.key}>
+                                            {formatValue(values[index]?.[i] ?? 0)}
+                                        </td>
+                                    ))}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
         </figure>
+    );
+};
+
+/**
+ * The stand-in's wedges, as shares of the outer edge's value, round from twelve o'clock: a
+ * day's shape, quiet at night and long through the working hours, so a few reach far and a few
+ * stay near the middle.
+ */
+const SKELETON_REACH = [0.3, 0.16, 0.1, 0.14, 0.38, 0.7, 0.92, 0.8, 0.58, 0.66, 0.48, 0.42];
+
+/**
+ * The stand-in's rings, as shares of the outer edge's value: two round values under the
+ * headroom, as a loaded chart draws them, with the longest wedge reaching past the last.
+ */
+const SKELETON_RINGS = [0.4, 0.8];
+
+/** The stand-in's edge, a step stronger than its wash, as a wedge's line is over its tint. */
+const SKELETON_EDGE = 'color-mix(in oklab, var(--color-neutral-950) 14%, transparent)';
+
+/** A name's stand-in: a short bar at the 11px names' height. */
+const SKELETON_NAME = { width: 14, height: 8 };
+
+/**
+ * A wedge from the hole out to its reach, with its sides drawn in by half the gap, so the gap
+ * between two wedges keeps its width down to the middle as the loaded chart's does. A clip
+ * cannot be stroked, so the gap is drawn into the shape instead.
+ */
+const wedgePath = (
+    cx: number,
+    cy: number,
+    outer: number,
+    inner: number,
+    from: number,
+    to: number,
+) => {
+    const at = (radius: number, angle: number) =>
+        `${(cx + radius * Math.sin(angle)).toFixed(2)},${(cy - radius * Math.cos(angle)).toFixed(2)}`;
+    const side = (radius: number) => Math.asin(Math.min(1, GAP / 2 / radius));
+    if (to - side(inner) <= from + side(inner)) return '';
+    return `M${at(outer, from + side(outer))} A${outer},${outer} 0 0 1 ${at(outer, to - side(outer))} L${at(inner, to - side(inner))} A${inner},${inner} 0 0 0 ${at(inner, from + side(inner))} Z`;
+};
+
+/**
+ * A rose that is loading, with the depth of a loaded one: its rings stay, its wedges stand in
+ * the skeleton wash at a day's varied reach with their edges, the rings' values and the names
+ * round the outside are short bars where they will be, and the light crosses all of it. It is
+ * drawn in the circle the loaded chart takes, so nothing moves when the data lands.
+ */
+const RoseSkeleton = ({
+    width,
+    height,
+    half,
+    fill,
+}: {
+    width: number;
+    height: number;
+    half: number;
+    fill: 'tint' | 'solid';
+}) => {
+    const outer = Math.max(0, half - PAD);
+    if (outer <= 0) return null;
+    const cx = width / 2;
+    const cy = height / 2;
+    const hole = outer * HOLE;
+    const radiusOf = (share: number) => Math.sqrt(hole ** 2 + share * (outer ** 2 - hole ** 2));
+    const count = SKELETON_REACH.length;
+    const step = (Math.PI * 2) / count;
+    const startOf = (i: number) => (i - 0.5) * step;
+    const point = (radius: number, angle: number) => ({
+        x: cx + radius * Math.sin(angle),
+        y: cy - radius * Math.cos(angle),
+    });
+
+    const wash = SKELETON_REACH.map((share, i) =>
+        wedgePath(cx, cy, radiusOf(share), hole + GAP / 2, startOf(i), startOf(i) + step),
+    ).join(' ');
+    // The edge as the loaded one is drawn: a band along the outside with round ends, short of the corners.
+    const edge = SKELETON_REACH.map((share, i) => {
+        const reach = radiusOf(share);
+        const inset = (CORNER + GAP / 2) / reach;
+        return ringSegmentPath(
+            cx,
+            cy,
+            reach,
+            reach - EDGE,
+            startOf(i) + inset,
+            startOf(i) + step - inset,
+            EDGE / 2,
+        );
+    }).join(' ');
+    const every = labelStep(count, half);
+    const spoke = startOf(quietestSpoke(SKELETON_REACH));
+
+    return (
+        <div aria-hidden className="absolute inset-0" data-slot="chart-skeleton">
+            <svg
+                aria-hidden="true"
+                className="absolute inset-0 block"
+                height={height}
+                width={width}
+            >
+                {SKELETON_RINGS.map(share => (
+                    <circle
+                        cx={cx}
+                        cy={cy}
+                        fill="none"
+                        key={share}
+                        r={radiusOf(share)}
+                        stroke="var(--color-chart-grid)"
+                    />
+                ))}
+            </svg>
+            <div className="skeleton absolute inset-0" style={{ clipPath: `path('${wash}')` }} />
+            {fill === 'tint' && (
+                <div
+                    className="skeleton absolute inset-0"
+                    style={{ backgroundColor: SKELETON_EDGE, clipPath: `path('${edge}')` }}
+                />
+            )}
+            {SKELETON_REACH.map((_, i) => {
+                if (i % every !== 0) return null;
+                const angle = i * step;
+                const place = outsideFrame(cx, cy, half, Math.sin(angle), -Math.cos(angle));
+                const left =
+                    place.anchor === 'middle'
+                        ? place.x - SKELETON_NAME.width / 2
+                        : place.anchor === 'end'
+                          ? place.x - SKELETON_NAME.width
+                          : place.x;
+                return (
+                    <div
+                        className="skeleton absolute rounded-chip"
+                        // biome-ignore lint/suspicious/noArrayIndexKey: the stand-in never reorders
+                        key={i}
+                        style={{
+                            ...SKELETON_NAME,
+                            left,
+                            top: place.y - SKELETON_NAME.height / 2,
+                        }}
+                    />
+                );
+            })}
+            {/* The rings' values: the pill's own size, on the page's colour so the ring stops at it. */}
+            {SKELETON_RINGS.map(share => {
+                const at = point(radiusOf(share), spoke);
+                return (
+                    <span
+                        className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-neutral-50"
+                        key={share}
+                        style={{ left: at.x, top: at.y }}
+                    >
+                        <span className="skeleton block h-4.5 w-7 rounded-full" />
+                    </span>
+                );
+            })}
+        </div>
     );
 };

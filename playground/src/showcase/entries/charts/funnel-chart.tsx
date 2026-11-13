@@ -18,6 +18,12 @@ const funnelKnobs: Knob[] = [
         options: [o('3', 'Three'), o('5', 'Five')],
         default: '5',
     },
+    {
+        id: 'state',
+        label: 'State',
+        options: [o('ready', 'Ready'), o('loading', 'Loading')],
+        default: 'ready',
+    },
 ];
 
 const pick = (count: number) =>
@@ -26,9 +32,11 @@ const pick = (count: number) =>
 /** The checkout in its card: the share that got to the end leads, the funnel under it. */
 const OrdersCard = ({
     data,
+    loading = false,
     className,
 }: {
     data: readonly { name: string; value: number }[];
+    loading?: boolean;
     className?: string;
 }) => (
     <ChartFrame
@@ -36,6 +44,7 @@ const OrdersCard = ({
         comparison="on the 30 days before"
         delta="−5.1%"
         icon={<ShoppingCart />}
+        loading={loading}
         table={{
             columns: ['Step', 'Shoppers'],
             rows: data.map(step => [step.name, step.value]),
@@ -44,12 +53,20 @@ const OrdersCard = ({
         trend="down"
         value="32.2%"
     >
-        <FunnelChart aria-label="Shoppers at each step of the checkout" data={data} />
+        <FunnelChart
+            aria-label="Shoppers at each step of the checkout"
+            data={data}
+            loading={loading}
+        />
     </ChartFrame>
 );
 
 const FunnelPreview = ({ knobs }: PreviewProps) => (
-    <OrdersCard className="w-full max-w-3xl" data={pick(Number(knobs.steps)) as typeof steps} />
+    <OrdersCard
+        className="w-full max-w-3xl"
+        data={pick(Number(knobs.steps)) as typeof steps}
+        loading={knobs.state === 'loading'}
+    />
 );
 
 export const entry: Entry = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useState } from 'react';
 import { cn } from '../lib/cn';
 import { chartColor } from './lib/color';
 import { formatDateLong, formatPercent } from './lib/format';
@@ -39,6 +39,8 @@ export type UptimeStripProps = {
     formatUptime?: (share: number) => string;
     /** The line shown when there is nothing to draw. */
     emptyLabel?: string;
+    /** While the data loads: the chart's own shape stands in, in the skeleton wash, at the size it will have. */
+    loading?: boolean;
     className?: string;
 };
 
@@ -59,6 +61,48 @@ const STATES: Record<UptimeState, { label: string; color: string }> = {
     outage: { label: 'Outage', color: chartColor('error') },
     none: { label: 'No data', color: 'var(--color-neutral-200)' },
 };
+
+/**
+ * The stand-in rows while the days load, as the widths of a name and an uptime in px: names of
+ * a word, uptimes of a figure like 99.93%, so the columns are near the width they will have.
+ */
+const SKELETON_ROWS = [
+    [48, 44],
+    [72, 40],
+    [64, 44],
+    [40, 36],
+] as const;
+
+/** A line of text standing in as a bar, on the text's own line so the row keeps its height. */
+const SkeletonText = ({
+    width,
+    end = false,
+    text,
+    figure = false,
+}: {
+    width: number;
+    end?: boolean;
+    /** The text the row will show, when known: set unseen, it sizes the column as it will be. */
+    text?: string;
+    /** Set in the figure's weight and numerals. */
+    figure?: boolean;
+}) =>
+    text ? (
+        <span className={cn('relative flex min-w-0 items-center text-xs', end && 'justify-end')}>
+            <span className={cn('invisible truncate', figure && 'font-medium tabular-nums')}>
+                {text}
+            </span>
+            <span
+                className={cn('skeleton absolute h-2.5 rounded-chip', end ? 'right-0' : 'left-0')}
+                style={{ width: `min(${width}px, 100%)` }}
+            />
+        </span>
+    ) : (
+        <span className={cn('flex shrink-0 items-center text-xs', end && 'justify-end')}>
+            <span className="invisible w-0">0</span>
+            <span className="skeleton h-2.5 rounded-chip" style={{ width }} />
+        </span>
+    );
 
 const downtimeOf = (day: UptimeDay) => day.downtime ?? (day.state === 'outage' ? DAY_MINUTES : 0);
 
@@ -95,17 +139,136 @@ export const UptimeStrip = ({
     blockHeight = 28,
     formatUptime = writeUptime,
     emptyLabel = 'No services to show.',
+    loading = false,
     className,
 }: UptimeStripProps) => {
     const [rootRef, rootWidth] = useWidth<HTMLElement>();
-    const [stripRef, width] = useWidth<HTMLDivElement>();
+    // Held in state, not a ref: the first row's strip is a new node when the stand-in rows give
+    // way to the services, and the width has to be read from the one on the page.
+    const [strip, setStrip] = useState<HTMLDivElement | null>(null);
+    const [width, setWidth] = useState(0);
+    useLayoutEffect(() => {
+        if (!strip) return;
+        const read = () => setWidth(strip.clientWidth);
+        read();
+        const observer = new ResizeObserver(read);
+        observer.observe(strip);
+        return () => observer.disconnect();
+    }, [strip]);
     const [active, setActive] = useState<{ row: number; day: number } | null>(null);
     const stacked = rootWidth > 0 && rootWidth < STACK_UNDER;
     const longest = services.reduce((most, service) => Math.max(most, service.days.length), 0);
-    const period = Math.min(days, longest);
+    // While it loads there are no days to count, so the row is as long as it was asked to be.
+    const period = loading ? days : Math.min(days, longest);
     const fits = width > 0 ? Math.max(1, Math.floor((width + GAP) / (MIN_BLOCK + GAP))) : period;
     const shown = Math.min(period, fits);
     const block = shown > 0 ? (width - GAP * (shown - 1)) / shown : 0;
+
+    const grid = cn(
+        'grid min-w-0 items-center',
+        // The names and the uptimes keep 8px clear of the frames.
+        stacked ? 'grid-cols-1 gap-y-2' : 'grid-cols-[auto_minmax(0,1fr)_auto] gap-x-2 gap-y-3',
+    );
+
+    const axis = (
+        <>
+            {!stacked && <span />}
+            <div
+                aria-hidden
+                className="flex justify-between text-xxs"
+                style={{
+                    color: 'var(--color-chart-label)',
+                    // 8px under the last frame, where the rows between them keep 12px.
+                    marginTop: stacked ? 0 : -4,
+                }}
+            >
+                <span>{shown} days ago</span>
+                <span>Today</span>
+            </div>
+            {!stacked && <span />}
+        </>
+    );
+
+    if (loading) {
+        // As many rows as there are services, when they are known; the days are what loads.
+        const count = services.length || SKELETON_ROWS.length - 1;
+        return (
+            <figure
+                aria-busy
+                aria-label={label}
+                className={cn('m-0 min-w-0', className)}
+                data-slot="uptime-strip"
+                ref={rootRef}
+            >
+                <div aria-hidden className={grid} data-slot="chart-skeleton">
+                    {Array.from({ length: count }, (_, row) => {
+                        const [name, uptime] = SKELETON_ROWS[row % SKELETON_ROWS.length] ?? [];
+                        // A known service lends its name and figure, unseen, so the columns keep their widths.
+                        const service = services[row];
+                        const share = service ? uptimeOf(service, period) : null;
+                        const nameText = service?.name;
+                        const figureText = share == null ? undefined : formatUptime(share);
+                        return (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: a stand-in row is its place.
+                            <div className="contents" key={row}>
+                                {stacked ? (
+                                    <div
+                                        className={cn(
+                                            'flex min-w-0 items-center justify-between gap-3',
+                                            row > 0 && 'mt-2',
+                                        )}
+                                    >
+                                        <SkeletonText text={nameText} width={name ?? 48} />
+                                        <SkeletonText
+                                            end
+                                            figure
+                                            text={figureText}
+                                            width={uptime ?? 44}
+                                        />
+                                    </div>
+                                ) : (
+                                    <span className="flex min-w-0 max-w-48">
+                                        <SkeletonText text={nameText} width={name ?? 48} />
+                                    </span>
+                                )}
+                                {/* The days at their own size and gaps, each a block of the wash. */}
+                                <div className="relative min-w-0">
+                                    <div
+                                        className="flex min-w-0 overflow-hidden rounded-item"
+                                        ref={row === 0 ? setStrip : undefined}
+                                        style={{ gap: GAP, height: blockHeight }}
+                                    >
+                                        {width > 0 &&
+                                            Array.from({ length: shown }, (_, index) => (
+                                                <span
+                                                    className="skeleton h-full min-w-0 flex-1 rounded-[2px]"
+                                                    // biome-ignore lint/suspicious/noArrayIndexKey: a block is its place in the row.
+                                                    key={index}
+                                                />
+                                            ))}
+                                    </div>
+                                    <div
+                                        aria-hidden
+                                        className={cn(PLOT_FRAME, 'inset-0')}
+                                        data-slot="chart-frame"
+                                    />
+                                </div>
+                                {!stacked && (
+                                    <SkeletonText
+                                        end
+                                        figure
+                                        text={figureText}
+                                        width={uptime ?? 44}
+                                    />
+                                )}
+                            </div>
+                        );
+                    })}
+                    {axis}
+                </div>
+            </figure>
+        );
+    }
 
     if (services.length === 0 || period === 0) {
         return (
@@ -143,15 +306,7 @@ export const UptimeStrip = ({
             data-slot="uptime-strip"
             ref={rootRef}
         >
-            <div
-                className={cn(
-                    'grid min-w-0 items-center',
-                    // The names and the uptimes keep 8px clear of the frames.
-                    stacked
-                        ? 'grid-cols-1 gap-y-2'
-                        : 'grid-cols-[auto_minmax(0,1fr)_auto] gap-x-2 gap-y-3',
-                )}
-            >
+            <div className={grid}>
                 {services.map((service, row) => {
                     const recent = service.days.slice(-shown);
                     // A service watched for fewer days than the others starts later, so its days still meet the axis.
@@ -181,7 +336,7 @@ export const UptimeStrip = ({
                             >
                                 <div
                                     className="flex min-w-0 overflow-hidden rounded-item"
-                                    ref={row === 0 ? stripRef : undefined}
+                                    ref={row === 0 ? setStrip : undefined}
                                     style={{ gap: GAP, height: blockHeight }}
                                 >
                                     {width > 0 &&
@@ -280,20 +435,7 @@ export const UptimeStrip = ({
                         </div>
                     );
                 })}
-                {!stacked && <span />}
-                <div
-                    aria-hidden
-                    className="flex justify-between text-xxs"
-                    style={{
-                        color: 'var(--color-chart-label)',
-                        // 8px under the last frame, where the rows between them keep 12px.
-                        marginTop: stacked ? 0 : -4,
-                    }}
-                >
-                    <span>{shown} days ago</span>
-                    <span>Today</span>
-                </div>
-                {!stacked && <span />}
+                {axis}
             </div>
             <div className="sr-only">
                 <table>

@@ -91,10 +91,12 @@ const percent = (share: number) => `${(share * 100).toFixed(2)}%`;
 const StatusCard = ({
     days = DAYS,
     count = services.length,
+    loading = false,
     className,
 }: {
     days?: number;
     count?: number;
+    loading?: boolean;
     className?: string;
 }) => {
     const shown = services.slice(0, count);
@@ -104,6 +106,7 @@ const StatusCard = ({
             className={className}
             comparison={`over ${days} days`}
             icon={<Activity />}
+            loading={loading}
             legend={<ChartKey series={STATES} />}
             table={{
                 columns: ['Service', 'Uptime (%)', 'Days degraded', 'Days with an outage'],
@@ -123,6 +126,7 @@ const StatusCard = ({
             <UptimeStrip
                 aria-label={`Uptime of each service over the last ${days} days`}
                 days={days}
+                loading={loading}
                 services={shown}
             />
         </ChartFrame>
@@ -132,6 +136,12 @@ const StatusCard = ({
 const uptimeKnobs: Knob[] = [
     { id: 'days', label: 'Days', options: [o('30'), o('60'), o('90')], default: '90' },
     { id: 'services', label: 'Services', options: [o('1'), o('4')], default: '4' },
+    {
+        id: 'state',
+        label: 'State',
+        options: [o('ready', 'Ready'), o('loading', 'Loading')],
+        default: 'ready',
+    },
 ];
 
 const UptimePreview = ({ knobs }: PreviewProps) => (
@@ -139,6 +149,7 @@ const UptimePreview = ({ knobs }: PreviewProps) => (
         className="w-full max-w-3xl"
         count={Number(knobs.services)}
         days={Number(knobs.days)}
+        loading={knobs.state === 'loading'}
     />
 );
 

@@ -24,6 +24,8 @@ export type RadarChartProps<Row extends ChartRow> = {
      * given. `none` draws every series as a plain tint.
      */
     texture?: 'stripes' | 'dots' | 'none';
+    /** While the data loads: the chart's own shape stands in, in the skeleton wash, at the size it will have. */
+    loading?: boolean;
     className?: string;
 };
 
@@ -38,6 +40,10 @@ const LABEL_GAP = 8;
 const LABEL_LINE = 12;
 /** What a name beside the frame is allowed, at most, before the frame gives way to it. */
 const LABEL_SIDE = 48;
+
+/** A shape's outline through its points, closed. */
+const polygon = (points: { x: number; y: number }[]) =>
+    `${points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ')} Z`;
 
 /**
  * Where a spoke's name stands: round the circle, a little way past its edge, set from the
@@ -58,18 +64,21 @@ const outsideFrame = (cx: number, cy: number, half: number, dx: number, dy: numb
  */
 export const RadarChart = <Row extends ChartRow>({
     'aria-label': label,
-    data,
+    data: rows,
     x: xKey,
     series,
     height = 300,
     formatValue = formatNumber,
     texture = 'stripes',
+    loading = false,
     className,
 }: RadarChartProps<Row>) => {
     const id = useId().replace(/[^a-zA-Z0-9_-]/g, '');
     const [ref, width] = useWidth<HTMLDivElement>();
     const [active, setActive] = useState<number | null>(null);
 
+    // While it loads the chart draws its stand-in, and nothing of the old answer.
+    const data: readonly Row[] = loading ? [] : rows;
     const count = data.length;
     const values = series.map(line => data.map(row => Number(row[line.key]) || 0));
     const ticks = niceTicks(0, extent(values.flat()).max, 3);
@@ -98,9 +107,6 @@ export const RadarChart = <Row extends ChartRow>({
             quiet = i;
         }
     }
-    const polygon = (points: { x: number; y: number }[]) =>
-        `${points.map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ')} Z`;
-
     // The spoke nearest the pointer, by its angle round the middle.
     const onPointerMove = (event: PointerEvent<SVGSVGElement>) => {
         const box = event.currentTarget.getBoundingClientRect();
@@ -113,11 +119,25 @@ export const RadarChart = <Row extends ChartRow>({
 
     return (
         <figure
+            aria-busy={loading || undefined}
             aria-label={label}
             className={cn('relative m-0 min-w-0', className)}
             data-slot="radar-chart"
         >
             <div className="relative" ref={ref} style={{ height }}>
+                {width > 0 && loading && (
+                    <RadarSkeleton
+                        cx={cx}
+                        cy={cy}
+                        half={half}
+                        height={height}
+                        id={id}
+                        radius={radius}
+                        // Rows kept from before keep their spokes, so the shape does not turn when they land.
+                        spokes={rows.length > 2 ? rows.length : SKELETON_REACH.length}
+                        width={width}
+                    />
+                )}
                 {width > 0 && count > 2 && (
                     <svg
                         aria-hidden="true"
@@ -343,5 +363,123 @@ export const RadarChart = <Row extends ChartRow>({
                 </table>
             </div>
         </figure>
+    );
+};
+
+/**
+ * The stand-in's reach on each spoke, as shares of the radius: a profile strong in two places and
+ * thin in one, as a real one tends to be, so it reads as a shape waiting and not a hexagon.
+ */
+const SKELETON_REACH = [0.84, 0.58, 0.72, 0.36, 0.5, 0.78];
+
+/** The stand-in's rings, as shares of the radius: three, the outer just inside the frame. */
+const SKELETON_RINGS = [0.32, 0.64, 0.96];
+
+/** The stand-in's spoke names, as widths: short words, a month or a measure. */
+const SKELETON_NAMES = [20, 32, 24, 28, 20, 32];
+
+/** The stand-in's outline, a step stronger than its wash, as the line is over its tint. */
+const SKELETON_EDGE = 'color-mix(in oklab, var(--color-neutral-950) 14%, transparent)';
+
+/**
+ * A radar that is loading, with the depth of a loaded one: its rings and spokes stay, a shape
+ * stands in the skeleton wash with its outline over it, and short bars stand where the spokes'
+ * names will. The rings' values are left out until there are values. It takes the chart's
+ * room, so nothing moves when the data lands.
+ */
+const RadarSkeleton = ({
+    id,
+    width,
+    height,
+    cx,
+    cy,
+    half,
+    radius,
+    spokes,
+}: {
+    id: string;
+    width: number;
+    height: number;
+    cx: number;
+    cy: number;
+    half: number;
+    radius: number;
+    spokes: number;
+}) => {
+    const angle = (i: number) => -Math.PI / 2 + (i / spokes) * Math.PI * 2;
+    const at = (i: number, share: number) => ({
+        x: cx + share * radius * Math.cos(angle(i)),
+        y: cy + share * radius * Math.sin(angle(i)),
+    });
+    const around = (share: (i: number) => number) =>
+        polygon(Array.from({ length: spokes }, (_, i) => at(i, share(i))));
+    const shape = around(i => SKELETON_REACH[i % SKELETON_REACH.length] ?? 0.5);
+    // The outline is the shape's own 2px line with round joins, a mask the wash shows through.
+    const outline = `url("data:image/svg+xml,${encodeURIComponent(
+        `<svg xmlns='http://www.w3.org/2000/svg' width='${width}' height='${height}'><path d='${shape}' fill='none' stroke='black' stroke-width='2' stroke-linejoin='round'/></svg>`,
+    )}")`;
+
+    return (
+        <div aria-hidden className="absolute inset-0" data-slot="chart-skeleton">
+            <svg
+                aria-hidden="true"
+                className="block overflow-visible"
+                height={height}
+                width={width}
+            >
+                <defs>
+                    <clipPath id={`${id}-skeleton`}>
+                        <rect
+                            height={half * 2}
+                            style={{ rx: 'var(--radius-item)', ry: 'var(--radius-item)' }}
+                            width={half * 2}
+                            x={cx - half}
+                            y={cy - half}
+                        />
+                    </clipPath>
+                </defs>
+                <g clipPath={`url(#${id}-skeleton)`} fill="none" stroke="var(--color-chart-grid)">
+                    {SKELETON_RINGS.map(share => (
+                        <path d={around(() => share)} key={share} />
+                    ))}
+                    {Array.from({ length: spokes }, (_, i) => {
+                        const end = at(i, 1);
+                        // biome-ignore lint/suspicious/noArrayIndexKey: the spokes never reorder
+                        return <line key={i} x1={cx} x2={end.x} y1={cy} y2={end.y} />;
+                    })}
+                </g>
+            </svg>
+            <div className="skeleton absolute inset-0" style={{ clipPath: `path('${shape}')` }} />
+            <div
+                className="skeleton absolute inset-0"
+                style={{
+                    backgroundColor: SKELETON_EDGE,
+                    maskImage: outline,
+                    maskRepeat: 'no-repeat',
+                    maskSize: '100% 100%',
+                }}
+            />
+            {Array.from({ length: spokes }, (_, i) => {
+                const place = outsideFrame(cx, cy, half, Math.cos(angle(i)), Math.sin(angle(i)));
+                const wide = SKELETON_NAMES[i % SKELETON_NAMES.length] ?? 24;
+                return (
+                    <div
+                        className="skeleton absolute h-2 rounded-chip"
+                        // biome-ignore lint/suspicious/noArrayIndexKey: the spokes never reorder
+                        key={i}
+                        style={{
+                            left:
+                                place.anchor === 'start'
+                                    ? place.x
+                                    : place.anchor === 'end'
+                                      ? place.x - wide
+                                      : place.x - wide / 2,
+                            top: place.y - 4,
+                            width: wide,
+                        }}
+                    />
+                );
+            })}
+        </div>
     );
 };

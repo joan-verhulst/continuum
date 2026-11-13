@@ -63,6 +63,12 @@ const bubbleKnobs: Knob[] = [
         options: [o('0', 'None'), o('3', 'Three largest'), o('6', 'Six largest')],
         default: '3',
     },
+    {
+        id: 'state',
+        label: 'State',
+        options: [o('ready', 'Ready'), o('loading', 'Loading')],
+        default: 'ready',
+    },
 ];
 
 /** Every account by its seats and its revenue, sized by how much it is used. */
@@ -72,6 +78,7 @@ const AccountsCard = ({
     sizeKey = true,
     labels = 3,
     height = 340,
+    loading = false,
     className,
 }: {
     scale?: 'log' | 'linear';
@@ -79,6 +86,7 @@ const AccountsCard = ({
     sizeKey?: boolean;
     labels?: number;
     height?: number;
+    loading?: boolean;
     className?: string;
 }) => (
     <ChartFrame
@@ -87,6 +95,7 @@ const AccountsCard = ({
         delta="+5.4%"
         icon={<Users />}
         legend={grouped ? <ChartKey series={plans} /> : undefined}
+        loading={loading}
         table={{
             columns: ['Account', 'Plan', 'Seats', 'Revenue a month', 'Hours of use'],
             rows: accounts.map(row => [
@@ -109,6 +118,7 @@ const AccountsCard = ({
             groups={grouped ? plans : undefined}
             height={height}
             labels={labels}
+            loading={loading}
             name="name"
             size="usage"
             sizeKey={sizeKey}
@@ -128,6 +138,7 @@ const BubblePreview = ({ knobs }: PreviewProps) => (
         className="w-full max-w-3xl"
         grouped={knobs.group === true}
         labels={Number(knobs.labels)}
+        loading={knobs.state === 'loading'}
         scale={knobs.scale as 'log' | 'linear'}
         sizeKey={knobs.sizeKey === true}
     />

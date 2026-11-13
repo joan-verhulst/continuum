@@ -24,14 +24,22 @@ const radarKnobs: Knob[] = [
         options: [o('stripes', 'Stripes'), o('dots', 'Dots'), o('none', 'Plain')],
         default: 'stripes',
     },
+    {
+        id: 'state',
+        label: 'State',
+        options: [o('ready', 'Ready'), o('loading', 'Loading')],
+        default: 'ready',
+    },
 ];
 
 /** Two kinds of spending in one card, the second told apart by its texture. */
 const SpendingCard = ({
     texture,
+    loading = false,
     className,
 }: {
     texture?: 'stripes' | 'dots' | 'none';
+    loading?: boolean;
     className?: string;
 }) => (
     <ChartFrame
@@ -40,6 +48,7 @@ const SpendingCard = ({
         delta="+3.2%"
         icon={<ClipboardList />}
         legend={<ChartKey series={both} />}
+        loading={loading}
         table={{
             columns: ['Month', 'Product', 'Restaurants and bars'],
             rows: months.map(row => [row.month, row.product, row.dining]),
@@ -51,6 +60,7 @@ const SpendingCard = ({
             aria-label="Spending on products and on eating out, by month"
             data={months}
             height={300}
+            loading={loading}
             series={both}
             texture={texture}
             x="month"
@@ -61,6 +71,7 @@ const SpendingCard = ({
 const RadarPreview = ({ knobs }: PreviewProps) => (
     <SpendingCard
         className="w-full max-w-lg"
+        loading={knobs.state === 'loading'}
         texture={knobs.texture as 'stripes' | 'dots' | 'none'}
     />
 );
