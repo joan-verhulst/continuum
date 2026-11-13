@@ -573,13 +573,7 @@ const PageIndexNav = ({ sections, active, label, view, onPick }: PageIndexNavPro
                 <SidebarGroup
                     aria-label={group.label || label}
                     key={group.label}
-                    // How many sit in the group, at the label's end: what a search leaves, while it narrows.
-                    label={
-                        <span className="flex items-center justify-between gap-2">
-                            <span className="min-w-0 truncate">{group.label || label}</span>
-                            <span className="shrink-0 tabular-nums">{group.entries.length}</span>
-                        </span>
-                    }
+                    label={<span className="block truncate">{group.label || label}</span>}
                 >
                     {group.entries.map(section => (
                         <NavItem
