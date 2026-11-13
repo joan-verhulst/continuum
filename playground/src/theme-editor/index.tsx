@@ -78,7 +78,11 @@ export const Projects = ({ state, onChange }: ProjectsProps) => {
             current={state.current}
             onAsked={() => onChange({ creating: undefined })}
             onDeleted={id => {
-                if (id === state.current) onChange({ current: undefined, project: undefined });
+                // The playground moves on to the latest project with a used theme, and wears it;
+                // with none, it goes back to Continuum's own.
+                if (id !== state.current) return;
+                const next = store.projects.find(project => project.id !== id && project.applied);
+                onChange({ current: next?.id, project: undefined });
             }}
             onOpen={id => onChange({ project: id })}
             store={store}
@@ -285,6 +289,10 @@ const ProjectList = ({
             />
             <DeleteDialog
                 inUse={Boolean(deleting?.applied) && deleting?.id === current}
+                next={
+                    store.projects.find(project => project.id !== deleting?.id && project.applied)
+                        ?.name
+                }
                 onDelete={() => {
                     if (!deleting) return;
                     store.remove(deleting.id);
@@ -404,12 +412,15 @@ const RenameDialog = ({
 const DeleteDialog = ({
     project,
     inUse,
+    next,
     onOpenChange,
     onDelete,
 }: {
     project?: Project;
-    /** The playground wears this project's theme, and goes back to its own once it is gone. */
+    /** The playground wears this project's theme, and moves on once it is gone. */
     inUse: boolean;
+    /** The project the playground moves on to, the latest with a used theme; none for Continuum's own. */
+    next?: string;
     onOpenChange: (open: boolean) => void;
     onDelete: () => void;
 }) => (
@@ -422,7 +433,7 @@ const DeleteDialog = ({
                 <DialogDescription>
                     Its theme goes with it. Files already taken to the project stay as they are.
                     {inUse &&
-                        " It is the theme the playground wears now, so the playground goes back to Continuum's own."}
+                        ` It is the theme the playground wears now, so the playground moves to ${next ? `${next}'s theme` : "Continuum's own"}.`}
                 </DialogDescription>
             </DialogBody>
             <DialogFooter>
