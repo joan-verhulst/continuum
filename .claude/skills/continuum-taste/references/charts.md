@@ -184,9 +184,13 @@ The card's own figure at 24 stays the only thing larger. A named thing being rea
 
 ## States
 
-- **Loading** (`loading`): the plot is one quiet block, `neutral-950` at 4% on item corners, with a band of light
-  crossing it; no stand-in line, no grid, no old data at half strength. It takes the room the plot will, so
-  nothing moves when the data lands.
+- **Loading** (`loading`, on every chart): the chart keeps the depth of its loaded state (its frame, its grid,
+  its rings) and its own shape stands in, drawn in the skeleton wash (`neutral-950` at 5%) with one band of light
+  flowing across every skeleton on the page together, left to right, without a pause. An area is a curve with a
+  firm edge (the ink at 14%) over a wash that fades to its baseline; a line the edge alone; bars, wedges, a ring,
+  tiles and candles at fixed stand-in sizes. The card's figure and its change stand in as bars. Data text is
+  never faked and no old data shows at half strength. It takes the room the chart will, so nothing moves when
+  the data lands.
 - **Empty**: the line "No data yet" (`emptyLabel`), 13 `neutral-600`, centred where the plot would be, with no
   axes. A chart with no plot of its own (a rose, a bullet, an uptime strip) shows it in a dashed panel on item
   corners.

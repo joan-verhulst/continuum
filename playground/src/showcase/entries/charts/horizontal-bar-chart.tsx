@@ -80,6 +80,7 @@ const VisitsCard = ({
     return (
         <ChartFrame
             className={className}
+            loading={state === 'loading'}
             comparison="on last week"
             delta={ready ? '+6.2%' : undefined}
             icon={<MousePointerClick />}

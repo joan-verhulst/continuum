@@ -293,7 +293,9 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 
     // The plot is what the labels leave. It is known before the marks, because how many marks
     // there is room for decides how the readings are gathered.
-    const left = (yAxis && !empty ? yLabelWidth + GUTTER_GAP : 0) + PAD;
+    // While loading, the value axis keeps its column, so the plot does not widen and then narrow
+    // when the data lands: measured from the rows' labels when there are rows, else a short one.
+    const left = (yAxis && (!empty || loading) ? yLabelWidth + GUTTER_GAP : 0) + PAD;
     const top = TOP;
     const bottom = (xAxis ? AXIS_HEIGHT : 0) + PAD;
     const plotWidth = Math.max(0, width - left - PAD);
@@ -350,6 +352,19 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
     }, [bars, columns, stacked, sums, yMax, yTicks]);
 
     const yLabels = useMemo(() => ticks.values.map(writeAxis), [ticks, writeAxis]);
+    // The labels the value axis is measured from while loading: the ones the given rows will have,
+    // or a short stand-in when there are none yet. They are measured, never drawn.
+    const heldLabels = useMemo(() => {
+        if (!loading) return yLabels;
+        if (rows.length === 0) return [writeAxis(1000)];
+        const values = rows.map(row => series.map(line => toNumber(row[line.key])));
+        const span = extent(
+            stacked && bars
+                ? values.map(row => row.reduce((total, value) => total + value, 0))
+                : values.flat(),
+        );
+        return niceTicks(span.min, span.max, yTicks, yMax).values.map(writeAxis);
+    }, [bars, loading, rows, series, stacked, writeAxis, yLabels, yMax, yTicks]);
     const labelOf = useCallback(
         (row: Row | undefined, i: number) => {
             const value = row?.[xKey];
@@ -740,7 +755,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                     className="pointer-events-none invisible absolute top-0 left-0 w-max text-xxs tabular-nums"
                     ref={yProbeRef}
                 >
-                    {yLabels.map(text => (
+                    {heldLabels.map(text => (
                         <div key={text}>{text}</div>
                     ))}
                 </div>
@@ -1044,7 +1059,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                 />
                             ))}
 
-                            {!empty && (
+                            {(!empty || loading) && (
                                 // The plot's own place in the card: the marks and their grid inside, the labels out.
                                 <div
                                     aria-hidden
@@ -1062,6 +1077,7 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                             {loading && (
                                 <ChartSkeleton
                                     height={plotHeight}
+                                    kind={kind}
                                     left={left}
                                     top={top}
                                     width={plotWidth}
@@ -1194,31 +1210,105 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
 };
 
 /**
- * A chart that is loading: the plot as one quiet block with a band of light crossing it. It
- * does not pretend to be a chart while it waits. No stand-in line, no grid, no fade: only the
- * room the plot will take, so nothing moves when the data lands.
+ * The stand-in's heights, as shares of the plot: a week that climbs, peaks late and falls back,
+ * as a measure over time tends to, so the shape reads as data waiting rather than a wave.
+ */
+const SKELETON_LEVELS = [0.5, 0.62, 0.58, 0.82, 0.76, 0.42, 0.5];
+
+/** Where the stand-in's grid sits, as shares of the plot's height: the rules a loaded chart draws. */
+const SKELETON_RULES = [0.08, 0.38, 0.68];
+
+/** The edge of the stand-in's curve, a step stronger than its wash, as a line is over its tint. */
+const SKELETON_EDGE = 'color-mix(in oklab, var(--color-neutral-950) 14%, transparent)';
+
+/**
+ * A chart that is loading, with the depth of a loaded one: its frame and grid stay, and the
+ * shape of its kind stands in the skeleton wash with the light crossing it. An area is a curve
+ * with a firm edge over a wash that fades towards the baseline, as the real one does; a line is
+ * the edge alone; a bar chart its bars. It takes the plot's room, so nothing moves when the data
+ * lands.
  */
 const ChartSkeleton = ({
+    kind,
     left,
     top,
     width,
     height,
 }: {
+    kind: ChartKind;
     left: number;
     top: number;
     width: number;
     height: number;
-}) =>
-    width > 0 && height > 0 ? (
+}) => {
+    if (width <= 0 || height <= 0) return null;
+    const step = width / (SKELETON_LEVELS.length - 1);
+    const points = SKELETON_LEVELS.map((level, i) => ({ x: i * step, y: height * (1 - level) }));
+    // The edge: a 2px ribbon along the curve.
+    const edge = `${curvePath(points)} L${width},${(points.at(-1)?.y ?? 0) + 2} ${curvePath(
+        points.map(point => ({ ...point, y: point.y + 2 })).reverse(),
+    ).replace(/^M/, 'L')} Z`;
+    // About one bar per 48px, never fewer than five.
+    const bars = Math.max(5, Math.round(width / 48));
+    const slot = width / bars;
+
+    return (
         <div
             aria-hidden
-            className="absolute overflow-hidden rounded-item bg-neutral-950/4"
+            className="absolute"
             data-slot="chart-skeleton"
             style={{ height, left, top, width }}
         >
-            <div className="absolute inset-0 bg-[linear-gradient(100deg,transparent_38%,color-mix(in_oklab,var(--color-neutral-50)_85%,transparent)_50%,transparent_62%)] bg-size-[250%_100%] bg-no-repeat motion-safe:animate-shine" />
+            {SKELETON_RULES.map(share => (
+                <div
+                    className="absolute inset-x-0 h-px"
+                    key={share}
+                    style={{
+                        backgroundColor: 'var(--color-chart-grid)',
+                        top: Math.round(height * share),
+                    }}
+                />
+            ))}
+            {kind === 'bar' ? (
+                Array.from({ length: bars }, (_, i) => {
+                    const at = Math.round(
+                        (i / Math.max(1, bars - 1)) * (SKELETON_LEVELS.length - 1),
+                    );
+                    return (
+                        <div
+                            className="skeleton absolute bottom-0 rounded-t-chip"
+                            // biome-ignore lint/suspicious/noArrayIndexKey: the bars never reorder
+                            key={i}
+                            style={{
+                                height: height * (SKELETON_LEVELS[at] ?? 0.5),
+                                left: i * slot + slot * 0.2,
+                                width: slot * 0.6,
+                            }}
+                        />
+                    );
+                })
+            ) : (
+                <>
+                    {kind === 'area' && (
+                        <div
+                            className="skeleton absolute inset-0"
+                            style={{
+                                clipPath: `path('${areaPath(points, height)}')`,
+                                // The wash fades towards the baseline, as an area's tint does.
+                                maskImage:
+                                    'linear-gradient(to bottom, black 20%, transparent 100%)',
+                            }}
+                        />
+                    )}
+                    <div
+                        className="skeleton absolute inset-0"
+                        style={{ backgroundColor: SKELETON_EDGE, clipPath: `path('${edge}')` }}
+                    />
+                </>
+            )}
         </div>
-    ) : null;
+    );
+};
 
 /** The two textures as CSS, for marks drawn in HTML: the same stripes and dots as the SVG fills. */
 const TEXTURES = {

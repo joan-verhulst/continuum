@@ -68,6 +68,12 @@ export type BulletChartProps = {
 /** The track the ranges are drawn in, and the measure inside it. */
 const TRACK = 16;
 const MEASURE = 6;
+
+/** The stand-in rows while loading: names of a few lengths, and measures at varied reach. */
+const SKELETON_NAMES = ['6rem', '8rem', '5rem', '7rem'];
+const SKELETON_MEASURES = [0.72, 0.48, 0.86, 0.6];
+/** The stand-in measure, a step firmer than the track's wash, as the measure is over its ranges. */
+const SKELETON_EDGE = 'color-mix(in oklab, var(--color-neutral-950) 14%, transparent)';
 /** The washes, lightest to deepest, as shares of the strongest ink over the surface. */
 const WASHES = [6, 11, 17, 23];
 
@@ -109,23 +115,92 @@ export const BulletChart = ({
     const rows = loading ? [] : data;
 
     if (loading) {
+        // The rows it was given, or three, laid out as the loaded rows are: the same lines, gaps
+        // and framed tracks, so nothing moves when the figures land.
+        const count = data.length || 3;
+        const name = (i: number) => (
+            <span className="flex h-(--text-xs--line-height) items-center">
+                <span
+                    className="skeleton h-2.5 rounded-chip"
+                    style={{ width: SKELETON_NAMES[i % SKELETON_NAMES.length] }}
+                />
+            </span>
+        );
+        const figures = (
+            <span
+                className={cn(
+                    'flex items-center',
+                    layout === 'above' ? 'h-6' : 'h-(--text-xs--line-height) justify-end',
+                )}
+            >
+                <span
+                    className={cn(
+                        'skeleton rounded-chip',
+                        layout === 'above' ? 'h-3.5 w-20' : 'h-2.5 w-12',
+                    )}
+                />
+            </span>
+        );
+        const line = (i: number) => (
+            <div className="relative min-w-0 shrink-0" style={{ height: TRACK }}>
+                <div className="absolute inset-0 overflow-hidden rounded-item">
+                    <div className="skeleton absolute inset-0" />
+                    <div
+                        className="skeleton absolute left-0"
+                        style={{
+                            backgroundColor: SKELETON_EDGE,
+                            borderRadius: `0 ${MEASURE / 2}px ${MEASURE / 2}px 0`,
+                            height: MEASURE,
+                            top: (TRACK - MEASURE) / 2,
+                            width: `${(SKELETON_MEASURES[i % SKELETON_MEASURES.length] ?? 0.6) * 100}%`,
+                        }}
+                    />
+                </div>
+                <div aria-hidden className={cn(PLOT_FRAME, 'inset-0')} />
+            </div>
+        );
+
         return (
             <figure
                 aria-busy
                 aria-label={label}
-                className={cn('m-0 flex w-full flex-col gap-5', className)}
+                className={cn(
+                    'm-0 w-full',
+                    layout === 'above'
+                        ? 'flex flex-col gap-7'
+                        : 'grid grid-cols-[minmax(0,max-content)_minmax(0,1fr)_auto] gap-x-2 gap-y-3',
+                    className,
+                )}
                 data-slot="bullet-chart"
                 style={style}
             >
-                {[0, 1, 2].map(i => (
-                    <div aria-hidden className="flex flex-col gap-2" key={i}>
-                        <div className="h-3 w-24 rounded-xs bg-neutral-950/4" />
-                        <div
-                            className="overflow-hidden rounded-xs bg-neutral-950/4"
-                            style={{ height: TRACK }}
-                        >
-                            <div className="size-full bg-[linear-gradient(100deg,transparent_38%,color-mix(in_oklab,var(--color-neutral-50)_85%,transparent)_50%,transparent_62%)] bg-size-[250%_100%] bg-no-repeat motion-safe:animate-shine" />
-                        </div>
+                {Array.from({ length: count }, (_, i) => (
+                    <div
+                        aria-hidden
+                        className={
+                            layout === 'above'
+                                ? 'flex min-w-0 flex-col gap-2'
+                                : 'col-span-3 grid grid-cols-subgrid items-center'
+                        }
+                        data-slot="chart-skeleton"
+                        // biome-ignore lint/suspicious/noArrayIndexKey: the stand-in rows never reorder
+                        key={i}
+                    >
+                        {layout === 'above' ? (
+                            <>
+                                <div className="flex min-w-0 items-baseline justify-between gap-3">
+                                    {name(i)}
+                                    {figures}
+                                </div>
+                                {line(i)}
+                            </>
+                        ) : (
+                            <>
+                                <div className="flex min-w-0 max-w-40">{name(i)}</div>
+                                {line(i)}
+                                {figures}
+                            </>
+                        )}
                     </div>
                 ))}
             </figure>

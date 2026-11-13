@@ -2,6 +2,7 @@
 
 import {
     type CSSProperties,
+    Fragment,
     type KeyboardEvent,
     type PointerEvent,
     type ReactNode,
@@ -232,7 +233,9 @@ export const HorizontalBarChart = <Row extends ChartRow, X = unknown>({
     // Each row is given room for its bar; a group of bars, room for each of them.
     const rowRoom = grouped ? Math.max(ROW, count * GROUPED_BAR + (count - 1) * BAR_GAP + 16) : ROW;
     const bottom = yAxis ? AXIS_HEIGHT : 0;
-    const height = givenHeight ?? (empty ? 5 : data.length) * rowRoom + bottom;
+    // While loading, the rows the chart was given (or five) keep its height, so nothing moves when they land.
+    const rowsShown = loading ? rows.length || 5 : empty ? 5 : data.length;
+    const height = givenHeight ?? rowsShown * rowRoom + bottom;
     const plotHeight = Math.max(0, height - bottom);
     const slot = empty ? plotHeight : plotHeight / data.length;
 
@@ -262,11 +265,21 @@ export const HorizontalBarChart = <Row extends ChartRow, X = unknown>({
         return [...all];
     }, [readings, sums, total, writeValue]);
     const [figureProbe, figureWidths] = useTextWidths(figures);
-    const [nameProbe, nameWidths] = useTextWidths(names);
-    const widestName = Math.max(0, ...names.map(name => nameWidths.get(name) ?? 0));
+    // While loading, the names of the rows it was given are measured, never drawn, so the plot keeps its place.
+    const measured = useMemo(
+        () => (loading ? rows.map(labelOf) : names),
+        [loading, rows, labelOf, names],
+    );
+    const [nameProbe, nameWidths] = useTextWidths(measured);
+    const widestName = Math.max(
+        loading && rows.length === 0 ? 64 : 0,
+        ...measured.map(name => nameWidths.get(name) ?? 0),
+    );
 
     const left =
-        xAxis && !empty ? Math.min(widestName, Math.round(width * GUTTER_MAX)) + GUTTER_GAP : 0;
+        xAxis && (!empty || loading)
+            ? Math.min(widestName, Math.round(width * GUTTER_MAX)) + GUTTER_GAP
+            : 0;
     // The plot, and the frame round it, take the width past the names.
     const plotWidth = Math.max(0, width - left);
 
@@ -499,7 +512,7 @@ export const HorizontalBarChart = <Row extends ChartRow, X = unknown>({
                 className="pointer-events-none invisible absolute top-0 left-0 w-max text-xxs"
                 ref={nameProbe}
             >
-                {[...new Set(names)].map(text => (
+                {[...new Set(measured)].map(text => (
                     <div className="w-max whitespace-nowrap" key={text}>
                         {text}
                     </div>
@@ -538,7 +551,7 @@ export const HorizontalBarChart = <Row extends ChartRow, X = unknown>({
             >
                 {width > 0 && (
                     <>
-                        {!empty && (
+                        {(!empty || loading) && (
                             // The plot's own place in its card; the names and the axis stand outside it.
                             <div
                                 aria-hidden
@@ -906,7 +919,14 @@ export const HorizontalBarChart = <Row extends ChartRow, X = unknown>({
     );
 };
 
-/** A chart that is loading: the plot as one quiet block with a band of light crossing it. */
+/** The stand-in bars' lengths, as shares of the plot: a ranking, longest first. */
+const SKELETON_LENGTHS = [0.86, 0.72, 0.6, 0.47, 0.38, 0.3, 0.24, 0.2];
+
+/**
+ * A chart that is loading: a ranking of bars in the skeleton wash, longest first, each with a
+ * short label before it, and the band of light crossing them. It takes the plot's room, so
+ * nothing moves when the data lands.
+ */
 const ChartSkeleton = ({
     left,
     top,
@@ -917,17 +937,51 @@ const ChartSkeleton = ({
     top: number;
     width: number;
     height: number;
-}) =>
-    width > 0 && height > 0 ? (
+}) => {
+    if (width <= 0 || height <= 0) return null;
+    const rows = Math.max(3, Math.min(SKELETON_LENGTHS.length, Math.floor(height / ROW)));
+    const row = height / rows;
+    const bar = Math.min(BAR_MAX, row * BAR_SHARE);
+    // The names' column the chart keeps while loading, and the plot past it, exactly as loaded.
+    const gutter = Math.max(0, left - GUTTER_GAP);
+    const plotLeft = left;
+    const plotWidth = width;
+
+    return (
         <div
             aria-hidden
-            className="absolute overflow-hidden rounded-item bg-neutral-950/4"
+            className="absolute inset-x-0"
             data-slot="chart-skeleton"
-            style={{ height, left, top, width }}
+            style={{ height, top }}
         >
-            <div className="absolute inset-0 bg-[linear-gradient(100deg,transparent_38%,color-mix(in_oklab,var(--color-neutral-50)_85%,transparent)_50%,transparent_62%)] bg-size-[250%_100%] bg-no-repeat motion-safe:animate-shine" />
+            {Array.from({ length: rows }, (_, i) => {
+                const y = i * row + (row - bar) / 2;
+                return (
+                    // biome-ignore lint/suspicious/noArrayIndexKey: the rows never reorder
+                    <Fragment key={i}>
+                        <div
+                            className="skeleton absolute h-2.5 rounded-chip"
+                            style={{
+                                left: 0,
+                                top: y + bar / 2 - 5,
+                                width: gutter * (i % 2 ? 0.6 : 0.8),
+                            }}
+                        />
+                        <div
+                            className="skeleton absolute rounded-r-chip"
+                            style={{
+                                height: bar,
+                                left: plotLeft,
+                                top: y,
+                                width: plotWidth * (SKELETON_LENGTHS[i] ?? 0.2),
+                            }}
+                        />
+                    </Fragment>
+                );
+            })}
         </div>
-    ) : null;
+    );
+};
 
 const ChartTooltipTotal = ({ value }: { value: string }) => (
     <span className="flex items-center justify-between gap-4">

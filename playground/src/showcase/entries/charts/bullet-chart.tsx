@@ -59,6 +59,7 @@ const TargetsCard = ({
     return (
         <ChartFrame
             className={className}
+            loading={state === 'loading'}
             comparison={ready ? 'on target, 41 days left' : undefined}
             icon={<Target />}
             table={{

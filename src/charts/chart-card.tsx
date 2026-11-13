@@ -40,6 +40,8 @@ export type ChartFrameProps = {
     table?: ChartTable;
     /** The download's name, without its extension; the title unless given. */
     filename?: string;
+    /** While the data loads: the figure and its change stand in as skeleton bars. */
+    loading?: boolean;
     /** Where the chart opens in full: a round button at the header's end. */
     onOpen?: () => void;
     /**
@@ -96,6 +98,7 @@ export const ChartFrame = ({
     filename,
     onOpen,
     variant = 'card',
+    loading = false,
     className,
     children,
 }: ChartFrameProps) => {
@@ -142,33 +145,43 @@ export const ChartFrame = ({
                         </div>
                     )}
                 </div>
-                {value != null && (
-                    <p className="flex min-w-0 flex-wrap items-baseline gap-x-2">
-                        <span className="font-medium text-2xl text-neutral-950 tabular-nums">
-                            {value}
-                        </span>
-                        {(delta != null || comparison != null) && (
-                            // A line under a figure that has no change to show still reads.
-                            <span className="text-xs">
-                                {delta != null && (
-                                    <span
-                                        className={cn(
-                                            'font-medium tabular-nums',
-                                            trendInk[trend ?? trendOf(delta)],
-                                        )}
-                                    >
-                                        {delta}
-                                    </span>
-                                )}
-                                {comparison != null && (
-                                    <span className="text-neutral-600">
-                                        {delta != null && ' '}
-                                        {comparison}
-                                    </span>
-                                )}
-                            </span>
-                        )}
+                {loading && value != null ? (
+                    // The figure's own line, so nothing moves when it lands: a bar at the figure's
+                    // cap height, and a short one for its change.
+                    <p aria-hidden className="flex items-center gap-2 text-2xl">
+                        <span className="invisible w-0">0</span>
+                        <span className="skeleton h-[0.75em] w-24 rounded-chip" />
+                        <span className="skeleton h-2.5 w-16 rounded-chip" />
                     </p>
+                ) : (
+                    value != null && (
+                        <p className="flex min-w-0 flex-wrap items-baseline gap-x-2">
+                            <span className="font-medium text-2xl text-neutral-950 tabular-nums">
+                                {value}
+                            </span>
+                            {(delta != null || comparison != null) && (
+                                // A line under a figure that has no change to show still reads.
+                                <span className="text-xs">
+                                    {delta != null && (
+                                        <span
+                                            className={cn(
+                                                'font-medium tabular-nums',
+                                                trendInk[trend ?? trendOf(delta)],
+                                            )}
+                                        >
+                                            {delta}
+                                        </span>
+                                    )}
+                                    {comparison != null && (
+                                        <span className="text-neutral-600">
+                                            {delta != null && ' '}
+                                            {comparison}
+                                        </span>
+                                    )}
+                                </span>
+                            )}
+                        </p>
+                    )
                 )}
             </header>
             <div
@@ -308,6 +321,7 @@ export const ChartCard = <Row extends ChartRow, X = unknown>({
             delta={delta}
             filename={filename}
             icon={icon}
+            loading={chart.loading}
             onOpen={onOpen}
             variant={variant}
             legend={
