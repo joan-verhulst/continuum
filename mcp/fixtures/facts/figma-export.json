@@ -1,0 +1,106 @@
+[
+    {
+        "at": "12:40",
+        "property": "background-color",
+        "value": "#FFFFFF",
+        "subject": { "kind": "container", "tag": "FRAME", "name": "Invoice card" },
+        "written": { "form": "rendered", "text": "fill #FFFFFF" }
+    },
+    {
+        "at": "12:40",
+        "property": "border-radius",
+        "value": "8px",
+        "subject": { "kind": "container", "tag": "FRAME", "name": "Invoice card" },
+        "written": { "form": "rendered", "text": "cornerRadius 8" }
+    },
+    {
+        "at": "12:40",
+        "property": "padding-left",
+        "value": "13px",
+        "subject": { "kind": "container", "tag": "FRAME", "name": "Invoice card" },
+        "written": { "form": "rendered", "text": "paddingLeft 13" }
+    },
+    {
+        "at": "12:40",
+        "property": "box-shadow",
+        "value": "0 4px 12px rgba(0, 0, 0, 0.1)",
+        "subject": { "kind": "container", "tag": "FRAME", "name": "Invoice card" },
+        "written": { "form": "rendered", "text": "DROP_SHADOW 0 4 12 #0000001A" }
+    },
+    {
+        "at": "12:41",
+        "property": "font-size",
+        "value": "15px",
+        "subject": { "kind": "text", "tag": "TEXT", "name": "Title", "text": true },
+        "written": { "form": "rendered", "text": "fontSize 15" }
+    },
+    {
+        "at": "12:41",
+        "property": "font-weight",
+        "value": "500",
+        "subject": { "kind": "text", "tag": "TEXT", "name": "Title", "text": true },
+        "written": { "form": "rendered", "text": "fontWeight 500" }
+    },
+    {
+        "at": "12:42",
+        "property": "color",
+        "value": "#9CA3AF",
+        "subject": { "kind": "text", "tag": "TEXT", "name": "Meta", "text": true },
+        "written": { "form": "rendered", "text": "fill #9CA3AF" }
+    },
+    {
+        "at": "12:42",
+        "property": "font-size",
+        "value": "13px",
+        "subject": { "kind": "text", "tag": "TEXT", "name": "Meta", "text": true },
+        "written": { "form": "rendered", "text": "fontSize 13" }
+    },
+    {
+        "at": "12:43",
+        "property": "height",
+        "value": "36px",
+        "subject": {
+            "kind": "control",
+            "tag": "INSTANCE",
+            "role": "button",
+            "name": "Button/Primary"
+        },
+        "written": { "form": "rendered", "text": "height 36" }
+    },
+    {
+        "at": "12:43",
+        "property": "background-color",
+        "value": "#3B82F6",
+        "subject": {
+            "kind": "control",
+            "tag": "INSTANCE",
+            "role": "button",
+            "name": "Button/Primary"
+        },
+        "written": { "form": "rendered", "text": "fill #3B82F6" }
+    },
+    {
+        "at": "12:43",
+        "property": "font-weight",
+        "value": "600",
+        "subject": {
+            "kind": "control",
+            "tag": "INSTANCE",
+            "role": "button",
+            "name": "Button/Primary"
+        },
+        "written": { "form": "rendered", "text": "fontWeight 600" }
+    },
+    {
+        "at": "12:43",
+        "property": "border-radius",
+        "value": "12px",
+        "subject": {
+            "kind": "control",
+            "tag": "INSTANCE",
+            "role": "button",
+            "name": "Button/Primary"
+        },
+        "written": { "form": "rendered", "text": "cornerRadius 12" }
+    }
+]

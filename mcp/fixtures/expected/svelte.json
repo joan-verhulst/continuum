@@ -1,0 +1,56 @@
+{
+    "title": "a Svelte card with its <style> block",
+    "tool": "audit_source",
+    "medium": "svelte",
+    "paths": ["svelte/Card.svelte"],
+    "mistakes": [
+        {
+            "what": "a #e5e7eb border",
+            "rule": "colour",
+            "at": "Card.svelte:15",
+            "expectedIncludes": ["neutral-200", "#d2d2d2"]
+        },
+        {
+            "what": "border-radius 8px on a card",
+            "rule": "radius",
+            "at": "Card.svelte:16",
+            "expectedIncludes": ["16", "card", "10", "item"]
+        },
+        {
+            "what": "padding 13px off the scale",
+            "rule": "spacing",
+            "at": "Card.svelte:17",
+            "expectedIncludes": ["12", "16"]
+        },
+        {
+            "what": "a box-shadow on a static card",
+            "rule": "shadow",
+            "at": "Card.svelte:18",
+            "expectedIncludes": ["none", "no shadow", "remove"]
+        },
+        {
+            "what": "a 15px title",
+            "rule": "type-size",
+            "at": "Card.svelte:22",
+            "expectedIncludes": ["13", "14"]
+        },
+        {
+            "what": "font-weight 600 on the title",
+            "rule": "weight",
+            "at": "Card.svelte:23",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "meta text in #9ca3af",
+            "rule": "text-tone",
+            "at": "Card.svelte:27",
+            "expectedIncludes": ["neutral-600", "#676767"]
+        },
+        {
+            "what": "a 36px button",
+            "rule": "height",
+            "at": "Card.svelte:31",
+            "expectedIncludes": ["34", "control"]
+        }
+    ]
+}

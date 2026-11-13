@@ -1,0 +1,86 @@
+{
+    "title": "an Angular template and its SCSS",
+    "tool": "audit_source",
+    "medium": "angular",
+    "paths": ["angular/invoice-list.component.html", "angular/invoice-list.component.scss"],
+    "mistakes": [
+        {
+            "what": "a $border variable of #e5e7eb",
+            "rule": "colour",
+            "at": ["component.scss:1", "component.scss:31"],
+            "expectedIncludes": ["neutral-200"]
+        },
+        {
+            "what": "a $muted variable of #6b7280 for meta text",
+            "rule": "text-tone",
+            "at": ["component.scss:2", "component.scss:38"],
+            "expectedIncludes": ["neutral-600", "neutral-700"]
+        },
+        {
+            "what": "a $brand blue as the primary's fill",
+            "rule": "colour",
+            "at": ["component.scss:3", "component.scss:26"],
+            "expectedIncludes": ["action"]
+        },
+        {
+            "what": "font-weight 600 on the title",
+            "rule": "weight",
+            "at": "component.scss:14",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "36px buttons",
+            "rule": "height",
+            "at": "component.scss:18",
+            "expectedIncludes": ["34", "control"]
+        },
+        {
+            "what": "border-radius 8px on a button",
+            "rule": "radius",
+            "at": "component.scss:20",
+            "expectedIncludes": ["12", "control"]
+        },
+        {
+            "what": "border-radius 8px on a card",
+            "rule": "radius",
+            "at": "component.scss:32",
+            "expectedIncludes": ["16", "card", "10", "item"]
+        },
+        {
+            "what": "padding 13px off the scale",
+            "rule": "spacing",
+            "at": "component.scss:33",
+            "expectedIncludes": ["12", "16"]
+        },
+        {
+            "what": "a box-shadow on a static card",
+            "rule": "shadow",
+            "at": "component.scss:34",
+            "expectedIncludes": ["none", "no shadow", "remove"]
+        },
+        {
+            "what": "a 15px font size",
+            "rule": "type-size",
+            "at": "component.scss:39",
+            "expectedIncludes": ["13", "14"]
+        },
+        {
+            "what": "font-weight 600 on a table cell",
+            "rule": "weight",
+            "at": "component.scss:43",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "two primary buttons in one head",
+            "rule": "one-primary",
+            "at": ["component.html:5", "component.html:6"],
+            "expectedIncludes": ["secondary", "one primary"]
+        },
+        {
+            "what": "a card inside a card",
+            "rule": "nested-containers",
+            "at": ["component.html:9", "component.html:10"],
+            "expectedIncludes": ["container", "nest", "hairline", "eyebrow"]
+        }
+    ]
+}

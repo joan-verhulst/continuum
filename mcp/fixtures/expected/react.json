@@ -1,0 +1,92 @@
+{
+    "title": "a React toolbar and table in Tailwind",
+    "tool": "audit_source",
+    "medium": "react",
+    "paths": ["react/Toolbar.tsx"],
+    "mistakes": [
+        {
+            "what": "a 36 high raw button (h-9)",
+            "rule": "height",
+            "at": "Toolbar.tsx:15",
+            "expectedIncludes": ["34", "h-control"]
+        },
+        {
+            "what": "arbitrary side padding px-[13px]",
+            "rule": "spacing",
+            "at": "Toolbar.tsx:15",
+            "expectedIncludes": ["px-4", "px-3", "16", "12"]
+        },
+        {
+            "what": "rounded-md on a button",
+            "rule": "radius",
+            "at": "Toolbar.tsx:15",
+            "expectedIncludes": ["rounded-control", "12"]
+        },
+        {
+            "what": "a stock blue fill (bg-blue-600)",
+            "rule": "colour",
+            "at": "Toolbar.tsx:15",
+            "expectedIncludes": ["action"]
+        },
+        {
+            "what": "font-semibold",
+            "rule": "weight",
+            "at": "Toolbar.tsx:15",
+            "expectedIncludes": ["font-medium", "500"]
+        },
+        {
+            "what": "shadow-md on a button",
+            "rule": "shadow",
+            "at": "Toolbar.tsx:15",
+            "expectedIncludes": ["none", "no shadow", "remove"]
+        },
+        {
+            "what": "a raw <button> where the library has Button",
+            "rule": "component",
+            "at": "Toolbar.tsx:15",
+            "expectedIncludes": ["Button"]
+        },
+        {
+            "what": "two primary buttons side by side",
+            "rule": "one-primary",
+            "at": ["Toolbar.tsx:13", "Toolbar.tsx:14"],
+            "expectedIncludes": ["secondary", "one primary"]
+        },
+        {
+            "what": "an arbitrary gap-[10px]",
+            "rule": "spacing",
+            "at": "Toolbar.tsx:12",
+            "expectedIncludes": ["gap-2", "gap-3", "8"]
+        },
+        {
+            "what": "helper text in text-gray-400",
+            "rule": "text-tone",
+            "at": "Toolbar.tsx:20",
+            "expectedIncludes": ["neutral-600"]
+        },
+        {
+            "what": "rounded-xl on a card",
+            "rule": "radius",
+            "at": "Toolbar.tsx:21",
+            "expectedIncludes": ["rounded-card", "16"]
+        },
+        {
+            "what": "border-2 where a hairline is 1px",
+            "rule": "border-width",
+            "at": "Toolbar.tsx:21",
+            "expectedIncludes": ["1px"]
+        },
+        {
+            "what": "shadow-lg on a static card",
+            "rule": "shadow",
+            "at": "Toolbar.tsx:21",
+            "expectedIncludes": ["none", "no shadow", "remove"]
+        },
+        {
+            "what": "an inline style colour #9ca3af",
+            "rule": "text-tone",
+            "at": "Toolbar.tsx:28",
+            "expectedIncludes": ["neutral-600"]
+        }
+    ]
+}

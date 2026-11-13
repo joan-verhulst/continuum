@@ -1,0 +1,80 @@
+{
+    "title": "a Qt stylesheet",
+    "tool": "audit_source",
+    "medium": "qt",
+    "paths": ["qt/app.qss"],
+    "mistakes": [
+        {
+            "what": "a 32px button",
+            "rule": "height",
+            "at": "app.qss:7",
+            "expectedIncludes": ["34"]
+        },
+        {
+            "what": "border-radius 4px on a button",
+            "rule": "radius",
+            "at": "app.qss:9",
+            "expectedIncludes": ["12"]
+        },
+        {
+            "what": "a stock blue fill for the action",
+            "rule": "colour",
+            "at": "app.qss:10",
+            "expectedIncludes": ["action", "#3939e5"]
+        },
+        {
+            "what": "font-weight bold",
+            "rule": "weight",
+            "at": "app.qss:12",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "a 30px line edit",
+            "rule": "height",
+            "at": "app.qss:21",
+            "expectedIncludes": ["34", "38"]
+        },
+        {
+            "what": "a 2px border",
+            "rule": "border-width",
+            "at": "app.qss:22",
+            "expectedIncludes": ["1px"]
+        },
+        {
+            "what": "a #e5e7eb border colour",
+            "rule": "colour",
+            "at": "app.qss:22",
+            "expectedIncludes": ["neutral-200", "#d2d2d2"]
+        },
+        {
+            "what": "border-radius 4px on an input",
+            "rule": "radius",
+            "at": "app.qss:23",
+            "expectedIncludes": ["12"]
+        },
+        {
+            "what": "hint text in #9ca3af",
+            "rule": "text-tone",
+            "at": "app.qss:28",
+            "expectedIncludes": ["neutral-600", "#676767"]
+        },
+        {
+            "what": "a #d1d5db card border",
+            "rule": "colour",
+            "at": "app.qss:34",
+            "expectedIncludes": ["neutral-200", "#d2d2d2"]
+        },
+        {
+            "what": "border-radius 8px on a card",
+            "rule": "radius",
+            "at": "app.qss:35",
+            "expectedIncludes": ["16", "card", "10", "item"]
+        },
+        {
+            "what": "a 15px table font",
+            "rule": "type-size",
+            "at": "app.qss:40",
+            "expectedIncludes": ["13", "14"]
+        }
+    ]
+}

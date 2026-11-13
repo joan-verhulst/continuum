@@ -1,0 +1,61 @@
+{
+    "title": "facts handed over by another tool (a Figma export)",
+    "tool": "audit_ui",
+    "medium": "canvas",
+    "facts": "facts/figma-export.json",
+    "mistakes": [
+        {
+            "what": "radius 8 on a card",
+            "rule": "radius",
+            "at": "12:40",
+            "expectedIncludes": ["16", "card", "10", "item"]
+        },
+        {
+            "what": "padding 13 off the scale",
+            "rule": "spacing",
+            "at": "12:40",
+            "expectedIncludes": ["12", "16"]
+        },
+        {
+            "what": "a shadow on a static card",
+            "rule": "shadow",
+            "at": "12:40",
+            "expectedIncludes": ["none", "no shadow", "remove"]
+        },
+        {
+            "what": "a 15px title",
+            "rule": "type-size",
+            "at": "12:41",
+            "expectedIncludes": ["13", "14"]
+        },
+        {
+            "what": "meta text in #9CA3AF",
+            "rule": "text-tone",
+            "at": "12:42",
+            "expectedIncludes": ["neutral-600", "#676767"]
+        },
+        {
+            "what": "a 36 high button",
+            "rule": "height",
+            "at": "12:43",
+            "expectedIncludes": ["34", "control"]
+        },
+        {
+            "what": "a stock blue fill #3B82F6",
+            "rule": "colour",
+            "at": "12:43",
+            "expectedIncludes": ["action", "#3939e5"]
+        },
+        {
+            "what": "weight 600 on a button",
+            "rule": "weight",
+            "at": "12:43",
+            "expectedIncludes": ["500"]
+        }
+    ],
+    "clean": [
+        { "what": "the title's weight 500", "at": "12:41", "property": "font-weight" },
+        { "what": "the meta's 13px", "at": "12:42", "property": "font-size" },
+        { "what": "the button's radius 12", "at": "12:43", "property": "border-radius" }
+    ]
+}

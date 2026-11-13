@@ -1,0 +1,922 @@
+{
+    "id": "app",
+    "tag": "div",
+    "name": "App",
+    "fill": "#ededed",
+    "box": {
+        "width": 1440,
+        "height": 900
+    },
+    "layout": {
+        "display": "flex",
+        "direction": "row"
+    },
+    "children": [
+        {
+            "id": "sidebar",
+            "tag": "aside",
+            "role": "navigation",
+            "name": "Sidebar",
+            "box": {
+                "width": 256,
+                "paddingTop": 8,
+                "paddingRight": 12,
+                "paddingBottom": 12,
+                "paddingLeft": 12,
+                "gap": 2
+            },
+            "layout": {
+                "display": "flex",
+                "direction": "column"
+            },
+            "children": [
+                {
+                    "id": "nav-overview",
+                    "tag": "a",
+                    "role": "link",
+                    "name": "Overview",
+                    "interactive": true,
+                    "fill": "rgba(13, 13, 13, 0.07)",
+                    "box": {
+                        "height": 34,
+                        "radius": 10,
+                        "paddingLeft": 8,
+                        "paddingRight": 8,
+                        "gap": 8
+                    },
+                    "layout": {
+                        "display": "flex",
+                        "direction": "row"
+                    },
+                    "children": [
+                        {
+                            "id": "nav-overview-label",
+                            "tag": "span",
+                            "role": "text",
+                            "content": "Overview",
+                            "font": {
+                                "size": 13,
+                                "weight": 500,
+                                "color": "#0d0d0d",
+                                "family": "Geist"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "nav-orders",
+                    "tag": "a",
+                    "role": "link",
+                    "name": "Orders",
+                    "interactive": true,
+                    "box": {
+                        "height": 34,
+                        "radius": 10,
+                        "paddingLeft": 8,
+                        "paddingRight": 8,
+                        "gap": 8
+                    },
+                    "layout": {
+                        "display": "flex",
+                        "direction": "row"
+                    },
+                    "children": [
+                        {
+                            "id": "nav-orders-label",
+                            "tag": "span",
+                            "role": "text",
+                            "content": "Orders",
+                            "font": {
+                                "size": 13,
+                                "weight": 500,
+                                "color": "#0d0d0d",
+                                "family": "Geist"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "id": "nav-customers",
+                    "tag": "a",
+                    "role": "link",
+                    "name": "Customers",
+                    "interactive": true,
+                    "box": {
+                        "height": 34,
+                        "radius": 10,
+                        "paddingLeft": 8,
+                        "paddingRight": 8,
+                        "gap": 8
+                    },
+                    "layout": {
+                        "display": "flex",
+                        "direction": "row"
+                    },
+                    "children": [
+                        {
+                            "id": "nav-customers-label",
+                            "tag": "span",
+                            "role": "text",
+                            "content": "Customers",
+                            "font": {
+                                "size": 13,
+                                "weight": 500,
+                                "color": "#0d0d0d",
+                                "family": "Geist"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "id": "main-panel",
+            "tag": "main",
+            "name": "Panel",
+            "fill": "#f8f8f8",
+            "border": {
+                "width": 1,
+                "color": "#d2d2d2",
+                "style": "solid"
+            },
+            "box": {
+                "width": 1168,
+                "radius": 20
+            },
+            "layout": {
+                "display": "flex",
+                "direction": "column"
+            },
+            "children": [
+                {
+                    "id": "header",
+                    "tag": "header",
+                    "name": "Header bar",
+                    "box": {
+                        "height": 54,
+                        "paddingLeft": 16,
+                        "paddingRight": 16,
+                        "gap": 8
+                    },
+                    "border": {
+                        "width": 1,
+                        "color": "#d2d2d2",
+                        "sides": ["bottom"]
+                    },
+                    "layout": {
+                        "display": "flex",
+                        "direction": "row"
+                    },
+                    "children": [
+                        {
+                            "id": "header-title",
+                            "tag": "span",
+                            "role": "text",
+                            "content": "Overview",
+                            "font": {
+                                "size": 13,
+                                "weight": 500,
+                                "color": "#0d0d0d",
+                                "family": "Geist"
+                            }
+                        },
+                        {
+                            "id": "header-actions",
+                            "tag": "div",
+                            "box": {
+                                "gap": 8
+                            },
+                            "layout": {
+                                "display": "flex",
+                                "direction": "row"
+                            },
+                            "children": [
+                                {
+                                    "id": "btn-share",
+                                    "tag": "button",
+                                    "role": "button",
+                                    "name": "Share",
+                                    "interactive": true,
+                                    "fill": "#ededed",
+                                    "border": {
+                                        "width": 1,
+                                        "color": "#d2d2d2",
+                                        "style": "solid"
+                                    },
+                                    "box": {
+                                        "height": 34,
+                                        "radius": 12,
+                                        "paddingLeft": 16,
+                                        "paddingRight": 16
+                                    },
+                                    "font": {
+                                        "size": 13,
+                                        "weight": 500,
+                                        "color": "#0d0d0d"
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "btn-share-label",
+                                            "tag": "span",
+                                            "role": "text",
+                                            "content": "Share",
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 500,
+                                                "color": "#0d0d0d",
+                                                "family": "Geist"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "btn-new",
+                                    "tag": "button",
+                                    "role": "button",
+                                    "name": "New report",
+                                    "interactive": true,
+                                    "fill": "#3939e5",
+                                    "box": {
+                                        "height": 34,
+                                        "radius": 12,
+                                        "paddingLeft": 16,
+                                        "paddingRight": 16
+                                    },
+                                    "font": {
+                                        "size": 13,
+                                        "weight": 500,
+                                        "color": "#f8f8f8"
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "btn-new-label",
+                                            "tag": "span",
+                                            "role": "text",
+                                            "content": "New report",
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 500,
+                                                "color": "#f8f8f8",
+                                                "family": "Geist"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "id": "content",
+                    "tag": "div",
+                    "name": "Column",
+                    "box": {
+                        "width": 896,
+                        "paddingTop": 40,
+                        "paddingBottom": 40,
+                        "gap": 32
+                    },
+                    "layout": {
+                        "display": "flex",
+                        "direction": "column"
+                    },
+                    "children": [
+                        {
+                            "id": "page-head",
+                            "tag": "div",
+                            "box": {
+                                "gap": 4
+                            },
+                            "layout": {
+                                "display": "flex",
+                                "direction": "column"
+                            },
+                            "children": [
+                                {
+                                    "id": "page-title",
+                                    "tag": "span",
+                                    "role": "text",
+                                    "content": "Overview",
+                                    "font": {
+                                        "size": 24,
+                                        "weight": 500,
+                                        "color": "#0d0d0d",
+                                        "family": "Geist"
+                                    }
+                                },
+                                {
+                                    "id": "page-line",
+                                    "tag": "span",
+                                    "role": "text",
+                                    "content": "How the shop did this month.",
+                                    "font": {
+                                        "size": 13,
+                                        "weight": 400,
+                                        "color": "#676767",
+                                        "family": "Geist"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "id": "stats",
+                            "tag": "div",
+                            "box": {
+                                "gap": 16
+                            },
+                            "layout": {
+                                "display": "flex",
+                                "direction": "row"
+                            },
+                            "children": [
+                                {
+                                    "id": "stat-revenue",
+                                    "tag": "div",
+                                    "name": "Stat card",
+                                    "fill": "#f8f8f8",
+                                    "border": {
+                                        "width": 1,
+                                        "color": "#d2d2d2",
+                                        "style": "solid"
+                                    },
+                                    "box": {
+                                        "width": 200,
+                                        "paddingTop": 16,
+                                        "paddingRight": 16,
+                                        "paddingBottom": 16,
+                                        "paddingLeft": 16,
+                                        "gap": 4,
+                                        "radius": 16
+                                    },
+                                    "layout": {
+                                        "display": "flex",
+                                        "direction": "column"
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "stat-revenue-label",
+                                            "tag": "span",
+                                            "role": "text",
+                                            "content": "Revenue",
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 400,
+                                                "color": "#676767",
+                                                "family": "Geist"
+                                            }
+                                        },
+                                        {
+                                            "id": "stat-revenue-value",
+                                            "tag": "span",
+                                            "role": "text",
+                                            "content": "€48,210",
+                                            "font": {
+                                                "size": 24,
+                                                "weight": 500,
+                                                "color": "#0d0d0d",
+                                                "family": "Geist"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "stat-orders",
+                                    "tag": "div",
+                                    "name": "Stat card",
+                                    "fill": "#f8f8f8",
+                                    "border": {
+                                        "width": 1,
+                                        "color": "#d2d2d2",
+                                        "style": "solid"
+                                    },
+                                    "box": {
+                                        "width": 200,
+                                        "paddingTop": 16,
+                                        "paddingRight": 16,
+                                        "paddingBottom": 16,
+                                        "paddingLeft": 16,
+                                        "gap": 4,
+                                        "radius": 16
+                                    },
+                                    "layout": {
+                                        "display": "flex",
+                                        "direction": "column"
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "stat-orders-label",
+                                            "tag": "span",
+                                            "role": "text",
+                                            "content": "Orders",
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 400,
+                                                "color": "#676767",
+                                                "family": "Geist"
+                                            }
+                                        },
+                                        {
+                                            "id": "stat-orders-value",
+                                            "tag": "span",
+                                            "role": "text",
+                                            "content": "1,284",
+                                            "font": {
+                                                "size": 24,
+                                                "weight": 500,
+                                                "color": "#0d0d0d",
+                                                "family": "Geist"
+                                            }
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "stat-visitors",
+                                    "tag": "div",
+                                    "name": "Stat card",
+                                    "fill": "#f8f8f8",
+                                    "border": {
+                                        "width": 1,
+                                        "color": "#d2d2d2",
+                                        "style": "solid"
+                                    },
+                                    "box": {
+                                        "width": 200,
+                                        "paddingTop": 16,
+                                        "paddingRight": 16,
+                                        "paddingBottom": 16,
+                                        "paddingLeft": 16,
+                                        "gap": 4,
+                                        "radius": 16
+                                    },
+                                    "layout": {
+                                        "display": "flex",
+                                        "direction": "column"
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "stat-visitors-label",
+                                            "tag": "span",
+                                            "role": "text",
+                                            "content": "Visitors",
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 400,
+                                                "color": "#676767",
+                                                "family": "Geist"
+                                            }
+                                        },
+                                        {
+                                            "id": "stat-visitors-value",
+                                            "tag": "span",
+                                            "role": "text",
+                                            "content": "18,940",
+                                            "font": {
+                                                "size": 24,
+                                                "weight": 500,
+                                                "color": "#0d0d0d",
+                                                "family": "Geist"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "id": "orders-section",
+                            "tag": "div",
+                            "box": {
+                                "gap": 16
+                            },
+                            "layout": {
+                                "display": "flex",
+                                "direction": "column"
+                            },
+                            "children": [
+                                {
+                                    "id": "orders-toolbar",
+                                    "tag": "div",
+                                    "box": {
+                                        "gap": 8
+                                    },
+                                    "layout": {
+                                        "display": "flex",
+                                        "direction": "row"
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "orders-search",
+                                            "tag": "input",
+                                            "role": "searchbox",
+                                            "name": "Search orders",
+                                            "interactive": true,
+                                            "fill": "#f8f8f8",
+                                            "border": {
+                                                "width": 1,
+                                                "color": "#d2d2d2",
+                                                "style": "solid"
+                                            },
+                                            "box": {
+                                                "width": 256,
+                                                "height": 34,
+                                                "radius": 12,
+                                                "paddingLeft": 12,
+                                                "paddingRight": 12
+                                            },
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 400,
+                                                "color": "#0d0d0d"
+                                            }
+                                        },
+                                        {
+                                            "id": "btn-filter",
+                                            "tag": "button",
+                                            "role": "button",
+                                            "name": "Filter",
+                                            "interactive": true,
+                                            "fill": "#ededed",
+                                            "border": {
+                                                "width": 1,
+                                                "color": "#d2d2d2",
+                                                "style": "solid"
+                                            },
+                                            "box": {
+                                                "height": 34,
+                                                "radius": 12,
+                                                "paddingLeft": 16,
+                                                "paddingRight": 16
+                                            },
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 500,
+                                                "color": "#0d0d0d"
+                                            },
+                                            "children": [
+                                                {
+                                                    "id": "btn-filter-label",
+                                                    "tag": "span",
+                                                    "role": "text",
+                                                    "content": "Filter",
+                                                    "font": {
+                                                        "size": 13,
+                                                        "weight": 500,
+                                                        "color": "#0d0d0d",
+                                                        "family": "Geist"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "id": "orders-table",
+                                    "tag": "table",
+                                    "role": "table",
+                                    "name": "Orders",
+                                    "fill": "#f8f8f8",
+                                    "border": {
+                                        "width": 1,
+                                        "color": "#d2d2d2",
+                                        "style": "solid"
+                                    },
+                                    "box": {
+                                        "radius": 12
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "orders-table-head",
+                                            "tag": "tr",
+                                            "role": "row",
+                                            "fill": "#ededed",
+                                            "box": {
+                                                "height": 41
+                                            },
+                                            "children": [
+                                                {
+                                                    "id": "orders-table-h1",
+                                                    "tag": "td",
+                                                    "role": "cell",
+                                                    "box": {
+                                                        "paddingLeft": 12,
+                                                        "paddingRight": 12
+                                                    },
+                                                    "children": [
+                                                        {
+                                                            "id": "orders-table-h1-text",
+                                                            "tag": "span",
+                                                            "role": "text",
+                                                            "content": "Customer",
+                                                            "font": {
+                                                                "size": 13,
+                                                                "weight": 500,
+                                                                "color": "#676767",
+                                                                "family": "Geist"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "orders-table-h2",
+                                                    "tag": "td",
+                                                    "role": "cell",
+                                                    "box": {
+                                                        "paddingLeft": 12,
+                                                        "paddingRight": 12
+                                                    },
+                                                    "children": [
+                                                        {
+                                                            "id": "orders-table-h2-text",
+                                                            "tag": "span",
+                                                            "role": "text",
+                                                            "content": "Amount",
+                                                            "font": {
+                                                                "size": 13,
+                                                                "weight": 500,
+                                                                "color": "#676767",
+                                                                "family": "Geist"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "orders-table-r1",
+                                            "tag": "tr",
+                                            "role": "row",
+                                            "box": {
+                                                "height": 41
+                                            },
+                                            "border": {
+                                                "width": 1,
+                                                "color": "#d2d2d2",
+                                                "sides": ["bottom"]
+                                            },
+                                            "children": [
+                                                {
+                                                    "id": "orders-table-r1c1",
+                                                    "tag": "td",
+                                                    "role": "cell",
+                                                    "box": {
+                                                        "paddingLeft": 12,
+                                                        "paddingRight": 12
+                                                    },
+                                                    "children": [
+                                                        {
+                                                            "id": "orders-table-r1c1-text",
+                                                            "tag": "span",
+                                                            "role": "text",
+                                                            "content": "Acme Ltd",
+                                                            "font": {
+                                                                "size": 13,
+                                                                "weight": 500,
+                                                                "color": "#0d0d0d",
+                                                                "family": "Geist"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "orders-table-r1c2",
+                                                    "tag": "td",
+                                                    "role": "cell",
+                                                    "box": {
+                                                        "paddingLeft": 12,
+                                                        "paddingRight": 12
+                                                    },
+                                                    "children": [
+                                                        {
+                                                            "id": "orders-table-r1c2-text",
+                                                            "tag": "span",
+                                                            "role": "text",
+                                                            "content": "€1,200.00",
+                                                            "font": {
+                                                                "size": 13,
+                                                                "weight": 400,
+                                                                "color": "#0d0d0d",
+                                                                "family": "Geist"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "orders-table-r2",
+                                            "tag": "tr",
+                                            "role": "row",
+                                            "box": {
+                                                "height": 41
+                                            },
+                                            "border": {
+                                                "width": 1,
+                                                "color": "#d2d2d2",
+                                                "sides": ["bottom"]
+                                            },
+                                            "children": [
+                                                {
+                                                    "id": "orders-table-r2c1",
+                                                    "tag": "td",
+                                                    "role": "cell",
+                                                    "box": {
+                                                        "paddingLeft": 12,
+                                                        "paddingRight": 12
+                                                    },
+                                                    "children": [
+                                                        {
+                                                            "id": "orders-table-r2c1-text",
+                                                            "tag": "span",
+                                                            "role": "text",
+                                                            "content": "Northwind",
+                                                            "font": {
+                                                                "size": 13,
+                                                                "weight": 500,
+                                                                "color": "#0d0d0d",
+                                                                "family": "Geist"
+                                                            }
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    "id": "orders-table-r2c2",
+                                                    "tag": "td",
+                                                    "role": "cell",
+                                                    "box": {
+                                                        "paddingLeft": 12,
+                                                        "paddingRight": 12
+                                                    },
+                                                    "children": [
+                                                        {
+                                                            "id": "orders-table-r2c2-text",
+                                                            "tag": "span",
+                                                            "role": "text",
+                                                            "content": "€310.00",
+                                                            "font": {
+                                                                "size": 13,
+                                                                "weight": 400,
+                                                                "color": "#0d0d0d",
+                                                                "family": "Geist"
+                                                            }
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            "id": "archive-note",
+                            "tag": "p",
+                            "content": "Older orders are archived after a year.",
+                            "font": {
+                                "size": 11,
+                                "weight": 400,
+                                "color": "#676767"
+                            }
+                        },
+                        {
+                            "id": "confirm-dialog",
+                            "tag": "div",
+                            "role": "dialog",
+                            "name": "Archive orders",
+                            "fill": "#f8f8f8",
+                            "border": {
+                                "width": 1,
+                                "color": "#d2d2d2",
+                                "style": "solid"
+                            },
+                            "shadow": "0px 2px 4px 0px rgba(20, 22, 23, 0.1)",
+                            "box": {
+                                "width": 480,
+                                "radius": 16,
+                                "paddingTop": 20,
+                                "paddingRight": 20,
+                                "paddingBottom": 20,
+                                "paddingLeft": 20,
+                                "gap": 16
+                            },
+                            "layout": {
+                                "display": "flex",
+                                "direction": "column",
+                                "position": "fixed",
+                                "zIndex": 50
+                            },
+                            "children": [
+                                {
+                                    "id": "dialog-title",
+                                    "tag": "span",
+                                    "role": "text",
+                                    "content": "Archive 12 orders?",
+                                    "font": {
+                                        "size": 16,
+                                        "weight": 500,
+                                        "color": "#0d0d0d",
+                                        "family": "Geist"
+                                    }
+                                },
+                                {
+                                    "id": "dialog-body",
+                                    "tag": "span",
+                                    "role": "text",
+                                    "content": "They stay searchable under Archived.",
+                                    "font": {
+                                        "size": 13,
+                                        "weight": 400,
+                                        "color": "#676767",
+                                        "family": "Geist"
+                                    }
+                                },
+                                {
+                                    "id": "dialog-actions",
+                                    "tag": "div",
+                                    "box": {
+                                        "gap": 8
+                                    },
+                                    "layout": {
+                                        "display": "flex",
+                                        "direction": "row"
+                                    },
+                                    "children": [
+                                        {
+                                            "id": "dialog-cancel",
+                                            "tag": "button",
+                                            "role": "button",
+                                            "name": "Cancel",
+                                            "interactive": true,
+                                            "fill": "#ededed",
+                                            "border": {
+                                                "width": 1,
+                                                "color": "#d2d2d2",
+                                                "style": "solid"
+                                            },
+                                            "box": {
+                                                "height": 34,
+                                                "radius": 12,
+                                                "paddingLeft": 16,
+                                                "paddingRight": 16
+                                            },
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 500,
+                                                "color": "#0d0d0d"
+                                            },
+                                            "children": [
+                                                {
+                                                    "id": "dialog-cancel-label",
+                                                    "tag": "span",
+                                                    "role": "text",
+                                                    "content": "Cancel",
+                                                    "font": {
+                                                        "size": 13,
+                                                        "weight": 500,
+                                                        "color": "#0d0d0d",
+                                                        "family": "Geist"
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "id": "dialog-confirm",
+                                            "tag": "button",
+                                            "role": "button",
+                                            "name": "Archive orders",
+                                            "interactive": true,
+                                            "fill": "#3939e5",
+                                            "box": {
+                                                "height": 34,
+                                                "radius": 12,
+                                                "paddingLeft": 16,
+                                                "paddingRight": 16
+                                            },
+                                            "font": {
+                                                "size": 13,
+                                                "weight": 500,
+                                                "color": "#f8f8f8"
+                                            },
+                                            "children": [
+                                                {
+                                                    "id": "dialog-confirm-label",
+                                                    "tag": "span",
+                                                    "role": "text",
+                                                    "content": "Archive orders",
+                                                    "font": {
+                                                        "size": 13,
+                                                        "weight": 500,
+                                                        "color": "#f8f8f8",
+                                                        "family": "Geist"
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -1,0 +1,47 @@
+{
+    "title": "a QML toolbar of Rectangles and Texts",
+    "tool": "audit_source",
+    "medium": "qt",
+    "paths": ["qml/Toolbar.qml"],
+    "mistakes": [
+        {
+            "what": "a 36 high button",
+            "rule": "height",
+            "at": "Toolbar.qml:15",
+            "expectedIncludes": ["34", "control"]
+        },
+        {
+            "what": "radius 8 on a button",
+            "rule": "radius",
+            "at": "Toolbar.qml:16",
+            "expectedIncludes": ["12", "control", "10", "6"]
+        },
+        {
+            "what": "a stock blue on a Rectangle, whose color is its background",
+            "rule": "colour",
+            "at": "Toolbar.qml:17",
+            "expectedIncludes": ["action", "#3939e5"]
+        },
+        {
+            "what": "font.bold on the label",
+            "rule": "weight",
+            "at": "Toolbar.qml:24",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "status text in #9ca3af, a Text whose color is its text",
+            "rule": "text-tone",
+            "at": "Toolbar.qml:30",
+            "expectedIncludes": ["neutral-600", "#676767"]
+        },
+        {
+            "what": "font.pixelSize 15",
+            "rule": "type-size",
+            "at": "Toolbar.qml:31",
+            "expectedIncludes": ["13", "14"]
+        }
+    ],
+    "knownLimits": [
+        "A Row's spacing: 10 (line 9) is not a mistake: 10 is on the spacing scale (foundations.md › Spacing), and QML has no class to name the step by. Whether it should be 8 (actions sit 8 apart) depends on what the Row holds, which a value cannot tell."
+    ]
+}

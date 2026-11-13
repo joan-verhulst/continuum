@@ -1,0 +1,35 @@
+{
+    "title": "a Jetpack Compose colour file",
+    "tool": "audit_source",
+    "medium": "other",
+    "paths": ["compose/Theme.kt"],
+    "mistakes": [
+        {
+            "what": "Color(0xFF3B82F6), a stock blue",
+            "rule": "colour",
+            "at": "Theme.kt:8",
+            "expectedIncludes": ["action", "primary", "#3939e5"]
+        },
+        {
+            "what": "Color(0xFF9CA3AF), a grey off the neutral ramp",
+            "rule": ["colour", "text-tone"],
+            "at": "Theme.kt:9",
+            "expectedIncludes": ["neutral"]
+        },
+        {
+            "what": "Color(0xFFE5E7EB), a hairline grey off the ramp",
+            "rule": "colour",
+            "at": "Theme.kt:10",
+            "expectedIncludes": ["neutral-200", "#d2d2d2"]
+        },
+        {
+            "what": "Color(0xFFDC2626), a stock red",
+            "rule": "colour",
+            "at": "Theme.kt:11",
+            "expectedIncludes": ["error"]
+        }
+    ],
+    "knownLimits": [
+        "Compose's units (40.dp on line 14, 15.sp on line 15) are not read: only the colour literals are, and a literal sits on nothing the reader can name (subject unknown), so each colour is held to the nearest token, not to a role."
+    ]
+}

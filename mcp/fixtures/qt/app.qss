@@ -1,0 +1,41 @@
+/* The main window of a desktop invoicing tool. */
+QMainWindow {
+    background: #f3f4f6;
+}
+
+QPushButton {
+    min-height: 32px;
+    padding: 0 14px;
+    border-radius: 4px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+QPushButton:hover {
+    background: #1d4ed8;
+}
+
+QLineEdit {
+    min-height: 30px;
+    border: 2px solid #e5e7eb;
+    border-radius: 4px;
+    padding: 0 8px;
+}
+
+QLabel#hint {
+    color: #9ca3af;
+    font-size: 11px;
+}
+
+QFrame#card {
+    background: white;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+}
+
+QTableView {
+    gridline-color: #e5e7eb;
+    font-size: 15px;
+}

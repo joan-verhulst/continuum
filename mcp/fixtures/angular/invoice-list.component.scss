@@ -1,0 +1,44 @@
+$border: #e5e7eb;
+$muted: #6b7280;
+$brand: #2563eb;
+
+.invoice-list {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 32px;
+}
+
+.invoice-list__title {
+    font-size: 24px;
+    font-weight: 600;
+}
+
+.btn {
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: $brand;
+    color: #fff;
+}
+
+.card {
+    border: 1px solid $border;
+    border-radius: 8px;
+    padding: 13px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}
+
+.meta {
+    color: $muted;
+    font-size: 15px;
+}
+
+.invoice-table__name {
+    font-weight: 600;
+}

@@ -1,0 +1,53 @@
+{
+    "title": "a styled-components template literal and a style object",
+    "tool": "audit_source",
+    "medium": "react",
+    "paths": ["styled/Button.styles.ts"],
+    "mistakes": [
+        {
+            "what": "a 40px button",
+            "rule": "height",
+            "at": "Button.styles.ts:5",
+            "expectedIncludes": ["38", "34"]
+        },
+        {
+            "what": "border-radius 6px on a button",
+            "rule": "radius",
+            "at": "Button.styles.ts:7",
+            "expectedIncludes": ["12", "control"]
+        },
+        {
+            "what": "a stock blue fill for the action",
+            "rule": "colour",
+            "at": "Button.styles.ts:8",
+            "expectedIncludes": ["action", "#3939e5"]
+        },
+        {
+            "what": "font-weight 600 on a button",
+            "rule": "weight",
+            "at": "Button.styles.ts:10",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "fontSize: 12 (a bare number is px)",
+            "rule": "type-size",
+            "at": "Button.styles.ts:15",
+            "expectedIncludes": ["11", "13"]
+        },
+        {
+            "what": "fontWeight: 700",
+            "rule": "weight",
+            "at": "Button.styles.ts:16",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "color '#9ca3af' for a count",
+            "rule": ["text-tone", "colour"],
+            "at": "Button.styles.ts:18",
+            "expectedIncludes": ["neutral-600", "#676767"]
+        }
+    ],
+    "knownLimits": [
+        "borderRadius: 4 on line 17 sits in a style object the reader cannot tie to an element (subject unknown): a finding there is welcome, not required."
+    ]
+}

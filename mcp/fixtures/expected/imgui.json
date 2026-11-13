@@ -1,0 +1,29 @@
+{
+    "title": "a Dear ImGui style",
+    "tool": "audit_source",
+    "medium": "other",
+    "paths": ["imgui/style.cpp"],
+    "mistakes": [
+        {
+            "what": "ImVec4(0.23, 0.51, 0.96) for buttons, a stock blue",
+            "rule": "colour",
+            "at": "style.cpp:11",
+            "expectedIncludes": ["action", "primary"]
+        },
+        {
+            "what": "ImVec4(0.90, 0.91, 0.92) for borders, a grey off the ramp",
+            "rule": "colour",
+            "at": "style.cpp:12",
+            "expectedIncludes": ["neutral-200", "neutral"]
+        },
+        {
+            "what": "ImVec4(0.61, 0.64, 0.69) for disabled text, a grey off the ramp",
+            "rule": ["colour", "text-tone"],
+            "at": "style.cpp:13",
+            "expectedIncludes": ["neutral"]
+        }
+    ],
+    "knownLimits": [
+        "style.FrameRounding = 8.0f and style.WindowRounding = 4.0f (lines 7 and 8) are NOT expected to be read: they are struct fields, not properties the alias table maps to CSS, and only the ImVec4 colour literals are read. A radius finding there would be a bonus, not a requirement."
+    ]
+}

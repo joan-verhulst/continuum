@@ -1,0 +1,74 @@
+{
+    "title": "a browser snapshot of a dashboard",
+    "tool": "audit_ui",
+    "medium": "html",
+    "tree": "snapshot/dashboard.json",
+    "mistakes": [
+        {
+            "what": "a 36 high button",
+            "rule": "height",
+            "at": "btn-export",
+            "expectedIncludes": ["34"]
+        },
+        {
+            "what": "a stock blue fill #3b82f6",
+            "rule": "colour",
+            "at": "btn-export",
+            "expectedIncludes": ["action"]
+        },
+        {
+            "what": "weight 600 on a button",
+            "rule": "weight",
+            "at": "btn-export",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "two primary buttons in the header",
+            "rule": "one-primary",
+            "at": ["btn-export", "btn-new", "header-actions"],
+            "expectedIncludes": ["secondary", "one primary"]
+        },
+        {
+            "what": "helper text in #9ca3af",
+            "rule": "text-tone",
+            "at": "helper-text",
+            "expectedIncludes": ["neutral-600"]
+        },
+        {
+            "what": "padding 13 on a stat card",
+            "rule": "spacing",
+            "at": "stat-revenue",
+            "expectedIncludes": ["12", "16"]
+        },
+        {
+            "what": "a shadow on a static card",
+            "rule": "shadow",
+            "at": "stat-orders",
+            "expectedIncludes": ["none", "no shadow", "remove"]
+        },
+        {
+            "what": "a 15px label",
+            "rule": "type-size",
+            "at": "stat-visitors-label",
+            "expectedIncludes": ["13", "14"]
+        },
+        {
+            "what": "radius 8 four px inside a radius 16 panel (concentric is 12)",
+            "rule": ["concentric", "radius"],
+            "at": "inner-card",
+            "expectedIncludes": ["12"]
+        },
+        {
+            "what": "a bordered card inside a bordered card",
+            "rule": "nested-containers",
+            "at": ["activity-item-card", "activity-card"],
+            "expectedIncludes": ["container", "nest", "hairline", "eyebrow"]
+        },
+        {
+            "what": "a tablist straight above a table (views go in the dock)",
+            "rule": "views-in-dock",
+            "at": ["view-tabs", "orders-table", "orders-section"],
+            "expectedIncludes": ["dock", "segmented", "views"]
+        }
+    ]
+}

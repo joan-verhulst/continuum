@@ -1,0 +1,21 @@
+<section class="invoice-list">
+    <header class="invoice-list__head">
+        <h1 class="invoice-list__title">Invoices</h1>
+        <div class="invoice-list__actions">
+            <button class="btn btn-primary" (click)="export()">Export</button>
+            <button class="btn btn-primary" (click)="create()">New invoice</button>
+        </div>
+    </header>
+    <div class="card">
+        <div class="card">
+            <p class="meta">{{ invoices.length }} invoices, synced hourly</p>
+        </div>
+        <table class="invoice-table">
+            <tr *ngFor="let invoice of invoices" (click)="open(invoice)">
+                <td class="invoice-table__name">{{ invoice.customer }}</td>
+                <td class="invoice-table__amount">{{ invoice.amount | currency }}</td>
+                <td class="meta">{{ invoice.status }}</td>
+            </tr>
+        </table>
+    </div>
+</section>

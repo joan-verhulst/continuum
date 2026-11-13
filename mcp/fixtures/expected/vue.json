@@ -1,0 +1,56 @@
+{
+    "title": "a Vue list: template classes and a scoped <style>",
+    "tool": "audit_source",
+    "medium": "vue",
+    "paths": ["vue/List.vue"],
+    "mistakes": [
+        {
+            "what": "an arbitrary gap-[10px]",
+            "rule": "spacing",
+            "at": "List.vue:3",
+            "expectedIncludes": ["gap-2", "gap-3", "8", "12"]
+        },
+        {
+            "what": "an arbitrary text-[15px]",
+            "rule": "type-size",
+            "at": "List.vue:4",
+            "expectedIncludes": ["text-xs", "text-sm", "13", "14"]
+        },
+        {
+            "what": "font-semibold",
+            "rule": "weight",
+            "at": "List.vue:4",
+            "expectedIncludes": ["font-medium", "500"]
+        },
+        {
+            "what": "a 36 high button (h-9)",
+            "rule": "height",
+            "at": "List.vue:5",
+            "expectedIncludes": ["h-control", "34"]
+        },
+        {
+            "what": "an indigo fill for the action (bg-indigo-600)",
+            "rule": "colour",
+            "at": "List.vue:5",
+            "expectedIncludes": ["action"]
+        },
+        {
+            "what": "a 2px row divider",
+            "rule": "border-width",
+            "at": "List.vue:22",
+            "expectedIncludes": ["1px"]
+        },
+        {
+            "what": "a #e5e7eb row divider",
+            "rule": "colour",
+            "at": "List.vue:22",
+            "expectedIncludes": ["neutral-200", "#d2d2d2"]
+        },
+        {
+            "what": "meta text in #9ca3af",
+            "rule": "text-tone",
+            "at": "List.vue:26",
+            "expectedIncludes": ["neutral-600", "#676767"]
+        }
+    ]
+}
