@@ -4,6 +4,8 @@
     "files": {
         "includes": [
             "!dist",
+            "!mcp/dist",
+            "!mcp/fixtures",
             "!playground/dist",
             "!reference",
             "!.claude/skills/*/assets",
