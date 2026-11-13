@@ -36,7 +36,7 @@ values, reading every colour and radius from the variables:
 
 Heights by their variables, never in pixels, so they follow a theme's height scale: `--spacing-control` (34),
 `--spacing-control-lg` (38), `--spacing-control-sm` (28), `--spacing-segment` (29), `--spacing-chip` (25),
-`--spacing-option` (36), `--spacing-row` (40), `--spacing-table-row` (41), `--spacing-tab` (44), `--spacing-bar`
+`--spacing-option` (36), `--spacing-option-md` (44) and `--spacing-option-lg` (56) for a popup row led by an avatar, `--spacing-row` (40), `--spacing-table-row` (41), `--spacing-tab` (44), `--spacing-bar`
 (52), `--spacing-header` (54), `--spacing-nav` (56). Widths of panels and popups by their variables too, fixed
 pixels that a theme's spacing unit never changes: `--spacing-sidebar` (256), `--spacing-rail` (52) and
 `--spacing-rail-open` (208), `--spacing-popover` (288), `--spacing-menu` (160, a minimum) and `--spacing-menu-wide`

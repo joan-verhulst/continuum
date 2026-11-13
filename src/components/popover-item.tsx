@@ -37,18 +37,17 @@ export const popoverItemVariants = cva(
 );
 
 /*
- * The leading element sets the row's rhythm: the space round it, above, below, before it and up to
- * the name, grows with its size, so an avatar sits in its own square of space as a 16px icon does.
- * About 10px + (size − 16px) / 8 above and below, a step more at the sides, snapped to the scale and
- * kept in Tailwind classes; the row's height is then the leading element plus that space.
+ * The leading element sets the row's rhythm: the row grows with its size, so an avatar sits in its
+ * own square of space as a 16px icon does. Each tier is a height token (44 and 56 as drawn), so the
+ * rows follow a theme's height scale as the plain 36px row does; a minimum, so larger type still fits.
  */
 const leads = {
     // A 16px icon, checkbox or radio: the 36px row as it is.
     sm: '',
     // A 24px avatar or a chip.
-    md: 'h-auto gap-3 px-3 py-2.5',
+    md: 'h-auto min-h-option-md gap-3 px-3 py-1.5',
     // A 32 or 36px avatar.
-    lg: 'h-auto gap-3 px-3 py-3',
+    lg: 'h-auto min-h-option-lg gap-3 px-3 py-1.5',
 } as const;
 
 export type PopoverItemLead = keyof typeof leads;

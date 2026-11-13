@@ -117,7 +117,7 @@ export const RailSeparator = ({ className, ...props }: ComponentProps<'hr'>) => 
  * round the rows and (52 − 2 border − 16 inset − 16 icon) / 2 = 9px either side of the icon.
  */
 const railRowClass =
-    'flex h-control w-full shrink-0 cursor-pointer items-center gap-2.5 overflow-hidden rounded-item px-[9px] text-neutral-600 transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-800 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0';
+    'flex h-control w-full shrink-0 cursor-pointer items-center gap-2.5 overflow-hidden rounded-item px-[calc((var(--spacing-control)-16px)/2)] text-neutral-600 transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-800 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0';
 
 // The label beside the icon: there while open, faded out and clipped while closed.
 const RailLabel = ({ children }: { children: string }) => (

@@ -225,6 +225,8 @@
     --spacing-cell: var(--spacing-cell);
     --spacing-control: var(--spacing-control);
     --spacing-option: var(--spacing-option);
+    --spacing-option-md: var(--spacing-option-md);
+    --spacing-option-lg: var(--spacing-option-lg);
     --spacing-control-lg: var(--spacing-control-lg);
     --spacing-row: var(--spacing-row);
     --spacing-table-row: var(--spacing-table-row);

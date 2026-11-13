@@ -350,8 +350,8 @@
      * in Tailwind's spacing namespace, so each is w-*, min-w-* and max-w-* alike.
      */
     --spacing-sidebar: 256px;
-    /* The rail closed (an item and its 8px inset each side) and open */
-    --spacing-rail: 52px;
+    /* The closed rail: a control-high square item inside its 8px padding and 1px border */
+    --spacing-rail: calc(var(--spacing-control) + 18px);
     --spacing-rail-open: 208px;
     --spacing-popover: 288px;
     /* A menu's least width; the breadcrumb's menu of pages, wider */
@@ -530,6 +530,9 @@
     --spacing-cell: round(nearest, calc(32px * var(--continuum-size-scale, 1)), 1px);
     /* A row in a popup list */
     --spacing-option: round(nearest, calc(36px * var(--continuum-size-scale, 1)), 1px);
+    /* A popup row led by a 24px avatar or a chip, and by a 32 or 36px avatar */
+    --spacing-option-md: round(nearest, calc(44px * var(--continuum-size-scale, 1)), 1px);
+    --spacing-option-lg: round(nearest, calc(56px * var(--continuum-size-scale, 1)), 1px);
     /* A plain row: a description list's cells, a popup's search and footer */
     --spacing-row: round(nearest, calc(40px * var(--continuum-size-scale, 1)), 1px);
     /* The ruled table row: a row over its 1px rule */

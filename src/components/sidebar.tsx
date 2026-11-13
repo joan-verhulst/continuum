@@ -316,7 +316,8 @@ export const Sidebar = ({ className, id, ref, ...props }: ComponentProps<'aside'
 export const SidebarHeader = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
         className={cn(
-            'flex h-nav shrink-0 items-center justify-between pt-3 pr-4 pb-2 pl-2',
+            // Centred in the row with the logo 2px low, so a theme's height scale never squeezes it out.
+            'flex h-nav shrink-0 items-center justify-between pt-1 pr-4 pl-2',
             className,
         )}
         data-slot="sidebar-header"
