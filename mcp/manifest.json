@@ -1,0 +1,109 @@
+{
+    "name": "Continuum",
+    "version": "0.1.0",
+    "tools": [
+        {
+            "name": "list_components",
+            "title": "List components",
+            "description": "List every part of Continuum by group (App frame, Navigation, Actions, Inputs, Forms and settings, Filtering, Overlays, Content, Labels and identity, Status, Messages, AI, Charts), each with what it is for in one sentence. Call this first when composing a screen, to see the parts before drawing or writing any; then get_component for each part you use. Names joined by ' · ' are one entry (a part and its pieces)."
+        },
+        {
+            "name": "get_component",
+            "title": "Get component",
+            "description": "Get one part's spec from Continuum: what it is for and not for, what it sits with, its anatomy, its values in units (heights, padding, corners, type, colour roles) and its states, then how to write it in your medium (React: the import, its variants and an example in use; canvas: the drawing order and traps; CSS and other stacks: the token variables to read). Call this for each part you use, after list_components; find_pattern says which parts a need is built from. Accepts the library's names ('DropdownMenu', 'dropdown-menu') and common ones ('modal', 'drawer', 'toggle', 'kpi')."
+        },
+        {
+            "name": "find_pattern",
+            "title": "Find pattern",
+            "description": "Find how Continuum builds a common need (a filter bar, key figures, an empty state, a list of objects, bulk selection, a wizard, a destructive action, a chat …): the best rows of patterns.md, each saying which parts it is built from, how they sit and the values that matter, with the parts named so you can call get_component on each. Call this for each need on a screen before composing it. When nothing fits well it says so and gives the recipe for building a new part from the nearest one."
+        },
+        {
+            "name": "get_page_kind",
+            "title": "Get page kind",
+            "description": "Get the anatomy of one kind of screen, top to bottom with its width and gaps, plus what every screen in the shell needs (the shell, the column, the page head, a section) and the standing decisions (one primary action, a breadcrumb, views in the dock, one column …), and the reference screens built to it. Call this first when building or reviewing a screen, once you have named its kind; then list_components and find_pattern for what goes in it. Kinds: overview (a dashboard), index (a list or table), detail (one record), create or edit (a form), settings, assistant (an AI chat), sign in."
+        },
+        {
+            "name": "get_foundation",
+            "title": "Get foundation",
+            "description": "Get the values and rules of one topic of Continuum's foundations, in units: colour (ramps, roles, the action colour, washes, status, focus, shadows, data colours), type (family, scale, weight), surfaces and depth, radius, spacing (fixed side padding, derived padding, the page's rhythm), heights, icons, states, motion, layout, narrow screens, touch, fixed widths. Call this when a value is in doubt or a part needs one its spec does not state; get_component already carries a part's own values."
+        },
+        {
+            "name": "get_spacing",
+            "title": "Get spacing",
+            "description": "Works out one padding or gap with Continuum's spacing formula and snaps it to a Tailwind step: returns { px, step, tailwind ('p-4', 'gap-3'), css ('16px'), working (the formula with its numbers) }. Call it for the padding of a box that holds content (a card, a section, a sheet or dialog body, a list row, an empty state) and the gaps inside it, working from the innermost box out. Never for a control's side padding (a button, input, chip, tab, nav or menu row): that is fixed per kind, see get_foundation spacing. A group with no border or fill gets no padding, only gaps."
+        },
+        {
+            "name": "get_tokens",
+            "title": "Get tokens",
+            "description": "Returns Continuum's tokens (the role colours action, on-action, selected, tint, focus; the neutral, primary, success, warning and error ramps 50–950; radii; type sizes with line heights; the two weights; control heights; the spacing unit; the font and tracking), in Tailwind's names, in one format:\n- 'css': :root custom properties with values resolved, dark as [data-mode=\"dark\"] overrides.\n- 'tailwind': the app.css itself, the Tailwind v4 entry a React project uses (everything, charts included).\n- 'json': { light: { 'color-neutral-50': '#f8f8f8', … }, dark: { only what differs } }.\n- 'dtcg': W3C Design Tokens (Format Module 2025.10), colours in oklch with an sRGB hex fallback, as the text of two files: continuum.tokens.json (light, every token) and continuum.dark.tokens.json (only the colours dark changes), loaded in that order.\n- 'paper': the payload for Paper's create_tokens (add the fileId), plus to_dark and to_light payloads for set_tokens, since Paper has no modes: switching the file's mode is one set_tokens call.\n- 'figma': a use_figma script with the payload inside: one collection 'Continuum', modes Light and Dark, COLOR as 0–1 rgba, FLOAT in px, STRING for the family, names with slashes (color/neutral/200, radius/card, text/xs, size/control). Pass the script to use_figma as it is.\nCall this once when setting up a design file or a non-React stack, before drawing or styling anything."
+        },
+        {
+            "name": "get_snapshot_script",
+            "title": "Get the snapshot script",
+            "description": "Returns a JavaScript expression to run in a rendered page (any stack: React, Angular, Vue, Svelte, plain HTML) and how to run it; its result is the tree of boxes audit_ui reads: sizes, paddings, colours, type, roles and, in a dev build, the source file of each element. Call this first to audit a running page, run the script, then pass its result to audit_ui as tree."
+        },
+        {
+            "name": "audit_ui",
+            "title": "Audit rendered UI",
+            "description": "Audits any rendered UI against Continuum, whatever built it, and returns findings: what is off in units, what Continuum wants and why, and the fix written for the place it was found (css, tailwind, canvas style patch, qss, code). Three ways in: run get_snapshot_script in a browser and pass its result as tree; pass a canvas's layers with their computed styles as tree (Paper's get_computed_styles, a Figma read); or pass facts, the values any other tool read off its own UI (a design tool plugin, a native app's inspector). Apply 'fix' findings (high first, medium then look), propose 'advise' findings to the person with their reason, and audit again until it is clean."
+        },
+        {
+            "name": "audit_source",
+            "title": "Audit source files",
+            "description": "Reads UI source in any stack and returns what to fix to bring it to Continuum, line by line: { medium, theme, mode, summary, findings[], notes[] }. Each finding has rule, severity ('fix' to apply, 'advise' to propose first), confidence, at ('path:line,line'), what was found and what Continuum wants in units, why (with the reference section) and the fix, written in the form the file uses (a utility class, a declaration in the file's syntax, a value in code, or an import).\n\nIt reads every file the same way, whatever the framework: style declarations in any syntax (CSS, SCSS, Less, Sass, Qt stylesheets, QML properties, <style> blocks and style attributes in any markup, CSS in template literals, style objects and named style arguments in code), utility classes in any class string, colour literals in any language (hex, rgb(), Color(0xFF…), QColor, ImVec4, UIColor …) and raw elements in any markup (a hand-built <button>, <input>, <table>, badge). Sizes are read where they are written as property: value or as a utility; colours wherever they are written. A value whose subject it cannot tell (a hex in a constant) is judged less surely.\n\nCall this first when improving an existing codebase, before editing; apply the findings, then call it again until it is clean. For what renders (spacing between parts, contrast on real surfaces) use audit_ui on the running page."
+        },
+        {
+            "name": "create_theme",
+            "title": "Create theme",
+            "description": "Turns theme options into a project's theme: returns { label, options (as read), appCss (the Tailwind v4 entry: the whole look in Tailwind's names, light and dark), designMd (the brief that sets the project up and states the rules for its values), files (where each goes) }. Call it without options first: it returns every option with its choices and defaults, and the presets, so you can choose with the person. Then call it with the options (and a preset to start from, if one fits). Measure the result with check_theme; pass the appCss as theme to the other tools to check against the project's own values."
+        },
+        {
+            "name": "check_theme",
+            "title": "Check theme",
+            "description": "Measures a theme's contrast as the builder's Review step does: returns, per mode, { pass, fail, advise, required (misses WCAG requires), misses: [{ pair (what and which tokens), needs (its level and ratio), ratio (WCAG 2, cut not rounded), apca, verdict, use, why }], passed (one line per pair met), series (the chart colours 1–4 as painted) }. Call it after create_theme, with the same options, before handing the theme over. The checks advise: tell the person what misses and why, and let their eye decide; never change the theme on a check alone."
+        }
+    ],
+    "prompts": [
+        {
+            "name": "build_screen",
+            "title": "Build a screen",
+            "description": "Build a screen in Continuum: name its kind, compose it from the parts and patterns, work out its spacing, then audit it and fix until it is clean.",
+            "args": [
+                {
+                    "name": "screen",
+                    "description": "What to build and what it holds: 'the invoices list: number, customer, amount, status, due date'. Leave empty to be asked."
+                },
+                {
+                    "name": "medium",
+                    "description": "Where it is built: 'react' (the library), 'angular', 'vue', 'svelte', 'html', 'css', 'canvas' (Paper or Figma), 'qt'. Defaults to 'react'."
+                }
+            ]
+        },
+        {
+            "name": "improve_ui",
+            "title": "Improve existing UI",
+            "description": "Brings existing UI, built in anything, to Continuum: audits the source and what it renders, applies the fixes, proposes the structural changes, and audits again until clean.",
+            "args": [
+                {
+                    "name": "target",
+                    "description": "What to improve: files, a folder, a route or a page's URL. Empty for the screen in front of you."
+                },
+                {
+                    "name": "medium",
+                    "description": "Where the UI lives, as the audit tools name it. Empty to find out from the project."
+                }
+            ]
+        },
+        {
+            "name": "review_canvas",
+            "title": "Review a canvas artboard",
+            "description": "Reviews an artboard on a design canvas against Continuum: reads its layers' styles, audits them, applies the fixes on the canvas and compares the result with the page kind's anatomy.",
+            "args": [
+                {
+                    "name": "artboard",
+                    "description": "The artboard to review, by name or id. Empty for the current selection."
+                }
+            ]
+        }
+    ]
+}
