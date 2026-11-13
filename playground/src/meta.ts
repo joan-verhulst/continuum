@@ -7,6 +7,8 @@ export const views = [
     'charts',
     'patterns',
     'projects',
+    'skills',
+    'mcp',
     'raster',
 ] as const;
 

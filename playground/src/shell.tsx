@@ -36,6 +36,7 @@ import {
     useToast,
 } from 'continuum';
 import {
+    BookOpen,
     ChartLine,
     ChevronRight,
     Download,
@@ -48,6 +49,7 @@ import {
     Moon,
     Paintbrush,
     Palette,
+    Plug,
     Plus,
     Search,
     Settings,
@@ -80,6 +82,8 @@ const viewMeta: Record<View, { label: string; icon: ReactNode }> = {
     charts: { label: 'Charts', icon: <ChartLine {...icon} /> },
     patterns: { label: 'Patterns', icon: <LayoutTemplate {...icon} /> },
     projects: { label: 'Projects', icon: <SwatchBook {...icon} /> },
+    skills: { label: 'Skills', icon: <BookOpen {...icon} /> },
+    mcp: { label: 'MCP server', icon: <Plug {...icon} /> },
     raster: { label: 'Raster lab', icon: <Grid3x3 {...icon} /> },
 };
 
@@ -237,6 +241,9 @@ type PlaygroundSidebarProps = Omit<ShellProps, 'children'> & {
 };
 
 const libraryViews: View[] = ['foundations', 'components', 'charts', 'patterns'];
+
+/** The pages on taking the system to a project; plain pages, no index to drill into. */
+const installViews: View[] = ['skills', 'mcp'];
 
 /** The views with an index of their own, which the sidebar drills into. */
 const indexed = new Set<View>(libraryViews);
@@ -439,6 +446,20 @@ const PlaygroundSidebar = ({
                                     trailing={
                                         <ChevronRight className="text-neutral-500" {...icon} />
                                     }
+                                >
+                                    {viewMeta[view].label}
+                                </NavItem>
+                            ))}
+                        </SidebarGroup>
+
+                        {/* Taking the system to a project: the skills and the MCP server. */}
+                        <SidebarGroup aria-label="Install" label="Install">
+                            {installViews.map(view => (
+                                <NavItem
+                                    active={state.view === view}
+                                    icon={viewMeta[view].icon}
+                                    key={view}
+                                    onClick={() => onChange({ view })}
                                 >
                                     {viewMeta[view].label}
                                 </NavItem>

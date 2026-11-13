@@ -2,6 +2,8 @@ import { createThemeCss, Theme, type ThemeMode, ToastProvider } from 'continuum'
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Foundations } from './foundations';
 import { Home } from './home';
+import { McpPage } from './install/mcp-page';
+import { SkillsPage } from './install/skills-page';
 import { LeaveDialog, type LeaveGuard, LeaveGuardProvider } from './leave-guard';
 import { type AppState, parseHash, toHash } from './meta';
 import { Patterns } from './patterns';
@@ -230,6 +232,10 @@ export const App = () => {
                         {state.view === 'projects' && (
                             <Projects onChange={navigate} state={state} />
                         )}
+                        {state.view === 'skills' && (
+                            <SkillsPage onChange={navigate} state={state} />
+                        )}
+                        {state.view === 'mcp' && <McpPage />}
                         {state.view === 'raster' && <RasterLab />}
                     </Shell>
                 </LeaveGuardProvider>

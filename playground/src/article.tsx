@@ -1,5 +1,6 @@
-import { cn } from 'continuum';
-import type { ReactNode } from 'react';
+import { Button, cn } from 'continuum';
+import { Check, Copy } from 'lucide-react';
+import { type ReactNode, useEffect, useState } from 'react';
 
 /*
  * The playground's long-form pages read like a post on the blog: a centred
@@ -10,14 +11,15 @@ import type { ReactNode } from 'react';
 /**
  * A section's flow, everything in it well inside its own 128px above and below: 8px under
  * a title, 16px between paragraphs, 40px above a heading and 64px either side of a figure.
+ * A command to run reads as part of the text (`.flow-text`), so it keeps a paragraph's spacing.
  * A grid, so no margin collapses.
  */
 export const flow = cn(
     // 128px above and below every section; the jump to one still lands on its title.
     'grid min-w-0 -scroll-mt-26 py-32',
-    '[&>:is(h2,h3)+p]:mt-2 [&>h3]:mt-10 [&>p]:mt-4',
+    '[&>:is(h2,h3)+:is(p,.flow-text)]:mt-2 [&>:is(p,.flow-text)]:mt-4 [&>h3]:mt-10',
     // A figure is whatever is not a heading or a paragraph: a stage, a frame, a list, a table.
-    '[&>:not(h2,h3,p)+:is(p,h3)]:mt-16 [&>:not(h2,h3,p)]:mt-16',
+    '[&>:not(h2,h3,p,.flow-text)+:is(p,h3,.flow-text)]:mt-16 [&>:not(h2,h3,p,.flow-text)]:mt-16',
     '[&>:first-child]:mt-0',
 );
 
@@ -43,6 +45,44 @@ export const C = ({ children }: { children: ReactNode }) => (
         {children}
     </code>
 );
+
+/**
+ * Code to run or paste, in mono on the surface with a hairline, and a copy button in its top
+ * corner, centred on the first line. A long line wraps, so nothing runs under the button.
+ */
+export const CodeBlock = ({ code, className }: { code: string; className?: string }) => {
+    const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        if (!copied) return;
+        const timer = setTimeout(() => setCopied(false), 1600);
+        return () => clearTimeout(timer);
+    }, [copied]);
+
+    return (
+        <div
+            className={cn(
+                'flow-text relative min-w-0 rounded-item border border-neutral-200 bg-neutral-50',
+                className,
+            )}
+        >
+            <pre className="wrap-anywhere whitespace-pre-wrap py-4 pr-14 pl-4 font-mono text-neutral-800 text-xs leading-relaxed">
+                <code>{code}</code>
+            </pre>
+            <Button
+                aria-label={copied ? 'Copied' : 'Copy'}
+                className="absolute top-3 right-3"
+                onClick={() => {
+                    void navigator.clipboard?.writeText(code).then(() => setCopied(true));
+                }}
+                size="icon-sm"
+                variant="ghost"
+            >
+                {copied ? <Check strokeWidth={2} /> : <Copy strokeWidth={2} />}
+            </Button>
+        </div>
+    );
+};
 
 /** A figure, with one line under it saying what to look at. */
 export const Figure = ({ caption, children }: { caption: ReactNode; children: ReactNode }) => (
