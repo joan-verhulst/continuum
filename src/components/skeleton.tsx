@@ -2,14 +2,15 @@ import type { ComponentProps } from 'react';
 import { cn } from '../lib/cn';
 
 /**
- * A quiet placeholder at the real element's size while its data loads: the 4% fill that sits on
- * the canvas and the surface alike, pulsing gently. Size it with classes (`h-control w-40`, `size-8`)
+ * A quiet placeholder at the real element's size while its data loads: the 5% wash that sits on
+ * the canvas and the surface alike, with a band of light crossing it. One band crosses every
+ * skeleton on the page at once, so they read as one surface loading. Size it with classes (`h-control w-40`, `size-8`)
  * and give the region that loads `aria-busy`; the blocks themselves are hidden from screen readers.
  */
 export const Skeleton = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
         aria-hidden
-        className={cn('rounded-item bg-neutral-950/4 motion-safe:animate-pulse', className)}
+        className={cn('skeleton rounded-item', className)}
         data-slot="skeleton"
         {...props}
     />
@@ -32,7 +33,8 @@ export const SkeletonText = ({ lines = 3, className, ...props }: SkeletonTextPro
     <div
         aria-hidden
         className={cn(
-            'flex flex-col gap-[calc(var(--text-xs--line-height)-10px)] py-[calc((var(--text-xs--line-height)-10px)/2)]',
+            // The bar is 10px at 13px type and follows the type size; the gaps take the rest of each line.
+            'flex flex-col gap-[calc(var(--text-xs--line-height)-var(--bar))] py-[calc((var(--text-xs--line-height)-var(--bar))/2)] [--bar:round(nearest,calc(var(--text-xs)*0.77),1px)]',
             className,
         )}
         data-slot="skeleton-text"
@@ -40,7 +42,7 @@ export const SkeletonText = ({ lines = 3, className, ...props }: SkeletonTextPro
     >
         {Array.from({ length: lines }, (_, i) => (
             <Skeleton
-                className="h-[10px] rounded-chip"
+                className="h-(--bar) rounded-chip"
                 // biome-ignore lint/suspicious/noArrayIndexKey: the lines never reorder
                 key={i}
                 style={{

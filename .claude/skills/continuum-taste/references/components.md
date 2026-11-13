@@ -787,8 +787,11 @@ a table).
   (`neutral-600` at 400 when done), and for the current step its line 13 `neutral-600` and its action 10 below.
 
 ### Skeleton · SkeletonText · Spinner
-- **Skeleton**: a block at the real element's size on the 4% wash with `item` corners, pulsing; the region
-  marked busy. **SkeletonText**: 10 bars on the 13px rhythm (6 apart, chip corners), the last one at 62%.
+- **Skeleton**: a block at the real element's size on the 5% wash with `item` corners, and a band of light
+  flowing across it: one band for every skeleton on the page at once (pinned to the viewport), left to right in
+  2.4s, without a pause, so the blocks read as one surface loading; still under reduced motion. The region is
+  marked busy. **SkeletonText**: 10 bars at 13px type (they follow the type size) on its rhythm, chip corners,
+  the last one at 62%.
 - **Spinner**: a quarter arc on a faint ring in the text colour, 16 (12 small), turning; only inside the button
   that is busy. A page that loads shows skeletons.
 

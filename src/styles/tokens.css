@@ -167,6 +167,9 @@
      * whose trigger is open. One step over the hover wash, so the two never read alike.
      */
     --color-selected: color-mix(in oklab, var(--color-neutral-950) 7%, transparent);
+    /* A skeleton: the 5% ink wash, and the band of light that crosses it (paper in light, a lighter wash in dark) */
+    --color-skeleton: color-mix(in oklab, var(--color-neutral-950) 5%, transparent);
+    --color-skeleton-glint: color-mix(in oklab, var(--color-neutral-50) 85%, transparent);
 
     /* The active segment and dock item: filled with the action colour */
     --color-segment: var(--color-action);
@@ -390,6 +393,7 @@
 
 .continuum[data-mode="dark"] {
     color-scheme: dark;
+    --color-skeleton-glint: color-mix(in oklab, var(--color-neutral-950) 7%, transparent);
 
     --color-neutral-50: var(--continuum-n-950);
     --color-neutral-100: var(--continuum-n-900);
