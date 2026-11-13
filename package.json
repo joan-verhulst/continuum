@@ -24,11 +24,12 @@
         "build": "node scripts/build-css.mjs && pnpm --filter playground build",
         "build:css": "node scripts/build-css.mjs",
         "build:skill": "node scripts/build-css.mjs && node scripts/build-skill.mjs",
-        "install:skill": "node scripts/build-css.mjs && node scripts/build-skill.mjs --install",
-        "type-check": "tsc --noEmit && pnpm --filter playground type-check && pnpm --filter site type-check",
+        "build:mcp": "pnpm --filter continuum-mcp build",
+        "install:skill": "node scripts/build-css.mjs && pnpm build:mcp && node scripts/build-skill.mjs --install",
+        "type-check": "tsc --noEmit && pnpm --filter playground type-check && pnpm --filter site type-check && pnpm --filter continuum-mcp type-check",
         "lint": "biome check",
         "lint:fix": "biome check --write",
-        "check": "pnpm type-check && pnpm lint && pnpm build:skill",
+        "check": "pnpm type-check && pnpm lint && pnpm build:skill && pnpm build:mcp && pnpm --filter continuum-mcp test",
         "dev:site": "pnpm --filter site dev"
     },
     "peerDependencies": {

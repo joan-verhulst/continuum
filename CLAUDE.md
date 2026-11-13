@@ -19,6 +19,8 @@ carry it into other projects. For any UI work here, the system is described in
 | `playground/src/theme-export.ts`      | The theme builder's export: `app.css` and the `DESIGN.md` brief.           |
 | `.claude/skills/continuum-taste`      | The skill. `SKILL.md` and `references/*.md` are written by hand; `assets/` and `references/screens/` are built. |
 | `.claude/skills/continuum-fix-padding` | The spacing skill. `scripts/spacing.ts` is built from `src/lib/spacing.ts`. |
+| `mcp/`                                | The MCP server: the skill's references, values and maths, and an audit for any stack (readers → facts → one rule set). `dist/server.mjs` and `manifest.json` are built by `pnpm build:mcp`, but tracked: a clone runs them without building. |
+| `playground/src/install`              | The Skills and MCP server pages, listed from each `SKILL.md` and `mcp/manifest.json`. |
 
 ## Conventions
 

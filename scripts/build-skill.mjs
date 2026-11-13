@@ -8,8 +8,10 @@
  * - continuum-fix-padding/scripts/spacing.ts: the spacing formula, which its script runs with Node.
  *
  * These copies are gitignored; SKILL.md and the hand-written references are not. With --install
- * it also copies both skills to ~/.claude/skills, where every project can use them.
+ * it also copies both skills to ~/.claude/skills, where every project can use them, and
+ * registers the MCP server (mcp/dist/server.mjs, built before this runs) with Claude Code.
  */
+import { spawnSync } from 'node:child_process';
 import { cp, rm } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { basename, dirname, join, resolve } from 'node:path';
@@ -50,4 +52,19 @@ if (process.argv.includes('--install')) {
         await cp(source, target, { recursive: true });
         console.log(`Installed to ${target}`);
     }
+
+    // The MCP server runs from this clone, so a pull updates it; registered for every project.
+    const server = join(root, 'mcp/dist/server.mjs').replaceAll('\\', '/');
+    const register = ['mcp', 'add', '--scope', 'user', 'continuum', '--', 'node', server];
+    const claude = (args, stdio) =>
+        spawnSync('claude', args, { stdio, shell: process.platform === 'win32' });
+    // Registering again replaces it, so a moved clone points at its new place.
+    claude(['mcp', 'remove', '--scope', 'user', 'continuum'], 'ignore');
+    const added = claude(register, 'inherit');
+    if (added.status === 0) {
+        console.log(`Registered the MCP server with Claude Code: ${server}`);
+    } else {
+        console.log(`Register the MCP server yourself:\n  claude ${register.join(' ')}`);
+    }
+    console.log(`For Cursor, VS Code or another client: command "node", argument "${server}"`);
 }
