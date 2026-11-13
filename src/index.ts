@@ -147,6 +147,7 @@ export {
     chartStepIn,
     harmonyTurns,
 } from './lib/harmony';
+export { type ImportedTheme, parseCssColor, themeFromCss } from './lib/import-theme';
 export {
     boxGap,
     boxPadding,

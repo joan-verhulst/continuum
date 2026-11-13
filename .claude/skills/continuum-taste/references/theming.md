@@ -48,6 +48,12 @@ theme is a look, not a layout.
   opens a contrast grid, and the review puts any pair that misses before the theme is used. Using it makes it the
   theme the whole playground wears while that project is the current one.
 - **`createThemeCss(options)`** in code turns the same choices into a `.continuum[data-theme="name"]` block.
+- **`themeFromCss(css)`** reads a theme a project already has (a Tailwind v4 `@theme` block, a shadcn/ui
+  `globals.css`) into those choices: the primary from its primary or brand colour (a grey one gives a neutral
+  action), the greys' hue and tint from its grey ramp, the font from `--font-sans`, the corner scale from its
+  radius. It returns `{ options, found }`, `found` saying what each choice was read from; the rest stays
+  Continuum's. For a project moving onto Continuum, start from it and adjust; never copy its other values over.
+  The builder's Colour step and the New project dialog import with it.
 - **The export**, from the review, hands a project two files: `app.css`, the whole theme as a Tailwind v4 entry in Tailwind's own
   names (light in `@theme`, dark under `[data-mode="dark"]`), and `DESIGN.md`, a brief for Claude: how the
   project is set up, the theme in words, and the rules in short. Put `DESIGN.md` at the root and add

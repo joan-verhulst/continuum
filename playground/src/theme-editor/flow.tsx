@@ -18,7 +18,7 @@ import {
     type ThemeOptions,
     themeFontFamilies,
 } from 'continuum';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, FileUp } from 'lucide-react';
 import { type ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { PageFooter } from '../layout';
 import { sizesLine } from '../presets';
@@ -34,6 +34,7 @@ import {
     TypeSizeEditor,
     TypeSpacingEditor,
 } from './controls';
+import { ImportThemeDialog, importPatch } from './import';
 import { Choice } from './parts';
 
 /*
@@ -350,6 +351,7 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
     const COLOUR = 0;
     const [part, setPart] = useState(0);
     const [prompting, setPrompting] = useState(false);
+    const [importing, setImporting] = useState(false);
     const [balancing, setBalancing] = useState<Balancing>({ state: 'idle' });
     const isReview = current === REVIEW;
     // Every step has been opened once: from here they are places to go back to, not a path to walk
@@ -562,6 +564,15 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                         {open.title}
                     </h1>
                     <p className="max-w-xl text-base text-neutral-600">{open.ask}</p>
+                    {/* The first step is where a theme the product already has comes in. */}
+                    {current === COLOUR && part === 0 && (
+                        <div className="-ml-3 flex items-center">
+                            <Button onClick={() => setImporting(true)} variant="ghost">
+                                <FileUp />
+                                Import a Tailwind theme
+                            </Button>
+                        </div>
+                    )}
                     {/* The preview panel is hidden below the large breakpoint, so a narrow window says where it went. */}
                     <p className="text-neutral-600 text-xs lg:hidden">
                         The preview shows beside the steps in a wider window.
@@ -615,6 +626,15 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                                     </Button>
                                 </div>
                             ))}
+                            <div className="flex items-center gap-4 py-1.5 pr-1.5 pl-3 text-xs">
+                                <dt className="w-24 shrink-0 text-neutral-600">Import</dt>
+                                <dd className="min-w-0 flex-1 truncate text-neutral-950">
+                                    A Tailwind or shadcn theme
+                                </dd>
+                                <Button onClick={() => setImporting(true)} variant="ghost">
+                                    Import
+                                </Button>
+                            </div>
                             <div className="flex items-center gap-4 py-1.5 pr-1.5 pl-3 text-xs">
                                 <dt className="w-24 shrink-0 text-neutral-600">Files</dt>
                                 <dd className="min-w-0 flex-1 truncate text-neutral-950">
@@ -703,6 +723,12 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                     </>
                 )}
             </PageFooter>
+
+            <ImportThemeDialog
+                onImport={options => set(importPatch(options))}
+                onOpenChange={setImporting}
+                open={importing}
+            />
 
             <FaultPrompt
                 balancing={balancing}

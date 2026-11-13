@@ -34,7 +34,7 @@ import {
     useNotice,
     useToast,
 } from 'continuum';
-import { Copy, Ellipsis, FolderKanban, Pencil, Plus, Trash2 } from 'lucide-react';
+import { Copy, Ellipsis, FileUp, FolderKanban, Pencil, Plus, Trash2 } from 'lucide-react';
 import { type FormEvent, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { AsidePanel, HeaderActions, Page, PageHeader } from '../layout';
 import { useLeaveGuard } from '../leave-guard';
@@ -42,6 +42,7 @@ import type { AppState } from '../meta';
 import { matchPreset, presetSwatch } from '../presets';
 import { type Project, projectThemeId, sameTheme, useProjects } from '../projects';
 import { ProjectFlow } from './flow';
+import { ImportThemeDialog } from './import';
 import { ExportDialog } from './parts';
 import { PreviewPanel } from './preview';
 
@@ -278,7 +279,7 @@ const ProjectList = ({
             )}
 
             <NewProjectDialog
-                onCreate={name => onOpen(store.create(name).id)}
+                onCreate={(name, theme) => onOpen(store.create(name, theme ? { theme } : {}).id)}
                 onOpenChange={setCreating}
                 open={creating}
             />
@@ -314,15 +315,19 @@ const NewProjectDialog = ({
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onCreate: (name: string) => void;
+    onCreate: (name: string, theme?: ThemeOptions) => void;
 }) => {
     const [name, setName] = useState('');
+    // A theme the product already has, to start the steps from instead of a clear one.
+    const [start, setStart] = useState<ThemeOptions>();
+    const [importing, setImporting] = useState(false);
 
     const submit = (event: FormEvent) => {
         event.preventDefault();
-        onCreate(name.trim() || 'Untitled project');
+        onCreate(name.trim() || 'Untitled project', start);
         onOpenChange(false);
         setName('');
+        setStart(undefined);
     };
 
     return (
@@ -346,16 +351,65 @@ const NewProjectDialog = ({
                                 value={name}
                             />
                         </Field>
+                        {/* Where the theme starts: clear, or from a Tailwind theme the product has. */}
+                        <div className="flex items-center gap-3 rounded-item border border-neutral-200 py-1.5 pr-1.5 pl-3 text-xs">
+                            {start?.accent && (
+                                <span
+                                    aria-hidden
+                                    className="size-3 shrink-0 rounded-full ring-1 ring-neutral-950/10 ring-inset"
+                                    style={{ background: start.accent }}
+                                />
+                            )}
+                            <span className="min-w-0 flex-1 truncate text-neutral-600">
+                                {start ? (
+                                    <>
+                                        <span className="text-neutral-950">
+                                            From your Tailwind theme
+                                        </span>{' '}
+                                        · {startLine(start)}
+                                    </>
+                                ) : (
+                                    'Starts from Continuum’s defaults'
+                                )}
+                            </span>
+                            {start ? (
+                                <Button onClick={() => setStart(undefined)} variant="ghost">
+                                    Remove
+                                </Button>
+                            ) : (
+                                <Button onClick={() => setImporting(true)} variant="ghost">
+                                    <FileUp {...icon} />
+                                    Import a theme
+                                </Button>
+                            )}
+                        </div>
                     </DialogBody>
                     <DialogFooter>
                         <DialogClose render={<Button variant="secondary" />}>Cancel</DialogClose>
                         <Button type="submit">Create project</Button>
                     </DialogFooter>
                 </form>
+                <ImportThemeDialog
+                    action="Use"
+                    onImport={setStart}
+                    onOpenChange={setImporting}
+                    open={importing}
+                />
             </DialogContent>
         </Dialog>
     );
 };
+
+/** What an imported start carries, in a line: "primary, greys, font". */
+const startLine = (theme: ThemeOptions) =>
+    [
+        theme.accent || theme.action ? 'primary' : '',
+        theme.neutral ? 'greys' : '',
+        theme.font ? 'font' : '',
+        theme.radius !== undefined ? 'corners' : '',
+    ]
+        .filter(Boolean)
+        .join(', ');
 
 const RenameDialog = ({
     project,
