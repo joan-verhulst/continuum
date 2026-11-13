@@ -2,6 +2,7 @@
 
 import { Minus, Plus, RotateCcw } from 'lucide-react';
 import {
+    Fragment,
     type KeyboardEvent,
     type PointerEvent,
     useEffect,
@@ -39,7 +40,7 @@ export type CandlestickChartProps = {
     data: readonly Candle[];
     /**
      * How the prices are drawn: `line`, the closes as one line over a tint, or `candles`,
-     * each period's open, high, low and close. A line unless asked for candles.
+     * each period's open, high, low and close. Candles unless asked for a line.
      */
     type?: 'line' | 'candles';
     /** The whole chart's height: the plot, the time axis and the bar of controls under it. */
@@ -72,6 +73,8 @@ export type CandlestickChartProps = {
     formatTimeLong?: (time: Date) => string;
     /** The line a chart with no data shows in place of its plot. */
     emptyLabel?: string;
+    /** While the data loads: the chart's own shape stands in, in the skeleton wash, at the size it will have. */
+    loading?: boolean;
     className?: string;
 };
 
@@ -179,8 +182,8 @@ const quiet = 'text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-950';
  */
 export const CandlestickChart = ({
     'aria-label': label,
-    data,
-    type = 'line',
+    data: rows,
+    type = 'candles',
     height = 360,
     volume = true,
     average,
@@ -194,8 +197,11 @@ export const CandlestickChart = ({
     formatTime,
     formatTimeLong,
     emptyLabel = 'No prices to show',
+    loading = false,
     className,
 }: CandlestickChartProps) => {
+    // While it loads the chart draws its stand-in and nothing else: old prices are not news.
+    const data: readonly Candle[] = loading ? [] : rows;
     const id = useId().replace(/[^a-zA-Z0-9_-]/g, '');
     const [ref, width] = useWidth<HTMLDivElement>();
     const [probeRef, labelWidth] = useLabelWidth();
@@ -251,8 +257,9 @@ export const CandlestickChart = ({
 
     const empty = data.length === 0;
     const candles = type === 'candles';
-    const withVolume = volume && data.some(candle => candle.volume != null);
-    const withBar = !empty && (zoomControls || Boolean(spans?.length));
+    // A loading chart keeps the room its volume and its bar will take, so nothing moves.
+    const withVolume = loading ? volume : volume && data.some(candle => candle.volume != null);
+    const withBar = (!empty || loading) && (zoomControls || Boolean(spans?.length));
 
     // The plot is what the prices on the right, the times under it and the bar leave.
     const gutter = labelWidth + PILL_PAD * 2 + GUTTER_GAP;
@@ -481,8 +488,76 @@ export const CandlestickChart = ({
           })
         : [];
 
+    // The stretches and the zoom, under the plot. While the prices load they stand where they
+    // will be, switched off, so the bar does not arrive with them.
+    const bar = withBar && (
+        <div
+            className="absolute inset-x-0 bottom-0 flex h-6 items-center justify-between gap-2"
+            data-slot="candlestick-chart-bar"
+            style={{ paddingRight: gutter }}
+        >
+            <div className="flex min-w-0 items-center gap-0.5">
+                {spans?.map(item => {
+                    const pressed = !loading && spanActive(item.periods);
+                    return (
+                        <button
+                            aria-pressed={pressed}
+                            className={cn(
+                                control,
+                                'px-2',
+                                pressed ? 'bg-neutral-950/8 text-neutral-950' : quiet,
+                            )}
+                            disabled={
+                                loading ||
+                                (item.periods !== null &&
+                                    (item.periods > data.length || item.periods < MIN_WINDOW))
+                            }
+                            key={item.label}
+                            onClick={() => setRange(spanWindow(item.periods))}
+                            type="button"
+                        >
+                            {item.label}
+                        </button>
+                    );
+                })}
+            </div>
+            {zoomControls && (
+                <div className="flex shrink-0 items-center gap-0.5 [&_svg]:size-3.5">
+                    <button
+                        aria-label="Zoom out"
+                        className={cn(control, quiet, 'w-6')}
+                        disabled={loading || !canZoomOut}
+                        onClick={() => zoom(1 / ZOOM_STEP)}
+                        type="button"
+                    >
+                        <Minus />
+                    </button>
+                    <button
+                        aria-label="Zoom in"
+                        className={cn(control, quiet, 'w-6')}
+                        disabled={loading || !canZoomIn}
+                        onClick={() => zoom(ZOOM_STEP)}
+                        type="button"
+                    >
+                        <Plus />
+                    </button>
+                    <button
+                        aria-label="Show every period"
+                        className={cn(control, quiet, 'w-6')}
+                        disabled={loading || current === null}
+                        onClick={reset}
+                        type="button"
+                    >
+                        <RotateCcw />
+                    </button>
+                </div>
+            )}
+        </div>
+    );
+
     return (
         <figure
+            aria-busy={loading || undefined}
             aria-label={label}
             className={cn('relative m-0 min-w-0', className)}
             data-slot="candlestick-chart"
@@ -496,10 +571,30 @@ export const CandlestickChart = ({
                 {price(high)}
             </div>
             <div className="relative" ref={ref} style={{ height }}>
-                {width > 0 && empty && (
+                {width > 0 && empty && !loading && (
                     <p className="absolute inset-0 flex items-center justify-center rounded-item border border-neutral-200 border-dashed text-neutral-600 text-xs">
                         {emptyLabel}
                     </p>
+                )}
+                {width > 0 && loading && (
+                    <>
+                        <CandleSkeleton
+                            candles={candles}
+                            height={plotHeight}
+                            labelWidth={labelWidth}
+                            priceFoot={priceFoot}
+                            priceTop={priceTop}
+                            volumeHeight={volumeHeight}
+                            width={plotWidth}
+                        />
+                        <div
+                            aria-hidden
+                            className={PLOT_FRAME}
+                            data-slot="candlestick-chart-plot"
+                            style={{ height: plotHeight, left: 0, top: 0, width: plotWidth }}
+                        />
+                        {bar}
+                    </>
                 )}
                 {width > 0 && !empty && (
                     <>
@@ -875,69 +970,7 @@ export const CandlestickChart = ({
                             tabIndex={0}
                         />
 
-                        {withBar && (
-                            <div
-                                className="absolute inset-x-0 bottom-0 flex h-6 items-center justify-between gap-2"
-                                data-slot="candlestick-chart-bar"
-                                style={{ paddingRight: gutter }}
-                            >
-                                <div className="flex min-w-0 items-center gap-0.5">
-                                    {spans?.map(item => (
-                                        <button
-                                            aria-pressed={spanActive(item.periods)}
-                                            className={cn(
-                                                control,
-                                                'px-2',
-                                                spanActive(item.periods)
-                                                    ? 'bg-neutral-950/8 text-neutral-950'
-                                                    : quiet,
-                                            )}
-                                            disabled={
-                                                item.periods !== null &&
-                                                (item.periods > data.length ||
-                                                    item.periods < MIN_WINDOW)
-                                            }
-                                            key={item.label}
-                                            onClick={() => setRange(spanWindow(item.periods))}
-                                            type="button"
-                                        >
-                                            {item.label}
-                                        </button>
-                                    ))}
-                                </div>
-                                {zoomControls && (
-                                    <div className="flex shrink-0 items-center gap-0.5 [&_svg]:size-3.5">
-                                        <button
-                                            aria-label="Zoom out"
-                                            className={cn(control, quiet, 'w-6')}
-                                            disabled={!canZoomOut}
-                                            onClick={() => zoom(1 / ZOOM_STEP)}
-                                            type="button"
-                                        >
-                                            <Minus />
-                                        </button>
-                                        <button
-                                            aria-label="Zoom in"
-                                            className={cn(control, quiet, 'w-6')}
-                                            disabled={!canZoomIn}
-                                            onClick={() => zoom(ZOOM_STEP)}
-                                            type="button"
-                                        >
-                                            <Plus />
-                                        </button>
-                                        <button
-                                            aria-label="Show every period"
-                                            className={cn(control, quiet, 'w-6')}
-                                            disabled={current === null}
-                                            onClick={reset}
-                                            type="button"
-                                        >
-                                            <RotateCcw />
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                        {bar}
                     </>
                 )}
             </div>
@@ -970,6 +1003,229 @@ export const CandlestickChart = ({
                 </table>
             </div>
         </figure>
+    );
+};
+
+/**
+ * The stand-in's closes, a price in no unit: a climb, a sharp fall about three fifths of the way
+ * in and a recovery after it, with the small turns back a price makes on the way.
+ */
+const SKELETON_CLOSES = [
+    104.2, 104.8, 104.5, 105.6, 106.1, 105.7, 106.8, 107.4, 107, 108.2, 108.9, 108.4, 109.3, 110.1,
+    109.6, 110.4, 111.2, 110.7, 109.1, 107.6, 108, 106.4, 105.2, 105.9, 104.6, 105.3, 106.2, 105.8,
+    106.9, 107.7, 107.3, 108.4, 109, 108.6, 109.5, 110.2,
+];
+
+/** How far the stand-in's wicks reach past their bodies, taken in turn. */
+const SKELETON_WICKS = [0.3, 0.5, 0.2, 0.6, 0.4, 0.25, 0.45];
+
+/** The firm ink of the stand-in: a fallen body and every wick, a step over the wash. */
+const SKELETON_EDGE = 'color-mix(in oklab, var(--color-neutral-950) 14%, transparent)';
+
+/** The stand-in's periods, each opening where the last closed. */
+const SKELETON_CANDLES = SKELETON_CLOSES.map((close, i) => {
+    const open = SKELETON_CLOSES[i - 1] ?? close - 0.6;
+    return {
+        open,
+        close,
+        high: Math.max(open, close) + (SKELETON_WICKS[i % SKELETON_WICKS.length] ?? 0.3),
+        low: Math.min(open, close) - (SKELETON_WICKS[(i + 3) % SKELETON_WICKS.length] ?? 0.3),
+    };
+});
+
+/**
+ * A chart that is loading, with the depth of a loaded one: the plot's grid at round steps of
+ * its own made-up prices, a few dozen candles (or the line over its tint) in the skeleton wash,
+ * the volume along the foot, and short bars where the prices and the times will be written.
+ * It takes the plot's room, so nothing moves when the prices land.
+ */
+const CandleSkeleton = ({
+    candles,
+    width,
+    height,
+    priceTop,
+    priceFoot,
+    volumeHeight,
+    labelWidth,
+}: {
+    candles: boolean;
+    width: number;
+    height: number;
+    priceTop: number;
+    priceFoot: number;
+    volumeHeight: number;
+    labelWidth: number;
+}) => {
+    if (width <= 0 || height <= 0) return null;
+    const count = SKELETON_CANDLES.length;
+    const low = Math.min(...SKELETON_CANDLES.map(candle => candle.low));
+    const high = Math.max(...SKELETON_CANDLES.map(candle => candle.high));
+    const span = priceFoot - priceTop;
+    const yOf = (value: number) => priceTop + ((high - value) / (high - low)) * span;
+    const valueAt = (y: number) => high - ((y - priceTop) / span) * (high - low);
+
+    // The rules, worked out as the loaded chart works out its own, at the wider spacing a real
+    // price's round steps usually land on: at the least spacing they crowd the stand-in.
+    const step = niceStep(((high - low) / Math.max(1, span)) * 60);
+    const ticks: number[] = [];
+    for (let i = Math.ceil(valueAt(height - 10) / step); i * step <= valueAt(10); i++)
+        ticks.push(i * step);
+
+    // Candles stand in the middle of their slots, a line runs edge to edge, as when loaded.
+    const slot = width / count;
+    const pitch = width / (count - 1);
+    const rawBody = Math.min(
+        BODY_MAX,
+        Math.floor(slot) - Math.max(1, Math.round(slot * (1 - BODY_SHARE))),
+    );
+    const body = Math.max(1, rawBody % 2 ? rawBody : rawBody - 1);
+    const xOf = (i: number) => (candles ? Math.floor(slot * i + slot / 2) : pitch * i);
+    const wide = candles ? body : Math.max(1, Math.floor(pitch) - 1);
+
+    // What traded follows how far the price moved, as it tends to.
+    const moves = SKELETON_CANDLES.map(candle => Math.abs(candle.close - candle.open));
+    const biggest = Math.max(...moves);
+
+    const points = SKELETON_CANDLES.map((candle, i) => ({ x: xOf(i), y: yOf(candle.close) }));
+    // The line's edge: a 2px ribbon along it.
+    const edge = `${linePath(points)} ${linePath(
+        points.map(point => ({ ...point, y: point.y + 2 })).reverse(),
+    ).replace(/^M/, 'L')} Z`;
+
+    // A time every so often under the plot, as far apart as the loaded labels are.
+    const every = Math.max(1, Math.ceil(TIME_ROOM / Math.max(candles ? slot : pitch, 1e-6)));
+    const times: number[] = [];
+    for (let i = 0; i < count; i += every) if (xOf(i) <= width - 16) times.push(xOf(i));
+
+    return (
+        <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            data-slot="chart-skeleton"
+        >
+            <div
+                className="absolute top-0 left-0 overflow-hidden rounded-item"
+                style={{ height, width }}
+            >
+                {ticks.map(tick => (
+                    <div
+                        className="absolute inset-x-0 h-px"
+                        key={tick}
+                        style={{
+                            backgroundColor: 'var(--color-chart-grid)',
+                            top: Math.round(yOf(tick)),
+                        }}
+                    />
+                ))}
+                {volumeHeight > 0 &&
+                    moves.map((move, i) => {
+                        const tall = Math.round(volumeHeight * (0.3 + 0.7 * (move / biggest)));
+                        return (
+                            <div
+                                className="skeleton absolute"
+                                // biome-ignore lint/suspicious/noArrayIndexKey: the stand-in never reorders.
+                                key={i}
+                                style={{
+                                    height: tall,
+                                    left: Math.round(xOf(i) - wide / 2),
+                                    top: height - tall,
+                                    width: wide,
+                                }}
+                            />
+                        );
+                    })}
+                {candles ? (
+                    SKELETON_CANDLES.map((candle, i) => {
+                        const x = xOf(i);
+                        const top = Math.round(yOf(Math.max(candle.open, candle.close)));
+                        const foot = Math.round(yOf(Math.min(candle.open, candle.close)));
+                        const tall = Math.max(1, foot - top);
+                        const risen = candle.close >= candle.open;
+                        const wick = 'skeleton absolute w-px';
+                        return (
+                            // biome-ignore lint/suspicious/noArrayIndexKey: the stand-in never reorders.
+                            <Fragment key={i}>
+                                {/* The wick in two, above and below the body, so a risen body's wash stays clear. */}
+                                <div
+                                    className={wick}
+                                    style={{
+                                        backgroundColor: SKELETON_EDGE,
+                                        height: Math.max(0, top - Math.round(yOf(candle.high))),
+                                        left: x,
+                                        top: Math.round(yOf(candle.high)),
+                                    }}
+                                />
+                                <div
+                                    className={wick}
+                                    style={{
+                                        backgroundColor: SKELETON_EDGE,
+                                        height: Math.max(0, Math.round(yOf(candle.low)) - foot),
+                                        left: x,
+                                        top: foot,
+                                    }}
+                                />
+                                {/* A rise is the wash with a firm edge, a fall firm, as the loaded candles are. */}
+                                <div
+                                    className={cn(
+                                        'skeleton absolute',
+                                        risen && body >= 5 && 'border',
+                                    )}
+                                    style={{
+                                        backgroundColor: risen ? undefined : SKELETON_EDGE,
+                                        borderColor: SKELETON_EDGE,
+                                        height: tall,
+                                        left: x - (body - 1) / 2,
+                                        top,
+                                        width: body,
+                                    }}
+                                />
+                            </Fragment>
+                        );
+                    })
+                ) : (
+                    <>
+                        <div
+                            className="skeleton absolute inset-0"
+                            style={{
+                                clipPath: `path('${lineAreaPath(points, height)}')`,
+                                // The wash fades towards the foot, as the line's tint does.
+                                maskImage:
+                                    'linear-gradient(to bottom, black 20%, transparent 100%)',
+                            }}
+                        />
+                        <div
+                            className="skeleton absolute inset-0"
+                            style={{ backgroundColor: SKELETON_EDGE, clipPath: `path('${edge}')` }}
+                        />
+                    </>
+                )}
+            </div>
+            {/* Where the prices and the times will be written, outside the frame as they are. */}
+            {ticks.map(tick => {
+                const y = yOf(tick);
+                return y < 8 || y > height - 8 ? null : (
+                    <div
+                        className="skeleton absolute h-2 rounded-chip"
+                        key={tick}
+                        style={{
+                            left: width + GUTTER_GAP + PILL_PAD,
+                            top: Math.round(y) - 4,
+                            width: Math.max(16, labelWidth * 0.8),
+                        }}
+                    />
+                );
+            })}
+            {times.map(x => (
+                <div
+                    className={cn(
+                        'skeleton absolute h-2 w-9 rounded-chip',
+                        x >= 20 && '-translate-x-1/2',
+                    )}
+                    key={x}
+                    style={{ left: x, top: height + 8 }}
+                />
+            ))}
+        </div>
     );
 };
 

@@ -336,7 +336,7 @@ ink), and a group that may colour them. **Not for** two measures alone, or many 
 
 **For** a price over time, put together as a trading screen is. **Not for** any other measure (a line chart).
 
-- `data` (`time`, `open`, `high`, `low`, `close`, `volume`), `type` (`line` unless given, or `candles`), `height`
+- `data` (`time`, `open`, `high`, `low`, `close`, `volume`), `type` (`candles` unless given, or `line`), `height`
   (360, its axis and control bar included), `volume`, `average` (a moving average over that many periods),
   `spans` (1W, 1M, All …), `zoomControls`, `range` with `onRangeChange` (or `defaultRange`), `digits`,
   `formatPrice`, `formatTime`.

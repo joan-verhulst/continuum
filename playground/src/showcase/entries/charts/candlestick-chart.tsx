@@ -113,7 +113,7 @@ const candleKnobs: Knob[] = [
         id: 'type',
         label: 'Drawn as',
         options: [o('line', 'Line'), o('candles', 'Candles')],
-        default: 'line',
+        default: 'candles',
     },
     {
         id: 'count',
@@ -126,7 +126,7 @@ const candleKnobs: Knob[] = [
     {
         id: 'state',
         label: 'State',
-        options: [o('ready', 'Ready'), o('empty', 'No data')],
+        options: [o('ready', 'Ready'), o('loading', 'Loading'), o('empty', 'No data')],
         default: 'ready',
     },
 ];
@@ -138,11 +138,12 @@ const candleKnobs: Knob[] = [
 const PairCard = ({
     data,
     interval,
-    type: asked = 'line',
+    type: asked = 'candles',
     average = true,
     volume = true,
     height = 360,
     opensOn,
+    loading = false,
     className,
 }: {
     data: readonly Candle[];
@@ -153,6 +154,8 @@ const PairCard = ({
     height?: number;
     /** The latest periods in view at first; all of them unless given. */
     opensOn?: number;
+    /** While the prices load: the figure and the chart stand in, and nothing is offered to switch. */
+    loading?: boolean;
     className?: string;
 }) => {
     const last = data.at(-1);
@@ -160,7 +163,7 @@ const PairCard = ({
     return (
         <ChartFrame
             actions={
-                data.length > 0 ? (
+                data.length > 0 && !loading ? (
                     <SegmentedControl
                         aria-label="Drawn as"
                         onValueChange={value => setType(value as 'line' | 'candles')}
@@ -173,8 +176,9 @@ const PairCard = ({
             }
             className={className}
             comparison="today"
-            delta={last ? dayChange(data, interval) : undefined}
+            delta={last && !loading ? dayChange(data, interval) : undefined}
             icon={<CandlesIcon />}
+            loading={loading}
             table={{
                 columns: ['Opened (UTC)', 'Open', 'High', 'Low', 'Close', 'Volume'],
                 rows: data.map(candle => [
@@ -200,6 +204,7 @@ const PairCard = ({
                 }
                 digits={4}
                 height={height}
+                loading={loading}
                 spans={spansFor(interval)}
                 type={type}
                 volume={volume}
@@ -214,7 +219,10 @@ const CandlestickPreview = ({ knobs }: PreviewProps) => (
         className="w-full max-w-3xl"
         data={knobs.state === 'empty' ? [] : pricesOf('4h', Number(knobs.count))}
         interval="4h"
+        loading={knobs.state === 'loading'}
         key={`${knobs.count}-${knobs.state}-${knobs.type}`}
+        // The latest 90 at first, wide enough to read each candle; zoom out or double click for all.
+        opensOn={90}
         type={knobs.type as 'line' | 'candles'}
         volume={Boolean(knobs.volume)}
     />
