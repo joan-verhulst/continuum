@@ -53,7 +53,7 @@ export const parseHash = (hash: string): AppState => {
           'home');
 
     return {
-        mode: mode === 'dark' ? 'dark' : 'light',
+        mode: mode === 'light' ? 'light' : 'dark',
         view,
         component: params.get('component') ?? undefined,
         screen: params.get('screen') ?? undefined,
