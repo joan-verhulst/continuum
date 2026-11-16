@@ -1,0 +1,476 @@
+/*
+ * ContinuumUI, as a Tailwind v4 theme: Continuum's colours, type, radii, shadows, spacing
+ * and widths under Tailwind's own names, so bg-neutral-50, text-xs, rounded-card,
+ * shadow-float and max-w-content come from here, and the components read the same names.
+ * Light is the theme; dark applies wherever data-mode="dark" is set, as
+ * <Theme mode="dark"> sets it.
+ * The font is read from the page: import '@fontsource-variable/geist' in the entry script.
+ */
+@import "tailwindcss";
+
+@custom-variant dark (&:where([data-mode="dark"], [data-mode="dark"] *));
+
+/* static: charts read some of these from script, so every one is written out. */
+@theme static {
+    /* Five ramps, 50 the surface and 950 the strongest text, then each role. */
+
+    --color-neutral-50: oklch(100% 0 0);
+    --color-neutral-100: oklch(91% 0 0);
+    --color-neutral-200: oklch(78.3% 0.001 232);
+    --color-neutral-300: oklch(66.5% 0.001 232);
+    --color-neutral-400: oklch(58% 0.003 232);
+    --color-neutral-500: oklch(49.9% 0.004 232);
+    --color-neutral-600: oklch(41.7% 0.004 232);
+    --color-neutral-700: oklch(32.1% 0.004 232);
+    --color-neutral-800: oklch(22.7% 0.004 232);
+    --color-neutral-900: oklch(16.8% 0.004 232);
+    --color-neutral-950: oklch(13% 0.004 232);
+    --color-primary-50: oklch(98% 0.038 101.3);
+    --color-primary-100: oklch(95.5% 0.079 101.9);
+    --color-primary-200: oklch(92% 0.136 101.6);
+    --color-primary-300: oklch(88.1% 0.137 96.2);
+    --color-primary-400: oklch(83.7% 0.147 86.6);
+    --color-primary-500: oklch(79% 0.168 68.5);
+    --color-primary-600: oklch(65.4% 0.143 53.7);
+    --color-primary-700: oklch(50.9% 0.129 42.2);
+    --color-primary-800: oklch(40.2% 0.104 38.7);
+    --color-primary-900: oklch(32.8% 0.079 38.4);
+    --color-primary-950: oklch(17% 0.043 37.9);
+    --color-success-50: #f1f7ee;
+    --color-success-100: #e7f5e0;
+    --color-success-200: #d6f1c9;
+    --color-success-300: #bceca4;
+    --color-success-400: #98e26d;
+    --color-success-500: #7cd93a;
+    --color-success-600: #5db500;
+    --color-success-700: #4a9300;
+    --color-success-800: #397400;
+    --color-success-900: #2e5d04;
+    --color-success-950: #122d00;
+    --color-warning-50: #faf4ee;
+    --color-warning-100: #fbeddf;
+    --color-warning-200: #fce1c6;
+    --color-warning-300: #ffcfa0;
+    --color-warning-400: #ffb567;
+    --color-warning-500: #fca131;
+    --color-warning-600: #d68200;
+    --color-warning-700: #ae6900;
+    --color-warning-800: #8a5200;
+    --color-warning-900: #704201;
+    --color-warning-950: #381e00;
+    --color-error-50: #fff2ef;
+    --color-error-100: #ffe4de;
+    --color-error-200: #ffcdc3;
+    --color-error-300: #ffab9a;
+    --color-error-400: #ff7259;
+    --color-error-500: #f53e20;
+    --color-error-600: #d62400;
+    --color-error-700: #b41c00;
+    --color-error-800: #941600;
+    --color-error-900: #791a0b;
+    --color-error-950: #461007;
+
+    --color-action: oklch(79% 0.168 68.5);
+    --color-action-hover: oklch(65.4% 0.143 53.7);
+    --color-on-action: oklch(13% 0.004 232);
+    --color-action-knob: oklch(100% 0 0);
+    --color-action-highlight: transparent;
+    --color-action-ring: transparent;
+    --color-tint: color-mix(in oklab, oklch(13% 0.004 232) 7%, transparent);
+    --color-tint-fg: oklch(13% 0.004 232);
+    --color-selected: color-mix(in oklab, oklch(13% 0.004 232) 7%, transparent);
+    --color-skeleton: color-mix(in oklab, oklch(13% 0.004 232) 5%, transparent);
+    --color-skeleton-glint: color-mix(in oklab, oklch(100% 0 0) 85%, transparent);
+    --color-segment: oklch(79% 0.168 68.5);
+    --color-segment-fg: oklch(13% 0.004 232);
+    --color-segment-border: transparent;
+    --color-segment-track: oklch(100% 0 0);
+    --color-nav-active: color-mix(in oklab, oklch(13% 0.004 232) 7%, transparent);
+    --color-nav-active-fg: oklch(13% 0.004 232);
+    --color-nav-active-border: transparent;
+    --color-nav-section: transparent;
+    --color-nav-section-fg: oklch(13% 0.004 232);
+    --color-focus: oklch(50.9% 0.129 42.2);
+
+    --color-chart-1: oklch(79% 0.168 68.5);
+    --color-chart-2: oklch(60.6% 0.135 158.9);
+    --color-chart-3: oklch(56.7% 0.169 252.3);
+    --color-chart-4: oklch(45.6% 0.169 344.5);
+    --color-chart-5: oklch(65.4% 0.143 53.7);
+    --color-chart-series-1: oklch(79% 0.168 68.5);
+    --color-chart-series-2: oklch(60.6% 0.135 158.9);
+    --color-chart-series-3: oklch(56.7% 0.169 252.3);
+    --color-chart-series-4: oklch(45.6% 0.169 344.5);
+    --color-chart-series-5: oklch(58% 0.003 232);
+    --color-chart-background: oklch(100% 0 0);
+    --color-chart-foreground: oklch(13% 0.004 232);
+    --color-chart-foreground-muted: oklch(41.7% 0.004 232);
+    --color-chart-label: oklch(41.7% 0.004 232);
+    --color-chart-grid: oklch(78.3% 0.001 232);
+    --color-chart-band: color-mix(in oklab, oklch(13% 0.004 232) 5%, transparent);
+    --color-chart-crosshair: oklch(66.5% 0.001 232);
+    --color-chart-brush-border: oklch(78.3% 0.001 232);
+    --color-chart-line-primary: oklch(79% 0.168 68.5);
+    --color-chart-line-secondary: oklch(60.6% 0.135 158.9);
+    --color-chart-tooltip-background: oklch(100% 0 0);
+    --color-chart-tooltip-foreground: oklch(13% 0.004 232);
+    --color-chart-tooltip-muted: oklch(41.7% 0.004 232);
+    --color-chart-marker-background: oklch(100% 0 0);
+    --color-chart-marker-border: oklch(78.3% 0.001 232);
+    --color-chart-marker-foreground: oklch(32.1% 0.004 232);
+    --color-chart-marker-badge-background: oklch(13% 0.004 232);
+    --color-chart-marker-badge-foreground: oklch(100% 0 0);
+    --color-chart-segment-background: color-mix(in oklab, oklch(13% 0.004 232) 5%, transparent);
+    --color-chart-segment-line: oklch(66.5% 0.001 232);
+    --color-chart-indicator-color: oklch(66.5% 0.001 232);
+    --color-chart-indicator-secondary-color: oklch(78.3% 0.001 232);
+
+    --font-sans: "Geist Variable", "Geist", ui-sans-serif, system-ui, sans-serif;
+
+    --text-xxs: 11px;
+    --text-xxs--line-height: 13.75px;
+    --text-xs: 13px;
+    --text-xs--line-height: 16.25px;
+    --text-sm: 14px;
+    --text-sm--line-height: 17.5px;
+    --text-base: 16px;
+    --text-base--line-height: 20px;
+    --text-lg: 18px;
+    --text-lg--line-height: 22.5px;
+    --text-xl: 20px;
+    --text-xl--line-height: 25px;
+    --text-2xl: 24px;
+    --text-2xl--line-height: 30px;
+    --text-3xl: 31px;
+    --text-3xl--line-height: 38.75px;
+    --text-4xl: 39px;
+    --text-4xl--line-height: 48.75px;
+    --text-5xl: 48px;
+    --text-5xl--line-height: 60px;
+    --text-6xl: 61px;
+    --text-6xl--line-height: 76.25px;
+
+    --tracking-normal: 0.32px;
+    --leading-normal: 1.25;
+
+    /* Radii nest: a panel holds cards, a card items, an item chips. */
+    --radius-chip: 9px;
+    --radius-item: 15px;
+    --radius-control: 18px;
+    --radius-card: 24px;
+    --radius-panel: 28px;
+    --radius-dock: 39px;
+    --radius-pill: 18.75px;
+
+    --shadow-action: inset 0 1px 0 0 transparent, 0 0 0 1px transparent;
+    --shadow-segment: none;
+    --shadow-nav-active: none;
+    --shadow-float: 1px 1px 4px 0 rgb(20 22 23 / 0.1);
+    --shadow-sheet: 0 2px 4px 0 rgb(20 22 23 / 0.1);
+    --shadow-composer: 0 4px 8px 0 rgb(20 22 23 / 0.05);
+    --shadow-card: none;
+    --shadow-control: none;
+
+    /* The charts' two motions: marks wiping in once, and a waiting block's shine. */
+
+    /* The spacing unit: p-1 is one unit, gap-3 three. Control heights and panel widths do not follow it. */
+    --spacing: 4px;
+    --spacing-content-inset: 128px;
+    --spacing-sidebar: 256px;
+    --spacing-rail: calc(round(nearest, 34px, 1px) + 18px);
+    --spacing-rail-open: 208px;
+    --spacing-popover: 288px;
+    --spacing-menu: 160px;
+    --spacing-menu-wide: 192px;
+    --spacing-filter-menu: 240px;
+    --spacing-toast: 360px;
+    --spacing-dialog: 480px;
+    --spacing-sheet: 512px;
+    --spacing-command: 560px;
+    --spacing-tooltip: 256px;
+    --spacing-chart-tooltip: 140px;
+    --spacing-search: 256px;
+    --spacing-presets: 144px;
+    --spacing-measure: 480px;
+    --spacing-measure-narrow: 288px;
+    --spacing-conversation: 720px;
+    --spacing-control: round(nearest, 34px, 1px);
+    --spacing-control-lg: round(nearest, 38px, 1px);
+    --spacing-control-xl: round(nearest, 48px, 1px);
+    --spacing-control-sm: calc(round(nearest, 34px, 1px) - 6px);
+    --spacing-segment: calc(round(nearest, 34px, 1px) - 5px);
+    --spacing-chip: calc(round(nearest, 34px, 1px) - 9px);
+    --spacing-cell: round(nearest, 32px, 1px);
+    --spacing-option: round(nearest, 36px, 1px);
+    --spacing-option-md: round(nearest, 44px, 1px);
+    --spacing-option-lg: round(nearest, 56px, 1px);
+    --spacing-row: round(nearest, 40px, 1px);
+    --spacing-table-row: calc(round(nearest, 40px, 1px) + 1px);
+    --spacing-tab: round(nearest, 44px, 1px);
+    --spacing-bar: round(nearest, 52px, 1px);
+    --spacing-header: round(nearest, 54px, 1px);
+    --spacing-nav: round(nearest, 56px, 1px);
+    --spacing-0\.25: round(nearest, 1px, 1px);
+    --spacing-0\.5: round(nearest, 2px, 1px);
+    --spacing-0\.75: round(nearest, 3px, 1px);
+    --spacing-1\.25: round(nearest, 5px, 1px);
+    --spacing-1\.5: round(nearest, 6px, 1px);
+    --spacing-1\.75: round(nearest, 7px, 1px);
+    --spacing-2\.25: round(nearest, 9px, 1px);
+    --spacing-2\.5: round(nearest, 10px, 1px);
+    --spacing-2\.75: round(nearest, 11px, 1px);
+    --spacing-3\.25: round(nearest, 13px, 1px);
+    --spacing-3\.5: round(nearest, 14px, 1px);
+    --spacing-3\.75: round(nearest, 15px, 1px);
+    --spacing-4\.25: round(nearest, 17px, 1px);
+    --spacing-4\.5: round(nearest, 18px, 1px);
+    --spacing-4\.75: round(nearest, 19px, 1px);
+    --spacing-5\.25: round(nearest, 21px, 1px);
+    --spacing-5\.5: round(nearest, 22px, 1px);
+    --spacing-5\.75: round(nearest, 23px, 1px);
+    --spacing-6\.25: round(nearest, 25px, 1px);
+    --spacing-6\.5: round(nearest, 26px, 1px);
+    --spacing-6\.75: round(nearest, 27px, 1px);
+    --spacing-7\.25: round(nearest, 29px, 1px);
+    --spacing-7\.5: round(nearest, 30px, 1px);
+    --spacing-7\.75: round(nearest, 31px, 1px);
+    --spacing-8\.25: round(nearest, 33px, 1px);
+    --spacing-8\.5: round(nearest, 34px, 1px);
+    --spacing-8\.75: round(nearest, 35px, 1px);
+    --spacing-9\.25: round(nearest, 37px, 1px);
+    --spacing-9\.5: round(nearest, 38px, 1px);
+    --spacing-9\.75: round(nearest, 39px, 1px);
+    --spacing-10\.25: round(nearest, 41px, 1px);
+    --spacing-10\.5: round(nearest, 42px, 1px);
+    --spacing-10\.75: round(nearest, 43px, 1px);
+    --spacing-11\.25: round(nearest, 45px, 1px);
+    --spacing-11\.5: round(nearest, 46px, 1px);
+    --spacing-11\.75: round(nearest, 47px, 1px);
+    --spacing-12\.5: round(nearest, 50px, 1px);
+    --spacing-13\.5: round(nearest, 54px, 1px);
+    --spacing-14\.5: round(nearest, 58px, 1px);
+    --spacing-15\.5: round(nearest, 62px, 1px);
+    --spacing-16\.5: round(nearest, 66px, 1px);
+    --spacing-17\.5: round(nearest, 70px, 1px);
+    --spacing-18\.5: round(nearest, 74px, 1px);
+    --spacing-19\.5: round(nearest, 78px, 1px);
+    --spacing-20\.5: round(nearest, 82px, 1px);
+    --spacing-21\.5: round(nearest, 86px, 1px);
+    --spacing-22\.5: round(nearest, 90px, 1px);
+    --spacing-23\.5: round(nearest, 94px, 1px);
+    --spacing-24\.5: round(nearest, 98px, 1px);
+    --spacing-25\.5: round(nearest, 102px, 1px);
+    --spacing-26\.5: round(nearest, 106px, 1px);
+    --spacing-27\.5: round(nearest, 110px, 1px);
+    --spacing-28\.5: round(nearest, 114px, 1px);
+    --spacing-29\.5: round(nearest, 118px, 1px);
+    --spacing-30\.5: round(nearest, 122px, 1px);
+    --spacing-31\.5: round(nearest, 126px, 1px);
+    --spacing-32\.5: round(nearest, 130px, 1px);
+    --spacing-33\.5: round(nearest, 134px, 1px);
+    --spacing-34\.5: round(nearest, 138px, 1px);
+    --spacing-35\.5: round(nearest, 142px, 1px);
+    --spacing-36\.5: round(nearest, 146px, 1px);
+    --spacing-37\.5: round(nearest, 150px, 1px);
+    --spacing-38\.5: round(nearest, 154px, 1px);
+    --spacing-39\.5: round(nearest, 158px, 1px);
+    --spacing-40\.5: round(nearest, 162px, 1px);
+    --spacing-41\.5: round(nearest, 166px, 1px);
+    --spacing-42\.5: round(nearest, 170px, 1px);
+    --spacing-43\.5: round(nearest, 174px, 1px);
+    --spacing-44\.5: round(nearest, 178px, 1px);
+    --spacing-45\.5: round(nearest, 182px, 1px);
+    --spacing-46\.5: round(nearest, 186px, 1px);
+    --spacing-47\.5: round(nearest, 190px, 1px);
+
+    /* max-w-content · max-w-content-wide · max-w-content-dense */
+    --container-content-narrow: 640px;
+    --container-content: 896px;
+    --container-content-wide: 1080px;
+    --container-content-dense: 1280px;
+    --container-shell-compact: 640px;
+    --container-shell-sidebar: 1024px;
+}
+
+/* Values the components read that Tailwind has no utility for. */
+:root {
+    --action-gradient: none;
+    --nav-active-image: none;
+    --avatar-blue: 250;
+    --avatar-violet: 295;
+    --avatar-rose: 10;
+    --avatar-amber: 75;
+    --avatar-teal: 190;
+    --avatar-green: 145;
+    --avatar-fill: 0.95 0.025;
+    --avatar-ink: 0.47 0.09;
+    --avatar-line: 0.89 0.04;
+    --chart-texture-stripes: 0;
+    --chart-texture-dots: 0;
+}
+
+/* Dark mode: the same names, the ramps read back to front. */
+[data-mode="dark"] {
+    color-scheme: dark;
+    --color-neutral-50: oklch(13% 0.004 232);
+    --color-neutral-100: oklch(16.8% 0.004 232);
+    --color-neutral-200: oklch(22.7% 0.004 232);
+    --color-neutral-300: oklch(32.1% 0.004 232);
+    --color-neutral-400: oklch(41.7% 0.004 232);
+    --color-neutral-600: oklch(58% 0.003 232);
+    --color-neutral-700: oklch(66.5% 0.001 232);
+    --color-neutral-800: oklch(78.3% 0.001 232);
+    --color-neutral-900: oklch(91% 0 0);
+    --color-neutral-950: oklch(100% 0 0);
+    --color-primary-50: oklch(17% 0.043 37.9);
+    --color-primary-100: oklch(32.8% 0.079 38.4);
+    --color-primary-200: oklch(40.2% 0.104 38.7);
+    --color-primary-300: oklch(50.9% 0.129 42.2);
+    --color-primary-400: oklch(65.4% 0.143 53.7);
+    --color-primary-600: oklch(83.7% 0.147 86.6);
+    --color-primary-700: oklch(88.1% 0.137 96.2);
+    --color-primary-800: oklch(92% 0.136 101.6);
+    --color-primary-900: oklch(95.5% 0.079 101.9);
+    --color-primary-950: oklch(98% 0.038 101.3);
+    --color-success-50: #122d00;
+    --color-success-100: #2e5d04;
+    --color-success-200: #397400;
+    --color-success-300: #4a9300;
+    --color-success-400: #5db500;
+    --color-success-600: #98e26d;
+    --color-success-700: #bceca4;
+    --color-success-800: #d6f1c9;
+    --color-success-900: #e7f5e0;
+    --color-success-950: #f1f7ee;
+    --color-warning-50: #381e00;
+    --color-warning-100: #704201;
+    --color-warning-200: #8a5200;
+    --color-warning-300: #ae6900;
+    --color-warning-400: #d68200;
+    --color-warning-600: #ffb567;
+    --color-warning-700: #ffcfa0;
+    --color-warning-800: #fce1c6;
+    --color-warning-900: #fbeddf;
+    --color-warning-950: #faf4ee;
+    --color-error-50: #461007;
+    --color-error-100: #791a0b;
+    --color-error-200: #941600;
+    --color-error-300: #b41c00;
+    --color-error-400: #d62400;
+    --color-error-600: #ff7259;
+    --color-error-700: #ffab9a;
+    --color-error-800: #ffcdc3;
+    --color-error-900: #ffe4de;
+    --color-error-950: #fff2ef;
+    --color-action-hover: oklch(83.7% 0.147 86.6);
+    --color-tint: color-mix(in oklab, oklch(100% 0 0) 7%, transparent);
+    --color-tint-fg: oklch(100% 0 0);
+    --color-selected: color-mix(in oklab, oklch(100% 0 0) 7%, transparent);
+    --color-skeleton: color-mix(in oklab, oklch(100% 0 0) 5%, transparent);
+    --color-skeleton-glint: color-mix(in oklab, oklch(100% 0 0) 7%, transparent);
+    --color-segment-track: oklch(13% 0.004 232);
+    --color-nav-active: color-mix(in oklab, oklch(100% 0 0) 7%, transparent);
+    --color-nav-active-fg: oklch(100% 0 0);
+    --color-nav-section-fg: oklch(100% 0 0);
+    --color-focus: oklch(88.1% 0.137 96.2);
+    --avatar-fill: 0.31 0.04;
+    --avatar-ink: 0.86 0.06;
+    --avatar-line: 0.38 0.045;
+    --color-chart-1: oklch(65.4% 0.143 53.7);
+    --color-chart-2: oklch(51.4% 0.108 160.8);
+    --color-chart-3: oklch(65.4% 0.164 248.5);
+    --color-chart-4: oklch(66.1% 0.231 338.5);
+    --color-chart-5: oklch(88.1% 0.137 96.2);
+    --color-chart-series-1: oklch(65.4% 0.143 53.7);
+    --color-chart-series-2: oklch(51.4% 0.108 160.8);
+    --color-chart-series-3: oklch(65.4% 0.164 248.5);
+    --color-chart-series-4: oklch(66.1% 0.231 338.5);
+    --color-chart-series-5: oklch(41.7% 0.004 232);
+    --color-chart-background: oklch(13% 0.004 232);
+    --color-chart-foreground: oklch(100% 0 0);
+    --color-chart-foreground-muted: oklch(58% 0.003 232);
+    --color-chart-label: oklch(58% 0.003 232);
+    --color-chart-grid: oklch(22.7% 0.004 232);
+    --color-chart-band: color-mix(in oklab, oklch(100% 0 0) 5%, transparent);
+    --color-chart-crosshair: oklch(32.1% 0.004 232);
+    --color-chart-brush-border: oklch(22.7% 0.004 232);
+    --color-chart-line-primary: oklch(65.4% 0.143 53.7);
+    --color-chart-line-secondary: oklch(51.4% 0.108 160.8);
+    --color-chart-tooltip-background: oklch(13% 0.004 232);
+    --color-chart-tooltip-foreground: oklch(100% 0 0);
+    --color-chart-tooltip-muted: oklch(58% 0.003 232);
+    --color-chart-marker-background: oklch(13% 0.004 232);
+    --color-chart-marker-border: oklch(22.7% 0.004 232);
+    --color-chart-marker-foreground: oklch(66.5% 0.001 232);
+    --color-chart-marker-badge-background: oklch(100% 0 0);
+    --color-chart-marker-badge-foreground: oklch(13% 0.004 232);
+    --color-chart-segment-background: color-mix(in oklab, oklch(100% 0 0) 5%, transparent);
+    --color-chart-segment-line: oklch(32.1% 0.004 232);
+    --color-chart-indicator-color: oklch(32.1% 0.004 232);
+    --color-chart-indicator-secondary-color: oklch(22.7% 0.004 232);
+    --shadow-float: 1px 1px 4px 0 rgb(0 0 0 / 0.4);
+    --shadow-sheet: 0 2px 8px 0 rgb(0 0 0 / 0.5);
+    --shadow-composer: 0 4px 8px 0 rgb(0 0 0 / 0.3);
+}
+
+@keyframes reveal {
+    from {
+        clip-path: inset(0 100% 0 0);
+    }
+    to {
+        clip-path: inset(0 0 0 0);
+    }
+}
+
+@keyframes shine {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: 0% 0;
+    }
+}
+
+/*
+ * Sizes stay on a fixed 4px grid whatever the theme's spacing unit: the unit is the room
+ * around things (padding, gaps, margins, offsets), never the size of a box, an icon or a
+ * column. Tailwind writes w-64 or size-4 as a multiple of --spacing, so a 3px unit would
+ * draw a 192px sidebar and a 12px icon whose strokes land between pixels. These rules
+ * come after Tailwind's own of the same name and win; named sizes (w-sidebar, h-control,
+ * w-full) are untouched.
+ */
+@utility w-* {
+    width: calc(4px * --value(number));
+}
+@utility h-* {
+    height: calc(4px * --value(number));
+}
+@utility size-* {
+    width: calc(4px * --value(number));
+    height: calc(4px * --value(number));
+}
+@utility min-w-* {
+    min-width: calc(4px * --value(number));
+}
+@utility max-w-* {
+    max-width: calc(4px * --value(number));
+}
+@utility min-h-* {
+    min-height: calc(4px * --value(number));
+}
+@utility max-h-* {
+    max-height: calc(4px * --value(number));
+}
+
+@layer base {
+    body,
+    [data-mode] {
+        font-family: var(--font-sans);
+        font-size: var(--text-xs);
+        line-height: var(--leading-normal);
+        letter-spacing: var(--tracking-normal);
+        color: var(--color-neutral-950);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
