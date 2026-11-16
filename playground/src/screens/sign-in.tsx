@@ -49,7 +49,7 @@ export const SignIn = () => {
                     <div className="flex flex-col gap-5">
                         <Field>
                             <FieldLabel>Work email</FieldLabel>
-                            <Input defaultValue="maya@acme.app" type="email" />
+                            <Input autoComplete="email" defaultValue="maya@acme.app" type="email" />
                         </Field>
                         <Field>
                             <div className="flex items-baseline justify-between gap-3">
@@ -61,7 +61,12 @@ export const SignIn = () => {
                                     Forgot it?
                                 </button>
                             </div>
-                            <Input defaultValue="correct horse battery" type="password" />
+                            {/* Empty, as a sign-in opens: a filled password field makes the browser offer to save it. */}
+                            <Input
+                                autoComplete="current-password"
+                                placeholder="Your password"
+                                type="password"
+                            />
                         </Field>
                         <Field className="flex-row items-center gap-2.5">
                             <Checkbox defaultChecked />
