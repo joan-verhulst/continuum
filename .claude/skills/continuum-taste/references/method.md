@@ -9,18 +9,18 @@ from the same values and the same decisions, not copied from another product.
 1. **Take the content as given.** What goes on a screen is the product's and the client's decision: the fields,
    the columns, the actions, the data. Do not invent it, and do not leave it out. If it is not given, ask;
    if no one can answer, assume the least and say so.
-2. **Name each screen's kind**: overview, index, detail, create or edit, settings, sign in. The kind sets its
-   width and anatomy (`pages.md`). A screen that fits no kind is composed from the nearest one; name which.
+2. **Name each screen's kind** from what it is for. The kind sets the width and the parts marked always
+   (`pages.md`). A screen that fits no kind is composed from the nearest one; name which.
 3. **Decide the look once.** The default (pure greys, a near-black action, Geist) suits most tools. A product
    with a colour or mood of its own gets a theme (`theming.md`): an accent, tinted greys, a font, how the action
    draws, the corners. Every theme works in light and dark; a dark-first product starts in dark.
-4. **Compose from the parts in `components.md`** wherever one fits, even loosely: a tree is nav groups, a
+4. **Map the content to the parts in `components.md`** wherever one fits, even loosely: a tree is nav groups, a
    status is a badge, a choice list is option rows, a mode switch is a segmented control or the dock. The
    patterns in `patterns.md` say which parts a common need is built from and how they sit.
 5. **Only then make a new part**, by the recipe below. Never invent a value when an existing one is near enough.
 6. **Build it in the medium** (`media/`), with real state for the main task and realistic data in the product's
    own domain, and empty states.
-7. **Check it** against the standing decisions in `pages.md` and the values in `foundations.md`, at 1440 × 900,
+7. **Check it** against the standing decisions in `pages.md` and the values in `foundations.md`, at 1920 × 1080 and then 1440 × 900 and 390,
    in light and dark, running the checklist in `SKILL.md` by hand.
 
 Never copy another product's layout into a Continuum version of it: keep its content and let the kinds decide

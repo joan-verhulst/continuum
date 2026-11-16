@@ -15,7 +15,7 @@ and expressive type does not apply: Continuum's files decide the look.
    be created, use the literal values and say so.
 2. **Fonts.** Geist (and the theme's font if it picks another). Confirm the family is available to the file
    before the first text.
-3. **The artboard.** 1440 wide, height fit to content, one per screen and mode, named "Screen · light" /
+3. **The artboard.** 1920 wide (a 1440 one beside it when the layout changes there), height fit to content, one per screen and mode, named "Screen · light" /
    "Screen · dark".
 4. **The kit.** When the file has a Continuum kit (a page of every part in every state as named layers,
    "Button / primary / md"), **duplicate from it and change the text**; never redraw a part the kit has.

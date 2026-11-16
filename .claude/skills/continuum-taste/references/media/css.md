@@ -57,4 +57,4 @@ spec rows mention (`data-checked`, `data-open`, `aria-current="page"`), and styl
 
 ## Composing and checking
 
-The same as everywhere: the kind's anatomy from `pages.md` in the shell, checked at 1440 × 900 in light and dark.
+The same as everywhere: the kind's anatomy from `pages.md` in the shell, designed at 1920 × 1080 and checked at 1440 × 900 and 390, in light and dark.

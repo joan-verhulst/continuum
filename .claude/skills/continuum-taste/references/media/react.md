@@ -154,5 +154,5 @@ they live in the host's components folder, importing `cn` and `focusRing` from C
 
 ## Checking
 
-Run the app, look at the screen at 1440 × 900 and at 390 in light and dark (switch `<Theme mode>`), and in an
+Run the app, look at the screen at 1920 × 1080, then at 1440 × 900 and at 390, in light and dark (switch `<Theme mode>`), and in an
 accent theme if the product has one. Take screenshots; do not report a screen done from the code alone.
