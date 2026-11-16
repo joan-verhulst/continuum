@@ -74,6 +74,7 @@
 @layer theme {
   .continuum {
     --spacing: .25rem;
+    --container-xl: 36rem;
     --ease-out: cubic-bezier(0, 0, .2, 1);
     --animate-spin: spin 1s linear infinite;
     --animate-ping: ping 1s cubic-bezier(0, 0, .2, 1) infinite;
@@ -711,10 +712,6 @@
     margin-top: calc(var(--spacing) * -3);
   }
 
-  .continuum .mt-1, .continuum.mt-1 {
-    margin-top: var(--spacing);
-  }
-
   .continuum .mt-2, .continuum.mt-2 {
     margin-top: calc(var(--spacing) * 2);
   }
@@ -805,10 +802,6 @@
 
   .continuum .ml-0\.5, .continuum.ml-0\.5 {
     margin-left: var(--spacing-0\.5, var(--spacing-0\.5));
-  }
-
-  .continuum .ml-1, .continuum.ml-1 {
-    margin-left: var(--spacing);
   }
 
   .continuum .ml-1\.5, .continuum.ml-1\.5 {
@@ -1010,6 +1003,10 @@
   .continuum .size-9, .continuum.size-9 {
     width: 36px;
     height: 36px;
+  }
+
+  .continuum .h-\(--accordion-panel-height\), .continuum.h-\(--accordion-panel-height\) {
+    height: var(--accordion-panel-height);
   }
 
   .continuum .h-\(--bar\), .continuum.h-\(--bar\) {
@@ -1511,6 +1508,10 @@
     max-width: var(--spacing-tooltip, var(--spacing-tooltip));
   }
 
+  .continuum .max-w-xl, .continuum.max-w-xl {
+    max-width: var(--container-xl);
+  }
+
   .continuum .min-w-\(--anchor-width\), .continuum.min-w-\(--anchor-width\) {
     min-width: var(--anchor-width);
   }
@@ -1645,6 +1646,11 @@
 
   .continuum .-translate-x-1\/2, .continuum.-translate-x-1\/2 {
     --tw-translate-x: calc(calc(1 / 2 * 100%) * -1);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+
+  .continuum .-translate-x-full, .continuum.-translate-x-full {
+    --tw-translate-x: -100%;
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
@@ -2137,6 +2143,11 @@
     border-width: 2px;
   }
 
+  .continuum .border-y, .continuum.border-y {
+    border-block-style: var(--tw-border-style);
+    border-block-width: 1px;
+  }
+
   .continuum .border-t, .continuum.border-t {
     border-top-style: var(--tw-border-style);
     border-top-width: 1px;
@@ -2180,14 +2191,8 @@
     border-color: var(--color-action, var(--color-action));
   }
 
-  .continuum .border-error-500, .continuum.border-error-500, .continuum .border-error-500\/40, .continuum.border-error-500\/40 {
+  .continuum .border-error-500, .continuum.border-error-500 {
     border-color: var(--color-error-500, var(--color-error-500));
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .continuum .border-error-500\/40, .continuum.border-error-500\/40 {
-      border-color: color-mix(in oklab, var(--color-error-500, var(--color-error-500)) 40%, transparent);
-    }
   }
 
   .continuum .border-neutral-50, .continuum.border-neutral-50 {
@@ -2216,28 +2221,8 @@
     }
   }
 
-  .continuum .border-success-500\/40, .continuum.border-success-500\/40 {
-    border-color: var(--color-success-500, var(--color-success-500));
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .continuum .border-success-500\/40, .continuum.border-success-500\/40 {
-      border-color: color-mix(in oklab, var(--color-success-500, var(--color-success-500)) 40%, transparent);
-    }
-  }
-
   .continuum .border-transparent, .continuum.border-transparent {
     border-color: #0000;
-  }
-
-  .continuum .border-warning-500\/40, .continuum.border-warning-500\/40 {
-    border-color: var(--color-warning-500, var(--color-warning-500));
-  }
-
-  @supports (color: color-mix(in lab, red, red)) {
-    .continuum .border-warning-500\/40, .continuum.border-warning-500\/40 {
-      border-color: color-mix(in oklab, var(--color-warning-500, var(--color-warning-500)) 40%, transparent);
-    }
   }
 
   .continuum .border-white, .continuum.border-white {
@@ -2747,6 +2732,10 @@
 
   .continuum .pb-3, .continuum.pb-3 {
     padding-bottom: calc(var(--spacing) * 3);
+  }
+
+  .continuum .pb-4, .continuum.pb-4 {
+    padding-bottom: calc(var(--spacing) * 4);
   }
 
   .continuum .pb-5, .continuum.pb-5 {
@@ -3304,6 +3293,12 @@
     transition-duration: var(--tw-duration, var(--default-transition-duration));
   }
 
+  .continuum .transition-\[rotate\,color\],.continuum.transition-\[rotate\,color\] {
+    transition-property: rotate, color;
+    transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
+    transition-duration: var(--tw-duration, var(--default-transition-duration));
+  }
+
   .continuum .transition-\[scale\], .continuum.transition-\[scale\] {
     transition-property: scale;
     transition-timing-function: var(--tw-ease, var(--default-transition-timing-function));
@@ -3601,12 +3596,12 @@
   }
 
   @media (hover: hover) {
-    .continuum .group-hover\:bg-neutral-100:is(:where(.group):hover *), .continuum.group-hover\:bg-neutral-100:is(:where(.group):hover *) {
-      background-color: var(--color-neutral-100, var(--color-neutral-100));
-    }
-
     .continuum .group-hover\:opacity-100:is(:where(.group):hover *), .continuum.group-hover\:opacity-100:is(:where(.group):hover *) {
       opacity: 1;
+    }
+
+    .continuum .group-hover\/accordion-trigger\:text-neutral-950:is(:where(.group\/accordion-trigger):hover *), .continuum.group-hover\/accordion-trigger\:text-neutral-950:is(:where(.group\/accordion-trigger):hover *) {
+      color: var(--color-neutral-950, var(--color-neutral-950));
     }
 
     .continuum .group-hover\/block-slider\:bg-neutral-300:is(:where(.group\/block-slider):hover *), .continuum.group-hover\/block-slider\:bg-neutral-300:is(:where(.group\/block-slider):hover *) {
@@ -3620,10 +3615,6 @@
     .continuum .group-hover\/input\:text-neutral-700:is(:where(.group\/input):hover *), .continuum.group-hover\/input\:text-neutral-700:is(:where(.group\/input):hover *) {
       color: var(--color-neutral-700, var(--color-neutral-700));
     }
-  }
-
-  .continuum .group-focus-visible\:opacity-100:is(:where(.group):focus-visible *), .continuum.group-focus-visible\:opacity-100:is(:where(.group):focus-visible *) {
-    opacity: 1;
   }
 
   .continuum .group-has-data-\[slot\=combobox-clear\]\/input\:hidden:is(:where(.group\/input):has([data-slot="combobox-clear"]) *), .continuum.group-has-data-\[slot\=combobox-clear\]\/input\:hidden:is(:where(.group\/input):has([data-slot="combobox-clear"]) *) {
@@ -3676,6 +3667,10 @@
 
   .continuum .group-data-panel-open\:opacity-100:is(:where(.group)[data-panel-open] *), .continuum.group-data-panel-open\:opacity-100:is(:where(.group)[data-panel-open] *) {
     opacity: 1;
+  }
+
+  .continuum .group-data-panel-open\/accordion-trigger\:rotate-180:is(:where(.group\/accordion-trigger)[data-panel-open] *), .continuum.group-data-panel-open\/accordion-trigger\:rotate-180:is(:where(.group\/accordion-trigger)[data-panel-open] *) {
+    rotate: 180deg;
   }
 
   .continuum .group-data-selected\/popover-item\:border-transparent:is(:where(.group\/popover-item)[data-selected] *), .continuum.group-data-selected\/popover-item\:border-transparent:is(:where(.group\/popover-item)[data-selected] *) {
@@ -5419,6 +5414,11 @@
 
   .continuum .\[\&_img\]\:object-cover img, .continuum.\[\&_img\]\:object-cover img {
     object-fit: cover;
+  }
+
+  .continuum .\[\&_svg\]\:size-3 svg, .continuum.\[\&_svg\]\:size-3 svg {
+    width: 12px;
+    height: 12px;
   }
 
   .continuum .\[\&_svg\]\:size-3\! svg, .continuum.\[\&_svg\]\:size-3\! svg {
