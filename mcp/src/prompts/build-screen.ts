@@ -1,11 +1,37 @@
+import { skill } from 'virtual:knowledge';
 import { z } from 'zod';
 import { definePrompt } from '../support/tool';
+
+/*
+ * The steps of building a screen are the skill's own (SKILL.md, "Building something"), embedded at
+ * build time, so this prompt and the skill never disagree. The server adds only which of its tools
+ * serves each step.
+ */
+
+/** SKILL.md's "Building something" section, its heading left off. */
+const buildingSteps = () => {
+    const start = skill.indexOf('## Building something');
+    if (start < 0) return '';
+    const body = skill.slice(start).replace(/^## Building something\s*/, '');
+    const end = body.search(/\n## /);
+    return (end < 0 ? body : body.slice(0, end)).trim();
+};
+
+/** Which tool serves which step, in the steps' own words. */
+const tools = (stack: string) =>
+    [
+        'With this server:',
+        "- The page kind: `get_page_kind` gives its width, the parts marked always and each other part's condition.",
+        `- The parts: \`list_components\`, then \`get_component\` (medium '${stack}') for each part you choose; \`find_pattern\` for a need (key figures, filters, an empty state…), which says when it is the answer.`,
+        '- Spacing: `get_spacing` for every box that holds content; every other value from the specs or `get_foundation`, never invented.',
+        `- Before looking: \`audit_source\` on the files you wrote${stack === 'canvas' ? ", or `audit_ui` on the canvas's computed styles" : ', or `audit_ui` on a snapshot of the running page (`get_snapshot_script`)'}; apply the fixes, propose the advice, audit again until clean.`,
+    ].join('\n');
 
 export const buildScreenPrompt = definePrompt({
     name: 'build_screen',
     title: 'Build a screen',
     description:
-        'Build a screen in Continuum: name its kind, compose it from the parts and patterns, work out its spacing, then audit it and fix until it is clean.',
+        "Build a screen in Continuum the skill's way: name its page kind, choose a part for each piece of content, work out its spacing with the formula, audit until clean, and look at it at 1920 × 1080, 1440 × 900 and 390.",
     args: {
         screen: z
             .string()
@@ -26,14 +52,9 @@ export const buildScreenPrompt = definePrompt({
             : 'a screen (ask me what it is for and what it holds first)';
         const stack = medium?.trim() || 'react';
         return [
-            `Build ${target}, in Continuum, in ${stack}.`,
-            '1. Take the content as given: the fields, columns, actions and data are mine to decide. Do not invent any or leave any out; if something is missing, ask, or assume the least and say so.',
-            "2. Name the screen's kind and call get_page_kind with it. Follow its anatomy top to bottom, with its width, gaps and the standing decisions (one primary action, a breadcrumb, views in the dock, one column).",
-            `3. Call list_components, then get_component (medium '${stack}') for every part you use. For each need on the screen (a filter bar, key figures, an empty state, bulk selection …) call find_pattern and build it as the row says. Make a new part only when nothing fits, by the recipe find_pattern gives.`,
-            '4. For every box that holds content (a card, a panel, a list row, a dialog), call get_spacing with what it holds for its padding and gaps. Take every other value from the specs or get_foundation; never invent one.',
-            "5. Build it, with realistic data in the product's own domain and its empty and loading states.",
-            `6. Audit the result: audit_source on the files you wrote${stack === 'canvas' ? ", or audit_ui on the canvas's computed styles" : ', or audit_ui on a snapshot of the running page (get_snapshot_script)'}. Apply the fixes, propose the advice to me, and audit again until it is clean.`,
-            '7. Look at it in light and dark, at 1440 × 900 and at 390 wide, and fix what looks wrong before you report it done.',
+            `Build ${target}, in Continuum, in ${stack}. Follow these steps in order.`,
+            buildingSteps(),
+            tools(stack),
         ].join('\n\n');
     },
 });
