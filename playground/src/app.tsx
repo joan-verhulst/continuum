@@ -13,6 +13,7 @@ import { RasterLab } from './raster/lab';
 import { Shell } from './shell';
 import { Charts, Components } from './showcase';
 import { Projects } from './theme-editor';
+import { Onboarding, useWelcome } from './welcome';
 
 /** Where the mode is kept, so a fresh visit opens in the one used last. */
 const MODE = 'continuum.mode';
@@ -161,6 +162,56 @@ const useWornTheme = (current?: string) => {
     return { id: css ? id : undefined, css };
 };
 
+/**
+ * The setup: a name makes the project and opens the builder's own steps on it, in the setup's
+ * canvas. Use this theme leaves it for Home wearing the theme, as the builder does; skipping keeps
+ * what was built so far and goes home, where the app's builder picks it up.
+ */
+const FirstRun = ({
+    state,
+    navigate,
+    welcome,
+    guard,
+}: {
+    state: AppState;
+    navigate: (patch: Partial<AppState>) => void;
+    welcome: ReturnType<typeof useWelcome>;
+    guard: RefObject<LeaveGuard | undefined>;
+}) => {
+    const { create } = useProjects();
+    return (
+        <LeaveGuardProvider value={guard}>
+            <Onboarding
+                onName={name => {
+                    const project = create(name);
+                    welcome.answer('built');
+                    welcome.setBuilding(project.id);
+                    navigate({ view: 'projects', project: project.id });
+                }}
+                onSkip={() => {
+                    if (!welcome.building) return welcome.answer('skipped');
+                    guard.current?.save();
+                    welcome.setBuilding(undefined);
+                    navigate({ view: 'home' });
+                }}
+            >
+                {welcome.building && (
+                    <Projects
+                        onChange={patch => {
+                            // Leaving the builder, as Use this theme does, ends the setup.
+                            if (patch.view && patch.view !== 'projects') {
+                                welcome.setBuilding(undefined);
+                            }
+                            navigate(patch);
+                        }}
+                        state={state}
+                    />
+                )}
+            </Onboarding>
+        </LeaveGuardProvider>
+    );
+};
+
 export const App = () => {
     // The open page's unsaved changes, if any, and a way out held while it asks about them.
     const guard = useRef<LeaveGuard>(undefined);
@@ -179,12 +230,21 @@ export const App = () => {
     const [state, navigate, update] = useHashState(guard, hold);
     const worn = useWornTheme(state.current);
     const ref = useRef<HTMLDivElement>(null);
+    // The first visit to Home, with no project and the setup not yet answered, opens on the setup;
+    // the project named in it is built there, until it is used or the setup is left.
+    const { projects } = useProjects();
+    const welcome = useWelcome();
+    const onboarding =
+        (state.view === 'home' && projects.length === 0 && !welcome.done) ||
+        (state.view === 'projects' &&
+            Boolean(welcome.building) &&
+            state.project === welcome.building);
 
     // Overscroll shows the page behind the scope, so it follows the canvas colour.
     useEffect(() => {
         if (!ref.current) return;
         document.body.style.backgroundColor = getComputedStyle(ref.current).backgroundColor;
-        document.documentElement.style.colorScheme = ref.current.dataset.mode ?? 'light';
+        document.documentElement.style.colorScheme = ref.current.dataset.mode ?? 'dark';
     });
 
     return (
@@ -218,27 +278,33 @@ export const App = () => {
         >
             {worn.css && <style>{worn.css}</style>}
             <ToastProvider>
-                <LeaveGuardProvider value={guard}>
-                    <Shell onChange={navigate} state={state}>
-                        {state.view === 'home' && <Home onChange={navigate} state={state} />}
-                        {state.view === 'foundations' && <Foundations state={state} />}
-                        {state.view === 'components' && (
-                            <Components onChange={navigate} state={state} />
-                        )}
-                        {state.view === 'charts' && <Charts onChange={navigate} state={state} />}
-                        {state.view === 'patterns' && (
-                            <Patterns onChange={navigate} state={state} />
-                        )}
-                        {state.view === 'projects' && (
-                            <Projects onChange={navigate} state={state} />
-                        )}
-                        {state.view === 'skills' && (
-                            <SkillsPage onChange={navigate} state={state} />
-                        )}
-                        {state.view === 'mcp' && <McpPage />}
-                        {state.view === 'raster' && <RasterLab />}
-                    </Shell>
-                </LeaveGuardProvider>
+                {onboarding ? (
+                    <FirstRun guard={guard} navigate={navigate} state={state} welcome={welcome} />
+                ) : (
+                    <LeaveGuardProvider value={guard}>
+                        <Shell onChange={navigate} state={state}>
+                            {state.view === 'home' && <Home onChange={navigate} state={state} />}
+                            {state.view === 'foundations' && <Foundations state={state} />}
+                            {state.view === 'components' && (
+                                <Components onChange={navigate} state={state} />
+                            )}
+                            {state.view === 'charts' && (
+                                <Charts onChange={navigate} state={state} />
+                            )}
+                            {state.view === 'patterns' && (
+                                <Patterns onChange={navigate} state={state} />
+                            )}
+                            {state.view === 'projects' && (
+                                <Projects onChange={navigate} state={state} />
+                            )}
+                            {state.view === 'skills' && (
+                                <SkillsPage onChange={navigate} state={state} />
+                            )}
+                            {state.view === 'mcp' && <McpPage />}
+                            {state.view === 'raster' && <RasterLab />}
+                        </Shell>
+                    </LeaveGuardProvider>
+                )}
                 <LeaveDialog
                     name={held?.name ?? ''}
                     onCancel={() => setAsking(false)}
