@@ -1,4 +1,5 @@
 import type { Entry, InUse } from '../kit';
+import * as accordion from './accordion';
 import * as activity from './activity';
 import * as alert from './alert';
 import * as avatar from './avatar';
@@ -133,6 +134,7 @@ export const entries: Entry[] = [
     statCard.entry,
     table.entry,
     descriptionList.entry,
+    accordion.entry,
     activity.entry,
     barList.entry,
     badge.entry,
@@ -221,6 +223,7 @@ export const inUse: Record<string, InUse> = {
     'card': card.inUse,
     'table': table.inUse,
     'description-list': descriptionList.inUse,
+    'accordion': accordion.inUse,
     'activity': activity.inUse,
     'avatar': avatar.inUse,
     'icon-tile': iconTile.inUse,
