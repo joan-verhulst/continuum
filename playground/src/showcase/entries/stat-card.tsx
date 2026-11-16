@@ -16,6 +16,7 @@ const statCardKnobs: Knob[] = [
         default: 'down',
     },
     { id: 'delta', label: 'Change', switch: true, default: true },
+    { id: 'note', label: 'Secondary figure', switch: true, default: false },
 ];
 
 const deltas = { up: '+3.1%', down: '−3.1%', neutral: '0.0%' } as const;
@@ -25,7 +26,12 @@ const StatCardPreview = ({ knobs }: PreviewProps) => {
 
     return (
         <div className="grid w-full max-w-md grid-cols-2 gap-3">
-            <StatCard delta={knobs.delta ? '+12.4%' : undefined} label="Sessions" value="12,480" />
+            <StatCard
+                delta={knobs.delta ? '+12.4%' : undefined}
+                label="Sessions"
+                note={knobs.note ? 'of 18,200 visitors' : undefined}
+                value="12,480"
+            />
             <StatCard
                 delta={knobs.delta ? deltas[trend] : undefined}
                 label="Bounce rate"

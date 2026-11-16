@@ -114,6 +114,11 @@ export const CardDelta = ({ trend: trendProp, className, ...props }: CardDeltaPr
 export type StatCardProps = Omit<ComponentProps<'div'>, 'children'> & {
     label: ReactNode;
     value: ReactNode;
+    /**
+     * A secondary figure that belongs to the value ("1 invoice, due 30 Nov", "of 418"): a quiet line
+     * under it, never inline after it.
+     */
+    note?: ReactNode;
     delta?: ReactNode;
     /**
      * Colours the delta pill; `neutral` for changes that are neither good nor bad. Read from a
@@ -126,6 +131,7 @@ export type StatCardProps = Omit<ComponentProps<'div'>, 'children'> & {
 export const StatCard = ({
     label,
     value,
+    note,
     delta,
     trend: trendProp,
     className,
@@ -138,6 +144,7 @@ export const StatCard = ({
             <div className="flex flex-col gap-1">
                 <CardTitle>{label}</CardTitle>
                 <CardValue>{value}</CardValue>
+                {note != null && <p className="text-neutral-600 text-xs">{note}</p>}
             </div>
             {delta !== undefined && (
                 <Badge
