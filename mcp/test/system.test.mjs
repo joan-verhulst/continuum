@@ -19,6 +19,33 @@ test('get_spacing gives a text box its padding as a Tailwind step', async () => 
     assert.equal(data.px % 2, 0, `Expected a padding on the spacing scale, got ${data.px}px`);
 });
 
+test('get_spacing gives a page head over a dense table about 64, over a short card about 32', async () => {
+    const head = {
+        runs: [
+            { size: 24, lines: 1 },
+            { size: 13, lines: 1 },
+        ],
+    };
+    const rows = n => ({ children: Array.from({ length: n }, () => ({ size: 13 })) });
+    const gap = async blocks =>
+        (await call(server.client, 'get_spacing', { box: 'gap-between-blocks', blocks })).px;
+    assert.equal(await gap([head, rows(20)]), 64, 'a page head over twenty rows');
+    assert.equal(await gap([head, rows(10)]), 56, 'a page head over ten rows');
+    assert.equal(
+        await gap([
+            { runs: [{ size: 24, lines: 1 }] },
+            { runs: [{ size: 13, lines: 1 }], ...rows(3) },
+        ]),
+        32,
+        'a bare title over a short settings card',
+    );
+    const cards = await call(server.client, 'get_spacing', {
+        box: 'gap-between-boxes',
+        children: [{ padding: 16 }, { padding: 16 }],
+    });
+    assert.equal(cards.px, 16, 'alike cards keep their shared gap');
+});
+
 test('get_tokens as JSON holds the hairline, neutral-200', async () => {
     const data = await call(server.client, 'get_tokens', { format: 'json' });
     assert.match(

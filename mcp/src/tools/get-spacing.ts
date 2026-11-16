@@ -1,4 +1,6 @@
 import {
+    blockGap,
+    blockRoom,
     boxGap,
     boxPadding,
     estimateLines,
@@ -73,9 +75,9 @@ export const getSpacingTool = defineTool({
         "Works out one padding or gap with Continuum's spacing formula and snaps it to a Tailwind step: returns { px, step, tailwind ('p-4', 'gap-3'), css ('16px'), working (the formula with its numbers) }. Call it for the padding of a box that holds content (a card, a section, a sheet or dialog body, a list row, an empty state) and the gaps inside it, working from the innermost box out. Never for a control's side padding (a button, input, chip, tab, nav or menu row): that is fixed per kind, see get_foundation spacing. A group with no border or fill gets no padding, only gaps.",
     input: {
         box: z
-            .enum(['text', 'boxes', 'gap-between-boxes', 'gap-between-texts'])
+            .enum(['text', 'boxes', 'gap-between-boxes', 'gap-between-blocks', 'gap-between-texts'])
             .describe(
-                "What to work out: 'text' the padding of a box holding text (runs); 'boxes' the padding of a box holding boxes (children, and runs for any text of its own); 'gap-between-boxes' the gap between sibling boxes (children's padding); 'gap-between-texts' the gap between two texts (runs: [before, after], and pair).",
+                "What to work out: 'text' the padding of a box holding text (runs); 'boxes' the padding of a box holding boxes (children, and runs for any text of its own); 'gap-between-boxes' the gap between alike sibling boxes, cards in a row or a list's items (children's padding); 'gap-between-blocks' the gap between two unlike blocks standing free in a group with no surface, a page head and its table or a chart and the section under it (blocks: each claims room by what it holds, and the gap is the sum); 'gap-between-texts' the gap between two texts (runs: [before, after], and pair).",
             ),
         runs: z
             .array(run)
@@ -87,6 +89,22 @@ export const getSpacingTool = defineTool({
             .array(child)
             .optional()
             .describe("The boxes inside, each with its padding (and size, for 'boxes')."),
+        blocks: z
+            .array(
+                z.object({
+                    runs: z.array(run).optional().describe('The texts the block holds.'),
+                    children: z
+                        .array(z.object({ size: z.number().positive() }))
+                        .optional()
+                        .describe(
+                            "The boxes the block holds (a table's rows, a list's items), each one line at its type size.",
+                        ),
+                }),
+            )
+            .optional()
+            .describe(
+                "For 'gap-between-blocks', exactly two: the block before the gap and the block after it, each by what it holds: [{ runs: [{ size: 24, lines: 1 }, { size: 13, lines: 1 }] }, { children: [{ size: 13 }, … one per row] }].",
+            ),
         pair: z
             .enum(['tight', 'loose'])
             .optional()
@@ -104,7 +122,7 @@ export const getSpacingTool = defineTool({
             ),
     },
     annotations: readOnly,
-    handle: ({ box, runs = [], children = [], pair, unit = 4 }) => {
+    handle: ({ box, runs = [], children = [], blocks = [], pair, unit = 4 }) => {
         const params = spacingDefaults;
         const texts = runs.map(linesOf);
         let px: number;
@@ -150,6 +168,32 @@ export const getSpacingTool = defineTool({
             px = boxGap(paddings, params);
             prefix = 'gap';
             working = `${params.gapRatio} × ${deepest}px (the fullest sibling's padding) = ${one(px)}px`;
+        } else if (box === 'gap-between-blocks') {
+            if (blocks.length !== 2) {
+                throw new ToolError(
+                    "box 'gap-between-blocks' needs exactly two blocks: the one before the gap, then the one after it, each with its runs and children.",
+                );
+            }
+            const rooms = blocks.map(block => {
+                const own = (block.runs ?? []).map(linesOf);
+                const inner = (block.children ?? []).map(item => ({ padding: 0, size: item.size }));
+                if (!own.length && !inner.length) {
+                    throw new ToolError('Each block needs runs or children: what it holds.');
+                }
+                const all = [...own, ...inner.map(item => ({ size: item.size, lines: 1 }))];
+                const lines = all.reduce((sum, item) => sum + item.lines, 0);
+                const room = blockRoom({ runs: own, children: inner }, params);
+                return {
+                    room,
+                    text: `${params.room} × ${one(typeSize(all))}px × (1 + ${params.roomGrowth}·${log(lines)}) = ${one(room)}`,
+                };
+            });
+            const before = rooms[0];
+            const after = rooms[1];
+            if (!before || !after) throw new ToolError('Two blocks are needed.');
+            px = blockGap(before.room, after.room);
+            prefix = 'gap';
+            working = `each block claims its own room, before: ${before.text}; after: ${after.text}; the gap is the sum = ${one(px)}px`;
         } else {
             const [before, after] = texts;
             if (texts.length !== 2 || !before || !after) {
