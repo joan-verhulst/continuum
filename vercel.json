@@ -1,0 +1,16 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "services": {
+        "web": {
+            "root": "web",
+            "framework": "nextjs",
+            "buildCommand": "cd .. && pnpm build"
+        }
+    },
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": { "service": "web" }
+        }
+    ]
+}
