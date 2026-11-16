@@ -21,6 +21,7 @@ carry it into other projects. For any UI work here, the system is described in
 | `.claude/skills/continuum-fix-padding` | The spacing skill. `scripts/spacing.ts` is built from `src/lib/spacing.ts`. |
 | `mcp/`                                | The MCP server: the skill's references, values and maths, and an audit for any stack (readers → facts → one rule set). `dist/server.mjs` and `manifest.json` are built by `pnpm build:mcp`, but tracked: a clone runs them without building. |
 | `playground/src/install`              | The Skills and MCP server pages, listed from each `SKILL.md` and `mcp/manifest.json`. |
+| `web/`                                | The public site (contui.dev): Next.js, every page generated at build time from the sources above (the references, the showcase entries, the screens, `mcp/manifest.json`, the README), never written twice. The app (the playground) is served at `/app` on it. `pnpm dev` starts both: open localhost:3100. |
 
 ## Conventions
 
@@ -45,7 +46,7 @@ carry it into other projects. For any UI work here, the system is described in
 ## Before finishing
 
 Run `pnpm check`: it type-checks, lints and rebuilds the skills from `src/`. Look at UI changes in the running
-playground (`pnpm dev`) in light and dark before reporting them done. `pnpm install:skill` also installs both
+playground (`pnpm dev`, then localhost:3100/app) in light and dark before reporting them done. `pnpm install:skill` also installs both
 skills to `~/.claude/skills`, for other projects.
 
 ## Tencil pins

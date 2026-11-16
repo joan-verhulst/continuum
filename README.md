@@ -24,7 +24,7 @@ pnpm install:skill
 
 Check it worked with `claude mcp list`: `continuum` should say connected.
 
-To look around, start the playground:
+To look around, start the site and the app, then open localhost:3100 (the app is at /app):
 
 ```sh
 pnpm dev
@@ -108,8 +108,8 @@ The MCP server's `create_theme` tool writes the same two files from a prompt.
 
 | Command              | What it does                                                          |
 | -------------------- | --------------------------------------------------------------------- |
-| `pnpm dev`           | Starts the playground.                                                |
-| `pnpm dev:site`      | Starts the marketing site.                                            |
+| `pnpm dev`           | Starts the site and the app: open localhost:3100, the app at /app.    |
+| `pnpm dev:web`       | Starts the site alone.                                                |
 | `pnpm install:skill` | Builds and installs the skills, and registers the MCP server.         |
 | `pnpm build`         | Builds the stylesheet and the playground.                             |
 | `pnpm build:mcp`     | Builds the MCP server.                                                |
@@ -124,7 +124,7 @@ The MCP server's `create_theme` tool writes the same two files from a prompt.
 | `playground`      | The playground: foundations, components, patterns, projects, install guides. |
 | `mcp`             | The MCP server.                                                             |
 | `.claude/skills`  | The Claude skills. The rules of the system are written in `continuum-taste/references`. |
-| `site`            | The marketing site.                                                         |
+| `web`             | The public site, every page generated from the sources above; the app at `/app`. |
 | `scripts`         | The stylesheet and skill builds.                                            |
 
 ## Credits

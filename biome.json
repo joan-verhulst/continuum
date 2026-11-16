@@ -9,7 +9,10 @@
             "!playground/dist",
             "!reference",
             "!.claude/skills/*/assets",
-            "!.claude/skills/*/references"
+            "!.claude/skills/*/references",
+            "!web/.next",
+            "!web/next-env.d.ts",
+            "!web/public/app"
         ]
     },
     "linter": {

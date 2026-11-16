@@ -11,3 +11,10 @@ reference
 
 # Plans for agents to work from: kept locally, never committed.
 PLAN.md
+PLAN-*.md
+
+# The public site's build output.
+web/.next
+web/next-env.d.ts
+web/src/styles/continuum-ui.css
+web/public/app
