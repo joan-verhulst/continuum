@@ -67,7 +67,7 @@
         {
             "name": "build_screen",
             "title": "Build a screen",
-            "description": "Build a screen in Continuum: name its kind, compose it from the parts and patterns, work out its spacing, then audit it and fix until it is clean.",
+            "description": "Build a screen in Continuum the skill's way: name its page kind, choose a part for each piece of content, work out its spacing with the formula, audit until clean, and look at it at 1920 × 1080, 1440 × 900 and 390.",
             "args": [
                 {
                     "name": "screen",
