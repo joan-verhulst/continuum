@@ -300,8 +300,11 @@ export const TableGroupRow = ({
             className="h-control border-neutral-200 border-b bg-neutral-100 px-3 py-2 text-left font-normal text-neutral-700 text-xs"
             colSpan={colSpan}
         >
-            {children}
-            {hint != null && <span className="ml-1 text-neutral-600 text-xxs">({hint})</span>}
+            {/* One centred line: a title with an icon and the smaller hint beside it share a middle. */}
+            <span className="flex items-center gap-1">
+                {children}
+                {hint != null && <span className="text-neutral-600 text-xxs">({hint})</span>}
+            </span>
         </td>
     </tr>
 );
