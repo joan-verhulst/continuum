@@ -133,10 +133,10 @@ The card's own figure at 24 stays the only thing larger. A named thing being rea
 - **Texture** is a theme's choice (`chartTexture`, `theming.md`), none by default: diagonal stripes (45°, 7
   apart) or a field of dots (6 apart) in every tint, strongest at the top. A chart may ask for one, or `none`,
   itself (`texture`, on the chart or on one series).
-- **Markers** (`markers`, by row): a note on the time axis, a release or an outage. A 28 round pin inset 4 inside
-  the plot's top edge, the surface with the `float` shadow and a ring of its tone (500 at 40%; `neutral-300`
-  plain), a 16 icon or a 10 dot of its tone; a hairline in `neutral-400` down to the foot and a small dark
-  triangle under it on the axis. Its label shows under it on hover or focus: 11/500 in a small surface chip.
+- **Markers** (`markers`, by row): a note on the time axis, a release or an outage. A dashed hairline in
+  `neutral-400` over the plot's full height, and its label always shown at the plot's foot beside the rule
+  (on its left past the middle): 11 `neutral-600` on the chart's background, a 6 dot of its tone or a 12 icon in
+  front. Nothing at the plot's top edge, no pin, no shadow: a note about the data, never louder than the series.
 
 ## Colour
 

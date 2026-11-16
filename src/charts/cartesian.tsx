@@ -80,9 +80,9 @@ const AXIS_HEIGHT = 20;
 /** The room between the plot's frame and the marks in it: none, the frame holds the data tight. */
 const PAD = 0;
 const TOP = 8;
-/** A marker's pin: its size, and its inset from the plot's frame. */
-const PIN = 28;
-const PIN_INSET = 4;
+/** A marker's label: its inset above the plot's foot, and its gap from the rule. */
+const LABEL_INSET = 4;
+const LABEL_GAP = 4;
 const X_LABEL_GAP = 16;
 const TOOLTIP_OFFSET = 12;
 const DOT_RADIUS = 4;
@@ -942,20 +942,18 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                     const foot = top + plotHeight;
 
                                     return (
-                                        <g key={`${marker.index}-${marker.label}`}>
-                                            <line
-                                                shapeRendering="crispEdges"
-                                                stroke="var(--color-neutral-400)"
-                                                x1={Math.round(cx) + 0.5}
-                                                x2={Math.round(cx) + 0.5}
-                                                y1={top + PIN_INSET + PIN}
-                                                y2={foot}
-                                            />
-                                            <path
-                                                d={`M${cx - 5},${foot + 1} l5,-6 l5,6 Z`}
-                                                fill="var(--color-neutral-950)"
-                                            />
-                                        </g>
+                                        // A quiet rule over the plot's full height: a note about the
+                                        // data, never louder than the series it sits on.
+                                        <line
+                                            key={`${marker.index}-${marker.label}`}
+                                            shapeRendering="crispEdges"
+                                            stroke="var(--color-neutral-400)"
+                                            strokeDasharray="3 3"
+                                            x1={Math.round(cx) + 0.5}
+                                            x2={Math.round(cx) + 0.5}
+                                            y1={top}
+                                            y2={foot}
+                                        />
                                     );
                                 })}
 
@@ -1043,21 +1041,21 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                 </div>
                             )}
 
-                            {markers?.map(marker => (
-                                <ChartMarkerPin
-                                    key={`${marker.index}-${marker.label}`}
-                                    marker={marker}
-                                    // Inside the plot's frame, held off its sides at the first and last point.
-                                    x={Math.min(
-                                        Math.max(
-                                            xOf(markOf(marker.index)),
-                                            left + PIN / 2 + PIN_INSET,
-                                        ),
-                                        left + plotWidth - PIN / 2 - PIN_INSET,
-                                    )}
-                                    y={top + PIN_INSET + PIN / 2}
-                                />
-                            ))}
+                            {markers?.map(marker => {
+                                const x = xOf(markOf(marker.index));
+                                // Beside its rule, at the plot's foot; past the middle it sits on the
+                                // rule's left, so it never runs off the frame.
+                                const before = x > left + plotWidth / 2;
+                                return (
+                                    <ChartMarkerLabel
+                                        before={before}
+                                        key={`${marker.index}-${marker.label}`}
+                                        marker={marker}
+                                        x={x}
+                                        y={top + plotHeight - LABEL_INSET}
+                                    />
+                                );
+                            })}
 
                             {(!empty || loading) && (
                                 // The plot's own place in the card: the marks and their grid inside, the labels out.
@@ -1332,52 +1330,36 @@ const toneFill: Record<string, string> = {
     neutral: 'bg-neutral-400',
 };
 
-/*
- * A marker sits just inside the plot's top edge, within the chart's frame, and it carries its
- * tone: a release and an outage are not the same news.
+/**
+ * A marker's note, always shown: 11 type beside its rule at the plot's foot, a 6 dot of its tone in
+ * front (or its icon at 12), on the chart's own background so it reads over the series. No pin, no
+ * shadow: a note about the data, never louder than the data.
  */
-const toneRing: Record<string, string> = {
-    success: 'border-success-500/40',
-    warning: 'border-warning-500/40',
-    error: 'border-error-500/40',
-    neutral: 'border-neutral-300',
-};
-
-const toneInk: Record<string, string> = {
-    success: 'text-success-700',
-    warning: 'text-warning-700',
-    error: 'text-error-600',
-};
-
-/** What a marker puts on the plot's top edge: a disc round its icon, or a bulb in its tone. */
-const ChartMarkerPin = ({ marker, x, y }: { marker: ChartMarker; x: number; y: number }) => (
-    <button
-        className="group absolute z-10 flex size-7 -translate-x-1/2 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:outline-offset-2"
+const ChartMarkerLabel = ({
+    marker,
+    x,
+    y,
+    before,
+}: {
+    marker: ChartMarker;
+    x: number;
+    y: number;
+    before: boolean;
+}) => (
+    <span
+        className={cn(
+            'pointer-events-none absolute z-10 flex -translate-y-full items-center gap-1 whitespace-nowrap rounded-chip bg-chart-background px-1 py-0.5 text-neutral-600 text-xxs [&_svg]:size-3',
+            before ? '-translate-x-full' : '',
+        )}
         data-slot="chart-marker"
-        style={{ left: x, top: y }}
-        type="button"
+        style={{ left: before ? x - LABEL_GAP : x + LABEL_GAP, top: y }}
     >
-        <span
-            className={cn(
-                // Big enough to read the icon and to aim at, and lifted off the plot so it is
-                // plainly a note about the data and not a part of it.
-                'flex size-7 items-center justify-center rounded-full border bg-neutral-50 shadow-float transition-colors duration-150 group-hover:bg-neutral-100 motion-reduce:transition-none [&_svg]:size-4',
-                toneRing[marker.tone ?? 'neutral'],
-                marker.tone && marker.tone !== 'neutral'
-                    ? toneInk[marker.tone]
-                    : 'text-neutral-700',
-            )}
-        >
-            {marker.icon ?? (
-                <span className={cn('size-2.5 rounded-full', toneFill[marker.tone ?? 'neutral'])} />
-            )}
-        </span>
-        <span className="sr-only">{marker.label}</span>
-        <span
-            aria-hidden
-            className="pointer-events-none absolute top-full left-1/2 z-10 mt-1 -translate-x-1/2 whitespace-nowrap rounded-item border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 font-medium text-neutral-950 text-xxs opacity-0 shadow-float transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100 motion-reduce:transition-none"
-        >
-            {marker.label}
-        </span>
-    </button>
+        {marker.icon ?? (
+            <span
+                aria-hidden
+                className={cn('size-1.5 shrink-0 rounded-full', toneFill[marker.tone ?? 'neutral'])}
+            />
+        )}
+        {marker.label}
+    </span>
 );
