@@ -7,7 +7,9 @@
  * - A box of text pads by its type and its amount: k × size × (1 + α·log₂ lines), where size is
  *   the type size averaged over its lines, so one large figure does not size a whole card.
  * - A box of boxes pads at least a step past its children: r × their padding.
- * - Between boxes: g × the children's padding.
+ * - Between alike boxes (cards in a row, a list's rows): g × their padding.
+ * - Between unlike blocks standing free (a page head and its table, a chart and a section): each
+ *   claims its own room, growing with what it holds, and the gap is the sum.
  * - Between texts: t × the size of the text after the gap (type sets the space above a line in that
  *   line's own size), tight for a pair that belongs together and loose between blocks, growing with
  *   the lines either side: × (1 + β·log₂ lines).
@@ -30,6 +32,10 @@ export type SpacingParams = {
     loose: number;
     /** How fast a gap between texts grows with the lines either side of it. */
     beta: number;
+    /** The room a free-standing block claims, per px of its type. */
+    room: number;
+    /** How fast that room grows with the lines and rows the block holds. */
+    roomGrowth: number;
     /** No padding past this, in px. */
     cap: number;
 };
@@ -43,6 +49,10 @@ export const spacingDefaults: SpacingParams = {
     tight: 0.25,
     loose: 1.5,
     beta: 0.6,
+    /* Fitted 16 Nov 2026 to Joan's anchors: a page head over a dense table about 64, over ten rows
+       about 56, a bare title over a short settings card about 32. */
+    room: 0.375,
+    roomGrowth: 1.85,
     cap: 48,
 };
 
@@ -113,9 +123,33 @@ export const boxPadding = (
     return Math.min(Math.max(fromContent, fromChildren), params.cap);
 };
 
-/** The gap between sibling boxes in px, unsnapped, from their padding. */
+/** The gap between alike sibling boxes (cards in a row, a list's rows) in px, unsnapped, from their padding. */
 export const boxGap = (children: readonly number[], params: SpacingParams = spacingDefaults) =>
     Math.max(0, ...children) * params.gapRatio;
+
+/**
+ * The room a free-standing block claims on the side facing another block, in px, unsnapped, from
+ * what it holds (its texts, and each box inside it as one line at its own size), whether or not it
+ * has a surface: room × size × (1 + growth·log₂ lines). It grows faster with amount than padding
+ * does, so a dense table claims far more than a short card: a page head of a title and a line about
+ * 20, a table of twenty rows about 44, a short settings card about 12.
+ */
+export const blockRoom = (
+    { runs, children = [] }: { runs: readonly TypeRun[]; children?: readonly InnerBox[] },
+    params: SpacingParams = spacingDefaults,
+) => {
+    const all = [...runs, ...children.map(child => ({ size: child.size, lines: 1 }))];
+    const lines = all.reduce((sum, run) => sum + run.lines, 0);
+    return params.room * typeSize(all) * (1 + params.roomGrowth * Math.log2(Math.max(1, lines)));
+};
+
+/**
+ * The gap between two unlike blocks that stand free in a group with no surface (a page head and its
+ * table, a chart and the section under it), in px, unsnapped: each brings its own room, so the gap
+ * is the sum, and it grows with how much either side holds. A page head over a dense table lands
+ * near 64; a bare title over a short card near 32.
+ */
+export const blockGap = (before: number, after: number) => before + after;
 
 /**
  * The gap between two texts in px, unsnapped: sized by the text after it, tight within a pair and

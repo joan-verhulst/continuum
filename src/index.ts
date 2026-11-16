@@ -1,3 +1,4 @@
+export * from './components/accordion';
 export * from './components/activity-item';
 export * from './components/alert';
 export * from './components/avatar';
@@ -149,6 +150,8 @@ export {
 } from './lib/harmony';
 export { type ImportedTheme, parseCssColor, themeFromCss } from './lib/import-theme';
 export {
+    blockGap,
+    blockRoom,
     boxGap,
     boxPadding,
     estimateLines,

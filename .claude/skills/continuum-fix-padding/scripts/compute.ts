@@ -5,8 +5,12 @@
  *   node scripts/compute.ts tree.json
  *
  * A box:  { "id": "card", "surface": true, "row": false, "children": [...] }
- *         `surface: false` is a group with no border or fill of its own (a section, a row of cards):
- *         it gets no padding, only gaps, and passes its children's padding on.
+ *         `surface: false` is a group with no border or fill of its own (a page column, a section, a
+ *         row of cards): it gets no padding, only gaps, and passes its children's padding on. Its
+ *         children stand free: each claims its own room and the gap between them is the sum (a page
+ *         head over a dense table lands near 64), unless they are alike.
+ *         `set: true` marks a group of alike items (a grid of cards, a stack of the same card, a
+ *         list): they share one gap from their padding. A `row` is a set unless `set: false`.
  * A text: { "text": "Billing", "size": 24 }  or  { "lines": 3, "size": 13 }
  *         `pair: true` when it belongs with the text before it (a subheader, a value, a caption).
  *         Give `lines` when you measured them; otherwise they are estimated from `text`.
@@ -15,6 +19,8 @@
  */
 import { readFileSync } from 'node:fs';
 import {
+    blockGap,
+    blockRoom,
     boxGap,
     boxPadding,
     estimateLines,
@@ -27,7 +33,7 @@ import {
 } from './spacing.ts';
 
 type TextNode = { text?: string; lines?: number; size: number; pair?: boolean };
-type BoxNode = { id: string; surface?: boolean; row?: boolean; children: Node[] };
+type BoxNode = { id: string; surface?: boolean; row?: boolean; set?: boolean; children: Node[] };
 type Node = TextNode | BoxNode;
 
 type Result = {
@@ -36,6 +42,8 @@ type Result = {
     padding: number;
     /** What the box around it steps past. */
     reach: number;
+    /** The room it claims beside an unlike block, unsnapped. */
+    room: number;
     /** Its type size, averaged over its lines and inner boxes. */
     size: number;
     gaps: { between: string; px: number; className: string }[];
@@ -58,6 +66,15 @@ const solve = (box: BoxNode, params: SpacingParams): Result => {
     const ownRuns = texts.map(runOf);
     const inner = boxes.map(child => ({ padding: child.reach, size: child.size }));
 
+    const surface = box.surface !== false;
+    const alike = box.set ?? Boolean(box.row);
+    const roomOf = (index: number) => {
+        const solved = children[index];
+        return solved && 'reach' in solved
+            ? solved.room
+            : blockRoom({ runs: [runOf(box.children[index] as TextNode)] }, params);
+    };
+
     const gaps: Result['gaps'] = [];
     box.children.forEach((child, index) => {
         const before = box.children[index - 1];
@@ -65,7 +82,11 @@ const solve = (box: BoxNode, params: SpacingParams): Result => {
         const between = `${nameOf(before)} → ${nameOf(child)}`;
         const px =
             isBox(child) || isBox(before)
-                ? snapToSpacing(boxGap(reaches, params))
+                ? snapToSpacing(
+                      surface || alike
+                          ? boxGap(reaches, params)
+                          : blockGap(roomOf(index - 1), roomOf(index)),
+                  )
                 : snapToSpacing(
                       textGap(
                           { before: runOf(before), after: runOf(child), pair: Boolean(child.pair) },
@@ -75,7 +96,6 @@ const solve = (box: BoxNode, params: SpacingParams): Result => {
         gaps.push({ between, px, className: spacingClass(box.row ? 'gap-x' : 'gap', px) });
     });
 
-    const surface = box.surface !== false;
     const padding = surface
         ? snapToSpacing(boxPadding({ runs: ownRuns, children: inner }, params))
         : 0;
@@ -86,6 +106,7 @@ const solve = (box: BoxNode, params: SpacingParams): Result => {
         surface,
         padding,
         reach: surface ? padding : Math.max(0, ...reaches),
+        room: blockRoom({ runs: ownRuns, children: inner }, params),
         size,
         gaps,
         children: boxes,

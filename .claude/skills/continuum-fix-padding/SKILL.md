@@ -1,6 +1,6 @@
 ---
 name: continuum-fix-padding
-description: Works out and fixes the padding and gaps of a component, screen or page with Continuum's spacing formula, so spacing follows what each box holds (its type size, how much text, the boxes inside it) and always lands on a Tailwind spacing class, never an arbitrary value. Use when asked to fix, check, tune or derive padding or spacing ("fix padding", "spacing looks off", "this card feels cramped", "too much space between the title and the description"), or invoked as /continuum-fix-padding with a file, component or page.
+description: Use this skill to work out and fix the padding and gaps of a component, screen or page with Continuum's spacing formula, so spacing follows what each box holds (its type size, how much text, the boxes and rows inside it) and always lands on a Tailwind spacing class, never an arbitrary value. Use it whenever a padding or gap is not drawn by a part, and when asked to fix, check, tune or derive spacing, even if the user only says how it looks ("fix padding", "spacing looks off", "this card feels cramped", "too much space between the title and the description"), or invoked as /continuum-fix-padding with a file, component or page. Not for a control's height or side padding, a panel's width, or which parts go on a screen (continuum-taste).
 ---
 
 # Fix padding
@@ -16,14 +16,15 @@ Defaults are in `scripts/spacing.ts` (the same file as `src/lib/spacing.ts` in t
 | Type size of a box | the font size **averaged over its lines** (each inner box counts as one line at its own size), never the largest; one big figure must not pad a whole card | |
 | Padding of a box of text | `k × size × (1 + α·log₂ lines)` | k 0.75, α 0.6 |
 | Padding of a box of boxes | at least `r ×` the inner boxes' padding | r 1.5 |
-| Gap between boxes | `g ×` the inner boxes' padding | g 1.1 |
+| Gap between alike boxes | `g ×` the inner boxes' padding (cards in a row, a list's items) | g 1.1 |
+| Gap between unlike blocks | in a group with no surface (the page column, a section), each block **claims its own room** and the gap is the sum: room = `c × size × (1 + γ·log₂ lines)`, every line and row it holds counted. A page head over a dense table lands near 64, over ten rows near 56; a bare title over a short card near 32 | c 0.375, γ 1.85 |
 | Gap between two texts | `t ×` the size of the text **after** the gap `× (1 + β·log₂ lines either side)`; tight for a pair, loose between blocks | pair 0.25, block 1.5, β 0.6 |
 | Cap | no padding past 48px | |
 | Scale | snap to Tailwind steps: 0, 0.5 … 3.5 (every 2px), 4, 5 … 12, 14, 16, 20, 24 | |
 
 A **pair** is two texts that belong together: a header and its subheader, a label and its value, a figure and its caption. Everything else that follows a text is a **block**.
 
-A **group without a surface** (a section, a row of cards, a stack with no border or fill) gets no padding, only gaps, and passes its children's padding on to the box around it.
+A **group without a surface** (a section, a row of cards, a stack with no border or fill) gets no padding, only gaps, and passes its children's padding on to the box around it. Its children are **free-standing blocks** (a page head, a table, a chart, a section) that each claim their own room, unless they are **alike** (a grid of cards, a stack of the same card, a list), which share one gap from their padding: mark such a group `"set": true` (a `row` is a set unless `"set": false`).
 
 Siblings compute their own padding; they do not share the fullest one's.
 
