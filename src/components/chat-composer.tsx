@@ -191,14 +191,33 @@ export const ChatComposer = ({
     );
 
     // Grow with the draft up to max-h, then scroll; field-sizing is not in every browser yet.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: the height follows the value.
-    useLayoutEffect(() => {
+    const fit = useCallback(() => {
         const node = nodeRef.current;
 
         if (!node) return;
         node.style.height = 'auto';
         node.style.height = `${node.scrollHeight}px`;
-    }, [value]);
+    }, []);
+
+    // biome-ignore lint/correctness/useExhaustiveDependencies: the height follows the value.
+    useLayoutEffect(fit, [fit, value]);
+
+    // The same draft wraps onto more or fewer lines as the box's width changes (a window resized,
+    // a panel opened beside it) and once the font has loaded, so the height is fitted again then.
+    useEffect(() => {
+        const node = nodeRef.current;
+
+        if (!node) return;
+        let width = node.clientWidth;
+        const observer = new ResizeObserver(() => {
+            if (node.clientWidth === width) return;
+            width = node.clientWidth;
+            fit();
+        });
+        observer.observe(node);
+        void document.fonts?.ready.then(fit);
+        return () => observer.disconnect();
+    }, [fit]);
 
     const options = () =>
         Array.from(listRef.current?.querySelectorAll<HTMLElement>(optionSelector) ?? []);
