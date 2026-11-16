@@ -111,7 +111,7 @@ importance.
 | A badge, tinted chip, status label, a toast's or a chat token's tone | fill: the ramp's **500 at 20%**; text: the ramp's **800**, for every tone. Filled, never outlined |
 | An icon, on that tint or on the surface | the ramp's **600** where it reaches 3:1 (`primary`, `error`), else **700** (`success`, `warning`: the pale green and amber) |
 | A dot or a solid fill              | **500**                                                            |
-| A delta                            | rising `success-800` `#397400`; falling `error-600` `#d62400`      |
+| A delta                            | good news `success-800` `#397400`; bad news `error-600` `#d62400`; by what the change means, not its direction (churn falling is good news) |
 | Error text (an invalid helper, a danger row) | `error-600` `#d62400`                                    |
 | An invalid border                  | `error-500` `#f53e20`                                              |
 
@@ -121,6 +121,13 @@ smallest whole ones that pass: tone text on its tint needs 4.5:1, which the 700 
 `success-700` would still miss on the surface (3.62), so it is the 800 (5.38), while `error-600` passes (4.81).
 An icon needs 3:1 against what it sits on, so it keeps the lighter step where that reaches it. Tones: draft `neutral`,
 waiting on someone `warning`, scheduled or informational `primary`, done or live `success`, failed `error`.
+
+**A status colour has to be tellable from the action colour.** When a theme's accent sits close to a status
+ramp (an amber accent beside `warning`, a red one beside `error`), a badge, a meter and the primary button
+all read as one thing. Then the status carries its meaning by more than colour: an icon in the badge, and a
+word that says the state ("Due soon", not a bare tone). Use that tone sparingly on a screen that also shows
+the primary, and prefer `neutral` where the state is not a call for attention. Moving the status ramp's hue
+away from the accent is a change to the theme, made in the theme builder.
 
 ### Focus
 
@@ -287,8 +294,9 @@ A control's height already decides its vertical room, so its side padding is fix
 
 ### Derived padding: a box holds content
 
-The padding of a box that holds content (a card, a panel, a sheet body, a section, a list row) and the gap
-between two texts are **derived from what the box holds**, then snapped to the scale. The formula is in
+**A spacing that no part draws and no row below fixes comes from the formula, never a guess.** The padding of
+a box that holds content (a card, a panel, a sheet body, a section, a list row) and the gaps between texts,
+boxes and blocks are **derived from what they hold**, then snapped to the scale. The formula is in
 `lib/spacing.ts` and the `continuum-fix-padding` skill runs it; the results for common cases are here, so no
 medium needs to run it.
 
@@ -313,8 +321,21 @@ formula is for the boxes the library does not draw.
 **A box of boxes** pads at least 1.5× its children's padding: children padded 8 or 12 → **20**; 16 → **24**;
 20 → **28**; 24 → **36**.
 
-**The gap between sibling boxes** is 1.1× their padding: padded 8 → **8**; 12 → **14**; 16 → **16**; 20 → **20**;
-24 → **28**.
+**The gap between alike boxes** (cards in a row, a stack of the same card, a list's items) is 1.1× their
+padding: padded 8 → **8**; 12 → **14**; 16 → **16**; 20 → **20**; 24 → **28**.
+
+**The gap between unlike blocks** standing free on the page or in a section (the page head, a table, a chart, a
+section) is the **block gap**: each block claims its own room by what it holds, 0.375 × its type size × (1 +
+1.85 · log₂ its lines, each row or inner box counted as one), and the gap is the two rooms added. Dense content
+claims a lot, light content little:
+
+| Before → after                                        | Block gap |
+| ----------------------------------------------------- | --------- |
+| A bare 24 title → a short settings card (four lines)  | 32        |
+| A title and its line → a stat card row                | 44        |
+| A title and its line → a table of five rows           | 44        |
+| A title and its line → a table of ten rows            | 56        |
+| A title and its line → a table of twenty rows         | 64        |
 
 **The gap between two texts** follows the text *after* the gap, tight inside a pair (a title and its description,
 a label and its value, a figure and its caption) and loose between blocks, growing with the lines either side:
@@ -341,7 +362,7 @@ a label and its value, a figure and its caption) and loose between blocks, growi
 | Cards in a grid or a stack of group cards             | 16; 24 for a stack of settings cards |
 | Blocks inside a section                               | 20  |
 | A section head and its content                        | 20  |
-| Sections of a page                                    | 40  |
+| The page head and what follows; sections of a page    | the block gap, by what each side holds: about 32 to 64 |
 | Sections of a long document                           | 64  |
 | Groups in the sidebar                                 | 24  |
 | The gutter around the app panel                       | 8   |
@@ -428,13 +449,15 @@ A chart's marks reveal once as it enters, the one motion past 400ms; its values 
 | Side padding of the column, below its width        | 16; 24 from a 640px screen; 16 in a compact shell |
 | `inset` (several dense tables): the panel less, a side | 64 from 1024px; 128 from 1536px     |
 | The page's top offset below the header bar         | 96; 128 on a large screen (from 1536px); 40 in a compact shell |
-| Check at                                           | 1440 × 900 and 390, light and dark       |
+| Designed at, then checked at                       | 1920 × 1080; then 1440 × 900 and 390, light and dark |
 
 The column is centred and never runs to the panel's edge unless a page is explicitly asked to be `full`.
 
 ### Narrow screens
 
-The system is drawn at 1440 and holds down to a phone at 390. Two widths change the shell, measured on the shell
+The system is designed at 1920 × 1080, the common desktop screen, and holds at every other size: 1440 × 900
+on a laptop, down to a phone at 390. Nothing is drawn for one width only: a page is composed at 1920 and its parts
+answer to the room they get. Two widths change the shell, measured on the shell
 itself, not the screen, so a shell shown narrow inside a box or embedded in another page behaves as on a phone:
 
 | Shell width               | What changes                                                                                   |
