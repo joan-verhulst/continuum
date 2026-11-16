@@ -297,7 +297,7 @@ const StatusFigure = () => (
 
 /* ---------- Type ---------- */
 
-const typeScale = [
+export const typeScale = [
     { name: 'xxs', className: 'text-xxs' },
     { name: 'xs', className: 'text-xs' },
     { name: 'sm', className: 'text-sm' },
@@ -312,7 +312,7 @@ const typeScale = [
 ] as const;
 
 /** One size: its name and measure on the left, the sample beside it; the rule runs edge to edge. */
-const TypeRow = ({ name, className }: (typeof typeScale)[number]) => {
+export const TypeRow = ({ name, className }: (typeof typeScale)[number]) => {
     const [ref, metrics] = useResolved(readFont);
 
     return (
@@ -409,7 +409,7 @@ const widths = [
 ] as const;
 
 /** Each width as a column centred in one panel: the denser the content, the wider. */
-const WidthsFigure = () => (
+export const WidthsFigure = () => (
     <Figure caption="Each column centred in a 1600px panel. Narrower than its width, a column takes the panel less a 16 to 24px gutter.">
         <div className={cn(frame, 'flex flex-col justify-center gap-2 py-12')}>
             <span
@@ -453,7 +453,7 @@ const grid = {
 };
 
 /** A card at twice its size on the 4px grid, its padding and gaps shaded and measured. */
-const GridFigure = () => (
+export const GridFigure = () => (
     <Figure caption="A card at twice its size on the 4px grid: its padding is four steps, the gap under its label three, the gap beside its icon two.">
         <div className={cn(frame, 'flex items-center justify-center px-8 py-12')}>
             <div className="relative flex w-96 flex-col rounded-[calc(var(--radius-card)*2)] border-2 border-neutral-200 bg-neutral-50 p-8 [--grid-line:color-mix(in_oklab,var(--color-neutral-950)_7%,transparent)]">
@@ -852,7 +852,7 @@ const MotionCurve = ({ curve, on, time }: { curve: number[]; on: boolean; time: 
     );
 };
 
-const motionKnobs: Knob[] = [
+export const motionKnobs: Knob[] = [
     {
         id: 'motion',
         label: 'Motion',
@@ -864,7 +864,7 @@ const motionKnobs: Knob[] = [
 ];
 
 /** One motion on a loop: its curve and duration read off the page, and the thing it moves. */
-const MotionStage = ({ knobs }: PreviewProps) => {
+export const MotionStage = ({ knobs }: PreviewProps) => {
     const name = (String(knobs.motion) in motions ? knobs.motion : 'menu') as MotionName;
 
     return (
@@ -989,7 +989,7 @@ const MotionSpecimen = ({
 
 /* ---------- The page ---------- */
 
-type Foundation = {
+export type Foundation = {
     id: string;
     name: string;
     /** Its short name in the dock. */
@@ -1004,7 +1004,7 @@ type Foundation = {
     Body: () => ReactNode;
 };
 
-const foundations: Foundation[] = [
+export const foundations: Foundation[] = [
     {
         id: 'f-colour',
         name: 'Colour',
