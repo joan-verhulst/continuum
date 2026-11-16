@@ -18,7 +18,8 @@ export const chatTokenVariants = cva(
             },
         },
         defaultVariants: {
-            tone: 'primary',
+            // Neutral: a reference is not a state, and in an accent theme a primary chip outshouts the message.
+            tone: 'neutral',
         },
     },
 );
