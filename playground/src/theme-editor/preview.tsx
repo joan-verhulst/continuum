@@ -371,13 +371,22 @@ export type PreviewPanelProps = {
     onModeChange: (mode: ThemeMode) => void;
     /** Changes the theme; the check layer's balance sets the curves it finds through it. */
     set?: (patch: Partial<ThemeOptions>) => void;
+    /** What the header calls the preview; "Preview" unless said. */
+    title?: string;
 };
 
 /**
  * The preview's panel, filling the aside beside the page: a header with the preview's mode, a
  * colour-vision filter and the check layer's tools, over the product, which scrolls on its own.
  */
-export const PreviewPanel = ({ theme, themeId, mode, onModeChange, set }: PreviewPanelProps) => {
+export const PreviewPanel = ({
+    theme,
+    themeId,
+    mode,
+    onModeChange,
+    set,
+    title = 'Preview',
+}: PreviewPanelProps) => {
     const [vision, setVision] = useState<Vision>('normal');
     const [checking, setChecking] = useState(false);
     const layer = useCheckLayer(theme, mode, checking);
@@ -388,7 +397,7 @@ export const PreviewPanel = ({ theme, themeId, mode, onModeChange, set }: Previe
         <div className="@container flex min-h-0 flex-1 flex-col">
             <HeaderBar>
                 <div className="flex min-w-0 items-center gap-1">
-                    <span className="@max-xl:hidden truncate text-neutral-600">Preview</span>
+                    <span className="@max-xl:hidden truncate text-neutral-600">{title}</span>
                     {layer && <MissesButton layer={layer} set={set} theme={theme} />}
                 </div>
                 <HeaderBarActions>

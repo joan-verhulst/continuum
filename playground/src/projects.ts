@@ -99,9 +99,12 @@ const newId = () =>
         ? crypto.randomUUID().slice(0, 8)
         : Math.random().toString(36).slice(2, 10);
 
+/** No projects, as the server renders them: one array, so the snapshot stays the same. */
+const serverProjects: Project[] = [];
+
 /** Every project, newest change first, and the ways to change them. */
 export const useProjects = () => {
-    const projects = useSyncExternalStore(subscribe, read, () => []);
+    const projects = useSyncExternalStore(subscribe, read, () => serverProjects);
 
     return {
         projects: [...projects].sort((a, b) => b.updated - a.updated),

@@ -66,6 +66,16 @@ export type FlowProps = {
     dirty: boolean;
     /** Saves the theme as it is now to the project; Continue calls it on leaving a step. */
     onSave: () => void;
+    /**
+     * The words of the last action and of going on past a miss, where the theme goes somewhere
+     * other than the playground (the site's builder sends it on to the app). The playground's own
+     * words when left out.
+     */
+    labels?: { use: string; useAnyway: string };
+    /** The step's title as the page's heading (h1, the default) or under ones the page has (h2, h3). */
+    titleAs?: 'h1' | 'h2' | 'h3';
+    /** Where the preview went in a narrow window; the playground hides it there, and says so. */
+    narrowNote?: ReactNode;
 };
 
 type Balancing = { state: 'idle' } | { state: 'busy' } | { state: 'done'; balance: Balance };
@@ -157,7 +167,9 @@ const FaultPrompt = ({
     balancing,
     onBalance,
     onApply,
+    labels,
 }: {
+    labels: { use: string; useAnyway: string };
     faults: Fault[];
     open: boolean;
     onOpenChange: (open: boolean) => void;
@@ -215,13 +227,13 @@ const FaultPrompt = ({
                         <DialogClose render={<Button variant="secondary" />}>
                             Look again
                         </DialogClose>
-                        <Button onClick={use}>Use this theme</Button>
+                        <Button onClick={use}>{labels.use}</Button>
                     </DialogFooter>
                 ) : (
                     <DialogFooter>
                         <DialogClose render={<Button variant="ghost" />}>Look again</DialogClose>
                         <Button onClick={use} variant="secondary">
-                            Use it anyway
+                            {labels.useAnyway}
                         </Button>
                         {proposal?.patch ? (
                             <Button onClick={() => onApply(proposal)}>Apply the balance</Button>
@@ -344,6 +356,11 @@ const review = {
 export const ProjectFlow = (props: FlowProps & { name: string }) => {
     const { theme, set, progress, onProgress, onUse, inUse, used, onExport, name, dirty, onSave } =
         props;
+    const labels = props.labels ?? {
+        use: used ? 'Update theme' : 'Use this theme',
+        useAnyway: 'Use it anyway',
+    };
+    const Title = props.titleAs ?? 'h1';
     const REVIEW = 4;
     const [current, setCurrent] = useState(() => Math.min(progress, REVIEW));
     // The Colour step shows one of its parts at a time, and Continue walks them before leaving it,
@@ -560,9 +577,9 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                 {/* The step's own header: what this step is and what it asks. */}
                 <header className="flex flex-col gap-3">
                     <p className="text-neutral-600 text-xs tabular-nums">{name}</p>
-                    <h1 className="font-medium text-3xl text-neutral-950 tracking-[-0.02em]">
+                    <Title className="font-medium text-3xl text-neutral-950 tracking-[-0.02em]">
                         {open.title}
-                    </h1>
+                    </Title>
                     <p className="max-w-xl text-base text-neutral-600">{open.ask}</p>
                     {/* The first step is where a theme the product already has comes in. */}
                     {current === COLOUR && part === 0 && (
@@ -575,7 +592,8 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                     )}
                     {/* The preview panel is hidden below the large breakpoint, so a narrow window says where it went. */}
                     <p className="text-neutral-600 text-xs lg:hidden">
-                        The preview shows beside the steps in a wider window.
+                        {props.narrowNote ??
+                            'The preview shows beside the steps in a wider window.'}
                     </p>
                 </header>
 
@@ -704,9 +722,7 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
                     )}
                 </div>
                 {complete ? (
-                    !inUse && (
-                        <Button onClick={finish}>{used ? 'Update theme' : 'Use this theme'}</Button>
-                    )
+                    !inUse && <Button onClick={finish}>{labels.use}</Button>
                 ) : (
                     <>
                         <Button
@@ -733,6 +749,7 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
             <FaultPrompt
                 balancing={balancing}
                 faults={faults}
+                labels={labels}
                 onApply={result => {
                     if (result.patch) set(result.patch);
                     setBalancing({ state: 'idle' });
