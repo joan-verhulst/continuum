@@ -44,7 +44,7 @@ text with its stated size, weight and colour. Name the layers by the part names.
 shows (a selected row, an open menu, a checked switch); other states only in the kit.
 
 Common traps: a dock item's corner is the dock's minus 4; a badge is 22 high with 11px medium text; a switch
-is 48 × 25 with a 21 knob; a stat card is label over value over a delta pill, nothing inline after the value;
+is 48 × 24 with a 20 knob; a stat card is label over value over a delta pill, nothing inline after the value;
 a ruled table's head is 41 high on the `neutral-100` fill; a select trigger shows its value at 13 and a 16
 chevron in `neutral-600`; an input's value is 13, not 14 or 16; a secondary button is a `neutral-100` fill
 with a hairline and 13/500 `neutral-950` text, and no button carries a shadow; a placeholder, a hint or a

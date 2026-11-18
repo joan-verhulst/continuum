@@ -33,97 +33,105 @@ nav's links) goes into a drawer the shell holds open or shut (open by the header
 chosen place or the drawer's own toggle shut it, focus going back to the toggle), and the panel is inset 8 on
 every side. The panel keeps its gutter, corners and hairline at every width: a phone shows the same shell.
 
-### Sidebar
+### Sidebar · SidebarHeader · SidebarSwitcher · SidebarGroup · SidebarItem · SidebarSection · SidebarLevel · SidebarLevelHead · SidebarBack · SidebarFooter · SidebarAccount
 **For** the main navigation of an app with several places and groups. **Not for** an app with a handful of
-sections (TopNav) or one that wants the navigation out of the way (Rail); never holds a create button. **With**
-SidebarHeader, SidebarGroup, NavItem, NavGroup, SidebarLevel, SidebarLevelHead, SidebarBack, SidebarFooter,
-SidebarAccount, SidebarSwitcher.
-- 256 wide, no fill, no border; a column: header, groups, footer at the bottom.
-- **SidebarHeader**: 56 high; padding 12 top, 16 right, 8 bottom, 8 left; the logo left (`SidebarLogo`: a 26
-  mark in `neutral-950` centred in a 36 box), the collapse toggle right (`SidebarToggle`: 26 × 26, chip corners,
-  an 18 panel icon in `neutral-300`, `neutral-600` on hover; give it `expanded` and `aria-controls` so its state
+sections (TopNav) or one that wants the navigation out of the way (Rail); never holds a create button. Its rows
+are sidebar items (`SidebarItem`), a section that folds open to its pages is a `SidebarSection`, a place with a
+long index drills into a `SidebarLevel`; all of them, with the header, the switcher and the footer, make one
+sidebar. (The old names `NavItem`, `NavGroup` and `navItemClasses` still work, as aliases.)
+- 256 wide, no fill, no border; a column: header, the switcher, groups, footer at the bottom.
+- **One row for every part.** A sidebar item, a section's row and the back row are the same row: 34 high,
+  padding 8 vertical, 10 left and 8 right, gap 8, `item` corners (10), full width; a 14 icon (or an emoji in a 14 box)
+  leading; the label 13/400, truncating. A chevron in a row is 14 too. Hover 5% wash; focus ring.
+- **Counts, by what they say.** An item's count is what waits for the reader there (new mail, invoices
+  to send): the primary count `Badge` (22 high, 11/500, `chip` corners, min 32 wide), so it stands out from
+  the rows around it. A group's or a section's count is how many it holds, a fact and not a call: a plain figure
+  in `neutral-500`, in the type of its row, tabular. Both sit at the row's end (a section's after its
+  chevron), so the counts of a sidebar line up in one column. A shortcut `Kbd` sits at the item's end too,
+  after a count if both.
+- **SidebarHeader**: 56 high; padding 12 top, 14 right, 8 bottom, 8 left; the logo left (`SidebarLogo`: a 26
+  mark in `neutral-950` centred in a 36 box), the collapse toggle right (`SidebarToggle`: 28 × 28, chip corners,
+  a 16 panel icon in `neutral-300`, `neutral-600` on hover; give it `expanded` and `aria-controls` so its state
   is announced and its name turns between "Collapse sidebar" and "Expand sidebar").
+- **SidebarSwitcher**, **for** the current workspace, project or account of a product that has several, a click
+  from the others: under the SidebarHeader, or in the SidebarFooter in the account's place. **Not for** switching
+  views inside a page (Tabs, SegmentedControl) or siblings deeper in the trail (BreadcrumbMenu); not for a product
+  with one workspace (SidebarAccount). **With** SidebarSwitcherMark, DropdownMenuItem, DropdownMenuSeparator.
+  - A button on the item corners: padding 6 top and bottom, 10 left (an item's, so its mark lines up with the
+    item icons and the logo), 8 right; gap 10. A 28 mark (a `SidebarSwitcherMark`, an avatar or a logo) with chip
+    corners; the name 13/500 `neutral-950` over a detail line 11/400 `neutral-600` (plan, role, "Pick one to
+    work on"), both truncating; a 16 up-down chevron in `neutral-500` at the right. Hover 5% wash, the selected
+    wash while open, focus ring.
+  - Under the header it sits in a group's insets (8 top, 12 right, 4 bottom, 8 left) and opens below; in the
+    footer it takes the account's place, pulled 10 left so its wash and mark line up with the items', and opens
+    above.
+  - **SidebarSwitcherMark**: the workspace's initial 13/500 on its own colour, white by default, or an `ink` for
+    a pale colour or one that flips with the mode (`on-action` when the colour is the action); chip corners, a 1px
+    inset ring of `neutral-950` at 10%; 28 in the button, 20 (11/500) in a menu row; with no colour, a
+    `neutral-200` square with its initial in `neutral-700`.
+  - The menu: aligned to the start, 4 from the button, as wide as the button and never under the wide menu
+    minimum (192). Each workspace a row with its 20 mark and a check on the current one; then a separator,
+    "All …" and "New …".
 - **SidebarGroup**: a `nav` with padding 8 top, 12 right, 8 left; a group after another starts 24 down; an
-  optional label (13/400 `neutral-600`, 10 side and 4 vertical padding) 4 above the items; items 2 apart. A
-  label may carry a count at its end (how many items the group holds, or what a search leaves of them) in the
-  label's colour, tabular numbers, the name truncating before it.
-- **SidebarFooter**: pushed to the bottom; padding 16 top, 20 right, 24 bottom, 18 left; gap 12; holds
-  `SidebarAccount` (a 36 avatar with chip corners, 12 from the name 13/500 `neutral-600` over the plan 11/500
-  `neutral-600`) and, only when the product has notifications, a bell.
+  optional label (13/400 `neutral-600`, 10 left, 8 right and 4 vertical padding) 4 above the items; items 2 apart. A
+  label may carry a `count` at its end (how many items the group holds, or what a search leaves of them), the
+  name truncating before it.
+- **SidebarItem**, **for** one place in the sidebar. **Not for** an action (Button) or a view of the current
+  page (Dock). Trailing, a `Kbd` only when the place has a shortcut, a `count` only when things wait for the
+  reader there. `default` is a place; `project` a project or collection that folds open, and `inset` its pages
+  (the 14 belongs to that pair, and to the section's row, only).
+
+  | variant | text                 | fill                    |
+  | ------- | -------------------- | ----------------------- |
+  | default | 13/400 `neutral-950` | none                    |
+  | project | 14/400 `neutral-950` | none                    |
+  | inset   | 14/400 `neutral-700` | none                    |
+  | primary | 13/400 `on-action`   | action; 14 margin below |
+
+  States: hover 5% wash (primary: `action-hover`); current (`aria-current="page"`) the selected wash, inset text
+  `neutral-950`; focus ring.
+- **SidebarSection**, **for** a section that folds open to its pages (inset SidebarItems), as deep as it needs:
+  a section's rows may be sections. **Not for** flat sections (a SidebarGroup) or a long index (a SidebarLevel).
+  - Its row: the item row at 14/400 `neutral-700` (`neutral-950` open), a 14 icon box, an optional `count`, a
+    chevron that shows on hover (always on touch) and turns from −90° to 0° when open. Open is never a
+    background: a background means "you are here".
+  - Its rows: on a 1px `neutral-200` guide line down the middle of the icon above (16 in), the rows 5 off it, so
+    a page's label starts 32 in, where its section's does (10 + 14 + 8); each level one icon's width further in.
+    4 above and below, rows 2 apart; opens over 200ms.
+  - The page you are on takes the theme's active look, and its piece of the guide line turns `neutral-950`;
+    every section that holds it (found among its rows, open or closed, or set with `current`) stays plain, its
+    label at full strength, and darkens its own piece of the line, so the path down to the page can be followed.
+- **SidebarLevel · SidebarLevelHead · SidebarBack**, **for** a sidebar place with a long index of its own (a docs
+  site's components, a settings tree): the sidebar drills down into it as a level of its own. **Not for** a short
+  list under a place (a SidebarSection that folds open instead) or views of the current page (Tabs, the Dock).
+  **With** SidebarGroup, SidebarItem, a search Input.
+  - **SidebarLevel**: one level, the top level's places or a place's index; only the open one renders. It
+    enters 8 from its side (from the end going down, from the start coming back) while fading in, 200ms
+    `ease-out-strong`; under reduced motion it only fades. A drilled level keeps the sidebar's header and
+    switcher above it and takes the rest of the height, scrolling, so a long index shows whole; the footer stays
+    at the bottom.
+  - **SidebarLevelHead**: the head of a drilled level, holding its SidebarBack and anything that works on the
+    whole level (a search). It stays at the top while the level's list scrolls under it, filled with the
+    sidebar's canvas (`neutral-100`) and a hairline (`neutral-200`) at its foot; padding 12 top, 12 right, 12
+    bottom, 8 left (a group's insets, so its rows sit where the items do), its rows 8 apart. A search in it has
+    9 left padding, which with the hairline makes an item's 10, so its icon sits over the item icons.
+  - **SidebarBack**: the drilled level's back row, first in its SidebarLevelHead: the item row, a 14
+    chevron-left, the level's name 13/400 `neutral-950`. It is announced as "Back: Components" (`backLabel`
+    changes the first word) and takes the reader to the level above; the open page stays.
+  - On the top level, the place that drills shows a 14 chevron-right in `neutral-500` at its end. In the head,
+    under the back row, an optional search narrows the index; the index's groups take a `count` at their labels'
+    ends.
+- **SidebarFooter**: pushed to the bottom; padding 16 top, 14 right, 24 bottom, 18 left (a group's 8 and an
+  item's 10, so the avatar lines up with the logo, the switcher's mark and the item icons; 14 on the right, so a
+  28 icon button's icon centres on the column the toggle and the switcher's chevron share); gap 12; holds
+  `SidebarAccount`, the switcher's row again (a 28 avatar with chip corners, 10 from the name, so the account's
+  name starts on the switcher's line: the name 13/500 `neutral-600` over a detail line 11/400 `neutral-600`: whatever says more
+  about who is signed in, an email, a plan, a role or a place) and, only when the product has notifications, a
+  bell.
 - **Narrow:** under 1024 of shell it is a drawer: 256 wide (at most the shell less 48), on the canvas colour,
   sliding in from the left over the panel in 200ms with the `sheet` shadow and a 40% black scrim, still under
-  reduced motion; shut, it is neither seen nor focusable. Its SidebarToggle then shuts the drawer.
-
-### SidebarSwitcher
-**For** the current workspace, project or account of a product that has several, a click from the others: under
-the SidebarHeader, or in the SidebarFooter in the account's place. **Not for** switching views inside a page
-(Tabs, SegmentedControl) or siblings deeper in the trail (BreadcrumbMenu); not for a product with one
-workspace (SidebarAccount). **With** SidebarSwitcherMark, DropdownMenuItem, DropdownMenuSeparator.
-- A button on the item corners: padding 6 top and bottom, 10 left (a nav row's, so its mark lines up with the
-  nav icons and the logo), 8 right; gap 10. A 28 mark (a
-  `SidebarSwitcherMark`, an avatar or a logo) with chip corners; the name 13/500 `neutral-950` over a detail line
-  11/400 `neutral-600` (plan, role, "Pick one to work on"), both truncating; a 16 up-down chevron in
-  `neutral-500` at the right. Hover 5% wash, the selected wash while open, focus ring.
-- Under the header it sits in a group's insets (8 top, 12 right, 4 bottom, 8 left) and opens below; in the
-  footer it takes the account's place, pulled 10 left so its wash and mark line up with the nav rows', and opens
-  above.
-- **SidebarSwitcherMark**: the workspace's initial 13/500 on its own colour, white by default, or an `ink` for a
-  pale colour or one that flips with the mode (`on-action` when the colour is the action); chip corners, a 1px
-  inset ring of `neutral-950` at 10%; 28 in the button, 20 (11/500) in a menu row; with no colour, a
-  `neutral-200` square with its initial in `neutral-700`.
-- The menu: aligned to the start, 4 from the button, as wide as the button and never under the wide menu
-  minimum (192). Each workspace a row with its 20 mark and a check on the current one; then a separator,
-  "All …" and "New …".
-
-### NavItem
-**For** one place in the sidebar. **Not for** an action (Button) or a view of the current page (Dock). **With**
-an icon (16) leading; trailing, a `Kbd` only when the place has a shortcut, a count `Badge` only when things
-wait for the reader there. `default` is a place; `project` a project or collection that folds open, and `inset`
-its pages (the 14 and the indent belong to that pair only).
-
-| variant   | height | side padding   | text                      | fill                       |
-| --------- | ------ | -------------- | ------------------------- | -------------------------- |
-| default   | 34     | 10             | 13/400 `neutral-950`      | none                       |
-| project   | 34     | 10             | 14/400 `neutral-950`      | none                       |
-| inset     | 34     | 32 left, 10 right | 14/400 `neutral-700`   | none                       |
-| primary   | 34     | 10             | 13/400 `on-action`        | action; 14 margin below    |
-
-Vertical padding 8, gap 8, `item` corners (10), full width, label truncates. States: hover 5% wash (primary:
-`action-hover`); current (`aria-current="page"`) the selected wash, inset text `neutral-950`; focus ring.
-
-### NavGroup
-**For** a section that folds open to its pages (inset NavItems), as deep as it needs: a NavGroup's rows may be
-NavGroups. **Not for** flat sections.
-- Trigger: a NavItem row, 14/400 `neutral-700` (`neutral-950` open), an icon box 16, a chevron (16) that shows on
-  hover (always on touch) and turns from −90° to 0° when open. Open is never a background: a background means
-  "you are here".
-- Rows: on a 1px `neutral-200` guide line from the middle of the icon above (17 in), the rows 6 off it, so a
-  page's label lines up with its section's; each level one icon's width further in. 4 above and below, rows 2
-  apart; opens over 200ms.
-- The page you are on takes the theme's active look, and its piece of the guide line turns `neutral-950`; every
-  NavGroup that holds it (found among its rows, open or closed, or set with `current`) stays plain, its label at
-  full strength, and darkens its own piece of the line, so the path down to the page can be followed.
-
-### SidebarLevel · SidebarLevelHead · SidebarBack
-**For** a sidebar place with a long index of its own (a docs site's components, a settings tree): the sidebar
-drills down into it as a level of its own. **Not for** a short list under a place (a NavGroup that folds open
-instead) or views of the current page (Tabs, the Dock). **With** SidebarGroup, NavItem, a search Input.
-- **SidebarLevel**: one level, the top level's places or a place's index; only the open one renders. It
-  enters 8 from its side (from the end going down, from the start coming back) while fading in, 200ms
-  `ease-out-strong`; under reduced motion it only fades. A drilled level keeps the sidebar's header and
-  switcher above it and takes the rest of the height, scrolling, so a long index shows whole; the footer stays
-  at the bottom.
-- **SidebarLevelHead**: the head of a drilled level, holding its SidebarBack and anything that works on the
-  whole level (a search). It stays at the top while the level's list scrolls under it, filled with the
-  sidebar's canvas (`neutral-100`) and a hairline (`neutral-200`) at its foot; padding 12 top, 12 right, 12
-  bottom, 8 left (a group's insets), its rows 8 apart. A search in it has 9 left padding, which with the
-  hairline makes a nav row's 10, so its icon sits over the nav icons.
-- **SidebarBack**: the drilled level's back row, first in its SidebarLevelHead: a nav row (34 high, 10 side padding, `item`
-  corners), a 16 chevron-left, 8 gap, the level's name 13/500 `neutral-950`, truncating; hover 5% wash, focus
-  ring. It is announced as "Back: Components" (`backLabel` changes the first word) and takes the reader to the
-  level above; the open page stays.
-- On the top level, the place that drills shows a 16 chevron-right in `neutral-500` at its end. In the head,
-  under the back row, an optional search narrows the index; the index's groups take labels with counts at their ends.
+  reduced motion; shut, it is neither seen nor focusable. Its SidebarToggle then shuts the drawer, and choosing
+  an item shuts it too.
 
 ### TopNav
 **For** an app with a handful of sections, the sidebar on its side. **Not for** deep or grouped navigation
@@ -133,7 +141,7 @@ instead) or views of the current page (Tabs, the Dock). **With** SidebarGroup, N
   more. **TopNavLink**: 34 high, 12 side, 8 vertical, gap 8, `item` corners, 13/400 `neutral-600`; hover 5% wash
   and `neutral-950`; current the selected wash and `neutral-950`. Actions pushed right, gap 8.
 - **Narrow:** under 1024 of shell the links and the actions hide, and a toggle before the brand opens the
-  shell's drawer, the links listed in it as nav items.
+  shell's drawer, the links listed in it as sidebar items.
 
 ### Rail
 **For** the main navigation as a floating island: icons only, labels on demand. **Not for** an app whose places
@@ -210,6 +218,8 @@ BreadcrumbLink, BreadcrumbMenu, BreadcrumbPage, BreadcrumbSeparator.
   open the selected wash; menu min width 192.
 - **Narrow:** in a compact shell only the last two crumbs show, parent › page; home and the earlier crumbs
   hide.
+- A page that is a file or a record ID (a trail through folders, a commit) cuts in the **middle** (a Truncate
+  inside BreadcrumbPage), so its extension or last characters stay; a named page cuts at the end.
 
 ### Tabs
 **For** the facets of one object, each with content of its own: line tabs under a page's, a section's or a
@@ -220,8 +230,8 @@ list, settings areas, or an editor with a commit action (the Dock); not for swit
 
 | variant | list                        | trigger                                                                    | active                               |
 | ------- | --------------------------- | -------------------------------------------------------------------------- | ------------------------------------ |
-| line (the default) | gap 0, hairline below (**a page's, a section's or a panel's facets, under its title**) | 44 high, 12 side, gap 6, 13/500 `neutral-600`, hanging 1 over the line | text `neutral-950`, a 2px underline in `neutral-950` (fading in over 150ms) |
-| pill    | gap 2, no line (a tight spot inside a card or a dialog) | 34 high, 12 side, gap 6, `item` corners, 13/500 `neutral-600` | the tint wash, text `tint-fg` |
+| line (the default) | gap 0, hairline below (**a page's, a section's or a panel's facets, under its title**) | 44 high, 12 side, gap 8, 13/500 `neutral-600`, hanging 1 over the line | text `neutral-950`, a 2px underline in `neutral-950` (fading in over 150ms) |
+| pill    | gap 2, no line (a tight spot inside a card or a dialog) | 34 high, 12 side, gap 8, `item` corners, 13/500 `neutral-600` | the tint wash, text `tint-fg` |
 
 Hover `neutral-950` (pill: also the 5% wash); disabled 50%; arrow keys select as they move. A pill list nested
 in a line list keeps its own look. **TabsCount**: 16 high, min 16 wide, 4 side, round, the tab's
@@ -275,7 +285,7 @@ fields. **Not for** a form that fits one page of sections, a page's facets (Tabs
 ## Actions
 
 ### Button
-**For** an action. **Not for** going somewhere (a link or NavItem), turning a thing on (Switch), choosing a view
+**For** an action. **Not for** going somewhere (a link or SidebarItem), turning a thing on (Switch), choosing a view
 (SegmentedControl, Dock). **With** an Input beside it (md level with a small input, lg with a medium one),
 Toolbar, a dialog's footer, a DockAction.
 
@@ -283,20 +293,29 @@ Toolbar, a dialog's footer, a DockAction.
 | ------- | ------ | ----- | --------------------------------- | ------------ | ----------------------------------------------------------- |
 | md      | 34     | hugs  | 16; 12 at an end that holds an icon | `control` 12 | the default: a title row, a toolbar, a form's end, a dialog's footer, beside a small input |
 | lg      | 38     | hugs  | 16                                | `control` 12 | only level with a medium input (a sign-in card), and as the dock's action |
-| icon    | 34     | 34    | 0                                 | `control` 12 | an action its icon alone names (a row's ellipsis), with a tooltip |
-| icon-sm | 28     | 28    | 0                                 | `chip` 6     | an icon button inside another part: a field's copy, a remove ×, the header bar's back and forward |
+| icon    | 34     | 34    | 0                                 | `control` 12 | an action its icon alone names, standing on its own (a title row, a toolbar), with a tooltip |
+| icon-sm | 28     | 28    | 0                                 | `chip` 6     | an icon button inside another part: a table row's ellipsis, a field's copy, a remove ×, the header bar's back and forward |
 
 | variant   | fill        | border   | text          | hover                                   | when                                                   |
 | --------- | ----------- | -------- | ------------- | --------------------------------------- | ------------------------------------------------------ |
 | primary   | action      | none     | `on-action`   | `action-hover`, gradient off            | the view's one primary action, and nothing else        |
-| secondary | `neutral-100` | hairline | `neutral-950` | border `neutral-300`, fill `neutral-200` | every other action that stands on its own: Cancel, Export, "Change plan" |
+| secondary | none | hairline | `neutral-950` | border `neutral-300`, the 5% wash | every other action that stands on its own: Cancel, Export, "Change plan" |
 | ghost     | none        | none     | `neutral-600` | 5% wash, text `neutral-800`             | an action that stays quiet inside a row or a part: the ellipsis, a close, "Clear all", "Add line", "Full history" |
 | tint      | the 7% wash | none     | `tint-fg`     | the wash 8% stronger                    | an AI action beside the primary one                    |
 
-Label 13/500, no wrap, gap 6, icons 16 (leading in navigation, trailing on an action: "Add email +"). Press
+Label 13/500, no wrap, gap 8 (the icon-to-label gap of every 34 and 38 control), icons 14 at 34 and 16 at 38 (leading in navigation, trailing on an action: "Add email +"). Press
 scales to 97%; disabled 50%; `loading` puts a 16 spinner before the label (in place of an icon button's icon),
 holds off clicks, Enter and Space (a submit button sends nothing) and keeps focus, at full strength rather than
 dimmed, since it is working; `pill` rounds it. One primary per view.
+
+### HoldButton
+**For** a destructive action repeated in place, where a dialog each time would be clicked through (removing
+members one by one, cancelling queued runs). **Not for** a rare, grave action (a confirmation dialog) or one that
+can be undone (do it, then Undo in a toast). A Button, secondary or ghost at its sizes, labelled to hold
+("Hold to remove"): holding fills it from the start edge with the `error` 500 at 20% over 1000ms, linear, the
+label turning `error-700`, and the action runs when it is full; letting go, leaving it or losing focus sooner
+drains the fill in 200ms and nothing happens. Space or Enter held does the same; a screen reader's activation,
+which cannot hold, runs it at once. The recipe is Press and hold to confirm in `patterns.md`.
 
 ### Toolbar
 **For** actions on a selection (floating, at the foot) or over a focused block (inline). **Not for** a page's
@@ -307,7 +326,7 @@ standing actions (the title row) or the views of a list (Dock). **With** Toolbar
 | inline   | 34     | 0       | 0   | `control` 12 | 32 high, 12 side, split by hairlines; hover a wash inset 2 (corner 9) |
 | floating | 38     | 3       | 2   | `control` 12 | 30 high, 12 side, corner 8; hover the 5% wash              |
 
-Hairline, surface, `float` shadow. Items 13/500 `neutral-600`, `neutral-950` on hover, icons 16. **ToolbarChip**
+Hairline, surface, `float` shadow. Items 13/500 `neutral-600`, `neutral-950` on hover, icons 14 on the inline bar and 16 on the floating one, 8 from their label. **ToolbarChip**
 leads it ("AI suggestions"): `primary-500` at 20% behind 11/500 `primary-800`, a 16 sparkle, 8–10 side padding.
 **Narrow:** a bar longer than its room scrolls sideways under an edge fade, no scrollbar, rather than clipping;
 in a compact shell a ToolbarButton with an icon drops its label (kept for screen readers), one without keeps it.
@@ -318,10 +337,10 @@ in a compact shell a ToolbarButton with an icon drops its label (kept for screen
 DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuGroup,
 DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent,
 DropdownMenuSearch, DropdownMenuEmpty, DropdownMenuShortcut.
-- Panel: min width 160, padding 4, rows 4 apart, `item` corners (10), hairline, surface, `float` shadow, 4 from
+- Panel: min width 160, padding 4, rows 4 apart, `card` corners (16), so the rows inside keep `item` corners (10) and nest; hairline, surface, `float` shadow, 4 from
   its trigger; opens over 200ms from 95% and transparent.
-- Row (a PopoverItem): 36 high, 12 side, 8 vertical, gap 12, corner 5 (concentric inside the panel), 13/500
-  `neutral-700`, icons 16 `neutral-600`; highlighted the 5% wash and `neutral-800`; `danger` rows in `error-600`,
+- Row (a PopoverItem): 36 high, 12 side, 8 vertical, gap 8, `item` corners (10, nested inside the 16 panel), 13/500
+  `neutral-700`, icons 14 `neutral-600`; highlighted the 5% wash and `neutral-800`; `danger` rows in `error-600`,
   **last, after a separator**. A checkbox or radio item shows a 16 check at its end when checked; radio items
   sit in a **DropdownMenuRadioGroup** (one value), and a checked one takes the selected wash. A
   **DropdownMenuGroup** holds rows a label names. Label 11/500 `neutral-600` (12 side, 6 top, 4 bottom).
@@ -337,8 +356,8 @@ DropdownMenuSearch, DropdownMenuEmpty, DropdownMenuShortcut.
   slot, like a plain item's, with the check still at the end.
 
 ### Kbd
-A shortcut key: 21 high, min 21 wide, 4 side, chip corners, a 1px `neutral-300` border, no fill, 11/500
-`neutral-700`. Trails a NavItem, a CommandMenuItem, a search input, only where the key does what it says. Hidden on a touch screen, which has no keys
+A shortcut key: 22 high, min 22 wide, 4 side, chip corners, a 1px `neutral-300` border, no fill, 11/500
+`neutral-700`. Trails a SidebarItem, a CommandMenuItem, a search input, only where the key does what it says. Hidden on a touch screen, which has no keys
 to hint at.
 
 ## Inputs
@@ -360,7 +379,7 @@ label there) or a read-only value (ValueField).
 | sm   | 34     | 12           | 8   | `control` 12 | 13/500 `neutral-900`, placeholder `neutral-600` (`neutral-700` on hover) |
 | md   | 38     | 12           | 8   | `control` 12 | same                                    |
 
-Hairline, no fill, full width, icons 16 `neutral-600`. Hover border `neutral-300`; focus border `neutral-300`
+Hairline, no fill, full width, icons 14 at 34 and 16 at 38, `neutral-600`. Hover border `neutral-300`; focus border `neutral-300`
 plus the ring; invalid border `error-500`, icon `error-500` and placeholder `error-300`; disabled the whole box
 at 50%, its colours and hairline kept, as every disabled control. `sm` in a toolbar beside buttons; `md` in a
 form. The `plain` variant drops the box (no border, no side padding) for a search inside a container that
@@ -381,7 +400,7 @@ SelectGroup, SelectLabel, SelectSeparator.
   `control` corners, hairline), hugs its content, 13/500
   `neutral-950`, a 16 chevron (down, or right for a picker) in `neutral-600`; placeholder `neutral-600`
   (`neutral-700` on hover); hover and open border `neutral-300`; invalid border and icon `error-500`; disabled 50%.
-- Panel: at least the trigger's width, `item` corners, hairline, surface, `float` shadow, 4 below; the list
+- Panel: at least the trigger's width, `card` corners (16), as every floating panel, hairline, surface, `float` shadow, 4 below; the list
   padded 4 with rows 4 apart; rows as a menu's (36 high, 12 side, corner 5, 13/500 `neutral-700`), the picked
   one on the selected wash with a 16 check at its end; a group label 11/500 `neutral-600`. Never wider than the
   room the screen leaves beside its trigger, as the Combobox's.
@@ -397,11 +416,13 @@ mapping the values to chips); `useComboboxFilter` filters by label with the loca
 - The clear × shows in place of the chevron once there is a value, so one trailing control shows at a time.
   Disabled (on the Combobox, or from a disabled Field) the box sits at 50% with its hairline kept, and the clear
   button, the chevron and each chip's × stop working with it.
-- **ComboboxChip**, a picked value inside ComboboxChips, is a soft chip: 25 high, 8 side, `pill` corners,
+- **ComboboxChip**, a picked value inside ComboboxChips, is a soft chip: 24 high, 8 side, `pill` corners,
   `neutral-100`, 13/400 `neutral-600`, an optional 12 icon, a 12 × at the end (a 20 target; hide it for a value
   that cannot be dropped); Backspace and the arrow keys move between chips, and the focused one takes the ring.
-  **ComboboxChipsInput** is the borderless input after them: 25 high, at least 64 wide, taking the rest of the
+  **ComboboxChipsInput** is the borderless input after them: 24 high, at least 64 wide, taking the rest of the
   row. The panel and rows are the Select's; "No results" is a 36 row in `neutral-600`.
+- Options that are files, paths or IDs cut in the **middle** (a Truncate as the item's label) when the panel is
+  narrower than them, so options that share a start still read apart; named options cut at the end.
 
 ### Checkbox
 **For** selecting rows in a table, agreeing to a thing in a form, several choices from a short list. **Not for**
@@ -420,15 +441,15 @@ a setting that is on or off (Switch), nor a column of channels in settings (one 
 ### Switch
 **For** a setting that is on or off and takes effect as it changes. **Not for** a choice submitted with a form
 (Checkbox) or a one-of-few (SegmentedControl).
-- Track 48 × 25, round, 2 padding, `neutral-300` off, the action colour on; knob 21 round, the surface colour off,
-  `on-action` on, travelling 23 over 200ms. Disabled 50%; focus ring on the track.
+- Track 48 × 24, round, 2 padding, `neutral-300` off, the action colour on; knob 20 round, the surface colour off,
+  `on-action` on, travelling 24 over 200ms. Disabled 50%; focus ring on the track.
 
 ### SegmentedControl · SegmentedControlItem
 **For** one of a few values that reshapes the same content: a view (List · Grid), a range (7d · 30d), a filter
 on an index. **Not for** going to another place (Dock, Tabs), a yes/no (Switch), or more than five values
 (Select). Always holds one value: without one given, it starts on its first item.
 - Track 34 high, 2 padding, `item` corners (10), hairline, the surface (`segment-track`); `fill` makes it full
-  width with equal items. Items 29 high, 10 side, gap 6, corner 7, 13/500 `neutral-600`, icon 16; hover the 5%
+  width with equal items. Items 29 high, 10 side, gap 8, corner 7, 13/500 `neutral-600`, icon 14; hover the 5%
   wash and `neutral-800`. The pressed item sits on one thumb (29 high, corner 7, the action fill, `on-action`
   text; a theme may raise it as a chip with a hairline) that slides between items over 200ms. Inside a Field it
   is named by the FieldLabel, described by the helper and disabled with the field; elsewhere give it an
@@ -489,6 +510,8 @@ free-text date.
 - Files follow under it, 16 apart, each a row (gap 12): a 32 icon tile (filled while uploading, outlined in
   the success tone when done, `error-600` on error), the name 13/500 over a meter (4 high) while uploading or the
   size 13 tabular `neutral-600` (the error in `error-600`), a ghost 28 × to cancel or remove.
+- A long file name cuts in the **middle** (Truncate), keeping its extension and the end that tells it from the
+  file above; `end` only for names read from the start.
 
 ## Forms and settings
 
@@ -501,11 +524,15 @@ per group on a settings page.
   Title 13/500 `neutral-950` (it labels the control; clicking it toggles or opens it), description 13/400
   `neutral-600` 2 below. Disabled (`disabled`, or the whole group): the text at 50% and the control disabled
   with it. For an action button turn `labelControl` off, so the button keeps its own text as its name.
-- Group: a fieldset; a quiet title 13/400 `neutral-600` 12 above the rows; rows 16 apart, every row after the
-  first ruled off by a hairline at the content's width with 16 above it. A `dependent` row sits with the row
-  above it, 16 below and with no hairline between, so the pair reads as one setting; disabling it while the
+- Group: a fieldset; a quiet title 13/400 `neutral-600` 12 above the rows; settings 24, a hairline at the
+  content's width and 24 apart. A `dependent` row sits with the row above it, 12 below and with no hairline
+  between, stepped in behind a 1px `neutral-200` guide line (4 in, its text 16 past the line), the line
+  running unbroken through consecutive dependents, so the pair reads as one setting; disabling it while the
   parent is off is the caller's (`disabled`). Several dependents get an eyebrow (13/400 `neutral-600`) naming
-  what they belong to, marked `data-dependent` so it stays with the parent too. Never closeness alone.
+  what they belong to, marked `data-dependent` so it stays with the parent, behind the same line.
+  `layout="boxed"`, when the settings carry dependents that must hold together: each setting with its
+  dependents a bordered box (16 padding, `control` corners, the hairline), the boxes 8 apart and no hairlines;
+  inside a box the dependents are plain rows 20 under the setting and 12 apart.
 
 ### OptionRow · OptionList
 **For** a choice that needs a sentence of explanation: a plan, a mode, a permission; in a dialog or a form.
@@ -523,6 +550,8 @@ for** an editable value (Input) or facts on a detail page (the fact grid, Descri
   concentric at the right ("—" in `neutral-600` when empty).
 - `vital`: a 29 pill (hairline, 12 side, gap 12): the label 13/400 `neutral-600`, then a 6 status dot and the
   value 13/500 `neutral-950` tabular at the right.
+- A key, an ID, a hash or a URL in the well cuts in the **middle** (`truncate`, Truncate) when it is too long, so
+  its end stays to check against; the copy button still copies the whole. Other values cut at the end.
 
 ## Filtering
 
@@ -543,7 +572,7 @@ one value (Select); never above a table as a row of tabs.
 ### Chip · ChipAction
 **For** an applied filter ("Status is Paid"), a picked value, a tag, or a prompt offered (`outline`). **Not
 for** a status (Badge) or an action (Button).
-- `sm` 25 high, 8 side, a 12 icon; `md` 29 high, 10 side, a 16 icon. `pill` corners, 13/400, no wrap. `soft`,
+- `sm` 24 high, 8 side, a 12 icon; `md` 28 high, 10 side, a 16 icon. `pill` corners, 13/400, no wrap. `soft`,
   for what has been picked or applied (a filter, a value, a tag): `neutral-100` fill, `neutral-600` text
   (hover `neutral-200` and `neutral-950` when clickable); `outline`, for what is offered and not yet taken (a
   prompt for the assistant): a hairline, `neutral-950` text (hover border `neutral-300`). An × at the end (a
@@ -634,8 +663,8 @@ PopoverContent, PopoverHeader, PopoverTitle, PopoverDescription, PopoverClose.
 **For** the row every popup list is made of: a select's options, a combobox's, a menu's actions, a filter menu's
 values, the command menu's commands; each list renders its own item through it, so its keyboard and state stay
 the list's. **Not for** a row on a page (a table row, a setting row, a bar list row).
-- 36 high, 12 side, 8 vertical, gap 12, corner the panel's `item` less 5 (concentric), 13/500 `neutral-700`,
-  icons 16 `neutral-600`; highlighted the 5% wash and `neutral-800`; selected the selected wash and
+- 36 high, 12 side, 8 vertical, gap 8, `item` corners (10, nested inside the panel's 16), 13/500 `neutral-700`,
+  icons 14 `neutral-600`; highlighted the 5% wash and `neutral-800`; selected the selected wash and
   `neutral-950`; `danger` in `error-600`; disabled 50%.
 - In order: the **leading** piece (a 16 icon, an avatar, an indicator, a chip), the name (truncating), **meta**
   inline after it (400 `neutral-600`, 6 from the name: a badge, "you"), an optional **description** under the
@@ -699,7 +728,7 @@ happens to be a number (the fact grid), or filling a row.
 (`rows`, frameless, since the card already frames it; when each row has one figure, a BarList). **Not for**
 key–value facts (DescriptionList, the fact grid) or a settings list. **With** TableHeader, TableBody, TableFooter, TableRow,
 TableHead, TableCell, TableGroupRow, TableCaption; Pagination under it; Checkbox for selection; a ghost
-ellipsis in the last column for the row's DropdownMenu.
+`icon-sm` ellipsis (28) in the last column for the row's DropdownMenu, which the row's 41 holds without growing; TableHead, TableCell, TableEditCell and the fold parts in the sections below.
 
 | variant | frame                                           | head                                            | row / cell                                                      |
 | ------- | ----------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- |
@@ -718,6 +747,87 @@ stays put in the frame while a table wider than it scrolls sideways under it.
 scrolls sideways under an edge fade at the side that has more, so it reads as scrollable. A column marked
 `optional` on its head and cells (an owner, a last seen: what the reader can do without) hides while the frame is
 under 640; the name and the row's menu are never optional.
+
+### TableHead
+**For** a column's name over its values, 13/400 `neutral-600` on the head's fill. **Sorting**, only on the columns
+a reader orders by (a name, a date, an amount), never every column: the label is a button with a 14 mark 4 after
+it (before it on a right-aligned column, so the label stays flush with the figures). Unsorted, the mark is an
+up-down chevron in `neutral-500` shown only under the pointer or focus (always on touch), so a sortable head row
+reads as plain as any other; sorted, an arrow in `neutral-900` (up ascending, turned down descending) and the label
+`neutral-900`. A click steps off → first order → the other → off; numbers and dates start descending (the largest
+or latest first, which is why they are sorted), text ascending. One column sorts at a time; the head carries
+`aria-sort`.
+
+### TableCell
+**For** one value in a row. Numbers tabular and right-aligned (`numeric`); the name 13/500 `neutral-900`, meta
+13/400 `neutral-700`. A long value that is told apart by its end (a key, a path, a hash) is cut in the middle with
+a Truncate, the whole on hover and in a copy; a name is cut at its end. **Copy** (`copy`), only for a value the
+reader pastes elsewhere: an ID, an email, a key, a hash: a 24 ghost button (14 icon, `chip` corners, the 5% wash
+under the pointer) 8 after the value, so it reads as a control of its own beside it; on a right-aligned cell it
+goes before the value. It shows while the cell is under the pointer or the button has focus (always on touch) and
+keeps its room while hidden, so nothing moves; a copy turns the icon to a tick for 1.5 s and is announced. Not on
+names or amounts, which nobody copies on their own. A box alone in a cell (`TableSelectCell` for the selection
+column) sits on the row's middle and never grows the row.
+
+### TableEditCell
+**For** a value worked on where it sits, only where the table is where the values are worked on (`patterns.md`).
+The cell reads as its value. Under the pointer or on focus a 14 mark in `neutral-500` shows at the cell's end: a
+pencil for a typed value, a chevron for a pick, the one hint that it can change (before the value on a
+right-aligned cell, so the figures stay flush), with the pointer cursor, since a click is what starts the edit
+(the text cursor belongs to the field once it is open). A click, or Enter on it, turns it into a borderless input
+on the tint wash with the text exactly where it was, so the row keeps its height, and rings the cell inside its
+edges in the accent (`primary-500`, 2), so the cell being edited is plain to see among the values. A 20 ghost
+check at the field's end saves (before the figures on a right-aligned cell): the save is an action you can see and
+tap, not only a key; Enter or a click away saves too, Escape puts the value back, and focus returns to the cell. A value from a set (a VAT rate) opens a list under the cell, its
+left edge on the cell's; the pick saves. Focus on a cell rings the whole cell, inside its edges. A sum the table
+works out stays a plain cell and follows the edit.
+
+### TableFold · TableFoldCell · TableFoldRows · TableFoldHead · TableFoldPanel
+**For** a row with more rows of the same kind under it, opened now and then: an invoice's instalments, a folder's
+files and folders. The rows a fold shows (`TableFoldRows`) are real rows of the table: the same columns filled
+the same way, the same height, each with its own box when rows are selected, and a nested row can fold in turn.
+Rows of the same kind (instalments under an invoice, files under a folder) **align with the columns**, because
+each value is a value of that column. Rows that are a **breakdown** of the row above (a payout by source, a
+source by plan: `TableFoldRows shift`) **step in a level (a step) in every column**: left-aligned values step right,
+right-aligned figures step left, in from the column's edge, and a column the breakdown has no value for (the
+date) stays empty. So no part sits under its parent's value and reads as a peer of it, while it stays in the
+column it belongs to; each level deeper steps again. Ticking a parent ticks all its children; with some ticked
+it shows mixed.
+
+Rows of **another kind** (an invoice's lines under the invoice) take a head of their own (`TableFoldHead`): the
+table's head row again, the same fill, height and type, as the first row the fold shows, naming what each column
+holds for the rows under it (Item, Qty, Rate where the table says Invoice, Client, Status); its first label steps in
+with the rows, and a column they leave empty keeps an empty head. The rows then sit on the table's columns and
+read against those labels, so a quantity under the table's Status reads as a quantity, not a status.
+
+**Anything that is not rows** (a diff, a history, a form, a preview) goes in a panel (`TableFoldPanel`): one row,
+its action cells empty and the parent's line running down beside it to 16 over its foot. It **splits on a
+column's edge, the way the table does**: what the content is (a title in 13/500 `neutral-900`, who and when in
+`neutral-600`, an action) in the leading columns (`aside`, `asideSpan`), starting a step in where a child's name
+would, and the content itself in the columns after, its left edge on theirs. So the panel follows the table's own
+columns rather than sitting as a block centred in a row. Without an aside the content takes every data column, a
+step in. It grows to what it holds, 16 above and below, both sides from the top, and its text wraps. Inside,
+Continuum's own parts at their own sizes; one primary action at most, and usually none, since the page has its
+own.
+
+**Layout.** The fold's control is an action of the row, so it has its own **fold column** after the selection
+column (44, 12 padding, an empty head). A top-level row that folds shows a 20 ghost chevron there, `chip` corners (6) (right closed,
+turned down open, 150 ms); one that does not keeps the slot empty. A **nested row's box moves into the fold
+column**, centred under its parent's chevron (its cell in the selection column stays empty); a nested row that
+folds puts its chevron a **step** after its box, and its children's boxes sit under that chevron, so every level
+repeats the top level's box-and-chevron pair, the same distance apart, one step further in. The step is the
+distance from a box to its chevron: 44 with a selection column (its width), 28 without (a 20 chevron and the 8
+after it). Keep the selection and fold columns at 44 by leaving one data column without a width to take the
+rest; when every column has a width, the table spreads the spare room over all of them and the pairs no longer
+match. The fold column grows a step a level and fits the deepest level shown. Box and chevron share the row's
+middle. The nested row's first data cell steps in a step a level, its name 13/400 `neutral-700` (and a column
+repeating the parent's value the same), so it is set back from its parent's.
+
+The **guide line** (a `neutral-200` hairline) hangs from the open chevron at its centre x, from 4 under it, and
+threads between the children's boxes (4 clear of each) to the last child. Without selection it runs straight
+through to the middle of the last child. It can be left off (`guides={false}`) when the moved boxes are enough to
+show the level; it is on by default, since it ties each box to the chevron it hangs from. Nested rows fade in over
+200 ms. The footer's label cell spans the action columns too.
 
 ### DescriptionList · DescriptionItem
 **For** key–value facts in a bordered box, term left and value right in two equal columns. **Not for** facts on a
@@ -749,6 +859,32 @@ pattern) or a chat.
   `warning-700` / `error-600` / `primary-700` glyph, as IconTile), the title 13 `neutral-950` over the time 13/400
   `neutral-600` (2 apart), an optional badge at the end.
 
+### BranchGraph
+**For** a version history where how the work branched and merged matters: a repository's commits, a document's
+or a model's versions with forks. It is a list of rows first, so it lives with the lists and not the charts: it
+measures nothing, and each row is a thing to pick. **Not for** a straight history with nothing to branch (an
+ActivityList, or a Table when the rows carry several facts), or a run's steps.
+- Takes commits newest first, each with its parents; it works the lanes out itself. One row per commit, 34
+  (`compact`, a long log) or 41 (`default`, a short log read closely), no rules between rows so the lanes run
+  unbroken; in a frame like the ruled table's (`control` corners, hairline, surface) unless a card already frames it.
+- The gutter: lanes 16 apart, the first 16 from the frame's edge, lines 1.5, a commit an 8 dot in its lane's
+  colour; a merge a hollow ring of the same size, and its message `neutral-600`, since a merge says less than
+  the work it brings in. Lines run only down a lane or along a dot's row, turning on a 6 corner: a branch
+  leaves the commit it was made from along that row, a merge reaches along its own row to the branch it takes
+  in, and a line along a row breaks 3 either side of a lane it passes, so it reads as passing under. A lane
+  whose parent is not in the list runs off the foot.
+- Colour: the trunk (`main` or `master` unless named) keeps the leftmost lane in `neutral-400`, so the line
+  everything comes from stays quiet; the lanes beside it take `chart-series-1` to `-4` in turn. Never the
+  status colours: a lane's colour says which line, not how it went.
+- A row: the refs, then the message 13/400 `neutral-900` truncating, then author 13/400 `neutral-700`, the
+  short hash 11 mono `neutral-600` and the time 13/400 `neutral-600` tabular, right aligned, 16 apart. A ref is
+  a 20 label, `chip` corners, the 5% wash, 11/500 truncating at 160: a branch with a 6 dot in its lane's colour,
+  a tag with a 12 tag glyph, the checked-out branch in `neutral-950` with a hairline ring, a remote's copy in
+  `neutral-600`. Two refs at most, the rest a "+N" with the names in its tooltip. Under 560 wide the author and
+  hash go and a row keeps one ref, so the message keeps its line.
+- When rows are picked: a listbox, one row in the tab order, arrows and Home/End move, Enter or a click picks;
+  hover the 3% wash, picked the selected wash with a soft disc round its dot, the focus ring inside the row.
+
 ### BarList · BarListItem
 **For** a ranked breakdown (top pages, sources, countries) in a list card. **Not for** a comparison across
 categories (a chart) or a data table.
@@ -762,6 +898,22 @@ categories (a chart) or a data table.
   `neutral-600` tabular. Interactive rows hover the 5% wash; pressed (a filter toggle) the tint with the label at
   500. Empty: a 34 row "No data yet" in `neutral-600`. Narrow, the header's value label truncates rather than
   push the title out.
+- Labels that are paths or URLs (top pages) cut in the **middle** (`truncate`), since rows that share a start
+  are told apart by their last part; names and places keep the cut at the end.
+
+### Truncate
+**For** one line of text that must fit the width it is given. **Not for** text that may wrap (a description,
+a message) or a value that must always show whole (an amount).
+- Cut **at the end** by default, for names and labels read from the start ("Northwind Traders"). Cut **in the
+  middle** when the end tells one item from the next: a file name keeps its extension and the word before it
+  (`invoice-2026-11-…-final.pdf`), a path its last part (`/docs/…/invoice-paid`), a hash or an ID its last 4
+  (`0x3f2a…9c1b`), so a column of names that share a start still reads apart. The kept end is a fixed number of
+  characters, chosen by the kind of string, and the start fills whatever width is left; it never cuts by a
+  character count alone.
+- The ellipsis is the font's own `…`, set tight against both halves, never a space beside it. The type is the
+  surrounding text's; a hash or an ID is mono.
+- While cut, the whole text shows in a Tooltip on hover (11/500, start-aligned, breaking anywhere). The cut is
+  only drawn: a screen reader, find-in-page and a copy all get the whole text.
 
 ### Separator
 A 1px `neutral-200` line, horizontal or vertical. Rarely: between the rows of a bordered list, segments of a
@@ -775,9 +927,9 @@ toolbar, the parts of a floating container (full width); never between page sect
 | variant | corners      | side padding | for                                            |
 | ------- | ------------ | ------------ | ---------------------------------------------- |
 | soft    | `chip` 6     | 6            | a status, with an optional 12 icon             |
-| pill    | `pill`       | 8            | a delta in a stat card                         |
+| pill    | `chip` (6)   | 8            | a delta in a stat card                         |
 | dot     | `chip` 6     | 6            | a status with a 6 dot of the tone's 500 in front |
-| count   | `chip` 6     | 6            | a number beside a nav item, min 32 wide, centred |
+| count   | `chip` 6     | 6            | a count in the sidebar or a nav, min 32 wide, centred |
 
 22 high, 11/500, no wrap. Tones: the ramp's **500 at 20% behind its 800** (`neutral`, `success`, `warning`,
 `error`, `primary`), one rule for every tone (the 700 misses 4.5:1 on the success and warning tints). Filled,
@@ -857,6 +1009,9 @@ a table).
   and takes the action beside its words. Toasts pile, three at most, the newest in front and the older peeking
   8 above it; pointing fans them 12 apart. Enters from 24 below over 400ms; leaves after 5s; swipe down or
   right.
+- `useOptimisticUndo` runs the recipe Optimistic update with Undo (`patterns.md`) on this toast: the change
+  shows at once, the toast offers Undo, the request runs behind it, and a failed request puts the thing back
+  with an `error` toast.
 
 ### Notice · useNotice
 **For** a small action's state in the header bar: "Saving…", "Saved", "Link copied". **Not for** anything that
@@ -950,6 +1105,44 @@ support, an assistant, comments. **Not for** a history (ActivityList) or a log (
   is typing"; two "Maya and Liam are typing"; three "Maya, Liam and Noor are typing"; four "Maya, Liam and 2 others
   are typing"; five or more "5 people are typing".
 
+### Thinking · ThinkingCaret · ThinkingRun · ThinkingMark · ThinkingText
+Which one goes by how long the wait is and what is already on screen. A person typing is ChatTyping; a button
+that is busy is the Spinner; a page loading is skeletons.
+- **Thinking**: the mark in `neutral-950`, gap 8, a few words lit (`ThinkingText`), truncated ("Thinking",
+  "Searching the docs").
+  **When** an assistant has started but nothing of its answer exists yet and the wait is seconds: in a reply's
+  place in the thread, beside a field it is filling, in a table cell it is working out. Name what it is doing
+  when it knows ("Reading 3 invoices"), because a step named is a wait that feels shorter. The small size: the
+  8 mark, gap 6, 11 type. A status: its words are read once, and again when they change.
+- **Mark** (`ThinkingMark`): nine 3 squares 1 apart in a 3 by 3 grid (11 across; the small one 2 squares, 8
+  across), in the text colour, with a wave rolling across them from the top left corner to the bottom right:
+  each swells from 60% size and 20% opacity to full and back as the wave passes, a diagonal an eighth of the wave
+  apart, 1.4s a wave, ease-in-out. Scale and opacity only, so it never shifts the line. Under reduced motion it
+  rolls at 2.8s rather than stopping: a still mark reads as stuck. Decorative; the words beside it are read.
+- **Lit words** (`ThinkingText`): words being worked on, with a band of light crossing them letter by letter
+  every 2s, from `neutral-600` to `neutral-950` and back, so the words themselves say the work goes on. Still, in
+  `neutral-600`, under reduced motion. **When** the words name what is being done now (the thinking line, a
+  run's current step); never on words that are finished.
+- **Caret** (`ThinkingCaret`): a 6 square, 1 corners, `neutral-950`, on the baseline 4 after the last word,
+  swelling between full and 25% opacity, 1.2s each way, ease-in-out (2.4s under reduced motion). **When** the
+  answer's words are arriving: it moves on with the text and goes when the last word is in. A square and not a
+  bar, so it never reads as a caret the reader could type at. The message is busy while it shows; the caret is
+  read once ("Writing") unless the message says so itself.
+- **Run** (`ThinkingRun`): **when** the work takes tens of seconds or more (an agent working through steps), so
+  the reader needs to see it is still going, how long it has taken and how to stop it. `card` corners, the
+  surface with a hairline, 12 vertical, 16 left, 12 right, gap 12: the mark on the title's line, then the title
+  13/500 `neutral-950` over the current step, lit, both truncated; the time since it began, 11
+  `neutral-600` tabular ("42s", "3m 05s", "1h 12m"), counting each second; a secondary Stop button at the end.
+  A light runs along the bottom hairline: a segment a quarter of the width, soft at both ends, `neutral-950`,
+  crossing in 2.4s on a strong ease-in-out (`cubic-bezier(0.77, 0, 0.175, 1)`), so it moves while the step
+  stays the same and rests off the edges between passes. Under reduced motion it stops crossing and the whole
+  hairline swells in `neutral-400` instead. The title and step are a status (read as the step changes); the clock
+  is not, or it would be read every second. When the run ends, the answer takes its place. **Steps**: when the
+  run knows its steps, they list under the title on its text edge, 8 apart, in place of the step line: a done
+  one with a 12 check in `neutral-500` and its words in `neutral-600`; the one it is on with the small mark and
+  its words lit; the ones to come with a 4 square in `neutral-300` and words in `neutral-400`. **When** the run
+  has three to six known steps; an open-ended one keeps the step line.
+
 ### ChatToken · ChatReference
 - **Token**: a mono 11 chip with `chip` corners, 6 side, 2 vertical, `neutral-500` at 20% behind `neutral-800`
   by default (a reference is not a state), `primary` only to mark one the reader must act on, inline in a message. **Reference**: a record dropped in: min 38 high, `control` corners, hairline,
@@ -960,7 +1153,8 @@ support, an assistant, comments. **Not for** a history (ActivityList) or a log (
 - **Attachment** (`ChatAttachment` · `ChatAttachments`): a file going with a message. `file`: 40 high, `item`
   corners, hairline, surface, 4 inset: a 32 well with `chip` corners and a 16 file icon, tinted by kind (a PDF the
   error tone, others neutral: the ramp's 500 at 20%, its 800), gap 8, the name 11/500 over its extension 11
-  `neutral-600`, both truncated, max 240 wide. `image`: a 40 square thumbnail, `item` corners, hairline. Both are a
+  `neutral-600`, both truncated, max 240 wide; the name cuts in the middle (Truncate), keeping the end that tells
+  one file from the next. `image`: a 40 square thumbnail, `item` corners, hairline. Both are a
   row (40) high round a cell (32) well. While waiting in the composer each is removable: a ghost 28 × at the
   file's end, a 20 round chip (surface, hairline, 12 ×) on the image's top right corner; each named "Remove
   <name>". `record`, a linked record (an application, an invoice), drawn in ChatReference's shape so it keeps one

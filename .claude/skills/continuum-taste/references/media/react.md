@@ -65,7 +65,7 @@ there (a `continuum` folder or a `.continuum` class), skip setup.
 | Corners chip · item · control · card · panel · dock · pill | `rounded-chip` · `rounded-item` · `rounded-control` · `rounded-card` · `rounded-panel` · `rounded-dock` · `rounded-pill`; an inset corner `rounded-[calc(var(--radius-item)-2px)]`; round `rounded-full` only on avatars, dots, switches, radios |
 | Shadows                                 | `shadow-float`, `shadow-sheet`, `shadow-composer` (the composer's lift, deeper in dark); none otherwise |
 | Heights: the control row 34 · the field row 38 · the large block slider 48 | `h-control` · `h-control-lg` · `h-control-xl` |
-| Heights inside a control: small chip 25 · small icon button 28 · segmented item, medium chip, vital row 29 · dock item, calendar day, date-range preset 32 | `h-chip` · `h-control-sm` · `h-segment` · `h-cell` |
+| Heights inside a control: small chip 24 · small icon button, medium chip 28 · segmented item, vital row 29 · dock item, calendar day, date-range preset 32 | `h-chip` · `h-control-sm` · `h-segment` · `h-cell` |
 | Row heights: a popup list's row 36 · a description row, a popup's search and footer 40 · ruled table row 41 · line tab, a table's toolbar (minimum) 44 | `h-option` · `h-row` · `h-table-row` · `h-tab` |
 | Bar heights: dialog and sheet header and footer 52 · header bar 54 · sidebar header, top nav 56 | `h-bar` · `h-header` · `h-nav` |
 | Every height above, as a square, a minimum or a width | `size-control`, `min-h-control-lg`, `w-cell` (each name takes `size-`, `min-h-`, `w-`); a height derived from one is a `calc` on its variable, `min-h-[calc(var(--spacing-control)+8px)]` |
@@ -73,7 +73,7 @@ there (a `continuum` folder or a `.continuum` class), skip setup.
 | The spacing scale                       | Tailwind's own: `p-4` = 16, `gap-2.5` = 10, `pt-24` = 96. Padding, gaps, margins and offsets follow a theme's unit; `w-*`, `h-*`, `size-*`, `min-*` and `max-*` on the number scale stay on a fixed 4px grid (`size-4` is 16 at any unit), set by the last block of `theme.css` and copied into an exported `app.css` |
 | Content widths                          | `max-w-content-narrow` · `max-w-content` · `max-w-content-wide` · `max-w-content-dense`; `PageContent width="…"` sets them |
 | Fixed widths: sidebar 256 · rail 52 / 208 · popover 288 · menu minimum 160 / 192 · filter menu 240 · toast 360 · tooltip maximum 256 · chart tooltip minimum 140 · search 256 · presets column 144 · a quiet message's line 480 / 288 · an assistant's conversation 720 · dialog 480 · sheet 512 · command menu 560 | `w-sidebar` · `w-rail` / `w-rail-open` · `w-popover` · `min-w-menu` / `min-w-menu-wide` · `w-filter-menu` · `w-toast` · `max-w-tooltip` · `min-w-chart-tooltip` · `w-search` · `w-presets` · `max-w-measure` / `max-w-measure-narrow` · `max-w-conversation` · `w-dialog` · `w-sheet` · `w-command` (each takes `w-`, `min-w-`, `max-w-`). Fixed pixels, so the theme's spacing unit never reaches them: never write a panel's or popup's width as a spacing step (`w-64`, `w-90`, `max-w-72`). In a narrow viewport a dialog keeps 16 clear each side, `w-[min(var(--spacing-dialog),calc(100vw-32px))]` and so on; a sign-in card's 400 stays an inline value |
-| Icons                                   | `lucide-react` with `strokeWidth={2}`; a container sizes them with `[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0` |
+| Icons                                   | `lucide-react`: inside `Theme` every icon is 16 at stroke 2 by default (lucide's own is 24), so set a size only to depart from it; a container sizes them with `[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0` |
 | Colour transitions                      | `transition-[background-color,border-color,color] duration-150`; never `transition-all` |
 | Entries                                 | `duration-200 ease-out-strong` from Base UI's `data-starting-style:opacity-0 data-starting-style:translate-y-2` (dialogs), `translate-x-4` (sheets), `scale-95` (popups), with `motion-reduce:transition-none` |
 | The shell's widths: under 1024 (sidebar) · under 640 (compact) | `AppShell` is the container `@container/shell`; inside it the variants `@max-shell-sidebar/shell:` · `@max-shell-compact/shell:`, from `--container-shell-sidebar` (1024px) · `--container-shell-compact` (640px) in `@theme`. Outside an `AppShell` there is no `shell` container and they never match, so a part looks as drawn |
@@ -88,7 +88,7 @@ shell but an overlay (the shell's and the part's own containers decide), `flex-w
 ## Narrow screens in the library
 
 - `AppShell` holds the drawer's state: uncontrolled by default, or `navOpen` / `defaultNavOpen` /
-  `onNavOpenChange` to hold it yourself. Under 1024 of shell the `Sidebar` is the drawer and a `NavItem` chosen
+  `onNavOpenChange` to hold it yourself. Under 1024 of shell the `Sidebar` is the drawer and a `SidebarItem` chosen
   in it shuts it; a `SidebarToggle` in its header with no `onClick` of its own shuts it too.
 - `HeaderBar` draws a `HeaderBarSidebarToggle` at its far left on its own inside an `AppShell nav="side"`;
   export it into a bar of your own. `HeaderBarNav` and `HeaderBarActions` hide under 1024 of shell.

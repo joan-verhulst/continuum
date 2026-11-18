@@ -20,13 +20,13 @@ canvas (neutral-100)
 workspace's name lives in the footer account, over its plan. A product with several workspaces or projects
 puts a **SidebarSwitcher** under the header (the current one's mark, name over a quiet line, a menu of the
 others), or makes the footer account one; the breadcrumb's menu stays for switching siblings deeper in the
-trail. Then the main places as nav items:
-34 high, 10 side padding, 8 between icon (16) and label, `item` corners (10), 13 regular `neutral-950`, 2 apart;
+trail. Then the main places as sidebar items (`SidebarItem`):
+34 high, 10 side padding, 8 between icon (14) and label, `item` corners (10), 13 regular `neutral-950`, 2 apart;
 the current one takes the selected wash (7%); at the right, a trailing `Kbd` only when the place has a shortcut,
-a count badge only when things wait for the reader there (a review queue). Groups are 24
+a count badge only when things wait for the reader there (a review queue); a count on a group label or a folding section is the same badge. Groups are 24
 apart, each under a label of 13 regular `neutral-600` with 10 side and 4 vertical padding; a labelled group's
-items are plain nav items at 13 with their icons. A **project or collection** (a NavGroup row, 14
-`neutral-700`) folds open to its pages as `inset` items (left padding 32, no icon, 14 `neutral-700`,
+items are plain sidebar items at 13 with their icons. A **project or collection** (a SidebarSection row, 14
+`neutral-700`) folds open to its pages as `inset` items (the label 32 in, no icon, 14 `neutral-700`,
 `neutral-950` when current); the 14 and the indent belong to that pair only. A place with a long index of its
 own (a docs site's components, a settings tree) drills down into a level of its own, under a back row with its
 name, rather than lengthening the top level. The footer holds the account
@@ -91,8 +91,8 @@ The title row every page starts with:
   actions the object has. A page with none has a title and a line, and that is the head.
 - Between the head and what follows, the **block gap** of the spacing formula (`foundations.md`, worked out by
   `/continuum-fix-padding` or `get_spacing`): each side claims room by what it holds and the gap is the sum,
-  so a bare title over a short settings card gets about 32 and a head with its line over a dense table about
-  64. Never a fixed number.
+  so a bare title over a short settings card gets about 32, a head with its line over a settings card about
+  48, and a head with its line over a dense table about 64. Never a fixed number.
 
 ## A section
 
@@ -157,7 +157,7 @@ a pane beside the list, and never the item's editor in a sheet.
      attributes of many values that are always at hand; a **Filter** button (secondary, 34, a filter icon, a
      count once filters apply) for several groups of values, opening them as grouped checkbox values with
      "Clear all" at its foot.
-3. **Applied filters**, only when there are any, in a row under the toolbar, still inside the table's frame: one soft chip per group (25 high, 8 side,
+3. **Applied filters**, only when there are any, in a row under the toolbar, still inside the table's frame: one soft chip per group (24 high, 8 side,
    13, `pill` corners, the `neutral-100` fill and no border, `neutral-600` text, a 12 × at its end: "Channel is
    Online store or Wholesale"), wrapping to more lines if needed, and a ghost "Clear all" at the end.
 4. **The table**, always, the block gap below the head (a dense table claims a lot of room: about 64 under a head with its line; the toolbar is inside its frame, not a step between them): ruled, in its frame (`control` corners, the hairline, the surface). Head 41
@@ -231,19 +231,31 @@ dialog over the page it came from.
 
 1. **The page head**, always: the area's name ("Workspace", "Notifications"), one line.
 2. **One list card per group**, always, the cards stacked 24 apart: 20 padding, a quiet group title (13 regular
-   `neutral-600`) and the rows 16 apart under it, **each divided from the next by a hairline** at the card's
-   content width (the one place on a page where rows are ruled: the card is a bordered list).
+   `neutral-600`) 12 above the settings. Inside, the settings take one of two layouts, by what the group holds
+   (once the content is grouped, step 4 of building):
+   - **Ruled**, the default, for a group of plain settings: the settings **24, a hairline and 24 apart** at the
+     card's content width (the one place on a page where rows are ruled: the card is a bordered list).
+   - **Boxed**, when the group's settings carry dependents that must hold together with them: each setting
+     with its dependents a **bordered box** of its own (16 padding, `control` corners, the hairline), the
+     boxes **8 apart** and no hairlines between them. The one container allowed inside a card besides the plan
+     in force: it is what makes a setting with several dependents read as one.
+   When a group falls into two or more kinds of settings (updates and exceptions, levels and reports), each
+   kind goes under a **sub-category title** (14 medium `neutral-950`, 12 above its settings), the kinds 32
+   and a hairline apart when ruled, 24 apart when boxed. A group too long for one card **splits**: the group
+   becomes a section (16 medium title, 20 above its cards), each kind a card of its own; sections 48 apart.
 3. **A setting row**, for each thing that is switched, picked or done: the title 13 medium `neutral-950` over
    its description 13 regular `neutral-600` (2 between), the control at the right, the row at least 38 high.
-   **One control per setting**, chosen by what the setting is: a **switch** (48 × 25, round, `neutral-300`
+   **One control per setting**, chosen by what the setting is: a **switch** (48 × 24, round, `neutral-300`
    off, the action colour on, a 21 knob) when it turns a thing on; a **picker** (a 34 select with the value
    and a right chevron: "Select ›", "After a day ›") when it sets a value; a **secondary button** when it
    does a thing ("Add seats"). Never a row of checkboxes per channel, never a group of radios in a row.
-4. **A dependent setting**, one that only means something while another is on, shares the space between two
-   hairlines with the setting it depends on: the same 16 below it, no hairline between them, dimmed (50%)
-   while that one is off. Closeness alone never carries the relationship: the hairlines around
-   the pair do, or, when a parent has several dependents, a small eyebrow over them (13 regular
-   `neutral-600`, like the group title) names what they belong to.
+4. **A dependent setting**, one that only means something while another is on, sits with the setting it
+   depends on and is dimmed (50%) while that one is off. **Ruled**: between the same two hairlines, **12 below
+   it** (against 24 and a hairline between settings), **stepped in behind a 1px `neutral-200` guide line** (4
+   from the content's edge, its text 16 past the line). **Boxed**: a plain row in the setting's box, the box
+   already holding them together: the dependents **20 under the setting and 12 apart**, a group of their own.
+   When a parent has several dependents, a small eyebrow over them (13 regular `neutral-600`) names what they
+   belong to.
 5. **Plain values** (a name, an address, a language), when the group holds things typed in rather than
    switched: fields stacked in the card, as in a form.
 6. **The settings areas**, **when there is more than one** (General · Members · Notifications · Billing ·

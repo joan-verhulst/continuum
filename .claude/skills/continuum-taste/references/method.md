@@ -10,12 +10,14 @@ from the same values and the same decisions, not copied from another product.
    the columns, the actions, the data. Do not invent it, and do not leave it out. If it is not given, ask;
    if no one can answer, assume the least and say so.
 2. **Name each screen's kind** from what it is for. The kind sets the width and the parts marked always
-   (`pages.md`). A screen that fits no kind is composed from the nearest one; name which.
+   (`pages.md`). A screen that fits no kind is composed from the nearest one; name which. **Unless the screen is
+   the work** (below): then it has no kind, and nothing from `pages.md` comes with it.
 3. **Decide the look once.** The default (pure greys, a near-black action, Geist) suits most tools. A product
    with a colour or mood of its own gets a theme (`theming.md`): an accent, tinted greys, a font, how the action
    draws, the corners. Every theme works in light and dark; a dark-first product starts in dark.
 4. **Map the content to the parts in `components.md`** wherever one fits, even loosely: a tree is nav groups, a
-   status is a badge, a choice list is option rows, a mode switch is a segmented control or the dock. The
+   status is a badge, a choice list is option rows, a mode switch is a segmented control or the dock. On a
+   screen that is the work too: its layout is the genre's, its parts are still these (below). The
    patterns in `patterns.md` say which parts a common need is built from and how they sit.
 5. **Only then make a new part**, by the recipe below. Never invent a value when an existing one is near enough.
 6. **Build it in the medium** (`media/`), with real state for the main task and realistic data in the product's
@@ -26,6 +28,25 @@ from the same values and the same decisions, not copied from another product.
 Never copy another product's layout into a Continuum version of it: keep its content and let the kinds decide
 the structure. Think each screen through for what it is for: nothing repeats, and every element has a job (a
 selection needs bulk actions; a filter that matched nothing offers to clear itself).
+
+## When the screen is the work
+
+An editor, a player, a mail client, a canvas, a timeline, a terminal: the screen is where the work happens,
+not a page that shows records. Here the work splits three ways, and the skill decides only two of them.
+
+- **The layout is the genre's, not this skill's.** Lay it out the way the best apps of that kind are laid out
+  (you know what a photo editor, a music player or a mail client looks like), or, when the person gives a
+  reference such as a screenshot, the way it is: region for region, in the same order, at the same
+  proportions. Nothing from `pages.md` comes with it: no page shell, page head, dock, page anatomy or cards
+  around regions, unless the genre has that exact thing (a mail client's folders are a sidebar of places).
+- **The look is Continuum's:** the type scale and its two weights, the colour roles and the one action colour,
+  hairlines and the corner scale, the two control heights, the theme's density, and gaps from the spacing
+  formula. Regions meet on a hairline.
+- **The parts are the library's.** Every control, row, list item, tab, menu, field, slider, tooltip and icon
+  button is the part from `components.md`, at its own size: a layer list is list rows, a toolbar is a
+  Toolbar of icon buttons, a track list is a table. Icons are lucide at 16 with stroke 2, the size always set
+  (lucide's own default is 24). Make a part by the recipe below only for what no part is: a ruler, a canvas,
+  a waveform, a playhead.
 
 ## A new part
 

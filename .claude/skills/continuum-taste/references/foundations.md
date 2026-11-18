@@ -51,7 +51,7 @@ Use a step by what it means, never by how it looks:
 | Quieter body text; a footer label                         | `neutral-700` | `#484848` | `#b3b3b3` |
 | Ghost text on hover                                       | `neutral-800` | `#2a2a2a` | `#d2d2d2` |
 | An input's value, a table cell                            | `neutral-900` | `#181818` | `#ededed` |
-| Primary text, titles, the active nav item                 | `neutral-950` | `#0d0d0d` | `#f8f8f8` |
+| Primary text, titles, the active sidebar item                 | `neutral-950` | `#0d0d0d` | `#f8f8f8` |
 
 **Contrast sets the lightest step a role may take.** Text that is read needs 4.5:1 on the surface and on the
 canvas; `neutral-500` gives 3.67 on the surface and 3.33 on the canvas, so it is never text, and `neutral-600`
@@ -199,8 +199,8 @@ Line height is **1.25** throughout; tracking **0.32px** throughout, at every siz
 | Name   | Size | Line | For                                                                                   |
 | ------ | ---- | ---- | ------------------------------------------------------------------------------------- |
 | `xxs`  | 11   | 13.75 | badges, counts, kbd, tooltips, hints, meta under a name, a sidebar group label      |
-| `xs`   | 13   | 16.25 | **the base**: body, controls, inputs and their values, labels, table cells, nav items, descriptions |
-| `sm`   | 14   | 17.5 | dialog and sheet titles, option labels, project-level nav items, a page's description line |
+| `xs`   | 13   | 16.25 | **the base**: body, controls, inputs and their values, labels, table cells, sidebar items, descriptions |
+| `sm`   | 14   | 17.5 | dialog and sheet titles, option labels, project-level sidebar items, a page's description line |
 | `base` | 16   | 20   | section titles                                                                        |
 | `lg`   | 18   | 22.5 | a KPI value, a block or sheet heading                                                 |
 | `xl`   | 20   | 25   | rarely: a secondary headline figure                                                   |
@@ -252,7 +252,7 @@ Corners nest, each smaller than what holds it: **panel ⊃ card ⊃ control ⊃ 
 | Name      | Value   | On                                                                            |
 | --------- | ------- | ----------------------------------------------------------------------------- |
 | `chip`    | 6px     | badges, checkboxes, icon tiles, small chips, code blocks                       |
-| `item`    | 10px    | nav items, menu and list rows, cards inside a list, kanban cards, media tiles |
+| `item`    | 10px    | sidebar items, menu and list rows, cards inside a list, kanban cards, media tiles |
 | `control` | 12px    | buttons, inputs, selects, segmented tracks, the ruled table's frame           |
 | `card`    | 16px    | cards, dialogs                                                                |
 | `panel`   | 20px    | the app panel, sheets                                                         |
@@ -275,7 +275,7 @@ Never multiply a radius by hand, and never give a theme-following corner a hard-
 The unit is **4px**. Every padding, gap, margin and offset lands on this scale, never between steps. Sizes are
 not spacing: the width and height of a box, an icon, a control's part or a column stay on a fixed 4px grid
 whatever unit a theme picks, and the widths of panels, popups and fixed columns are fixed pixels (Layout below).
-A tight or roomy theme changes the room around things, never their size, so an icon stays 16 and its strokes
+A tight or roomy theme changes the room around things, never their size, so an icon stays 14 or 16 and its strokes
 stay on whole pixels:
 
 `0 · 2 · 4 · 6 · 8 · 10 · 12 · 14 · 16 · 20 · 24 · 28 · 32 · 36 · 40 · 44 · 48 · 56 · 64 · 80 · 96`
@@ -288,7 +288,7 @@ A control's height already decides its vertical room, so its side padding is fix
 | ------------------------------------------------- | --------------------------------- |
 | Button                                            | 16 (12 on the side that has an icon) |
 | Input, select, date picker, tab, dock item, menu row, select option | 12              |
-| Nav item, segmented item, bar-list row, rail item | 10 (rail 9)                       |
+| Sidebar item, segmented item, bar-list row, rail item | 10 (rail 9)                       |
 | Chip, tooltip, pill badge                         | 8                                 |
 | Badge                                             | 6                                 |
 
@@ -332,10 +332,24 @@ claims a lot, light content little:
 | Before → after                                        | Block gap |
 | ----------------------------------------------------- | --------- |
 | A bare 24 title → a short settings card (four lines)  | 32        |
+| A title and its line → a settings card of three rows  | 44        |
+| A title and its line → a settings card of four to six rows | 48   |
+| A title and its line → a settings card of eight rows  | 56        |
 | A title and its line → a stat card row                | 44        |
 | A title and its line → a table of five rows           | 44        |
 | A title and its line → a table of ten rows            | 56        |
 | A title and its line → a table of twenty rows         | 64        |
+
+**Inside a card**, unlike blocks (a title over its list, a figure over its badge, a header over its tabs) take
+the same block gap with less room each: 0.6× the room, each block counting at most its first three lines, since
+inside a card both are seen together and a long list should not push its own title away. Never the alike-box gap
+here: the boxes are not alike, and a group without its own surface has no padding to take it from.
+
+| Inside a card, before → after                         | Gap |
+| ----------------------------------------------------- | --- |
+| A stat card's label and figure → its badge            | 12  |
+| A 13 card title → its list of rows                    | 14  |
+| A client's name and email → its tabs                  | 16  |
 
 **The gap between two texts** follows the text *after* the gap, tight inside a pair (a title and its description,
 a label and its value, a figure and its caption) and loose between blocks, growing with the lines either side:
@@ -355,7 +369,7 @@ a label and its value, a figure and its caption) and loose between blocks, growi
 
 | Between                                               | Gap |
 | ----------------------------------------------------- | --- |
-| Nav items in the sidebar                              | 2   |
+| Sidebar items                                        | 2   |
 | Parts inside a control (icon and label)               | 6–8 |
 | A title and its description (a pair)                  | 6 under a page title, 4 under a section title, 2 for a name and its meta (the drawn values, which win over the formula) |
 | Rows inside a group or card                           | 16  |
@@ -386,12 +400,12 @@ name, never written as pixels, so it follows the theme.
 
 | Height | What sits on it                                                                                       |
 | ------ | ----------------------------------------------------------------------------------------------------- |
-| 21     | kbd                                                                                                   |
-| 22     | badge (every variant), count                                                                          |
-| 25     | small chip, a picked value in a combobox, the switch track (48 wide, 21 knob)                         |
-| 29     | segmented item, medium chip, vital row, bar-list "show more"                                          |
+| 22     | badge (every variant), count, kbd                                                                     |
+| 24     | small chip, a picked value in a combobox, the switch track (48 wide, 20 knob)                         |
+| 28     | medium chip                                                                                           |
+| 29     | segmented item, vital row, bar-list "show more"                                                       |
 | 32     | dock item, calendar day, date-range preset, icon tile                                                 |
-| **34** | **the control row**: button, icon button, small input / select / date picker, segmented track, nav item, pagination, rail item, inline toolbar, bar-list row, table group row, pill tab, top-nav link |
+| **34** | **the control row**: button, icon button, small input / select / date picker, segmented track, sidebar item, pagination, rail item, inline toolbar, bar-list row, table group row, pill tab, top-nav link |
 | 36     | rows inside a popup list: menu, select, combobox, filter and command menu items                       |
 | **38** | **the field row**: medium input / select / date picker, large button, the dock and its action, floating toolbar, medium code box, a setting row (minimum) |
 | 41     | ruled table row and head                                                                              |
@@ -405,8 +419,8 @@ name, never written as pixels, so it follows the theme.
 
 ## Icons
 
-Lucide, **stroke 2**, always. **16px** by default; 12 in badges and small chips; 14 as a checkbox mark. An icon
-takes its text's colour: `neutral-950` beside a nav item's label, `neutral-600` in a ghost control or a muted
+Lucide, **stroke 2**, always. By the box it sits in: **14 in a 34 control** (a button, an icon button, a field, a select, a tab or segment, a toolbar or menu row, a sidebar item, pagination), **16 in a 38 one** (the large button, the medium field and select, the floating toolbar) and anywhere larger; 12 in badges and small chips; 14 as a checkbox mark. A row that mixes 34 and 38 controls is rare; each keeps its own. An icon
+takes its text's colour: `neutral-950` beside a sidebar item's label, `neutral-600` in a ghost control or a muted
 row (darker on hover), in a status the tone's 600, or its 700 for `success` and `warning` (the status table). A quiet icon
 may be `neutral-500`, which is 3:1; text beside it may not. An icon tile is a 32px well with `chip` corners
 and a hairline. Icons lead in navigation and menu rows and trail on action buttons ("Add email +").

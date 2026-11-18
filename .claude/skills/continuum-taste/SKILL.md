@@ -1,6 +1,6 @@
 ---
 name: continuum-taste
-description: Use this skill whenever you build, design, restyle or review product UI that should look like Continuum — an app, page, dashboard, table, form, settings screen, component or canvas design — in React, another framework, plain CSS, Paper or Figma. Use it when the user says "in Continuum", "in my style" or "like my design system", and also when nobody names it but the project uses Continuum (it imports `continuum`, or has a theme builder `app.css` or a DESIGN.md brief). Continuum is quiet, dense tool UI: 13px type, hairline borders, one action colour, controls on two heights, light and dark, with a theme builder for a product's own look. Not for marketing or landing pages; for padding and gaps alone, continuum-fix-padding.
+description: Use this skill whenever you build, design, restyle or review product UI that should look like Continuum — an app, page, dashboard, table, form, settings screen, card, widget, dialog, component or canvas design — in React, another framework, plain CSS, Paper or Figma. Use it when the user says "in Continuum", "in my style" or "like my design system", and also when nobody names it but the project uses Continuum (it imports `continuum`, or has a theme builder `app.css` or a DESIGN.md brief): then load it for any request that adds or changes something people see (a new page, a card on a dashboard, a sign-in screen, "make it look like the rest", "this feels cramped"), even when the request never mentions design. Continuum is quiet, dense tool UI: 13px type, hairline borders, one action colour, controls on two heights, light and dark, with a theme builder for a product's own look. Not for marketing or landing pages; for padding and gaps alone, continuum-fix-padding.
 ---
 
 # Continuum
@@ -29,7 +29,8 @@ same files decide the same screen.
   41; badges 22.
 - **Spacing**: a 4px scale; 2 between nav items, 16 between rows and cards, 20 from a section head to its
   content; between a page's blocks (its head, a table, a chart, a section) the formula's block gap, each side
-  claiming room by what it holds (about 32 over a short card, 64 over a dense table); side padding fixed by
+  claiming room by what it holds (about 32 under a bare title over a short card, 48 under a title and its line
+  over a settings card, 64 over a dense table); side padding fixed by
   kind, content padding and gaps derived by the formula (`foundations.md`, `/continuum-fix-padding`).
 - **Layout**: sidebar 256 on the canvas, the panel inset 8, header bar 54, the page 96 below it in a centred
   column of 640 (forms, settings) · 896 (overview, detail) · 1080 (tables) · 1280 (dense tables). Panel and
@@ -48,7 +49,7 @@ same files decide the same screen.
 | `references/media/canvas.md` | You draw in Paper or Figma: first, for the tokens and drawing a part from its spec.            |
 | `references/pages.md`        | You start a screen: its kind sets the width and the parts it may hold, top to bottom; also the shell, the page head and the secondary surfaces (sheet, dialog, popover, toast). |
 | `references/components.md`   | You place a part: read that part's entry for its anatomy, values, states and when it is the right part. A lookup, never read whole. |
-| `references/patterns.md`     | The content has a need a page kind does not answer (filters, totals, key figures, steps, an empty state…): find the row whose **when** it meets. |
+| `references/patterns.md`     | The content has a need a page kind does not answer (filters, totals, key figures, steps, an empty state…): find the row whose **when** it meets. Its Behaviour section: how a thing answers hover, focus and time (a submenu's safe triangle, hover delays, Undo). |
 | `references/charts.md`       | The content holds a figure over time, a share or a ranking: which chart, its card, its marks.  |
 | `references/foundations.md`  | You need a value the files above do not give: colour with hex, type, radius, heights, spacing and the formula's tables, states, motion, layout. |
 | `references/method.md`       | The product is one the references never covered, or nothing in `components.md` fits: the recipe for a new part. |
@@ -63,17 +64,47 @@ same files decide the same screen.
 2. **Pick the medium file** for where the work happens: `media/react.md` in a React project (set it up if it is
    not), `media/canvas.md` in Paper or Figma, `media/css.md` elsewhere.
 3. **Name the page kind** from what the screen is for (`pages.md`): it sets the width and the parts marked
-   always. A product the references never covered is expected: `method.md`.
-4. **Choose the parts** for the content, piece by piece: the part in `components.md` (charts from `charts.md`) or
+   always. A product the references never covered is expected: `method.md`. When the screen is the work (an
+   editor, a player, a mail client, a canvas), it has no page kind: its layout is the genre's (or the
+   reference the person gave), its look and its parts are Continuum's (`method.md` › When the screen is the work).
+4. **Group the content** before any part is chosen: write down which items belong together, as a tree. A
+   group is what is read or acted on together: a setting and the settings that only mean something while it
+   is on, a label and its value, a title and its line, the filters and the chips they applied, a record's
+   facts. Every level of the tree gets **one mark** that shows it (a container, a hairline around it, an
+   eyebrow or a title over it), and its title is what a reader scans for, so it reads above the items it
+   holds. The gaps then follow the tree: never more room inside a group than between it and its neighbours.
+   A screen whose spacing feels off almost always has a group nobody named.
+5. **Choose the parts** for the content, piece by piece: the part in `components.md` (charts from `charts.md`) or
    the row in `patterns.md` whose **when** that content meets, and the variant or size for its spot. Content is
    mapped to parts, never parts filled with content; take the simpler thing where it does the job. Write only
    the layout between the parts, its gaps from the spacing formula. Where nothing fits, make a new part by the
    recipe in `method.md`, borrowing every value.
-5. **Build it** with real state for the main task, realistic data in the product's domain, and empty states.
-6. **Look at it** at 1920 × 1080, where it is designed, then at 1440 × 900 and at 390, in light and dark, and run
+6. **Build it** with real state for the main task, realistic data in the product's domain, and empty states.
+7. **Look at it** at 1920 × 1080, where it is designed, then at 1440 × 900 and at 390, in light and dark, and run
    the check below until it holds.
 
-In doubt, do less, and do what a reference screen or an existing part already does.
+In doubt, do less, and do what an existing part already does. A reference screen shows one way to apply these
+files; where it differs from what they state, the files are right.
+
+## Reviewing or improving something
+
+The same rules, read the other way. Each of these was got wrong on a real review without it.
+
+1. **A finding is a departure from a stated rule**, and it names the rule (the file and section). What follows
+   the rules is not a finding, however it could also be done. A file with nothing off is a valid answer: say
+   so, and stop looking.
+2. **Behaviour and copy are not design findings.** A handler that is not wired, permission logic, a label you
+   would word differently: list them apart, under "Questions", or leave them out.
+3. **One fix, the value the rule gives.** Never "`gap-4` or `gap-5`" or "`text-xl` or `text-2xl`": a page
+   title is 24 because it is the page title, settings cards are 24 apart because the settings anatomy says
+   so, a gap no part fixes is the formula's. The nearest step on the scale is not a fix; the role is. A gap
+   within one step of what the formula gives is right (how rows are counted moves it a step): never a finding.
+4. **Structure is yours to check**, against the page kind's anatomy in `pages.md`: one primary action, views in
+   the dock, no container in a container, space not dividers, the column at its kind's width, no part that
+   repeats another, every group of content marked (step 4 of building) and never more room inside it than around it. `audit_source` reads values from code; it sees structure only partly.
+5. **Improving is not building.** Fix what departs from the rules and keep the content and the behaviour. A
+   part the page kind allows but the page does not have (a search, a stat row, a filter) is a proposal for the
+   report, never something to add.
 
 ## Gotchas
 
@@ -103,7 +134,8 @@ Each of these was got wrong on a real screen without it.
 ## Check
 
 Every part earns its place (each control changes something the reader sees, each figure is one they came
-for, nothing is there because the anatomy or a reference screen had it) · components first · only roles, never
+for, nothing is there because the anatomy or a reference screen had it) · components first where a part is the
+same thing, never a near one bent to fit · only roles, never
 a hex · hairline, not shadow · space, not dividers (full-width ones in
 floating containers only) · the column at its kind's width · one column on a detail, a form, settings · corners
 nested and concentric · controls on 34 or 38 · two weights, 13 base · icons at stroke 2 · one action colour and
