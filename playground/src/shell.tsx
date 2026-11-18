@@ -20,16 +20,16 @@ import {
     HeaderBar,
     Input,
     Kbd,
-    NavGroup,
-    NavItem,
     SheetArea,
     Sidebar,
     SidebarBack,
     SidebarFooter,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLevel,
     SidebarLevelHead,
+    SidebarSection,
     SidebarSwitcher,
     SidebarToggle,
     type ThemeMode,
@@ -43,6 +43,7 @@ import {
     FolderKanban,
     Grid3x3,
     House,
+    LayoutDashboard,
     LayoutGrid,
     LayoutTemplate,
     LogOut,
@@ -85,6 +86,7 @@ const viewMeta: Record<View, { label: string; icon: ReactNode }> = {
     skills: { label: 'Skills', icon: <BookOpen {...icon} /> },
     mcp: { label: 'MCP server', icon: <Plug {...icon} /> },
     raster: { label: 'Raster lab', icon: <Grid3x3 {...icon} /> },
+    wall: { label: 'Wall', icon: <LayoutDashboard {...icon} /> },
 };
 
 /** Where the sidebar sits beside the panel rather than over it. */
@@ -363,13 +365,13 @@ const PlaygroundSidebar = ({
                 ) : (
                     <SidebarLevel from="start" key="top">
                         <SidebarGroup aria-label="Home">
-                            <NavItem
+                            <SidebarItem
                                 active={state.view === 'home'}
                                 icon={viewMeta.home.icon}
                                 onClick={() => onChange({ view: 'home' })}
                             >
                                 Home
-                            </NavItem>
+                            </SidebarItem>
                         </SidebarGroup>
 
                         {/* The current project's places; with none, the way to one. */}
@@ -386,7 +388,7 @@ const PlaygroundSidebar = ({
                         >
                             {current ? (
                                 <>
-                                    <NavItem
+                                    <SidebarItem
                                         active={projectOpen}
                                         icon={<Paintbrush {...icon} />}
                                         onClick={() =>
@@ -394,9 +396,9 @@ const PlaygroundSidebar = ({
                                         }
                                     >
                                         Theme
-                                    </NavItem>
+                                    </SidebarItem>
                                     {/* An action on the project's page: it opens its export, and never stays selected. */}
-                                    <NavItem
+                                    <SidebarItem
                                         icon={<Download {...icon} />}
                                         onClick={() =>
                                             onChange({
@@ -407,10 +409,10 @@ const PlaygroundSidebar = ({
                                         }
                                     >
                                         Export
-                                    </NavItem>
+                                    </SidebarItem>
                                 </>
                             ) : (
-                                <NavItem
+                                <SidebarItem
                                     icon={<Plus {...icon} />}
                                     onClick={() =>
                                         onChange({
@@ -421,21 +423,21 @@ const PlaygroundSidebar = ({
                                     }
                                 >
                                     New project
-                                </NavItem>
+                                </SidebarItem>
                             )}
-                            <NavItem
+                            <SidebarItem
                                 active={state.view === 'projects' && !projectOpen}
                                 icon={<FolderKanban {...icon} />}
                                 onClick={() => onChange({ view: 'projects', project: undefined })}
                             >
                                 All projects
-                            </NavItem>
+                            </SidebarItem>
                         </SidebarGroup>
 
                         {/* Each opens its view and drills into its index; the chevron says so. */}
                         <SidebarGroup aria-label="Library" label="Library">
                             {libraryViews.map(view => (
-                                <NavItem
+                                <SidebarItem
                                     active={state.view === view}
                                     icon={viewMeta[view].icon}
                                     key={view}
@@ -448,34 +450,41 @@ const PlaygroundSidebar = ({
                                     }
                                 >
                                     {viewMeta[view].label}
-                                </NavItem>
+                                </SidebarItem>
                             ))}
                         </SidebarGroup>
 
                         {/* Taking the system to a project: the skills and the MCP server. */}
                         <SidebarGroup aria-label="Install" label="Install">
                             {installViews.map(view => (
-                                <NavItem
+                                <SidebarItem
                                     active={state.view === view}
                                     icon={viewMeta[view].icon}
                                     key={view}
                                     onClick={() => onChange({ view })}
                                 >
                                     {viewMeta[view].label}
-                                </NavItem>
+                                </SidebarItem>
                             ))}
                         </SidebarGroup>
 
                         {/* Apart from the system: an experiment that may change or go, at the end. */}
                         <SidebarGroup aria-label="Lab" label="Lab">
-                            <NavItem
+                            <SidebarItem
                                 active={state.view === 'raster'}
                                 icon={viewMeta.raster.icon}
                                 onClick={() => onChange({ view: 'raster' })}
                                 trailing={<Badge tone="primary">Beta</Badge>}
                             >
                                 {viewMeta.raster.label}
-                            </NavItem>
+                            </SidebarItem>
+                            <SidebarItem
+                                active={state.view === 'wall'}
+                                icon={viewMeta.wall.icon}
+                                onClick={() => onChange({ view: 'wall' })}
+                            >
+                                {viewMeta.wall.label}
+                            </SidebarItem>
                         </SidebarGroup>
                     </SidebarLevel>
                 )}
@@ -567,23 +576,23 @@ const PageIndexNav = ({ sections, active, label, view, onPick }: PageIndexNavPro
     if (!grouped) {
         return (
             <SidebarGroup aria-label={label} label={label}>
-                <NavGroup
+                <SidebarSection
                     defaultOpen
                     icon={viewMeta[view].icon}
                     key={view}
                     label={viewMeta[view].label}
                 >
                     {sections.map(section => (
-                        <NavItem
+                        <SidebarItem
                             active={section.id === active}
                             key={section.id}
                             onClick={() => onPick(section.id)}
                             variant="inset"
                         >
                             {section.title}
-                        </NavItem>
+                        </SidebarItem>
                     ))}
-                </NavGroup>
+                </SidebarSection>
             </SidebarGroup>
         );
     }
@@ -597,13 +606,13 @@ const PageIndexNav = ({ sections, active, label, view, onPick }: PageIndexNavPro
                     label={<span className="block truncate">{group.label || label}</span>}
                 >
                     {group.entries.map(section => (
-                        <NavItem
+                        <SidebarItem
                             active={section.id === active}
                             key={section.id}
                             onClick={() => onPick(section.id)}
                         >
                             {section.title}
-                        </NavItem>
+                        </SidebarItem>
                     ))}
                 </SidebarGroup>
             ))}

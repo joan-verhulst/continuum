@@ -321,7 +321,9 @@ export const AnalyticsOverview = () => {
                 <PageTitle>Analytics — {current?.label}</PageTitle>
             </div>
 
-            <div className="mt-8 flex flex-col gap-8">
+            {/* The block gap: the bare title over the chart card 32; then the chart card over the rate
+                cards 40 and those over the pages and devices 32, each a step from 36. */}
+            <div className="mt-8 flex flex-col gap-9">
                 {show('traffic') && (
                     <ChartCard
                         comparison="on last week"

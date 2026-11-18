@@ -86,7 +86,7 @@ export const gaps: Gap[] = [
         category: 'ai',
         description: 'One line per tool call with status and time; folds open to the result.',
         start: 'compose',
-        from: 'ActivityItem, NavGroup fold',
+        from: 'ActivityItem, SidebarSection fold',
     },
     {
         name: 'Approval card',

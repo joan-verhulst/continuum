@@ -160,14 +160,14 @@ export const WorkspaceMark = ({ children }: { children: ReactNode }) => (
 export const AccountFooter = ({
     avatar,
     name,
-    plan,
+    detail,
 }: {
     avatar: ReactNode;
     name: ReactNode;
-    plan?: ReactNode;
+    detail?: ReactNode;
 }) => (
     <SidebarFooter>
-        <SidebarAccount avatar={avatar} name={name} plan={plan} />
+        <SidebarAccount avatar={avatar} name={name} detail={detail} />
         <Button aria-label="Notifications" size="icon" variant="ghost">
             <Bell className="size-4.5" strokeWidth={2} />
         </Button>

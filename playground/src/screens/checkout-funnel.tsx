@@ -121,7 +121,8 @@ export const CheckoutFunnel = () => {
         >
             <AnalyticsTopBar trail={['Analytics', 'Funnels', 'Checkout funnel']} />
 
-            <div className="mt-20 mb-6 flex items-end justify-between gap-4">
+            {/* Its foot is the block gap: the bare title over five stat cards. */}
+            <div className="mt-20 mb-10 flex items-end justify-between gap-4">
                 <PageTitle>Checkout funnel</PageTitle>
                 <SegmentedControl
                     aria-label="Range"
@@ -152,8 +153,9 @@ export const CheckoutFunnel = () => {
                 </div>
             </div>
 
+            {/* The block gap: the five stat cards over the funnel's card. */}
             <ChartFrame
-                className="mt-8"
+                className="mt-11"
                 icon={<ShoppingCart />}
                 table={{
                     columns: ['Step', 'Visitors'],
@@ -168,8 +170,9 @@ export const CheckoutFunnel = () => {
                 />
             </ChartFrame>
 
+            {/* The block gap: the funnel's card over the chart card. */}
             <ChartCard
-                className="mt-8"
+                className="mt-9"
                 comparison="on the week before"
                 data={rows}
                 delta={`${change >= 0 ? '+' : '−'}${Math.abs(change).toFixed(1)} pts`}

@@ -17,8 +17,6 @@ import {
     DropdownMenuTrigger,
     HeaderBar,
     Kbd,
-    NavGroup,
-    NavItem,
     SegmentedControl,
     SegmentedControlItem,
     Select,
@@ -29,7 +27,9 @@ import {
     Sidebar,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLogo,
+    SidebarSection,
     SidebarToggle,
     Switch,
     Table,
@@ -152,40 +152,40 @@ const ReportSidebar = () => (
             <SidebarToggle />
         </SidebarHeader>
         <SidebarGroup aria-label="Reports">
-            <NavItem icon={<House strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
+            <SidebarItem icon={<House strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
                 Home
-            </NavItem>
-            <NavItem icon={<BellRing strokeWidth={2} />}>Needs action</NavItem>
-            <NavItem active icon={<FileText strokeWidth={2} />}>
+            </SidebarItem>
+            <SidebarItem icon={<BellRing strokeWidth={2} />}>Needs action</SidebarItem>
+            <SidebarItem active icon={<FileText strokeWidth={2} />}>
                 Reports
-            </NavItem>
-            <NavItem icon={<FilePen strokeWidth={2} />}>Open reports</NavItem>
+            </SidebarItem>
+            <SidebarItem icon={<FilePen strokeWidth={2} />}>Open reports</SidebarItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Projects" label="Projects">
-            <NavGroup defaultOpen icon="🏭" label="Riverside warehouse">
-                <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
+            <SidebarSection defaultOpen icon="🏭" label="Riverside warehouse">
+                <SidebarItem icon={<FileText strokeWidth={2} />} variant="inset">
                     Reports
-                </NavItem>
-                <NavItem icon={<Users strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<Users strokeWidth={2} />} variant="inset">
                     Users
-                </NavItem>
-                <NavItem icon={<History strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<History strokeWidth={2} />} variant="inset">
                     Audit logs
-                </NavItem>
-            </NavGroup>
+                </SidebarItem>
+            </SidebarSection>
             {projects.map(project => (
-                <NavGroup icon={project.icon} key={project.id} label={project.label}>
-                    <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
+                <SidebarSection icon={project.icon} key={project.id} label={project.label}>
+                    <SidebarItem icon={<FileText strokeWidth={2} />} variant="inset">
                         Reports
-                    </NavItem>
-                    <NavItem icon={<Users strokeWidth={2} />} variant="inset">
+                    </SidebarItem>
+                    <SidebarItem icon={<Users strokeWidth={2} />} variant="inset">
                         Users
-                    </NavItem>
-                </NavGroup>
+                    </SidebarItem>
+                </SidebarSection>
             ))}
-            <NavItem variant="project" icon={<Folder strokeWidth={2} />}>
+            <SidebarItem variant="project" icon={<Folder strokeWidth={2} />}>
                 All projects
-            </NavItem>
+            </SidebarItem>
         </SidebarGroup>
         <AccountFooter
             avatar={
@@ -194,7 +194,7 @@ const ReportSidebar = () => (
                 </WorkspaceMark>
             }
             name="Northwind Safety"
-            plan="Business"
+            detail="Business"
         />
     </Sidebar>
 );
@@ -296,21 +296,22 @@ export const RiskReport = () => {
                             {listed.map(topic => {
                                 const index = topics.indexOf(topic);
                                 return (
-                                    <NavItem
+                                    <SidebarItem
                                         active={index === selected}
                                         className="shrink-0 pl-2.5"
                                         key={topic}
                                         onClick={() => setSelected(index)}
                                     >
                                         {index + 1}. {topic}
-                                    </NavItem>
+                                    </SidebarItem>
                                 );
                             })}
                         </nav>
                     </div>
 
                     <div className="flex min-w-0 flex-1 flex-col overflow-auto">
-                        <div className="flex items-start justify-between gap-6 px-6 pt-6 pb-8">
+                        {/* Its foot is the block gap: the title with its two-line description over the tabs. */}
+                        <div className="flex items-start justify-between gap-6 px-6 pt-6 pb-6">
                             <div className="flex max-w-162.5 flex-col gap-2">
                                 <h1 className="font-medium text-base text-neutral-950">{title}</h1>
                                 <p className="text-neutral-600 text-xs">

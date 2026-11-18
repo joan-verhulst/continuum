@@ -100,7 +100,8 @@ const MenuPreview = ({ knobs }: PreviewProps) => {
                     setOpen(next);
                     if (!next) setQuery('');
                 }}
-                open={tile ? true : stage ? open : undefined}
+                // Controlled from the first render: closed until the stage exists, then held or as toggled.
+                open={stage ? tile || open : false}
             >
                 <DropdownMenuTrigger render={<Button variant="secondary" />}>
                     Actions <Ellipsis {...previewIcon} />

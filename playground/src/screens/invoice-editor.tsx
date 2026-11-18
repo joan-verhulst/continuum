@@ -27,8 +27,6 @@ import {
     focusRing,
     HeaderBar,
     Kbd,
-    NavGroup,
-    NavItem,
     Notice,
     PageContent,
     Sheet,
@@ -41,7 +39,9 @@ import {
     Sidebar,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLogo,
+    SidebarSection,
     SidebarToggle,
     Table,
     TableBody,
@@ -163,48 +163,48 @@ const InvoiceSidebar = () => (
             <SidebarToggle />
         </SidebarHeader>
         <SidebarGroup aria-label="Payments">
-            <NavItem icon={<House strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
+            <SidebarItem icon={<House strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
                 Home
-            </NavItem>
-            <NavItem active icon={<FileText strokeWidth={2} />}>
+            </SidebarItem>
+            <SidebarItem active icon={<FileText strokeWidth={2} />}>
                 Invoices
-            </NavItem>
-            <NavItem icon={<Users strokeWidth={2} />}>Payees</NavItem>
-            <NavItem icon={<History strokeWidth={2} />}>Payment history</NavItem>
-            <NavItem icon={<Settings strokeWidth={2} />} trailing={<Kbd>S</Kbd>}>
+            </SidebarItem>
+            <SidebarItem icon={<Users strokeWidth={2} />}>Payees</SidebarItem>
+            <SidebarItem icon={<History strokeWidth={2} />}>Payment history</SidebarItem>
+            <SidebarItem icon={<Settings strokeWidth={2} />} trailing={<Kbd>S</Kbd>}>
                 Settings
-            </NavItem>
+            </SidebarItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Clients" label="Clients">
-            <NavGroup defaultOpen icon="🏛️" label="Harbour Street Studio">
-                <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
+            <SidebarSection defaultOpen icon="🏛️" label="Harbour Street Studio">
+                <SidebarItem icon={<FileText strokeWidth={2} />} variant="inset">
                     Invoices
-                </NavItem>
-                <NavItem icon={<FilePlus strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<FilePlus strokeWidth={2} />} variant="inset">
                     Quotes
-                </NavItem>
-                <NavItem icon={<History strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<History strokeWidth={2} />} variant="inset">
                     Payments
-                </NavItem>
-            </NavGroup>
+                </SidebarItem>
+            </SidebarSection>
             {clients.map(client => (
-                <NavGroup icon={client.icon} key={client.id} label={client.label}>
-                    <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
+                <SidebarSection icon={client.icon} key={client.id} label={client.label}>
+                    <SidebarItem icon={<FileText strokeWidth={2} />} variant="inset">
                         Invoices
-                    </NavItem>
-                    <NavItem icon={<History strokeWidth={2} />} variant="inset">
+                    </SidebarItem>
+                    <SidebarItem icon={<History strokeWidth={2} />} variant="inset">
                         Payments
-                    </NavItem>
-                </NavGroup>
+                    </SidebarItem>
+                </SidebarSection>
             ))}
-            <NavItem variant="project" icon={<Folder strokeWidth={2} />}>
+            <SidebarItem variant="project" icon={<Folder strokeWidth={2} />}>
                 All clients
-            </NavItem>
+            </SidebarItem>
         </SidebarGroup>
         <AccountFooter
             avatar={<Avatar alt="" size={36} fallback="JC" />}
             name="Jane Cooper"
-            plan="jane@northwind.studio"
+            detail="jane@northwind.studio"
         />
     </Sidebar>
 );
@@ -284,7 +284,8 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                 </HeaderBar>
 
                 <SheetArea className="min-h-0 flex-1 overflow-auto">
-                    <PageContent className="flex flex-col gap-8 pb-16" width="wide">
+                    {/* Each block stands its own block gap below the one before, so no one gap for the column. */}
+                    <PageContent className="flex flex-col pb-16" width="wide">
                         {/* An object being edited keeps its actions in the title row; a save shows as a notice. */}
                         <div className="flex items-start justify-between gap-6">
                             <div className="flex max-w-140 flex-col gap-2">
@@ -304,12 +305,14 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between gap-4 rounded-panel border border-neutral-200 p-4 font-normal text-xs">
+                        {/* The block gap: the title with its two-line description over one line. */}
+                        <div className="mt-7 flex items-center justify-between gap-4 rounded-panel border border-neutral-200 p-4 font-normal text-xs">
                             <span className="text-neutral-600">Invoice created</span>
                             <span className="text-neutral-950">09/03/2025</span>
                         </div>
 
-                        <section className="flex flex-col gap-4">
+                        {/* The block gap: one line over a section of seven details. */}
+                        <section className="mt-9 flex flex-col gap-4">
                             <div className="flex items-center justify-between gap-4">
                                 <SectionTitle size="sm" title="Invoice details" />
                                 <Button variant="secondary">
@@ -350,7 +353,8 @@ export const InvoiceEditor = ({ sheet = true }: { sheet?: boolean }) => {
                             </DescriptionList>
                         </section>
 
-                        <section className="flex flex-col gap-4">
+                        {/* The block gap: the seven details over a table of nine rows, both dense. */}
+                        <section className="mt-16 flex flex-col gap-4">
                             <SectionTitle size="sm" title="Invoice lines" />
                             <Table className="table-fixed">
                                 <TableHeader>

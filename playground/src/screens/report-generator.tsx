@@ -20,8 +20,6 @@ import {
     FieldLabel,
     HeaderBar,
     Kbd,
-    NavGroup,
-    NavItem,
     OptionList,
     OptionRow,
     PageContent,
@@ -32,7 +30,9 @@ import {
     Sidebar,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLogo,
+    SidebarSection,
     SidebarToggle,
 } from 'continuum';
 import {
@@ -107,16 +107,16 @@ const ReportSidebar = () => (
             <SidebarToggle />
         </SidebarHeader>
         <SidebarGroup aria-label="Main">
-            <NavItem icon={<Gauge strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
+            <SidebarItem icon={<Gauge strokeWidth={2} />} trailing={<Kbd>H</Kbd>}>
                 Home
-            </NavItem>
-            <NavItem active icon={<Users strokeWidth={2} />} trailing={<Kbd>C</Kbd>}>
+            </SidebarItem>
+            <SidebarItem active icon={<Users strokeWidth={2} />} trailing={<Kbd>C</Kbd>}>
                 Clients
-            </NavItem>
-            <NavItem icon={<Layers strokeWidth={2} />} trailing={<Kbd>L</Kbd>}>
+            </SidebarItem>
+            <SidebarItem icon={<Layers strokeWidth={2} />} trailing={<Kbd>L</Kbd>}>
                 Logs
-            </NavItem>
-            <NavItem
+            </SidebarItem>
+            <SidebarItem
                 icon={<LifeBuoy strokeWidth={2} />}
                 trailing={
                     <Badge tone="success" variant="count">
@@ -125,38 +125,38 @@ const ReportSidebar = () => (
                 }
             >
                 Support
-            </NavItem>
+            </SidebarItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Clients" label="Clients">
-            <NavGroup defaultOpen icon="☕" label="Copper Kettle Café">
-                <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
+            <SidebarSection defaultOpen icon="☕" label="Copper Kettle Café">
+                <SidebarItem icon={<FileText strokeWidth={2} />} variant="inset">
                     Reports
-                </NavItem>
-                <NavItem icon={<Share2 strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<Share2 strokeWidth={2} />} variant="inset">
                     Channels
-                </NavItem>
-                <NavItem icon={<Calendar strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<Calendar strokeWidth={2} />} variant="inset">
                     Schedule
-                </NavItem>
-            </NavGroup>
+                </SidebarItem>
+            </SidebarSection>
             {clients.map(client => (
-                <NavGroup icon={client.icon} key={client.id} label={client.label}>
-                    <NavItem icon={<FileText strokeWidth={2} />} variant="inset">
+                <SidebarSection icon={client.icon} key={client.id} label={client.label}>
+                    <SidebarItem icon={<FileText strokeWidth={2} />} variant="inset">
                         Reports
-                    </NavItem>
-                    <NavItem icon={<Share2 strokeWidth={2} />} variant="inset">
+                    </SidebarItem>
+                    <SidebarItem icon={<Share2 strokeWidth={2} />} variant="inset">
                         Channels
-                    </NavItem>
-                </NavGroup>
+                    </SidebarItem>
+                </SidebarSection>
             ))}
-            <NavItem variant="project" icon={<Folder strokeWidth={2} />}>
+            <SidebarItem variant="project" icon={<Folder strokeWidth={2} />}>
                 Archive
-            </NavItem>
+            </SidebarItem>
         </SidebarGroup>
         <AccountFooter
             avatar={<Avatar alt="" size={36} fallback="JC" />}
             name="Jane Cooper"
-            plan="Startup"
+            detail="Startup"
         />
     </Sidebar>
 );
@@ -202,6 +202,7 @@ export const ReportGenerator = () => {
 
                 <div className="min-h-0 flex-1 overflow-auto">
                     <PageContent className="pb-24" width="narrow">
+                        {/* The block gap: the head with its two-line lead over the period's section. */}
                         <form
                             className="flex flex-col gap-12"
                             onSubmit={event => event.preventDefault()}
@@ -214,98 +215,110 @@ export const ReportGenerator = () => {
                                 title="Generate report for Copper Kettle Café"
                             />
 
-                            <section className="flex flex-col gap-6">
-                                <SectionTitle
-                                    lead
-                                    description="Set the period the report covers. Only data from within this period is included."
-                                    title="Select period"
-                                />
-                                {/* A period is a range picker, its quick ranges listed beside the calendar. */}
-                                <Field>
-                                    <FieldLabel>Dates</FieldLabel>
-                                    <DateRangePicker onValueChange={setDates} value={dates} />
-                                </Field>
-                            </section>
+                            {/* The block gap: the last section over the row of actions. */}
+                            <div className="flex flex-col gap-8">
+                                {/* A form's sections, 40 apart. */}
+                                <div className="flex flex-col gap-10">
+                                    <section className="flex flex-col gap-6">
+                                        <SectionTitle
+                                            lead
+                                            description="Set the period the report covers. Only data from within this period is included."
+                                            title="Select period"
+                                        />
+                                        {/* A period is a range picker, its quick ranges listed beside the calendar. */}
+                                        <Field>
+                                            <FieldLabel>Dates</FieldLabel>
+                                            <DateRangePicker
+                                                onValueChange={setDates}
+                                                value={dates}
+                                            />
+                                        </Field>
+                                    </section>
 
-                            <section className="flex flex-col gap-6">
-                                <SectionTitle
-                                    lead
-                                    description="Select the data to include, both across all platforms and per platform."
-                                    title="Choose statistics for the report (optional)"
-                                />
-                                <Card className="gap-0 p-0">
-                                    <div className="px-3 pt-3">
-                                        <SegmentedControl
-                                            aria-label="Platform"
-                                            onValueChange={setPlatform}
-                                            value={platform}
-                                        >
-                                            {platforms.map(p => (
-                                                <SegmentedControlItem key={p.id} value={p.id}>
-                                                    {p.label}
-                                                </SegmentedControlItem>
-                                            ))}
-                                        </SegmentedControl>
-                                    </div>
-                                    <OptionList className="p-3">
-                                        {current?.stats.map(stat => {
-                                            const key = `${platform}:${stat.id}`;
-                                            return (
-                                                <OptionRow
-                                                    control={
-                                                        <Checkbox
-                                                            checked={checked[key] ?? false}
-                                                            onCheckedChange={value =>
-                                                                setChecked(state => ({
-                                                                    ...state,
-                                                                    [key]: value === true,
-                                                                }))
+                                    <section className="flex flex-col gap-6">
+                                        <SectionTitle
+                                            lead
+                                            description="Select the data to include, both across all platforms and per platform."
+                                            title="Choose statistics for the report (optional)"
+                                        />
+                                        <Card className="gap-0 p-0">
+                                            <div className="px-3 pt-3">
+                                                <SegmentedControl
+                                                    aria-label="Platform"
+                                                    onValueChange={setPlatform}
+                                                    value={platform}
+                                                >
+                                                    {platforms.map(p => (
+                                                        <SegmentedControlItem
+                                                            key={p.id}
+                                                            value={p.id}
+                                                        >
+                                                            {p.label}
+                                                        </SegmentedControlItem>
+                                                    ))}
+                                                </SegmentedControl>
+                                            </div>
+                                            <OptionList className="p-3">
+                                                {current?.stats.map(stat => {
+                                                    const key = `${platform}:${stat.id}`;
+                                                    return (
+                                                        <OptionRow
+                                                            control={
+                                                                <Checkbox
+                                                                    checked={checked[key] ?? false}
+                                                                    onCheckedChange={value =>
+                                                                        setChecked(state => ({
+                                                                            ...state,
+                                                                            [key]: value === true,
+                                                                        }))
+                                                                    }
+                                                                />
                                                             }
+                                                            icon={stat.icon}
+                                                            key={key}
+                                                            label={stat.label}
                                                         />
-                                                    }
-                                                    icon={stat.icon}
-                                                    key={key}
-                                                    label={stat.label}
-                                                />
-                                            );
-                                        })}
-                                    </OptionList>
-                                </Card>
-                            </section>
+                                                    );
+                                                })}
+                                            </OptionList>
+                                        </Card>
+                                    </section>
 
-                            <section className="flex flex-col gap-6">
-                                <SectionTitle
-                                    lead
-                                    description="Choose which trends the report calls out next to the figures."
-                                    title="Trend filter (optional)"
-                                />
-                                <RadioGroup
-                                    aria-label="Trend filter"
-                                    onValueChange={setTrend}
-                                    value={trend}
-                                >
-                                    <OptionRow
-                                        control={<RadioGroupItem value="all" />}
-                                        label="Show all trends"
-                                    />
-                                    <OptionRow
-                                        control={<RadioGroupItem value="positive" />}
-                                        description="Growth against the previous period"
-                                        label="Only positive trends"
-                                    />
-                                    <OptionRow
-                                        control={<RadioGroupItem value="negative" />}
-                                        description="Declines worth a closer look"
-                                        label="Only negative trends"
-                                    />
-                                </RadioGroup>
-                            </section>
+                                    <section className="flex flex-col gap-6">
+                                        <SectionTitle
+                                            lead
+                                            description="Choose which trends the report calls out next to the figures."
+                                            title="Trend filter (optional)"
+                                        />
+                                        <RadioGroup
+                                            aria-label="Trend filter"
+                                            onValueChange={setTrend}
+                                            value={trend}
+                                        >
+                                            <OptionRow
+                                                control={<RadioGroupItem value="all" />}
+                                                label="Show all trends"
+                                            />
+                                            <OptionRow
+                                                control={<RadioGroupItem value="positive" />}
+                                                description="Growth against the previous period"
+                                                label="Only positive trends"
+                                            />
+                                            <OptionRow
+                                                control={<RadioGroupItem value="negative" />}
+                                                description="Declines worth a closer look"
+                                                label="Only negative trends"
+                                            />
+                                        </RadioGroup>
+                                    </section>
+                                </div>
 
-                            <div className="flex justify-end">
-                                <Button type="submit">
-                                    Generate report
-                                    <ArrowRight strokeWidth={2} />
-                                </Button>
+                                <div className="flex justify-end">
+                                    <Button type="submit">
+                                        Generate report
+                                        <ArrowRight strokeWidth={2} />
+                                    </Button>
+                                </div>
                             </div>
                         </form>
                     </PageContent>

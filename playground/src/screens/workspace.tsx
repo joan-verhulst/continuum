@@ -11,12 +11,12 @@ import {
     BreadcrumbSeparator,
     cn,
     HeaderBar,
-    NavItem,
     PageContent,
     SheetArea,
     Sidebar,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLogo,
     SidebarToggle,
 } from 'continuum';
@@ -90,7 +90,7 @@ export const WorkspaceSidebar = ({ place }: { place: Place }) => {
             </SidebarHeader>
             <SidebarGroup aria-label="Main">
                 {places.map(item => (
-                    <NavItem
+                    <SidebarItem
                         active={place === item.id}
                         icon={item.icon}
                         key={item.id}
@@ -100,18 +100,18 @@ export const WorkspaceSidebar = ({ place }: { place: Place }) => {
                         }
                     >
                         {item.label}
-                    </NavItem>
+                    </SidebarItem>
                 ))}
             </SidebarGroup>
             <SidebarGroup aria-label="Workspace" label="Workspace">
-                <NavItem
+                <SidebarItem
                     active={place === 'settings'}
                     icon={<Settings {...icon} />}
                     onClick={go('settings')}
                 >
                     Settings
-                </NavItem>
-                <NavItem icon={<LifeBuoy {...icon} />}>Help and support</NavItem>
+                </SidebarItem>
+                <SidebarItem icon={<LifeBuoy {...icon} />}>Help and support</SidebarItem>
             </SidebarGroup>
             <AccountFooter
                 avatar={
@@ -120,7 +120,7 @@ export const WorkspaceSidebar = ({ place }: { place: Place }) => {
                     </WorkspaceMark>
                 }
                 name="Acme Inc."
-                plan="Pro plan"
+                detail="Pro plan"
             />
         </Sidebar>
     );
@@ -175,6 +175,12 @@ type WorkspaceProps = {
     notice?: ReactNode;
     /** The column's width, as dense as the page is: 896 unless a table needs the room. */
     width?: 'narrow' | 'default' | 'wide' | 'dense';
+    /**
+     * The gap down the column: the block gap under the page head, each side claiming room by what
+     * it holds, so it is the page's own and never one number for all. A page whose later blocks
+     * stand apart by another gap groups them in a column of their own.
+     */
+    gap: `gap-${number}`;
     /** A bar floating at the panel's foot, over the page as it scrolls: bulk actions, say. */
     bar?: ReactNode;
     children: ReactNode;
@@ -186,6 +192,7 @@ export const Workspace = ({
     trail,
     notice,
     width = 'default',
+    gap,
     bar,
     children,
 }: WorkspaceProps) => (
@@ -198,7 +205,7 @@ export const Workspace = ({
             </HeaderBar>
             {/* The area a sheet floats in, under the header bar: a detail's history opens here. */}
             <SheetArea className="min-h-0 flex-1 overflow-auto">
-                <PageContent className="flex flex-col gap-10 pb-24" width={width}>
+                <PageContent className={cn('flex flex-col pb-24', gap)} width={width}>
                     {children}
                 </PageContent>
             </SheetArea>

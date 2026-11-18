@@ -117,7 +117,12 @@ const EditEndpoint = () => (
             <FieldHelper>Must answer within 10 seconds.</FieldHelper>
         </Field>
         <ValueField copyable label="Endpoint ID" value="we_3k29f81ab" />
-        <ValueField copyable label="Signing secret" value="whsec_9f2c…a71d" />
+        <ValueField
+            copyable
+            label="Signing secret"
+            truncate="middle"
+            value="whsec_9f2c7b1e04d84a6f93c1e7ab5d02e6b8c4f1a71d"
+        />
         <ValueField label="Last delivery" tone="success" value="200 OK" variant="vital" />
     </OpenDialog>
 );

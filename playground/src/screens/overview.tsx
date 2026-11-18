@@ -92,7 +92,9 @@ export const Overview = () => {
     const change = ((total - start) / start) * 100;
 
     return (
-        <Workspace place="overview" trail={['Overview']}>
+        // The block gap down the page: the head with its line over the chart card 44; the chart card
+        // over the stat cards 48 and those over the two list cards 40, each a step from 44.
+        <Workspace gap="gap-11" place="overview" trail={['Overview']}>
             <PageHead description={`How the workspace is doing ${shown.words}.`} title="Overview">
                 <Select onValueChange={value => setPeriod(value as Period)} value={period}>
                     <SelectTrigger aria-label="Period" className="w-36" size="sm">

@@ -2,6 +2,7 @@ import { themeFontFamilies } from 'continuum';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app';
+import { GroupingStandalone, isGroupingStandalone } from './lab/grouping';
 import { isSidebarStandalone, SidebarStandalone } from './lab/sidebar';
 import { isRasterStandalone, RasterStandalone } from './raster/lab';
 // Imported here rather than in styles.css so Vite resolves the font files.
@@ -35,6 +36,8 @@ if (root) {
             {/* The sidebar demo, on a plain page outside the playground */}
             {isRasterStandalone() ? (
                 <RasterStandalone />
+            ) : isGroupingStandalone() ? (
+                <GroupingStandalone />
             ) : isSidebarStandalone() ? (
                 <SidebarStandalone />
             ) : (

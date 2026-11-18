@@ -239,7 +239,12 @@ export const CustomerDetail = () => {
     ];
 
     return (
-        <Workspace place="customers" trail={[{ label: 'Customers', to: 'list' }, customer.name]}>
+        // The tabs sit 40 below the title row, as a detail draws them, not by the block gap.
+        <Workspace
+            gap="gap-10"
+            place="customers"
+            trail={[{ label: 'Customers', to: 'list' }, customer.name]}
+        >
             {/* On a phone it stacks as a page head does: who it is, then the actions under it, the
                 secondary one hidden; the menu stays, as it holds what has no button. */}
             <div className="flex @max-shell-compact/shell:flex-col items-start justify-between @max-shell-compact/shell:gap-4 gap-6">
@@ -300,8 +305,10 @@ export const CustomerDetail = () => {
                     <TabsTrigger value="contacts">Contacts</TabsTrigger>
                 </TabsList>
 
-                {/* One column, as every detail is: the numbers, the facts, then what it uses and what happened. */}
-                <TabsContent className="flex flex-col gap-10" value="overview">
+                {/* One column, as every detail is: the numbers, the facts, then what it uses and what happened.
+                    The block gap: the stat cards over the details 48, the details over the usage 56,
+                    the usage over the activity 48. */}
+                <TabsContent className="flex flex-col gap-12" value="overview">
                     <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
                         <StatCard
                             delta={paying ? '+12%' : undefined}

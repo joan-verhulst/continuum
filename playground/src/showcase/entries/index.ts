@@ -1,3 +1,4 @@
+import { interactionEntries } from '../interactions';
 import type { Entry, InUse } from '../kit';
 import * as accordion from './accordion';
 import * as activity from './activity';
@@ -7,6 +8,7 @@ import * as badge from './badge';
 import * as barList from './bar-list';
 import * as blockSlider from './block-slider';
 import * as bottomBar from './bottom-bar';
+import * as branchGraph from './branch-graph';
 import * as breadcrumb from './breadcrumb';
 import * as button from './button';
 import * as card from './card';
@@ -47,6 +49,7 @@ import * as field from './field';
 import * as filterCondition from './filter-condition';
 import * as filterMenu from './filter-menu';
 import * as headerBar from './header-bar';
+import * as holdButton from './hold-button';
 import * as iconTile from './icon-tile';
 import * as infoTip from './info-tip';
 import * as input from './input';
@@ -67,8 +70,6 @@ import * as select from './select';
 import * as settingRow from './setting-row';
 import * as sheet from './sheet';
 import * as sidebar from './sidebar';
-import * as sidebarLevels from './sidebar-levels';
-import * as sidebarSwitcher from './sidebar-switcher';
 import * as skeleton from './skeleton';
 import * as slider from './slider';
 import * as spinner from './spinner';
@@ -77,18 +78,22 @@ import * as statusDot from './status-dot';
 import * as stepper from './stepper';
 import * as switchEntry from './switch';
 import * as table from './table';
+import * as tableCell from './table-cell';
+import * as tableEditCell from './table-edit-cell';
+import * as tableFold from './table-fold';
+import * as tableHead from './table-head';
 import * as tabs from './tabs';
+import * as thinking from './thinking';
 import * as toast from './toast';
 import * as toolbar from './toolbar';
 import * as tooltip from './tooltip';
 import * as topNav from './top-nav';
+import * as truncate from './truncate';
 import * as valueField from './value-field';
 
 /** Every component, in the order the grid shows them. */
 export const entries: Entry[] = [
     sidebar.entry,
-    sidebarSwitcher.entry,
-    sidebarLevels.entry,
     topNav.entry,
     rail.entry,
     headerBar.entry,
@@ -100,6 +105,7 @@ export const entries: Entry[] = [
     commandMenu.entry,
     stepper.entry,
     button.entry,
+    holdButton.entry,
     toolbar.entry,
     menu.entry,
     kbd.entry,
@@ -133,10 +139,16 @@ export const entries: Entry[] = [
     card.entry,
     statCard.entry,
     table.entry,
+    tableHead.entry,
+    tableCell.entry,
+    tableEditCell.entry,
+    tableFold.entry,
     descriptionList.entry,
     accordion.entry,
     activity.entry,
+    branchGraph.entry,
     barList.entry,
+    truncate.entry,
     badge.entry,
     avatar.entry,
     iconTile.entry,
@@ -167,9 +179,12 @@ export const entries: Entry[] = [
     chatReference.entry,
     chatAttachment.entry,
     chatTyping.entry,
+    thinking.entry,
     chatComposer.entry,
     chatSuggestions.entry,
     chatPrompt.entry,
+    // Last: the interaction patterns, which are behaviour rather than parts.
+    ...interactionEntries,
 ];
 
 /** The one piece each component is shown in, by its id. */
@@ -178,6 +193,7 @@ export const inUse: Record<string, InUse> = {
     'badge': badge.inUse,
     chip: chip.inUse,
     'toolbar': toolbar.inUse,
+    'hold-button': holdButton.inUse,
     'kbd': kbd.inUse,
     'bottom-bar': bottomBar.inUse,
     'input': input.inUse,
@@ -202,8 +218,6 @@ export const inUse: Record<string, InUse> = {
     'filter-condition': filterCondition.inUse,
     'filter-menu': filterMenu.inUse,
     'sidebar': sidebar.inUse,
-    'sidebar-switcher': sidebarSwitcher.inUse,
-    'sidebar-levels': sidebarLevels.inUse,
     'rail': rail.inUse,
     'top-nav': topNav.inUse,
     'tabs': tabs.inUse,
@@ -222,12 +236,18 @@ export const inUse: Record<string, InUse> = {
     'stat-card': statCard.inUse,
     'card': card.inUse,
     'table': table.inUse,
+    'table-head': tableHead.inUse,
+    'table-cell': tableCell.inUse,
+    'table-edit-cell': tableEditCell.inUse,
+    'table-fold': tableFold.inUse,
     'description-list': descriptionList.inUse,
     'accordion': accordion.inUse,
     'activity': activity.inUse,
+    'branch-graph': branchGraph.inUse,
     'avatar': avatar.inUse,
     'icon-tile': iconTile.inUse,
     'bar-list': barList.inUse,
+    truncate: truncate.inUse,
     'area-chart': areaChart.inUse,
     'bar-chart': barChart.inUse,
     'horizontal-bar-chart': horizontalBarChart.inUse,
@@ -256,6 +276,7 @@ export const inUse: Record<string, InUse> = {
     'chat-attachment': chatAttachment.inUse,
     'chat-suggestions': chatSuggestions.inUse,
     'chat-typing': chatTyping.inUse,
+    'thinking': thinking.inUse,
     'chat-composer': chatComposer.inUse,
     'chat-prompt': chatPrompt.inUse,
 };

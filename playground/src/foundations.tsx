@@ -8,7 +8,7 @@ import {
     Field,
     FieldLabel,
     Input,
-    NavItem,
+    SidebarItem,
     spacingDefaults,
     Tabs,
     TabsList,
@@ -247,11 +247,11 @@ const SelectionFigure = () => (
                 >
                     <span className="text-neutral-600 text-xxs">{label}</span>
                     <div className="flex flex-col gap-0.5">
-                        <NavItem icon={<Inbox {...icon} />}>Inbox</NavItem>
-                        <NavItem icon={<FileText {...icon} />}>Drafts</NavItem>
-                        <NavItem active icon={<Settings {...icon} />}>
+                        <SidebarItem icon={<Inbox {...icon} />}>Inbox</SidebarItem>
+                        <SidebarItem icon={<FileText {...icon} />}>Drafts</SidebarItem>
+                        <SidebarItem active icon={<Settings {...icon} />}>
                             Settings
-                        </NavItem>
+                        </SidebarItem>
                     </div>
                     <Tabs defaultValue="summary">
                         <TabsList variant="pill">

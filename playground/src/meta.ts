@@ -10,6 +10,7 @@ export const views = [
     'skills',
     'mcp',
     'raster',
+    'wall',
 ] as const;
 
 export type View = (typeof views)[number];

@@ -24,6 +24,13 @@ const settingRowKnobs: Knob[] = [
         options: [o('switch', 'Switch'), o('picker', 'Picker'), o('button', 'Button')],
         default: 'switch',
     },
+    {
+        id: 'layout',
+        label: 'Layout',
+        options: [o('ruled', 'Ruled'), o('boxed', 'Boxed')],
+        default: 'ruled',
+    },
+    { id: 'dependent', label: 'Dependent', switch: true, default: true },
     { id: 'description', label: 'Descriptions', switch: true, default: true },
     { id: 'title', label: 'Group title', switch: true, default: true },
     { id: 'disabled', label: 'Disabled', switch: true, default: false },
@@ -64,6 +71,7 @@ const SettingRowPreview = ({ knobs }: PreviewProps) => {
             aria-label={knobs.title ? undefined : 'Notifications'}
             className="w-full max-w-80"
             disabled={Boolean(knobs.disabled)}
+            layout={knobs.layout === 'boxed' ? 'boxed' : 'ruled'}
             title={knobs.title ? 'Notifications' : undefined}
         >
             <SettingRow
@@ -71,6 +79,26 @@ const SettingRowPreview = ({ knobs }: PreviewProps) => {
                 description={knobs.description ? 'Email when something is flagged' : undefined}
                 title="Anomaly alerts"
             />
+            {knobs.dependent && (
+                // Only means something while the alerts are on, so it sits with them and dims when they are off.
+                <SettingRow
+                    control={
+                        <Select defaultValue="10">
+                            <SelectTrigger indicator="right" size="sm">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent align="end">
+                                <SelectItem value="5">Above 5%</SelectItem>
+                                <SelectItem value="10">Above 10%</SelectItem>
+                                <SelectItem value="25">Above 25%</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    }
+                    dependent
+                    disabled={!alerts}
+                    title="Threshold"
+                />
+            )}
             <SettingRow
                 control={settingControl(kind)}
                 description={knobs.description ? settingText[kind].description : undefined}

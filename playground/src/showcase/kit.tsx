@@ -52,6 +52,8 @@ export const categories = [
     { id: 'messages', label: 'Messages' },
     { id: 'charts', label: 'Charts' },
     { id: 'ai', label: 'AI' },
+    // How things behave rather than what they look like: each a live demo of one pattern.
+    { id: 'interaction', label: 'Interaction' },
 ] as const;
 
 export type Category = (typeof categories)[number]['id'];

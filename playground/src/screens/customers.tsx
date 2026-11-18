@@ -403,6 +403,8 @@ export const Customers = () => {
     return (
         <Workspace
             bar={chosen.length > 0 ? bulk : dock}
+            // The block gap: the head with its line over a table of ten rows, its toolbar and pages.
+            gap="gap-14"
             place="customers"
             trail={['Customers']}
             width="wide"

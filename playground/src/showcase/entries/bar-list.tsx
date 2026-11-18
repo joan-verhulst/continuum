@@ -44,22 +44,22 @@ const Traffic = () => (
         <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             <Card layout="list">
                 <BarList limit={5} title="Top pages" valueLabel="Visitors">
-                    <BarListItem href="#" value={4120}>
+                    <BarListItem href="#" truncate="middle" value={4120}>
                         /pricing
                     </BarListItem>
-                    <BarListItem href="#" value={3312}>
+                    <BarListItem href="#" truncate="middle" value={3312}>
                         /
                     </BarListItem>
-                    <BarListItem href="#" value={2840}>
+                    <BarListItem href="#" truncate="middle" value={2840}>
                         /blog/q3-review
                     </BarListItem>
-                    <BarListItem href="#" value={1204}>
+                    <BarListItem href="#" truncate="middle" value={1204}>
                         /contact
                     </BarListItem>
-                    <BarListItem href="#" value={860}>
-                        /docs/invoices
+                    <BarListItem href="#" truncate="middle" value={860}>
+                        /docs/api/reference/webhooks/invoice-paid
                     </BarListItem>
-                    <BarListItem href="#" value={64}>
+                    <BarListItem href="#" truncate="middle" value={64}>
                         /careers
                     </BarListItem>
                 </BarList>

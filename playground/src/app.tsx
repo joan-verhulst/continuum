@@ -4,6 +4,8 @@ import { Foundations } from './foundations';
 import { Home } from './home';
 import { McpPage } from './install/mcp-page';
 import { SkillsPage } from './install/skills-page';
+import { Rulers } from './lab/rulers';
+import { WallLab } from './lab/wall';
 import { LeaveDialog, type LeaveGuard, LeaveGuardProvider } from './leave-guard';
 import { type AppState, parseHash, toHash } from './meta';
 import { Patterns } from './patterns';
@@ -302,6 +304,7 @@ export const App = () => {
                             )}
                             {state.view === 'mcp' && <McpPage />}
                             {state.view === 'raster' && <RasterLab />}
+                            {state.view === 'wall' && <WallLab />}
                         </Shell>
                     </LeaveGuardProvider>
                 )}
@@ -312,6 +315,7 @@ export const App = () => {
                     onSave={() => leave(guard => guard?.save())}
                     open={asking}
                 />
+                <Rulers />
             </ToastProvider>
         </Theme>
     );

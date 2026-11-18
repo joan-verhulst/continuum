@@ -78,6 +78,9 @@ export const Settings = () => {
                     </Dock>
                 </BottomBar>
             }
+            // The block gap: the head with its line over a settings card of four or five rows (General,
+            // Members); the three-row cards come to 44, a step from it.
+            gap="gap-12"
             notice={<Notice {...notice} />}
             place="settings"
             trail={[{ label: 'Settings', to: 'settings' }, area]}

@@ -30,13 +30,13 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
     HeaderBar,
-    NavGroup,
-    NavItem,
     PageContent,
     Sidebar,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLogo,
+    SidebarSection,
     SidebarToggle,
     Table,
     TableBody,
@@ -130,43 +130,43 @@ const SequenceSidebar = () => (
             <SidebarToggle />
         </SidebarHeader>
         <SidebarGroup aria-label="Sequences">
-            <NavItem icon={<ListTree strokeWidth={2} />}>All sequences</NavItem>
-            <NavItem icon={<Timer strokeWidth={2} />}>Active campaigns</NavItem>
+            <SidebarItem icon={<ListTree strokeWidth={2} />}>All sequences</SidebarItem>
+            <SidebarItem icon={<Timer strokeWidth={2} />}>Active campaigns</SidebarItem>
             {/* The campaign on the page has not started, so it is filed under the drafts. */}
-            <NavItem active icon={<FileClock strokeWidth={2} />}>
+            <SidebarItem active icon={<FileClock strokeWidth={2} />}>
                 Drafts
-            </NavItem>
-            <NavItem icon={<Star strokeWidth={2} />}>Templates</NavItem>
+            </SidebarItem>
+            <SidebarItem icon={<Star strokeWidth={2} />}>Templates</SidebarItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Projects" label="Projects">
-            <NavGroup defaultOpen icon="🚀" label="Q1 growth campaign">
-                <NavItem icon={<Megaphone strokeWidth={2} />} variant="inset">
+            <SidebarSection defaultOpen icon="🚀" label="Q1 growth campaign">
+                <SidebarItem icon={<Megaphone strokeWidth={2} />} variant="inset">
                     Campaigns
-                </NavItem>
-                <NavItem icon={<Workflow strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<Workflow strokeWidth={2} />} variant="inset">
                     Automations
-                </NavItem>
-                <NavItem icon={<ChartLine strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<ChartLine strokeWidth={2} />} variant="inset">
                     Analytics
-                </NavItem>
-                <NavItem icon={<UserRoundCog strokeWidth={2} />} variant="inset">
+                </SidebarItem>
+                <SidebarItem icon={<UserRoundCog strokeWidth={2} />} variant="inset">
                     Permissions
-                </NavItem>
-            </NavGroup>
+                </SidebarItem>
+            </SidebarSection>
             {projects.map(project => (
-                <NavGroup icon={project.icon} key={project.id} label={project.label}>
-                    <NavItem icon={<Megaphone strokeWidth={2} />} variant="inset">
+                <SidebarSection icon={project.icon} key={project.id} label={project.label}>
+                    <SidebarItem icon={<Megaphone strokeWidth={2} />} variant="inset">
                         Campaigns
-                    </NavItem>
-                    <NavItem icon={<ChartLine strokeWidth={2} />} variant="inset">
+                    </SidebarItem>
+                    <SidebarItem icon={<ChartLine strokeWidth={2} />} variant="inset">
                         Analytics
-                    </NavItem>
-                </NavGroup>
+                    </SidebarItem>
+                </SidebarSection>
             ))}
             {/* Set at the project rows' size, as drawn. */}
-            <NavItem variant="project" icon={<Folder strokeWidth={2} />}>
+            <SidebarItem variant="project" icon={<Folder strokeWidth={2} />}>
                 All projects
-            </NavItem>
+            </SidebarItem>
         </SidebarGroup>
         <AccountFooter
             avatar={
@@ -175,7 +175,7 @@ const SequenceSidebar = () => (
                 </WorkspaceMark>
             }
             name="Northwind Agency"
-            plan="Startup"
+            detail="Startup"
         />
     </Sidebar>
 );
@@ -278,14 +278,16 @@ export const SequenceEditor = () => {
                             <Badge icon={<Info strokeWidth={2} />}>Draft</Badge>
                         </div>
 
+                        {/* The block gap: the bare title over a section head of one or two lines. */}
                         {facet && (
-                            <div className="mt-12">
+                            <div className="mt-6">
                                 <SectionTitle description={facet.description} title={facet.title} />
                             </div>
                         )}
 
                         {view === 'emails' && (
                             <>
+                                {/* The block gap: the bare title over the section and its table of eleven rows. */}
                                 <div className="mt-12 flex items-start justify-between gap-6">
                                     <SectionTitle
                                         description="Build the sequence by adding emails and grouping them into phases. Emails in a phase go out in order at the set interval. Drag to reorder."
