@@ -2,6 +2,7 @@ import { oklchToHex, tailwindGreys, tailwindHues } from 'continuum';
 import type { SystemValues } from '../../system/values';
 import type { Fact, Subject } from '../../types';
 import { type Pair, toCss } from './aliases';
+import { type Element, elementAt } from './markup';
 import { type Consumed, closing, type Literal, stringLiterals } from './scan';
 import { subjectOf } from './subject';
 
@@ -494,8 +495,49 @@ export const libraryNames = (text: string) => {
     return names;
 };
 
-/** The subject of a class string: the element it is on, its other classes, its role. */
-const subjectOfString = (string: ClassString, library: Set<string>): Subject => {
+/** The names a file imports from an icon set: an icon's colour is a quiet mark, not text. */
+const iconNames = (text: string) => {
+    const names = new Set<string>();
+    for (const match of text.matchAll(
+        /import\s*(?:type\s*)?(\w+)?\s*,?\s*(?:\{([^}]*)\})?\s*from\s*['"]([^'"]*(?:icon|lucide|heroicons|phosphor|tabler|feather)[^'"]*)['"]/gi,
+    )) {
+        if (match[1]) names.add(match[1]);
+        for (const name of (match[2] ?? '').split(',')) {
+            const local = name
+                .trim()
+                .split(/\s+as\s+/)
+                .at(-1)
+                ?.trim();
+            if (local) names.add(local);
+        }
+    }
+    return names;
+};
+
+/** Whether an element or anything in it is named for a setting: a settings card, a setting row. */
+const holdsSettings = (element: Element): boolean =>
+    /setting/i.test(`${element.name} ${element.classes}`) || element.children.some(holdsSettings);
+
+/** What an element holds, one entry per child: its tag, its kind, and whether it is a setting's. */
+const holdsOf = (element: Element) =>
+    element.children.map(child => ({
+        tag: child.name,
+        kind:
+            subjectOf({ tag: child.name, names: [child.classes], classes: child.classes }).kind ??
+            'unknown',
+        settings: holdsSettings(child),
+    }));
+
+/**
+ * The subject of a class string: the element it is on, its other classes, its role, what it
+ * holds. A class on one of the library's parts is the page's own, laid over the part's values.
+ */
+const subjectOfString = (
+    string: ClassString,
+    library: Set<string>,
+    icons: Set<string>,
+    element: Element | undefined,
+): Subject => {
     const role = /\brole\s*=\s*["'](\w+)/.exec(string.attributes ?? '')?.[1];
     const subject = subjectOf({
         tag: string.tag,
@@ -503,7 +545,11 @@ const subjectOfString = (string: ClassString, library: Set<string>): Subject => 
         role,
         classes: string.text,
     });
-    if (string.tag && library.has(string.tag.split('.')[0] ?? '')) subject.library = true;
+    const tag = string.tag?.split('.')[0] ?? '';
+    if (string.tag && library.has(tag)) subject.part = tag;
+    if (string.tag && icons.has(tag)) subject.picture = true;
+    if (element && element.name === string.tag && element.children.length)
+        subject.holds = holdsOf(element);
     return subject;
 };
 
@@ -514,11 +560,13 @@ export const readUtilities = (
     system: SystemValues,
     consumed: Consumed,
     line: (offset: number) => number,
+    elements: Element[] = [],
 ): Fact[] => {
     const facts: Fact[] = [];
     const library = libraryNames(text);
+    const icons = iconNames(text);
     for (const string of classStrings(text)) {
-        const subject = subjectOfString(string, library);
+        const subject = subjectOfString(string, library, icons, elementAt(elements, string.offset));
         let read = false;
         for (const token of tokens(string)) {
             for (const pair of readUtility(token.base, token.negative, system)) {

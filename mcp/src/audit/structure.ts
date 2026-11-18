@@ -79,13 +79,13 @@ export const analyseStructure = (root: UINode, system: SystemValues, mode: Mode)
     );
     // A dialog or a sheet is a view of its own, with its own one primary action.
     const viewOf = ({ parents }: Visit) =>
-        [...parents]
-            .reverse()
-            .find(
-                parent =>
-                    ['dialog', 'alertdialog'].includes(parent.role ?? '') ||
-                    parent.tag === 'dialog',
-            ) ?? root;
+        [...parents].reverse().find(
+            parent =>
+                ['dialog', 'alertdialog'].includes(parent.role ?? '') ||
+                parent.tag === 'dialog' ||
+                // A screen a component returns, one of several it draws one at a time.
+                parent.tag === 'view',
+        ) ?? root;
     const views = new Map<UINode, Visit[]>();
     for (const visit of primaries) {
         const view = viewOf(visit);
@@ -93,12 +93,19 @@ export const analyseStructure = (root: UINode, system: SystemValues, mode: Mode)
     }
     for (const group of views.values()) {
         if (group.length < 2) continue;
+        const docked = group.some(({ node, parents }) =>
+            [node, ...parents].some(each => /dock/i.test(`${each.tag ?? ''} ${each.name ?? ''}`)),
+        );
         findings.push(
             advise(list(group), {
                 rule: 'one-primary',
                 found: `${group.length} buttons in the action colour`,
-                expected: 'one primary action per view; the rest secondary or ghost',
-                why: 'One primary action per view, in the action colour; everything else is secondary or ghost (pages.md › Standing decisions).',
+                expected: docked
+                    ? 'one primary action per view: the dock’s action stays; remove the one in the page head (or make it secondary)'
+                    : 'one primary action per view; the rest secondary or ghost',
+                why: docked
+                    ? 'One primary action per view, in the action colour; a page with views keeps it in the dock beside them, not also in the title row (pages.md › The floating dock, › The page head).'
+                    : 'One primary action per view, in the action colour; everything else is secondary or ghost (pages.md › Standing decisions).',
             }),
         );
     }
@@ -111,8 +118,22 @@ export const analyseStructure = (root: UINode, system: SystemValues, mode: Mode)
                     isBordered(parent) ||
                     parent.role === 'dialog' ||
                     parent.role === 'menu' ||
+                    parent.role === 'toolbar' ||
                     parent.tag === 'table',
             )
+        )
+            return false;
+        // A line in a bar, a list or a menu, or one standing upright between controls, is the
+        // bar's own (foundations.md › Surfaces and depth).
+        if (/vertical/i.test(node.name ?? '')) return false;
+        if (
+            parents
+                .slice(-2)
+                .some(parent =>
+                    /^(header|footer|nav|menu|ul|ol|li)$|bar$|toolbar|sidebar|menu|popover|list|item|row|cell/i.test(
+                        parent.tag ?? '',
+                    ),
+                )
         )
             return false;
         if (node.tag === 'hr' || node.role === 'separator') return true;
@@ -132,7 +153,8 @@ export const analyseStructure = (root: UINode, system: SystemValues, mode: Mode)
             advise(list(lines), {
                 rule: 'dividers',
                 found: `${lines.length} line${lines.length > 1 ? 's' : ''} between sections`,
-                expected: 'distance: 40 between sections, 20 between blocks',
+                expected:
+                    'no line: remove it; the block gap between the blocks (about 32 to 64, get_spacing) separates them',
                 why: 'Space, not dividers: sections and groups are separated by distance; a rule only inside a bordered container (foundations.md › Surfaces and depth).',
             }),
         );
@@ -156,36 +178,83 @@ export const analyseStructure = (root: UINode, system: SystemValues, mode: Mode)
             ),
     );
     if (nested.length) {
+        const tables = nested.some(({ node }) => node.tag === 'table' || node.role === 'table');
         findings.push(
             advise(list(nested), {
                 rule: 'nested-containers',
-                found: `${nested.length} bordered container${nested.length > 1 ? 's' : ''} inside another`,
-                expected: 'one container; inside it, a hairline or an eyebrow marks the group',
-                why: 'A container never sits inside a container: inside a card the mark is a hairline or an eyebrow (foundations.md › Surfaces and depth).',
+                found: `${nested.length} bordered container${nested.length > 1 ? 's' : ''} inside another${tables ? ' (a table in a card)' : ''}`,
+                expected: tables
+                    ? 'one container: the table is its own (its frame); remove the card around it'
+                    : 'one container; inside it, a hairline or an eyebrow marks the group',
+                why: 'A container never sits inside a container: inside a card the mark is a hairline or an eyebrow; a table is its own container. The one exception is a highlighted item inside a group, such as the plan in force inside a billing group (foundations.md › Surfaces and depth).',
             }),
         );
     }
 
     // Views of a list go in the dock, not in tabs above the table.
+    // A table reached through a tab panel is a facet's content, not a list under its views.
     const hasTable = (node: UINode): boolean =>
-        node.tag === 'table' ||
-        node.role === 'table' ||
-        node.role === 'grid' ||
-        (node.children ?? []).some(hasTable);
+        node.role !== 'tabpanel' &&
+        (node.tag === 'table' ||
+            node.role === 'table' ||
+            node.role === 'grid' ||
+            (node.children ?? []).some(hasTable));
     const tabsOverTables = visits.filter(({ node, parents }) => {
         if (node.role !== 'tablist') return false;
-        const parent = parents[parents.length - 1];
-        const siblings = parent?.children ?? [];
-        const index = siblings.indexOf(node);
-        return siblings.slice(index + 1, index + 3).some(hasTable);
+        // The tablist, or the wrapper it is the only content of (a Tabs root around its list).
+        const chain = [node, ...[...parents].reverse()];
+        for (let index = 0; index < Math.min(3, chain.length - 1); index++) {
+            const self = chain[index] as UINode;
+            const parent = chain[index + 1] as UINode;
+            const siblings = parent.children ?? [];
+            const at = siblings.indexOf(self);
+            if (siblings.slice(at + 1, at + 3).some(hasTable)) return true;
+            if (siblings.length > 1) return false;
+        }
+        return false;
     });
     if (tabsOverTables.length) {
+        const docked = visits.some(({ node }) =>
+            /(^|[^a-z])dock|BottomBar/i.test(`${node.tag ?? ''} ${node.name ?? ''}`),
+        );
         findings.push(
             advise(list(tabsOverTables), {
                 rule: 'views-in-dock',
-                found: 'tabs directly above a table',
-                expected: 'the views in the floating dock, beside the page’s one primary action',
+                found: `tabs directly above a table${docked ? ', on a page that has a dock' : ''}`,
+                expected:
+                    'the views in the floating dock (dock items with their counts), beside the page’s one primary action; no tabs over the table',
                 why: 'Views go in the dock: the views of a list live in the floating dock, not above the table as tabs (pages.md › Standing decisions; patterns.md).',
+            }),
+        );
+    }
+
+    // An index is wide: a table of several columns does not fit the narrow column of a form.
+    const columnsOf = (table: UINode) => {
+        const rows = flatten(table).map(each => each.node);
+        const head = rows.find(each =>
+            (each.children ?? []).some(
+                child => child.role === 'columnheader' || child.tag === 'th',
+            ),
+        );
+        return (head?.children ?? []).filter(
+            child => child.role === 'columnheader' || child.tag === 'th',
+        ).length;
+    };
+    for (const { node, parents } of visits) {
+        if (!(node.tag === 'table' || node.role === 'table' || node.role === 'grid')) continue;
+        if (parents.some(parent => parent.role === 'dialog')) continue;
+        const columns = columnsOf(node);
+        const column = [...parents]
+            .reverse()
+            .find(parent => (parent.box?.width ?? Number.POSITIVE_INFINITY) <= 700);
+        if (columns < 5 || !column) continue;
+        findings.push(
+            advise(where(column), {
+                rule: 'page-width',
+                found: `a table of ${columns} columns in a column ${column.box?.width}px wide`,
+                expected: 'the wide column, 1080 (width="wide"): an index of several columns',
+                why: 'Width follows density: create, edit and settings pages are narrow (640); an index, a list or table with several columns, is wide (1080) (pages.md › The column).',
+                fix: { code: 'width="wide"' },
             }),
         );
     }

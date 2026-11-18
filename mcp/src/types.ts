@@ -122,7 +122,13 @@ export type AuditReport = {
     /** The theme the values were checked against: 'Continuum' or a project's app.css. */
     theme: string;
     mode: Mode;
-    summary: { fix: number; advise: number; byRule: Record<string, number> };
+    summary: {
+        fix: number;
+        advise: number;
+        byRule: Record<string, number>;
+        /** 'clean' when nothing departs from the rules the audit reads: there is nothing to look for. */
+        verdict?: 'clean';
+    };
     findings: Finding[];
     /** What the audit could not judge, or skipped, said plainly. */
     notes: string[];
@@ -158,6 +164,13 @@ export type Subject = {
     picture?: boolean;
     /** Already a Continuum part (imported from the library, or rendered by it): only spacing is the page's. */
     library?: boolean;
+    /**
+     * The library part a class is written on ('Card', 'Button'): the class is the page's own, laid
+     * over a part that draws its own value, so a value it gets wrong is fixed by removing it.
+     */
+    part?: string;
+    /** What the element holds, one entry per child: for the rules that read a gap by what it separates. */
+    holds?: Array<{ tag: string; kind: string; settings?: boolean }>;
 };
 
 /** How the value was written, so the fix comes back in the same form. */
@@ -201,4 +214,6 @@ export type ElementFact = {
     attributes: Record<string, string>;
     /** The file imports Continuum (a React project on the library): suggest the component. */
     libraryAvailable: boolean;
+    /** The elements it sits in, innermost first, each as its tag and classes: 'SettingRow', 'section settings-card'. */
+    within?: string[];
 };

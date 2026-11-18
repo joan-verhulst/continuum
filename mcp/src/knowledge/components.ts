@@ -139,6 +139,11 @@ const aliases: Record<string, string> = {
     iconbutton: 'Button',
     nav: 'Sidebar',
     navigation: 'Sidebar',
+    navitem: 'SidebarItem',
+    navgroup: 'SidebarSection',
+    sidebaritem: 'SidebarItem',
+    sidebarlink: 'SidebarItem',
+    foldout: 'SidebarSection',
     navbar: 'TopNav',
     topbar: 'HeaderBar',
     header: 'HeaderBar',
@@ -223,9 +228,6 @@ export const closestNames = (name: string, count = 3) => {
 
 /** Parts whose showcase entry no rule below finds: they are shown inside another's. */
 const entryOverrides: Record<string, string> = {
-    NavItem: 'sidebar.tsx',
-    NavGroup: 'sidebar.tsx',
-    SidebarLevel: 'sidebar-levels.tsx',
     ContinuumMark: 'logo.tsx',
     ChartFrame: 'charts/area-chart.tsx',
 };

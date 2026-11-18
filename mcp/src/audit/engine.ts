@@ -22,10 +22,23 @@ export type AuditOptions = {
     /** Add the tree-level advice (one primary, nested containers, views in the dock). */
     structure?: boolean;
     notes?: string[];
+    /** Hold none back: the caller joins findings further and holds back itself. */
+    all?: boolean;
 };
 
 /** At most this many findings go back; the rest wait for the next audit, after these are fixed. */
 const limit = 60;
+
+/** The first findings of a report, the rest held back with a note to audit again. */
+export const holdBack = (built: AuditReport): AuditReport => {
+    if (built.findings.length > limit) {
+        built.notes.push(
+            `${built.findings.length - limit} more findings held back: apply these, then audit again.`,
+        );
+        built.findings = built.findings.slice(0, limit);
+    }
+    return built;
+};
 
 /* ---------- Shorthands into their parts ---------- */
 
@@ -152,11 +165,5 @@ export const auditFacts = (input: AuditInput, options: AuditOptions): AuditRepor
         notes.push('Nothing to audit: no facts, elements or tree were given.');
 
     const built = report(dedupe(findings), medium, system, mode, notes);
-    if (built.findings.length > limit) {
-        built.notes.push(
-            `${built.findings.length - limit} more findings held back: apply these, then audit again.`,
-        );
-        built.findings = built.findings.slice(0, limit);
-    }
-    return built;
+    return options.all ? built : holdBack(built);
 };

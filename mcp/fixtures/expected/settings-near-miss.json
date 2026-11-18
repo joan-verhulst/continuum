@@ -1,0 +1,85 @@
+{
+    "title": "a settings page in the library, nearly right: classes laid over its parts",
+    "tool": "audit_source",
+    "medium": "react",
+    "paths": ["react/settings-near-miss.tsx"],
+    "strict": true,
+    "mistakes": [
+        {
+            "what": "an eyebrow in font-semibold, quiet text that is regular",
+            "rule": "weight",
+            "at": "settings-near-miss.tsx:102",
+            "expectedIncludes": ["font-normal"]
+        },
+        {
+            "what": "an avatar fill in an arbitrary hex, bg-[#1a1d2e]",
+            "rule": "colour",
+            "at": "settings-near-miss.tsx:170",
+            "expectedIncludes": ["neutral-950"]
+        },
+        {
+            "what": "the page column's gap-[38px], between unlike blocks",
+            "rule": "spacing",
+            "at": "settings-near-miss.tsx:201",
+            "expectedIncludes": ["block gap"]
+        },
+        {
+            "what": "a page title in text-[22px]: a page title is 24",
+            "rule": "type-size",
+            "at": "settings-near-miss.tsx:203",
+            "expectedIncludes": ["text-2xl"]
+        },
+        {
+            "what": "the page's line in text-neutral-400, lighter than any read text",
+            "rule": "text-tone",
+            "at": "settings-near-miss.tsx:204",
+            "expectedIncludes": ["neutral-600"]
+        },
+        {
+            "what": "gap-[18px] between settings cards: they stack 24 apart",
+            "rule": "spacing",
+            "at": "settings-near-miss.tsx:209",
+            "expectedIncludes": ["gap-6"]
+        },
+        {
+            "what": "shadow-lg on a Card that does not float",
+            "rule": "shadow",
+            "at": "settings-near-miss.tsx:210",
+            "expectedIncludes": ["remove shadow-lg"]
+        },
+        {
+            "what": "h-9 on a Button, which draws its own 34",
+            "rule": "height",
+            "at": "settings-near-miss.tsx:345",
+            "expectedIncludes": ["remove h-9"]
+        },
+        {
+            "what": "rounded-lg on a Button, which draws its own control corner",
+            "rule": "radius",
+            "at": "settings-near-miss.tsx:345",
+            "expectedIncludes": ["remove rounded-lg"]
+        },
+        {
+            "what": "a hand-rolled checkbox as a setting row's control: a setting that turns on is a Switch",
+            "rule": "component",
+            "at": "settings-near-miss.tsx:313",
+            "expectedIncludes": ["switch"]
+        },
+        {
+            "what": "border-2 on a Card: a second border weight",
+            "rule": "border-width",
+            "at": "settings-near-miss.tsx:365",
+            "expectedIncludes": ["remove border-2"]
+        }
+    ],
+    "clean": [
+        { "what": "pb-24, room for the floating dock", "at": "settings-near-miss.tsx:201", "property": "padding-bottom" },
+        { "what": "text-xs on the eyebrow, the meta size", "at": "settings-near-miss.tsx:102", "property": "font-size" },
+        { "what": "h-dvh on the shell", "at": "settings-near-miss.tsx:152", "property": "height" }
+    ],
+    "never": [
+        { "what": "the 22px title is a page title, not the nearest 20", "at": "settings-near-miss.tsx:203", "proposes": "text-xl" },
+        { "what": "the settings cards' gap is theirs, not the nearest 20", "at": "settings-near-miss.tsx:209", "proposes": "gap-5" },
+        { "what": "a setting that turns on is no Checkbox", "at": "settings-near-miss.tsx:313", "proposes": "<checkbox" }
+    ]
+}

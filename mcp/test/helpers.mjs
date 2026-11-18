@@ -266,15 +266,26 @@ const placesOf = finding =>
 /**
  * Whether one finding answers one planted mistake: it sits where the mistake was planted, and it
  * either names the rule or proposes the expected value. The rule is the engine's word for the
- * kind of mistake, never a stack's; the value is the system's.
+ * kind of mistake, never a stack's; the value is the system's. A strict plan asks for both: the
+ * kind of mistake and the right fix for it.
  */
-export const answers = (mistake, finding) => {
+export const answers = (mistake, finding, strict = false) => {
     const where = placesOf(finding);
     if (!list(mistake.at).some(at => atMatches(where, at))) return false;
-    if (list(mistake.rule ?? []).includes(finding.rule)) return true;
+    const rule = list(mistake.rule ?? []).includes(finding.rule);
+    if (rule && !strict) return true;
     const text = proposal(finding);
-    return list(mistake.expectedIncludes).some(part => text.includes(String(part).toLowerCase()));
+    const value = list(mistake.expectedIncludes).some(part =>
+        text.includes(String(part).toLowerCase()),
+    );
+    return strict ? rule && value : value;
 };
+
+/** Whether a finding sits at a place: 'file.tsx:12' matches '…/file.tsx:12', and an id itself. */
+export const isAt = (finding, at) => atMatches(placesOf(finding), at);
+
+/** What a finding proposes, lower case: its expected value, component and fixes. */
+export { proposal };
 
 /**
  * Pairs planted mistakes with findings, one finding per mistake, so a single finding cannot be
@@ -282,7 +293,7 @@ export const answers = (mistake, finding) => {
  * names several lines ('file.scss:14,43') may answer one mistake on each. Returns, per mistake,
  * the finding that answers it or undefined.
  */
-export const matchMistakes = (mistakes, findings) => {
+export const matchMistakes = (mistakes, findings, strict = false) => {
     // A finding's capacity is how many places it names; each place is a slot a mistake can take.
     const slots = findings.flatMap(finding => {
         const lines = /:(\d+(?:,\s*\d+)+)/.exec(finding.at ?? '');
@@ -291,7 +302,7 @@ export const matchMistakes = (mistakes, findings) => {
     });
     const taken = new Array(slots.length).fill(-1);
     const candidates = mistakes.map(mistake =>
-        slots.flatMap((finding, slot) => (answers(mistake, finding) ? [slot] : [])),
+        slots.flatMap((finding, slot) => (answers(mistake, finding, strict) ? [slot] : [])),
     );
     // Augmenting paths (Kuhn): a mistake takes a free slot, or moves the holder of one elsewhere.
     const place = (index, seen) => {
@@ -321,8 +332,8 @@ const describe = finding =>
     `  [${finding.severity}/${finding.confidence}] ${finding.rule} at ${finding.at}${finding.property ? ` (${finding.property})` : ''}: ${finding.found} → ${finding.expected}`;
 
 /** Fails listing every planted mistake the audit missed, and what it did find. */
-export const assertFound = (label, mistakes, findings) => {
-    const matched = matchMistakes(mistakes, findings);
+export const assertFound = (label, mistakes, findings, strict = false) => {
+    const matched = matchMistakes(mistakes, findings, strict);
     const missing = mistakes.filter((_, index) => !matched[index]);
     if (missing.length === 0) return;
     const lines = missing.map(

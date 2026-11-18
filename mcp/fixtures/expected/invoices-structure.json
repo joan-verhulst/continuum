@@ -1,0 +1,49 @@
+{
+    "title": "an index in the library with its structure wrong: what source can tell of a page's shape",
+    "tool": "audit_source",
+    "medium": "react",
+    "paths": ["react/invoices-structure.tsx"],
+    "strict": true,
+    "mistakes": [
+        {
+            "what": "a primary New invoice in the page head while the dock holds the same action",
+            "rule": "one-primary",
+            "at": ["invoices-structure.tsx:470", "invoices-structure.tsx:365"],
+            "expectedIncludes": ["remove the one in the page head"]
+        },
+        {
+            "what": "a Separator between the page head and the content",
+            "rule": "dividers",
+            "at": "invoices-structure.tsx:477",
+            "expectedIncludes": ["remove"]
+        },
+        {
+            "what": "the table inside a Card: a container in a container",
+            "rule": "nested-containers",
+            "at": ["invoices-structure.tsx:510", "invoices-structure.tsx:511"],
+            "expectedIncludes": ["remove the card"]
+        },
+        {
+            "what": "a table of eight columns in the narrow column",
+            "rule": "page-width",
+            "at": "invoices-structure.tsx:456",
+            "expectedIncludes": ["wide"]
+        },
+        {
+            "what": "the status views as tabs over the table, on a page with a dock",
+            "rule": "views-in-dock",
+            "at": ["invoices-structure.tsx:495", "invoices-structure.tsx:502"],
+            "expectedIncludes": ["dock"]
+        }
+    ],
+    "clean": [
+        { "what": "py-0 on a cell holding a checkbox", "at": "invoices-structure.tsx:554", "property": "padding-top" },
+        { "what": "w-auto on the date picker", "at": "invoices-structure.tsx:427", "property": "width" }
+    ],
+    "never": [
+        { "what": "the dialog's own primary is its own view's", "at": "invoices-structure.tsx:703", "proposes": "one primary" }
+    ],
+    "knownLimits": [
+        "Three stat cards repeating the counts the views already show (line 479) are not read: whether a part repeats another, or earns its place on an index, is the page kind's to judge (get_page_kind), not a value's."
+    ]
+}

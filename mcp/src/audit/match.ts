@@ -19,7 +19,15 @@ import {
  * than a missed one.
  */
 
-export type PartMatch = { name: string; props?: Record<string, string> };
+export type PartMatch = {
+    name: string;
+    props?: Record<string, string>;
+    /** Why this part rather than the one the element looks like, when its place decides. */
+    why?: string;
+};
+
+const switchWhy =
+    'A setting that turns a thing on takes a switch, one control per setting; never a checkbox per setting (pages.md › Settings).';
 
 const words = (node: UINode) => `${node.name ?? ''} ${node.classes ?? ''}`.toLowerCase();
 
@@ -124,7 +132,7 @@ const partFinding = (
             node,
             found,
             expected: `${jsx(lead)} from the library`,
-            why: `The library has this part, with its heights, states and focus ring: compose from it rather than restyling a ${node} (components.md › ${name}). get_component ${name} gives its props.`,
+            why: `${match.why ? `${match.why} ` : ''}The library has this part, with its heights, states and focus ring: compose from it rather than restyling a ${node} (components.md › ${name}). get_component ${name} gives its props.`,
             fix: { code: `${importLine(name)}\n${jsx(lead)}…</${name}>` },
             component: name,
         };
@@ -137,7 +145,7 @@ const partFinding = (
         node,
         found: off ? `a ${name} off its spec: ${off}` : found,
         expected: `this is a ${name}${match.props ? ` (${Object.values(match.props).join(', ')})` : ''}: hold it to its spec`,
-        why: `The system has this part, with its heights, states and focus ring (components.md › ${name}). get_component ${name} ${medium} gives every value, written for this medium.`,
+        why: `${match.why ? `${match.why} ` : ''}The system has this part, with its heights, states and focus ring (components.md › ${name}). get_component ${name} ${medium} gives every value, written for this medium.`,
         fix: { code: `get_component ${name} ${medium}` },
         component: name,
     };
@@ -207,6 +215,9 @@ const elementPart = (element: ElementFact): PartMatch | null => {
         case 'dialog':
             return { name: 'Dialog' };
         case 'input':
+            // A box that turns a setting on is a switch: a setting row's control, or in a settings card.
+            if (type === 'checkbox' && (element.within ?? []).some(each => /setting/i.test(each)))
+                return { name: 'Switch', why: switchWhy };
             if (type === 'checkbox') return { name: 'Checkbox' };
             if (type === 'radio') return { name: 'RadioGroup' };
             if (type === 'range') return { name: 'Slider' };
@@ -224,27 +235,13 @@ const elementPart = (element: ElementFact): PartMatch | null => {
     return null;
 };
 
-const dividers =
-    'Space, not dividers: sections and groups are separated by distance; a line is kept only inside a bordered container (foundations.md › Surfaces and depth).';
-
-/** Raw elements where the system has a part, and rules drawn between sections. */
+/**
+ * Raw elements where the system has a part. A rule drawn as an element (<hr>) is judged with the
+ * page's shape, where what holds it is known (structure.ts).
+ */
 export const elementParts = (elements: ElementFact[], medium: Medium): Finding[] => {
     const out: Finding[] = [];
     for (const element of elements) {
-        if (element.tag === 'hr') {
-            out.push({
-                rule: 'dividers',
-                severity: 'advise',
-                confidence: 'low',
-                at: element.at,
-                node: '<hr>',
-                found: 'a rule drawn as an element',
-                expected:
-                    'distance: 40 between sections, 20 between blocks; a hairline only inside a bordered container',
-                why: dividers,
-            });
-            continue;
-        }
         const match = elementPart(element);
         if (!match) continue;
         const written = `<${element.tag}${element.attributes.role ? ` role="${element.attributes.role}"` : ''}>`;

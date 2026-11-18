@@ -165,9 +165,10 @@ const roles: Record<string, Kind> = {
  * specific; a layout type (Row, Column, a *Layout) is no kind of its own.
  */
 export const subjectOf = ({ tag, names = [], role, hasChildren, classes = '' }: Names): Subject => {
+    // A utility behind a variant ('[&_svg]:size-4', 'hover:bg-x') is still a utility, not a name.
     const meaningful = names
         .flatMap(name => name.split(/\s+/))
-        .filter(name => name && !utility.test(name));
+        .filter(name => name && !utility.test(name.replace(/^(?:\[[^\]]*\]:|[\w@/-]+:|\*:)+/, '')));
     const all = [tag, ...meaningful].filter((name): name is string => !!name);
     const picture = all.some(name => wordsOf(name).some(word => pictureWord.test(word)));
     let kind: Kind | undefined;

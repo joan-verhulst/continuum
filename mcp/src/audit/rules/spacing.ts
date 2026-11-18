@@ -1,4 +1,5 @@
 import { snapSpacing } from '../../system/values';
+import type { Fact } from '../../types';
 import { writeFix } from '../fix';
 import { findingFor, isReference, lengthsIn, px, type Rule } from './shared';
 
@@ -48,6 +49,46 @@ const prefixFor = (property: string, index: number, count: number) => {
     return `${base}${sides[index] ?? ''}`;
 };
 
+const isCard = (child: { tag: string; kind: string }) =>
+    child.kind === 'container' || /card|panel|tile/i.test(child.tag);
+
+/**
+ * What a gap separates, from what its box holds, and the gap the rule gives for it
+ * (foundations.md › Spacing › The page's rhythm): a stack of settings cards 24, other alike
+ * cards 16, controls in a row 8. Between unlike blocks it is the block gap, which only the
+ * formula knows (px left out). Undefined when the box's children are not known.
+ */
+const gapRole = (fact: Fact): { px?: number; what: string; why: string } | undefined => {
+    const holds = fact.subject.holds ?? [];
+    if (holds.length < 2) {
+        if (fact.subject.kind !== 'page') return undefined;
+    } else if (holds.every(isCard)) {
+        if (holds.every(child => child.settings))
+            return {
+                px: 24,
+                what: 'a stack of settings cards',
+                why: 'Settings cards stack 24 apart (pages.md › Settings; foundations.md › The page’s rhythm).',
+            };
+        return {
+            px: 16,
+            what: 'alike cards',
+            why: 'Alike cards in a grid or a stack are 16 apart: 1.1× their padding (foundations.md › Spacing › The gap between alike boxes).',
+        };
+    } else if (holds.every(child => child.kind === 'control' || child.kind === 'icon-control')) {
+        return {
+            px: 8,
+            what: 'controls in a row',
+            why: 'Controls side by side are 8 apart, like the actions in a page head (pages.md › The page head).',
+        };
+    }
+    const unlike = new Set(holds.map(child => `${child.tag}|${child.kind}`)).size > 1;
+    if (!unlike && fact.subject.kind !== 'page') return undefined;
+    return {
+        what: 'between unlike blocks, worked out by get_spacing from what each holds, about 32 to 64',
+        why: 'Between unlike blocks (a page head, a card, a table, a section) the gap is the block gap: each block claims room by what it holds and the gap is the two added (foundations.md › Spacing › The gap between unlike blocks). Call get_spacing with what each block holds; the nearest step stands in until then.',
+    };
+};
+
 export const spacingRule: Rule = {
     id: 'spacing',
     applies: property => spacing.test(property),
@@ -88,17 +129,24 @@ export const spacingRule: Rule = {
                 });
             }
             const sign = length.px < 0 ? '-' : '';
-            const step = snapped / system.unit;
+            const between = /gap$/.test(fact.property) ? gapRole(fact) : undefined;
+            const want = between?.px ?? snapped;
+            const step = want / system.unit;
+            const steps = `${step} unit${step === 1 ? '' : 's'}`;
             return findingFor(fact, {
                 rule: 'spacing',
                 severity: 'fix',
-                confidence: 'medium',
+                confidence: between?.px ? 'high' : 'medium',
                 found: px(length.px),
-                expected: `${sign}${snapped}px (${step} unit${step === 1 ? '' : 's'}, on the scale)`,
-                why,
+                expected: between
+                    ? between.px
+                        ? `${sign}${want}px (${steps}, ${between.what})`
+                        : `the block gap (${between.what}); the nearest step is ${sign}${want}px (${steps})`
+                    : `${sign}${want}px (${steps}, the nearest step on the scale)`,
+                why: between ? `${between.why} ${why}` : why,
                 fix: writeFix(fact, {
-                    css: `${sign}${snapped}px`,
-                    raw: `${sign}${snapped}px`,
+                    css: `${sign}${want}px`,
+                    raw: `${sign}${want}px`,
                     tailwind: `${sign}${prefixFor(fact.property, index, lengths.length)}-${step}`,
                     part: length.text,
                 }),

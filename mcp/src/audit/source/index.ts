@@ -1,10 +1,10 @@
 import type { SystemValues } from '../../system/values';
 import type { AuditReport, ElementFact, Fact, Finding, Medium, Mode } from '../../types';
-import { auditFacts } from '../engine';
+import { auditFacts, holdBack } from '../engine';
 import { report } from '../report';
 import { readDeclarations } from './declarations';
 import { readLiterals } from './literals';
-import { readElements, readSkeleton } from './markup';
+import { allElements, parseMarkup, readElements, readSkeleton } from './markup';
 import { Consumed, lineIndex, masked } from './scan';
 import { readUtilities } from './utilities';
 
@@ -82,13 +82,15 @@ export const readFile = (
     const text = masked(file.path, file.content);
     const line = lineIndex(file.content);
     const consumed = new Consumed();
+    const roots = parseMarkup(text);
+    const all = allElements(roots);
     const facts: Fact[] = [
         ...readDeclarations(file.path, text, consumed, line),
-        ...readUtilities(file.path, text, system, consumed, line),
+        ...readUtilities(file.path, text, system, consumed, line, all),
     ];
     facts.push(...readLiterals(file.path, text, consumed, line));
-    const elements = readElements(file.path, text, line, libraryAvailable);
-    const tree = readSkeleton(file.path, text, line, system);
+    const elements = readElements(file.path, text, all, line, libraryAvailable);
+    const tree = readSkeleton(file.path, text, roots, line, system);
     return { facts, elements, tree };
 };
 
@@ -174,7 +176,14 @@ const joinSides = (findings: Finding[]) => {
 };
 
 /** The rules that read a page's shape; the rest of a skeleton's findings are the facts' own. */
-const shapeRules = new Set(['one-primary', 'nested-containers', 'views-in-dock', 'page-title']);
+const shapeRules = new Set([
+    'one-primary',
+    'nested-containers',
+    'views-in-dock',
+    'page-title',
+    'dividers',
+    'page-width',
+]);
 
 export const auditSource = (
     files: SourceFile[],
@@ -241,7 +250,25 @@ export const auditSource = (
         );
     out.push(
         'Source shows what is written, not what renders: spacing between parts, the page kind and contrast on the real surfaces need audit_ui on the running page.',
+        structureNote,
     );
-    const audit = auditFacts({ facts, elements }, { system, mode, medium: dominant, notes: out });
-    return report(joinSides([...audit.findings, ...shape]), dominant, system, mode, audit.notes);
+    const audit = auditFacts(
+        { facts, elements },
+        { system, mode, medium: dominant, notes: out, all: true },
+    );
+    const result = holdBack(
+        report(joinSides([...audit.findings, ...shape]), dominant, system, mode, audit.notes),
+    );
+    if (read && !result.findings.length) {
+        result.summary.verdict = 'clean';
+        result.notes.unshift(clean);
+    }
+    return result;
 };
+
+/** What the audit reads of a page's shape, and what it leaves to the agent. */
+const structureNote =
+    "Structure is read from the markup's nesting, heuristically: two primary actions in one view, tabs over a table, a container in a container, a line between sections, a narrow column holding a wide table. It does not know the page's kind, nor whether a part earns its place or repeats another: check the page against its anatomy (get_page_kind) yourself.";
+
+const clean =
+    'Clean: nothing in these files departs from the rules this audit reads (colour roles, text tone, type sizes and weights, heights, corners, borders, shadows, spacing, hand-built parts, and the shape it can read from markup). Do not look for more value-level problems or invent fixes. What is left is structure, which this audit reads only heuristically: check the page against its kind with get_page_kind, by eye.';

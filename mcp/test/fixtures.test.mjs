@@ -26,6 +26,7 @@ const rules = new Set([
     'concentric',
     'one-primary',
     'dividers',
+    'page-width',
     'nested-containers',
     'views-in-dock',
     'page-title',

@@ -12,6 +12,7 @@ import { canName, writeFix } from '../fix';
 import {
     chroma,
     colourToken,
+    fieldName,
     findingFor,
     isKeyword,
     isReference,
@@ -19,6 +20,7 @@ import {
     quietName,
     type Rule,
     sure,
+    wordsOf,
 } from './shared';
 
 /*
@@ -74,9 +76,14 @@ export const isPaleText = (fact: Fact, system: SystemValues, mode: Mode) => {
     if (
         fact.property !== 'color' ||
         fact.subject.picture ||
-        quietName.test(fact.subject.name ?? '')
+        quietName.test(fact.subject.name ?? '') ||
+        // Disabled text is exempt, whatever names it (foundations.md › Colour › Roles).
+        /(^|[:\s-])disabled\b|aria-disabled/.test(fact.written.text)
     )
         return false;
+    // The theme's own pale greys, by name: on the ramp, and still too light to read.
+    const named = /^var\(--color-(neutral-\d+)\)$/.exec(fact.value.trim())?.[1];
+    if (named) return /^neutral-(300|400|500)$/.test(named);
     const colour = readColour(fact.value);
     if (!colour || colour.alpha < 0.5 || chroma(fact.value) > 0.04) return false;
     const match = nearestNeutral(system, mode, colour.hex);
@@ -105,9 +112,11 @@ const hueGap = (a: number, b: number) => {
 };
 
 /** The ramp a saturated colour's hue belongs to (blue, indigo, sky → primary; red → error …). */
-const rampOf = (system: SystemValues, mode: Mode, hue: number) => {
+const rampOf = (system: SystemValues, mode: Mode, hue: number, status = true) => {
     let best: { ramp: (typeof ramps)[number]; gap: number } | null = null;
     for (const ramp of ramps) {
+        // A status ramp is only for a status: elsewhere its hue is a second accent.
+        if (!status && ramp !== 'primary') continue;
         const anchor = colourToken(system, mode, `${ramp}-500`);
         if (!anchor) continue;
         const gap = hueGap(hue, anchor.oklch.h);
@@ -155,10 +164,41 @@ const twin = (system: SystemValues, mode: Mode, token: ColourToken, paint: Paint
     );
 };
 
-/** A token chosen by role (the action colour, a ramp by its hue) is a fix however far it looks. */
-type Choice = { token: ColourToken; distance: number; reason: string; byRole?: boolean };
+/**
+ * A token chosen by role (the action colour, the hairline, a ramp by its hue) is a fix however
+ * far it looks; a second accent is advice, whatever is nearest.
+ */
+type Choice = {
+    token: ColourToken;
+    distance: number;
+    reason: string;
+    byRole?: boolean;
+    accent?: boolean;
+};
 
-/** The token a solid colour becomes, by look and then by what it paints. */
+/** Words that say a colour means a state: only there may a status ramp be used. */
+const statusWords =
+    /(^|[^a-z])(status|state|error|errors|danger|destructive|invalid|alert|warning|warn|success|positive|negative|delta|trend|badge|toast|overdue|failed|paid)([^a-z]|$)/i;
+
+const inStatus = (fact: Fact) => fact.subject.kind === 'badge' || statusWords.test(wordsOf(fact));
+
+/** A field's box (an input, a select), whose fill is the surface whatever else it is. */
+const isField = (fact: Fact) =>
+    isControl(fact) &&
+    (fieldName.test(wordsOf(fact)) || /^(input|select|textarea)$/i.test(fact.subject.tag ?? ''));
+
+const accentWhy =
+    'One accent: the primary ramp and the action colour, and status colours only for status. A hue of its own, or a status hue on something that is no status, is a second accent: a brand or data colour, or a mistake (foundations.md › Colour › Never, › Status colour).';
+
+/** Text by its role: primary (neutral-950), secondary (neutral-600), or the surface on a dark fill. */
+const textByRole = (system: SystemValues, mode: Mode, lightness: number) =>
+    colourToken(
+        system,
+        mode,
+        lightness > 0.75 ? 'neutral-50' : lightness >= 0.34 ? 'neutral-600' : 'neutral-950',
+    );
+
+/** The token a solid colour becomes, by what it paints first, then by how it looks. */
 const choose = (
     system: SystemValues,
     mode: Mode,
@@ -168,48 +208,105 @@ const choose = (
 ): Choice | null => {
     const oklch = hexToOklch(hex);
     if (!oklch) return null;
-    // A tinted grey (slate, zinc) is still a grey, unless it sits right on a coloured token.
+    const status = inStatus(fact);
+    const ramp = rampOf(system, mode, oklch.h, status);
+    const by = (token: ColourToken | undefined, reason: string): Choice | null =>
+        token ? { token, distance: deltaE(oklch, token.oklch), reason, byRole: true } : null;
+
+    // A border is the hairline, whatever its hue: unless it marks a state or the focus.
+    if (paint === 'border' && !(status && ramp && ramp !== 'primary')) {
+        if (/focus|ring/.test(fact.written.text) || fact.property === 'outline-color')
+            return by(
+                colourToken(system, mode, 'neutral-500'),
+                `${why} The focus ring is neutral-500 (foundations.md › Colour › Focus).`,
+            );
+        const nearest = nearestNeutral(system, mode, hex);
+        const keep =
+            oklch.c <= 0.05 &&
+            nearest &&
+            ['neutral-300', 'neutral-500'].includes(nearest.token.name);
+        return by(
+            colourToken(
+                system,
+                mode,
+                keep ? (nearest?.token.name ?? 'neutral-200') : 'neutral-200',
+            ),
+            `${why} Every border is the 1px neutral-200 hairline; neutral-300 only on hover and unchecked marks.`,
+        );
+    }
+    // A field's fill is the surface: an input reads as part of the page.
+    if (paint === 'background' && isField(fact))
+        return by(
+            colourToken(system, mode, 'neutral-50'),
+            `${why} A field is the surface with the hairline (foundations.md › Surfaces and depth).`,
+        );
+
+    // A grey is a grey; a pale tint is one too, unless it sits on a coloured token of its hue.
     const near = nearestColour(system, mode, hex);
-    const tinted = near && near.distance < 6 && !/^neutral-/.test(near.token.name);
+    const tinted =
+        near &&
+        near.distance < 6 &&
+        !/^neutral-/.test(near.token.name) &&
+        oklch.c >= 0.008 &&
+        hueGap(oklch.h, near.token.oklch.h) <= (status ? 40 : 20);
     if (oklch.c <= 0.05 && !tinted) {
         const nearest = nearestNeutral(system, mode, hex);
         if (!nearest) return null;
-        if (paint === 'border') {
-            const keep = ['neutral-200', 'neutral-300', 'neutral-500'];
-            const name = keep.includes(nearest.token.name) ? nearest.token.name : 'neutral-200';
-            const token = colourToken(system, mode, name) ?? nearest.token;
-            return {
-                token,
-                distance: deltaE(oklch, token.oklch),
-                reason: `${why} Every border is the 1px neutral-200 hairline; neutral-300 only on hover and unchecked marks.`,
-            };
-        }
         if (paint === 'text') {
-            const text = nearestNeutral(system, mode, hex, textSteps);
-            if (text) return { ...text, reason: why };
+            const exact = nearestNeutral(system, mode, hex, textSteps);
+            if (exact && exact.distance < 2) return { ...exact, reason: why };
+            return by(
+                textByRole(system, mode, oklch.l),
+                `${why} Text is primary (neutral-950) or secondary (neutral-600) (foundations.md › Colour › Roles).`,
+            );
         }
+        if (paint === 'background' && oklch.l < 0.3)
+            return by(
+                colourToken(system, mode, isControl(fact) ? 'action' : 'neutral-950'),
+                `${why} A dark fill is neutral-950, the step primary text and the action colour are drawn from.`,
+            );
         return { ...nearest, reason: why };
     }
-    // A filled control in a colour of its own is the one primary action.
+    // Coloured text that means no state is text all the same: primary or secondary.
+    if (paint === 'text' && !status && !fact.guessed && fact.subject.text)
+        return by(
+            // A control's label is primary text, whatever colour it was given.
+            isControl(fact) && oklch.l <= 0.75
+                ? colourToken(system, mode, 'neutral-950')
+                : textByRole(system, mode, oklch.l),
+            `${why} Text is primary (neutral-950) or secondary (neutral-600); colour in text is for a state only (foundations.md › Colour › Roles, › Status colour).`,
+        );
+    // A filled button in a colour of its own is the one primary action; a pale one is a tint.
     const action = colourToken(system, mode, 'action');
-    const ramp = rampOf(system, mode, oklch.h);
-    if (paint === 'background' && isControl(fact) && action && (!ramp || ramp === 'primary')) {
-        return {
-            token: action,
-            distance: deltaE(oklch, action.oklch),
-            reason: 'One colour does everything that acts: a filled button takes the action colour, and nothing else does (foundations.md › Colour › The action colour).',
-            byRole: true,
-        };
+    const destructive = status && ramp === 'error';
+    if (
+        paint === 'background' &&
+        isControl(fact) &&
+        action &&
+        !destructive &&
+        (oklch.c > 0.08 || oklch.l < 0.5)
+    ) {
+        return by(
+            action,
+            'One colour does everything that acts: a filled button takes the action colour, and nothing else does (foundations.md › Colour › The action colour).',
+        );
     }
     if (!ramp) {
-        const nearest = nearestAmong(system, mode, hex, token =>
-            /^(neutral|primary|success|warning|error)-\d+$/.test(token.name),
-        );
+        const nearest =
+            paint === 'text'
+                ? (() => {
+                      const token = textByRole(system, mode, oklch.l);
+                      return token ? { token, distance: deltaE(oklch, token.oklch) } : null;
+                  })()
+                : nearestAmong(system, mode, hex, token =>
+                      /^(neutral|primary)-\d+$/.test(token.name),
+                  );
         if (!nearest) return null;
         return {
             ...nearest,
             distance: Math.max(nearest.distance, 12.5),
-            reason: 'One accent: the primary ramp and the action colour, and status colours only for status. A second hue is a brand or data colour, or a mistake (foundations.md › Colour › Never, › Status colour).',
+            reason: accentWhy,
+            accent: true,
         };
     }
     const inRamp = nearestAmong(system, mode, hex, token => token.name.startsWith(`${ramp}-`));
@@ -310,6 +407,17 @@ const judgeColour = (
     const token = twin(system, mode, choice.token, paint, fact);
     const { distance } = choice;
     const expected = `${describeToken(token.name)} ${token.hex}`;
+    if (choice.accent) {
+        return findingFor(fact, {
+            rule: 'colour',
+            severity: 'advise',
+            confidence: 'low',
+            found: value,
+            expected: `one accent: ${expected}, or the colour left out`,
+            why: `A second accent: a brand or data colour? If not, use ${token.name}. ${choice.reason}`,
+            fix: change(fact, token),
+        });
+    }
     if (distance > 12 && !choice.byRole) {
         return findingFor(fact, {
             rule: 'colour',
@@ -345,8 +453,7 @@ export const textTone: Rule = {
     id: 'text-tone',
     applies: property => property === 'color',
     judge: (fact, { system, mode }) => {
-        if (fact.subject.library || isReference(fact.value) || !isPaleText(fact, system, mode))
-            return null;
+        if (fact.subject.library || !isPaleText(fact, system, mode)) return null;
         const secondary = colourToken(system, mode, 'neutral-600');
         if (!secondary) return null;
         return findingFor(fact, {

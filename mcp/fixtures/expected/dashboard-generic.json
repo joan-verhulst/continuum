@@ -1,0 +1,122 @@
+{
+    "title": "a generic dashboard in stock Tailwind: a whole look to replace, each colour by its role",
+    "tool": "audit_source",
+    "medium": "react",
+    "paths": ["react/dashboard-generic.tsx"],
+    "strict": true,
+    "mistakes": [
+        {
+            "what": "shadows on cards that do not float",
+            "rule": "shadow",
+            "at": "dashboard-generic.tsx:64",
+            "expectedIncludes": ["none"]
+        },
+        {
+            "what": "an extrabold title",
+            "rule": "weight",
+            "at": "dashboard-generic.tsx:41",
+            "expectedIncludes": ["500"]
+        },
+        {
+            "what": "a text-4xl title: a page title is 24",
+            "rule": "type-size",
+            "at": "dashboard-generic.tsx:41",
+            "expectedIncludes": ["text-2xl"]
+        },
+        {
+            "what": "a text-3xl figure, above the page title",
+            "rule": "type-size",
+            "at": "dashboard-generic.tsx:75",
+            "expectedIncludes": ["24"]
+        },
+        {
+            "what": "a pink chart bar: a second accent, no status",
+            "rule": "colour",
+            "at": "dashboard-generic.tsx:103",
+            "expectedIncludes": ["one accent"]
+        },
+        {
+            "what": "labels in text-gray-400, lighter than any read text",
+            "rule": "text-tone",
+            "at": "dashboard-generic.tsx:44",
+            "expectedIncludes": ["neutral-600"]
+        },
+        {
+            "what": "two filled primary actions in one head",
+            "rule": "one-primary",
+            "at": ["dashboard-generic.tsx:46", "dashboard-generic.tsx:52"],
+            "expectedIncludes": ["one primary"]
+        },
+        {
+            "what": "the second filled button, a pink gradient: still the action colour, no error",
+            "rule": "colour",
+            "at": "dashboard-generic.tsx:53",
+            "expectedIncludes": ["action"]
+        },
+        {
+            "what": "rounded-3xl cards, off the corner scale",
+            "rule": "radius",
+            "at": "dashboard-generic.tsx:64",
+            "expectedIncludes": ["rounded-card", "rounded-panel"]
+        },
+        {
+            "what": "a hand-rolled select",
+            "rule": "component",
+            "at": "dashboard-generic.tsx:89",
+            "expectedIncludes": ["select"]
+        },
+        {
+            "what": "a hand-rolled table",
+            "rule": "component",
+            "at": "dashboard-generic.tsx:131",
+            "expectedIncludes": ["table"]
+        },
+        {
+            "what": "a 2px border on the select",
+            "rule": "border-width",
+            "at": "dashboard-generic.tsx:90",
+            "expectedIncludes": ["1px"]
+        },
+        {
+            "what": "an indigo-50 fill on a select: a field is the surface",
+            "rule": "colour",
+            "at": "dashboard-generic.tsx:90",
+            "expectedIncludes": ["bg-neutral-50"]
+        },
+        {
+            "what": "an indigo-200 border on the select: a border is the hairline",
+            "rule": "colour",
+            "at": "dashboard-generic.tsx:90",
+            "expectedIncludes": ["border-neutral-200"]
+        },
+        {
+            "what": "a light grey row border (gray-100): the hairline",
+            "rule": "colour",
+            "at": "dashboard-generic.tsx:133",
+            "expectedIncludes": ["neutral-200"]
+        },
+        {
+            "what": "body text in gray-900 (#101828): primary text",
+            "rule": "colour",
+            "at": "dashboard-generic.tsx:75",
+            "expectedIncludes": ["neutral-950"]
+        },
+        {
+            "what": "the page's pink-50 wash: a pale grey, no error colour",
+            "rule": "colour",
+            "at": "dashboard-generic.tsx:38",
+            "expectedIncludes": ["neutral-50"]
+        }
+    ],
+    "never": [
+        { "what": "a pink wash is no error", "at": "dashboard-generic.tsx:38", "proposes": "error-" },
+        { "what": "a grey border is no primary tint", "at": "dashboard-generic.tsx:133", "proposes": "primary-50" },
+        { "what": "a select's pale fill is no action colour", "at": "dashboard-generic.tsx:90", "proposes": "bg-action" },
+        { "what": "primary text is neutral-950, not neutral-900", "at": "dashboard-generic.tsx:75", "proposes": "neutral-900" },
+        { "what": "a pink chart bar is no error", "at": "dashboard-generic.tsx:103", "proposes": "error-" },
+        { "what": "a pink button is no error", "at": "dashboard-generic.tsx:53", "proposes": "error-" }
+    ],
+    "knownLimits": [
+        "Gradients are read as their colour stops, not as gradients; emoji, uppercase tracked labels, a centred hero head, glassmorphism (backdrop-blur), marketing copy and the KPI row repeating the chart's total are not read from source."
+    ]
+}

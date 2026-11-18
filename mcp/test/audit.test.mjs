@@ -6,9 +6,12 @@ import {
     assertFound,
     auditSource,
     auditUi,
+    call,
     describeFinding,
     fixturesDir,
+    isAt,
     mcpDir,
+    proposal,
     readJson,
     useServer,
 } from './helpers.mjs';
@@ -61,15 +64,27 @@ for (const plan of plans) {
         // What the fixture says the audit is not expected to read: said, not asserted.
         for (const limit of plan.knownLimits ?? []) t.diagnostic(`known limit: ${limit}`);
         const findings = await auditPlan(plan);
-        assertFound(`${plan.tool} on ${placeOf(plan)}`, plan.mistakes, findings);
+        assertFound(`${plan.tool} on ${placeOf(plan)}`, plan.mistakes, findings, plan.strict);
         // Values planted right beside the mistakes, in the system's own values: nothing to fix there.
         const alarms = (plan.clean ?? []).flatMap(clean =>
             findings.filter(
                 finding =>
                     finding.severity === 'fix' &&
-                    String(finding.at ?? '') === clean.at &&
+                    (String(finding.at ?? '') === clean.at || isAt(finding, clean.at)) &&
                     finding.property === clean.property,
             ),
+        );
+        // Fixes that would be wrong for the role, though near by look: never proposed there.
+        const wrong = (plan.never ?? []).flatMap(never =>
+            findings
+                .filter(finding => isAt(finding, never.at))
+                .filter(finding => proposal(finding).includes(never.proposes.toLowerCase()))
+                .map(finding => `  ${never.what}: ${describeFinding(finding)}`),
+        );
+        assert.deepEqual(
+            wrong,
+            [],
+            `${plan.tool} on ${placeOf(plan)} proposed a fix by look, not by role:\n${wrong.join('\n')}`,
         );
         assert.equal(
             alarms.length,
@@ -78,6 +93,19 @@ for (const plan of plans) {
         );
     });
 }
+
+test('audit_source finds nothing in a settings page in Continuum’s own values, and says it is clean', async () => {
+    const path = join(fixturesDir, 'react/settings-clean.tsx');
+    const report = await call(server.client, 'audit_source', { paths: [path] });
+    assert.equal(
+        report.findings.length,
+        0,
+        `Expected no findings on the clean settings page, got ${report.findings.length}:\n${report.findings.map(describeFinding).join('\n')}`,
+    );
+    assert.equal(report.summary.verdict, 'clean');
+    assert.match(report.notes.join(' '), /Clean: nothing .* departs/);
+    assert.match(report.notes.join(' '), /get_page_kind/);
+});
 
 test('audit_ui has nothing to fix in a tree drawn in Continuum’s own values', async () => {
     const tree = await readJson(join(fixturesDir, 'snapshot/clean.json'));
