@@ -37,67 +37,25 @@ html[data-mode="dark"] {
 }
 
 /*
- * `light:` for the site's own chrome, where the landing's amber text would be too faint on the light
- * canvas (the current link in the header and the docs' sidebar).
+ * The landing's spectrum: rose, amber, lime, cyan, violet, the rim light's stops. The site's own
+ * colour, kept off the product (which wears the accent) and off buttons (which stay plain): it
+ * fills what moves or marks, a progress line, a dot, a word.
  */
-@custom-variant light (&:where([data-mode="light"], [data-mode="light"] *));
-
-/*
- * The landing's Customize: a rim of the accent turning round its border, so the one control on the
- * window is found. A quarter of the edge is lit; it holds still for anyone who asks for less motion.
- */
-@property --rim-angle {
-    syntax: "<angle>";
-    inherits: false;
-    initial-value: 0deg;
+:root {
+    --spectrum-stops: #ff4d8d, #ffb03a, #c6f04a, #3ad8f0, #8b7bff;
 }
 
-.rim-light {
-    position: relative;
-    isolation: isolate;
+@utility bg-spectrum {
+    background-image: linear-gradient(90deg, var(--spectrum-stops));
 }
 
-.rim-light::before,
-.rim-light::after {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    border-radius: inherit;
-    pointer-events: none;
-    background: conic-gradient(
-        from var(--rim-angle),
-        transparent 0 60%,
-        var(--color-primary-500) 80%,
-        transparent 95%
-    );
-    animation: rim-turn 3.5s linear infinite;
+/* Round, for a dot: the stops all the way round and back to the first. */
+@utility bg-spectrum-round {
+    background-image: conic-gradient(var(--spectrum-stops), #ff4d8d);
 }
 
-/* The rim itself, cut to the border's width. */
-.rim-light::before {
-    padding: 1px;
-    mask:
-        linear-gradient(#000 0 0) content-box exclude,
-        linear-gradient(#000 0 0);
-}
-
-/* Its glow, soft and behind the button. */
-.rim-light::after {
-    z-index: -1;
-    filter: blur(6px);
-    opacity: 0.45;
-}
-
-@keyframes rim-turn {
-    to {
-        --rim-angle: 360deg;
-    }
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .rim-light::before,
-    .rim-light::after {
-        animation: none;
-        --rim-angle: 135deg;
-    }
+@utility text-spectrum {
+    background-image: linear-gradient(90deg, var(--spectrum-stops));
+    background-clip: text;
+    color: transparent;
 }

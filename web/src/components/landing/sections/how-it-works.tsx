@@ -1584,7 +1584,7 @@ const ProgressSegment = ({
             </span>
             <span className="h-1 overflow-hidden rounded-full bg-(--ink)/15 transition-colors duration-[420ms] group-focus-visible:outline-2 group-focus-visible:outline-focus group-focus-visible:outline-offset-2">
                 <motion.span
-                    className="block h-full origin-left rounded-full bg-(--ink)"
+                    className="block h-full origin-left rounded-full bg-white"
                     style={{ scaleX: fill }}
                 />
             </span>

@@ -8,7 +8,8 @@ import { HowItWorks } from './sections/how-it-works';
 import { Mcp } from './sections/mcp';
 import { Pricing } from './sections/pricing';
 import { Uses } from './sections/uses';
-import { RuledFrame } from './web';
+import { productThemeCss } from './theme';
+import { Divider, Rails, RuledFrame } from './web';
 
 /**
  * The landing page, top to bottom. The order is the argument:
@@ -24,17 +25,31 @@ import { RuledFrame } from './web';
  */
 export const Landing = ({ componentIndex }: { componentIndex: ComponentIndex }) => (
     <Theme className="min-h-dvh bg-neutral-50 text-neutral-950" mode="dark" theme="continuum-ui">
+        {/* The product shots' theme: the site's, with the accent filling the action. */}
+        <style>{productThemeCss}</style>
         {/* The playground's screens are shown live, and some raise toasts (an undo after archiving). */}
         <ToastProvider>
-            <main>
+            {/* Positioned and isolated, so the rails sit under every section and the boards cover them. */}
+            <main className="relative isolate">
+                <Rails />
                 <Hero />
+                <Divider />
                 <Components index={componentIndex} />
-                <RuledFrame grid={false}>
+                <Divider />
+                {/* The board brightens a step towards the terminal, as the hero does towards its foot. */}
+                <RuledFrame
+                    className="bg-[radial-gradient(ellipse_70%_60%_at_50%_56%,var(--color-neutral-100),var(--color-neutral-50))]"
+                    grid={false}
+                >
                     <Mcp />
                 </RuledFrame>
+                <Divider />
                 <Uses />
+                <Divider />
                 <HowItWorks />
+                <Divider />
                 <FairTest />
+                <Divider />
                 <Pricing />
             </main>
         </ToastProvider>

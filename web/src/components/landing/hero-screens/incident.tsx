@@ -19,7 +19,6 @@ import {
     CardTitle,
     HeaderBar,
     LiveCount,
-    NavItem,
     PageContent,
     SegmentedControl,
     SegmentedControlItem,
@@ -28,6 +27,7 @@ import {
     SidebarFooter,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLogo,
     SidebarToggle,
     Table,
@@ -100,22 +100,26 @@ const VigilSidebar = () => (
             <SidebarToggle />
         </SidebarHeader>
         <SidebarGroup aria-label="Main">
-            <NavItem active icon={<Siren {...icon} />} trailing={<Badge variant="count">2</Badge>}>
+            <SidebarItem
+                active
+                icon={<Siren {...icon} />}
+                trailing={<Badge variant="count">2</Badge>}
+            >
                 Incidents
-            </NavItem>
-            <NavItem icon={<BellRing {...icon} />}>Alerts</NavItem>
-            <NavItem icon={<Server {...icon} />}>Services</NavItem>
-            <NavItem icon={<Activity {...icon} />}>Traces</NavItem>
-            <NavItem icon={<LayoutGrid {...icon} />}>Dashboards</NavItem>
-            <NavItem icon={<Users {...icon} />}>On-call</NavItem>
-            <NavItem icon={<BookOpen {...icon} />}>Runbooks</NavItem>
+            </SidebarItem>
+            <SidebarItem icon={<BellRing {...icon} />}>Alerts</SidebarItem>
+            <SidebarItem icon={<Server {...icon} />}>Services</SidebarItem>
+            <SidebarItem icon={<Activity {...icon} />}>Traces</SidebarItem>
+            <SidebarItem icon={<LayoutGrid {...icon} />}>Dashboards</SidebarItem>
+            <SidebarItem icon={<Users {...icon} />}>On-call</SidebarItem>
+            <SidebarItem icon={<BookOpen {...icon} />}>Runbooks</SidebarItem>
         </SidebarGroup>
         <SidebarGroup aria-label="Workspace" label="Workspace">
-            <NavItem icon={<Plug {...icon} />}>Integrations</NavItem>
-            <NavItem icon={<Settings {...icon} />}>Settings</NavItem>
+            <SidebarItem icon={<Plug {...icon} />}>Integrations</SidebarItem>
+            <SidebarItem icon={<Settings {...icon} />}>Settings</SidebarItem>
         </SidebarGroup>
         <SidebarFooter>
-            <SidebarAccount avatar={<WorkspaceMark />} name="Halden" plan="Production" />
+            <SidebarAccount avatar={<WorkspaceMark />} name="Halden" detail="Production" />
         </SidebarFooter>
     </Sidebar>
 );

@@ -15,10 +15,10 @@ import { CommandChip, Container, installCommand, Reveal } from '../web';
  */
 
 const accents = [
-    { id: 'amber', name: 'Amber', hex: '#ffa31a' },
-    { id: 'rose', name: 'Rose', hex: '#f0436a' },
-    { id: 'violet', name: 'Violet', hex: '#7c5cff' },
     { id: 'indigo', name: 'Indigo', hex: '#3939e5' },
+    { id: 'violet', name: 'Violet', hex: '#7c5cff' },
+    { id: 'rose', name: 'Rose', hex: '#f0436a' },
+    { id: 'amber', name: 'Amber', hex: '#ffa31a' },
     { id: 'jade', name: 'Jade', hex: '#00b386' },
     { id: 'lime', name: 'Lime', hex: '#a3e635' },
 ] as const;
@@ -27,9 +27,19 @@ type AccentId = (typeof accents)[number]['id'];
 
 const themeOf = (id: AccentId) => `closer-${id}`;
 
-/** The site's own theme with only the accent swapped, so the lit action looks as it does above. */
+/**
+ * The site's own theme with the accent swapped and filling the action, so picking one recolours the
+ * band's button and mark: here, and only here, the accent is what is being shown.
+ */
 const accentCss = accents
-    .map(accent => createThemeCss({ ...siteTheme, accent: accent.hex, name: themeOf(accent.id) }))
+    .map(accent =>
+        createThemeCss({
+            ...siteTheme,
+            accent: accent.hex,
+            action: 'accent',
+            name: themeOf(accent.id),
+        }),
+    )
     .join('\n\n');
 
 const AccentPicker = ({
@@ -75,7 +85,7 @@ const AccentPicker = ({
 };
 
 const ClosingBand = () => {
-    const [accent, setAccent] = useState<AccentId>('amber');
+    const [accent, setAccent] = useState<AccentId>('indigo');
 
     return (
         <section

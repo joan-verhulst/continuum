@@ -126,8 +126,8 @@ importers:
         specifier: ^4.3.3
         version: 4.3.3
       tencil:
-        specifier: ^0.12.0
-        version: 0.12.0(react@19.3.1)(vite@8.3.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
+        specifier: ^0.14.0
+        version: 0.14.0(react@19.3.1)(vite@8.3.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -137,11 +137,20 @@ importers:
 
   web:
     dependencies:
+      '@fontsource-variable/figtree':
+        specifier: ^5.3.0
+        version: 5.3.0
       '@fontsource-variable/geist':
         specifier: ^5.3.0
         version: 5.3.0
       '@fontsource-variable/geist-mono':
         specifier: ^5.2.7
+        version: 5.3.0
+      '@fontsource-variable/ibm-plex-sans':
+        specifier: ^5.3.0
+        version: 5.3.0
+      '@fontsource-variable/instrument-sans':
+        specifier: ^5.3.0
         version: 5.3.0
       '@fontsource-variable/inter':
         specifier: ^5.3.0
@@ -187,8 +196,8 @@ importers:
         specifier: ^4.3.3
         version: 4.3.3
       tencil:
-        specifier: 0.12.0
-        version: 0.12.0(react@19.3.1)(vite@8.3.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
+        specifier: 0.14.0
+        version: 0.14.0(react@19.3.1)(vite@8.3.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0))
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -1714,8 +1723,8 @@ packages:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
 
-  tencil@0.12.0:
-    resolution: {integrity: sha512-9S514GxIppufkSPVXw2hrTrBgMLZA7/xva/d27jYCUq7duPpaT8tdsf2Clx6PmHYOFd148V763R4MXg4Sjs2VA==}
+  tencil@0.14.0:
+    resolution: {integrity: sha512-bFTeyH6f7KuCiGU/pllxYMn8qrjWa46zVbdmvD+kiqiwALS8Q2GYVY7IiTUknK9PiH6tN9wJr9tOaKXrmXKz8Q==}
     engines: {node: '>=22'}
     hasBin: true
     peerDependencies:
@@ -3093,7 +3102,7 @@ snapshots:
 
   tapable@2.3.3: {}
 
-  tencil@0.12.0(react@19.3.1)(vite@8.3.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)):
+  tencil@0.14.0(react@19.3.1)(vite@8.3.4(@types/node@26.6.6)(esbuild@0.28.2)(jiti@2.7.0)):
     dependencies:
       magic-string: 1.4.3
       oxc-parser: 0.153.0

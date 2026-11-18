@@ -17,13 +17,13 @@ import {
     cn,
     HeaderBar,
     Meter,
-    NavItem,
     PageContent,
     Sidebar,
     SidebarAccount,
     SidebarFooter,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLogo,
     SidebarToggle,
     StatusDot,
@@ -686,7 +686,7 @@ const SlateSidebar = () => (
         </SidebarHeader>
         <SidebarGroup aria-label="Main">
             {places.map(place => (
-                <NavItem
+                <SidebarItem
                     active={place.current}
                     icon={place.icon}
                     key={place.label}
@@ -695,15 +695,15 @@ const SlateSidebar = () => (
                     }
                 >
                     {place.label}
-                </NavItem>
+                </SidebarItem>
             ))}
         </SidebarGroup>
         <SidebarGroup aria-label="Workspace" label="Workspace">
-            <NavItem icon={<Settings {...icon} />}>Settings</NavItem>
-            <NavItem icon={<LifeBuoy {...icon} />}>Help and support</NavItem>
+            <SidebarItem icon={<Settings {...icon} />}>Settings</SidebarItem>
+            <SidebarItem icon={<LifeBuoy {...icon} />}>Help and support</SidebarItem>
         </SidebarGroup>
         <SidebarFooter>
-            <SidebarAccount avatar={<StudioMark />} name="Halftone Studios" plan="Rotterdam" />
+            <SidebarAccount avatar={<StudioMark />} name="Halftone Studios" detail="Rotterdam" />
             <Button aria-label="Notifications" size="icon" variant="ghost">
                 <Bell {...icon} />
             </Button>

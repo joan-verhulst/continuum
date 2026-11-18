@@ -4,6 +4,7 @@ import { Badge, Button, cn, Input } from 'continuum';
 import { Check } from 'lucide-react';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
 import { appLink } from '@/lib/site';
+import { RimLight } from '../rim-light';
 import { Reveal, Section } from '../web';
 
 /*
@@ -21,7 +22,7 @@ type Plan = {
     line: string;
     action: ReactNode;
     includes: string[];
-    /** The column the page wants you to look at: a step up from the surface. */
+    /** The column the page wants you to look at: lit round its edge, two thirds wide. */
     lead?: boolean;
 };
 
@@ -123,18 +124,16 @@ const plans: Plan[] = [
     },
 ];
 
+/** Spans the grid's three rows, so a card's parts line up with its neighbour's. */
+const subgrid = 'grid grid-cols-1 gap-y-6 lg:row-span-3 lg:grid-rows-subgrid';
+const face = cn(subgrid, 'rounded-panel p-6 sm:p-8');
+const card = cn(face, 'border border-neutral-200');
+
 const PlanColumn = ({ plan }: { plan: Plan }) => {
     const titleId = `plan-${plan.id}`;
 
-    return (
-        // A card of its own; it spans the grid's three rows, so its parts line up with its neighbour's.
-        <article
-            aria-labelledby={titleId}
-            className={cn(
-                'grid grid-cols-1 gap-y-6 rounded-panel border border-neutral-200 p-6 sm:p-8 lg:row-span-3 lg:grid-rows-subgrid',
-                plan.lead && 'bg-neutral-100',
-            )}
-        >
+    const parts = (
+        <>
             <div className="flex flex-col">
                 <div className="flex h-6 items-center gap-2">
                     <h3 className="text-base text-neutral-600" id={titleId}>
@@ -162,6 +161,30 @@ const PlanColumn = ({ plan }: { plan: Plan }) => {
                     </li>
                 ))}
             </ul>
+        </>
+    );
+
+    // The lead card wears the hero's light: the spectrum flowing slowly round its edge, quietly, in
+    // place of the border. The face is opaque in the page's own colour, so it reads as the Free card
+    // does and the halo stays outside. Every layer between the grid and the parts stays a subgrid,
+    // so the rows still line up.
+    return plan.lead ? (
+        <article aria-labelledby={titleId} className={cn(subgrid, 'lg:col-span-2')}>
+            <RimLight
+                className={cn(subgrid, 'rounded-panel [--rim-strength:0.45]')}
+                faceClassName={cn(face, 'bg-neutral-50')}
+                glow={0.25}
+                haloBlur={12}
+                lap={24}
+                loop
+                ring
+            >
+                {parts}
+            </RimLight>
+        </article>
+    ) : (
+        <article aria-labelledby={titleId} className={card}>
+            {parts}
         </article>
     );
 };
@@ -176,7 +199,7 @@ export const Pricing = () => (
     >
         <div className="flex flex-col gap-6">
             <Reveal delay={1}>
-                <div className="grid gap-4 lg:grid-cols-2 lg:grid-rows-[auto_auto_1fr]">
+                <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-[auto_auto_1fr]">
                     {plans.map(plan => (
                         <PlanColumn key={plan.id} plan={plan} />
                     ))}

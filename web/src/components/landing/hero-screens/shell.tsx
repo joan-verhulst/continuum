@@ -16,13 +16,13 @@ import {
     cn,
     HeaderBar,
     HeaderBarActions,
-    NavItem,
     PageContent,
     Sidebar,
     SidebarAccount,
     SidebarFooter,
     SidebarGroup,
     SidebarHeader,
+    SidebarItem,
     SidebarLogo,
     SidebarToggle,
 } from 'continuum';
@@ -58,7 +58,14 @@ import {
 
 export const icon = { strokeWidth: 2 } as const;
 
-export type Place = 'home' | 'inbox' | 'analytics' | 'pipeline' | 'issues' | 'customers';
+export type Place =
+    | 'home'
+    | 'inbox'
+    | 'analytics'
+    | 'pipeline'
+    | 'issues'
+    | 'customers'
+    | 'settings';
 
 const places: { id: Place; label: string; icon: ReactNode; count?: number }[] = [
     { id: 'home', label: 'Home', icon: <House {...icon} /> },
@@ -86,22 +93,24 @@ const HeroSidebar = ({ place }: { place: Place }) => (
         </SidebarHeader>
         <SidebarGroup aria-label="Main">
             {places.map(item => (
-                <NavItem
+                <SidebarItem
                     active={place === item.id}
                     icon={item.icon}
                     key={item.id}
                     trailing={item.count ? <Badge variant="count">{item.count}</Badge> : undefined}
                 >
                     {item.label}
-                </NavItem>
+                </SidebarItem>
             ))}
         </SidebarGroup>
         <SidebarGroup aria-label="Workspace" label="Workspace">
-            <NavItem icon={<Settings {...icon} />}>Settings</NavItem>
-            <NavItem icon={<LifeBuoy {...icon} />}>Help and support</NavItem>
+            <SidebarItem active={place === 'settings'} icon={<Settings {...icon} />}>
+                Settings
+            </SidebarItem>
+            <SidebarItem icon={<LifeBuoy {...icon} />}>Help and support</SidebarItem>
         </SidebarGroup>
         <SidebarFooter>
-            <SidebarAccount avatar={<WorkspaceMark />} name="Northwind" plan="Business plan" />
+            <SidebarAccount avatar={<WorkspaceMark />} name="Northwind" detail="Business plan" />
             <Button aria-label="Notifications" size="icon" variant="ghost">
                 <Bell {...icon} />
             </Button>

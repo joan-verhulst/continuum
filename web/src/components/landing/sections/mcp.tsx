@@ -4,6 +4,7 @@ import { Badge, cn } from 'continuum';
 import { ArrowUp, CornerDownRight } from 'lucide-react';
 import { motion, useInView, useReducedMotion } from 'motion/react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { RimLight } from '../rim-light';
 import { ease, Reveal, Section, Window } from '../web';
 
 /*
@@ -39,7 +40,7 @@ const calls: Call[] = [
         args: 'project: "acme-ops"',
         result: (
             <>
-                accent <Token>#ffa31a</Token> · neutrals <Token>zinc</Token> · font{' '}
+                accent <Token>#3939e5</Token> · neutrals <Token>zinc</Token> · font{' '}
                 <Token>Geist</Token> · corners <Token>6px</Token>
             </>
         ),
@@ -149,125 +150,127 @@ const Session = () => {
 
     return (
         <div className="relative">
-            {/* The glow behind the window, the accent spilling out around it onto the board. */}
-            <div
-                aria-hidden
-                className="pointer-events-none absolute inset-x-[8%] -inset-y-[6%] rounded-full bg-primary-500/20 blur-[96px]"
-            />
-            <Window
-                bar={
-                    <>
-                        <span className="flex items-center gap-1.5" aria-hidden>
-                            {[0, 1, 2].map(dot => (
-                                <span className="size-2.5 rounded-full bg-neutral-200" key={dot} />
-                            ))}
-                        </span>
-                        <span className="font-mono text-neutral-600 text-xs">acme-ops</span>
-                        <span className="truncate font-mono text-neutral-500 text-xs max-sm:hidden">
-                            ~/code/acme-ops
-                        </span>
-                        <Badge className="ml-auto" tone="success" variant="dot">
-                            <span>
-                                <span className="max-sm:hidden">continuum </span>connected
-                            </span>
-                        </Badge>
-                    </>
-                }
-                bodyClassName="flex flex-col"
-                className="min-w-0 border-primary-500/40 bg-neutral-50 shadow-[inset_0_1px_0_0_color-mix(in_oklab,var(--color-primary-400)_60%,transparent),0_0_0_1px_color-mix(in_oklab,var(--color-primary-500)_15%,transparent),0_-8px_32px_-12px_color-mix(in_oklab,var(--color-primary-500)_50%,transparent)] md:aspect-video"
+            {/* The rim light round the window, and its glow spilling onto the board, travelling as one. */}
+            <RimLight
+                ambient={{ inset: '-6% 8%', blur: 96, opacity: 0.35 }}
+                className="rounded-panel"
+                haloBlur={24}
+                lap={6}
+                loop
             >
-                <div
-                    aria-label="An agent session using the Continuum MCP server"
-                    className="flex flex-1 flex-col gap-4 overflow-x-auto px-4 py-5 font-mono text-xs leading-5 sm:px-5"
-                    ref={ref}
-                    role="img"
-                >
-                    <Line className="flex gap-2.5 text-neutral-950" on={sent} reduce={reduce}>
-                        <span aria-hidden className="select-none text-neutral-500">
-                            &gt;
-                        </span>
-                        <span className="min-w-0">{prompt}</span>
-                    </Line>
-
-                    <ol className="flex flex-col gap-3">
-                        {calls.map((call, index) => (
-                            <li className="flex flex-col gap-1" key={call.tool}>
-                                <Line
-                                    className="flex min-w-0 items-baseline gap-2.5"
-                                    on={shown > index * 2 + 1}
-                                    reduce={reduce}
-                                >
+                <Window
+                    bar={
+                        <>
+                            <span className="flex items-center gap-1.5" aria-hidden>
+                                {[0, 1, 2].map(dot => (
                                     <span
-                                        aria-hidden
-                                        className={cn(
-                                            'size-1.5 shrink-0 -translate-y-px self-center rounded-full',
-                                            call.local ? 'bg-neutral-500' : 'bg-primary-500',
-                                        )}
+                                        className="size-2.5 rounded-full bg-neutral-200"
+                                        key={dot}
                                     />
-                                    <span className="whitespace-nowrap">
-                                        <span
-                                            className={
-                                                call.local ? 'text-neutral-950' : 'text-primary-600'
-                                            }
-                                        >
-                                            {call.tool}
-                                        </span>
-                                        <span className="text-neutral-600"> {call.args}</span>
-                                    </span>
-                                </Line>
-                                <Line
-                                    className="flex min-w-0 gap-2 pl-4 text-neutral-500"
-                                    on={shown > index * 2 + 2}
-                                    reduce={reduce}
-                                >
-                                    <CornerDownRight
-                                        aria-hidden
-                                        className="mt-[3px] size-3.5 shrink-0 text-neutral-400"
-                                        strokeWidth={2}
-                                    />
-                                    <span className="min-w-0">{call.result}</span>
-                                </Line>
-                            </li>
-                        ))}
-                    </ol>
-
-                    <Line
-                        className="border-neutral-200 border-t pt-4 font-sans text-neutral-800"
-                        on={done}
-                        reduce={reduce}
-                    >
-                        Added the members page under Settings: a table of 24 members with search and
-                        roles, on your accent and corners. It matches the Settings pattern.
-                    </Line>
-
-                    <div className="mt-auto flex items-center gap-2.5 rounded-control border border-neutral-200 bg-neutral-100 py-1.5 pr-1.5 pl-3">
-                        <span className="min-w-0 flex-1 truncate">
-                            {sent ? (
-                                <span className="text-neutral-500">Ask the agent…</span>
-                            ) : (
-                                <span className="text-neutral-950">
-                                    {prompt.slice(0, typed)}
-                                    <span
-                                        aria-hidden
-                                        className="ml-px inline-block h-3.5 w-[7px] translate-y-0.5 bg-primary-500"
-                                    />
+                                ))}
+                            </span>
+                            <span className="font-mono text-neutral-600 text-xs">acme-ops</span>
+                            <span className="truncate font-mono text-neutral-500 text-xs max-sm:hidden">
+                                ~/code/acme-ops
+                            </span>
+                            <Badge className="ml-auto" tone="success" variant="dot">
+                                <span>
+                                    <span className="max-sm:hidden">continuum </span>connected
                                 </span>
-                            )}
-                        </span>
-                        <span
-                            aria-hidden
-                            className={cn(
-                                'flex size-6 shrink-0 items-center justify-center rounded-control transition-colors',
-                                !sent && typed > 0
-                                    ? 'bg-action text-on-action'
-                                    : 'bg-neutral-200 text-neutral-500',
-                            )}
+                            </Badge>
+                        </>
+                    }
+                    bodyClassName="flex flex-col"
+                    className="min-w-0 bg-neutral-50 md:aspect-video"
+                >
+                    <div
+                        aria-label="An agent session using the Continuum MCP server"
+                        className="flex flex-1 flex-col gap-4 overflow-x-auto px-4 py-5 font-mono text-xs leading-5 sm:px-5"
+                        ref={ref}
+                        role="img"
+                    >
+                        <Line className="flex gap-2.5 text-neutral-950" on={sent} reduce={reduce}>
+                            <span aria-hidden className="select-none text-neutral-500">
+                                &gt;
+                            </span>
+                            <span className="min-w-0">{prompt}</span>
+                        </Line>
+
+                        <ol className="flex flex-col gap-3">
+                            {calls.map((call, index) => (
+                                <li className="flex flex-col gap-1" key={call.tool}>
+                                    <Line
+                                        className="flex min-w-0 items-baseline gap-2.5"
+                                        on={shown > index * 2 + 1}
+                                        reduce={reduce}
+                                    >
+                                        <span
+                                            aria-hidden
+                                            className={cn(
+                                                'size-1.5 shrink-0 -translate-y-px self-center rounded-full',
+                                                // Continuum's calls carry the landing's spectrum.
+                                                call.local ? 'bg-neutral-500' : 'bg-spectrum-round',
+                                            )}
+                                        />
+                                        <span className="whitespace-nowrap">
+                                            <span className="text-neutral-950">{call.tool}</span>
+                                            <span className="text-neutral-600"> {call.args}</span>
+                                        </span>
+                                    </Line>
+                                    <Line
+                                        className="flex min-w-0 gap-2 pl-4 text-neutral-500"
+                                        on={shown > index * 2 + 2}
+                                        reduce={reduce}
+                                    >
+                                        <CornerDownRight
+                                            aria-hidden
+                                            className="mt-[3px] size-3.5 shrink-0 text-neutral-400"
+                                            strokeWidth={2}
+                                        />
+                                        <span className="min-w-0">{call.result}</span>
+                                    </Line>
+                                </li>
+                            ))}
+                        </ol>
+
+                        <Line
+                            className="border-neutral-200 border-t pt-4 font-sans text-neutral-800"
+                            on={done}
+                            reduce={reduce}
                         >
-                            <ArrowUp className="size-3.5" strokeWidth={2} />
-                        </span>
+                            Added the members page under Settings: a table of 24 members with search
+                            and roles, on your accent and corners. It matches the Settings pattern.
+                        </Line>
+
+                        <div className="mt-auto flex items-center gap-2.5 rounded-control border border-neutral-200 bg-neutral-100 py-1.5 pr-1.5 pl-3">
+                            <span className="min-w-0 flex-1 truncate">
+                                {sent ? (
+                                    <span className="text-neutral-500">Ask the agent…</span>
+                                ) : (
+                                    <span className="text-neutral-950">
+                                        {prompt.slice(0, typed)}
+                                        <span
+                                            aria-hidden
+                                            className="ml-px inline-block h-3.5 w-[7px] translate-y-0.5 bg-neutral-950"
+                                        />
+                                    </span>
+                                )}
+                            </span>
+                            <span
+                                aria-hidden
+                                className={cn(
+                                    'flex size-6 shrink-0 items-center justify-center rounded-control transition-colors',
+                                    !sent && typed > 0
+                                        ? 'bg-action text-on-action'
+                                        : 'bg-neutral-200 text-neutral-500',
+                                )}
+                            >
+                                <ArrowUp className="size-3.5" strokeWidth={2} />
+                            </span>
+                        </div>
                     </div>
-                </div>
-            </Window>
+                </Window>
+            </RimLight>
         </div>
     );
 };
@@ -292,6 +295,7 @@ export const Mcp = () => (
     <Section
         description="Connect your tools and give AI agents the context and capabilities to work with Continuum. From creating new interfaces to refining existing ones, keep design standards within reach."
         eyebrow="MCP"
+        gap="md:gap-32"
         id="mcp"
         title="Bring your design system into your workflow."
     >

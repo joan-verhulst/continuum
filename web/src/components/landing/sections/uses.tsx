@@ -1,336 +1,388 @@
 'use client';
 
-import { cn } from 'continuum';
-import { RefreshCw } from 'lucide-react';
-import { motion, useInView, useReducedMotion } from 'motion/react';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { cn, focusRing } from 'continuum';
+import { CornerDownRight } from 'lucide-react';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { type ReactNode, useState } from 'react';
+import { AUDIT_SECONDS, AuditFilm } from '../films/audit-film';
+import { BUILD_SECONDS, BuildFilm } from '../films/build-film';
+import { IMPROVE_SECONDS, ImproveFilm } from '../films/improve-film';
+import { PADDING_SECONDS, PaddingFilm } from '../films/padding-film';
+import { THEME_SECONDS, ThemeFilm } from '../films/theme-film';
 import { ease, Reveal, Section } from '../web';
 
 /*
- * Uses: the three things the system is for, whoever does the work. Each card leads with a small
- * figure of the act itself, drawn in the page's own hairlines and accent: a page assembling from
- * its recipe, a drifted row measured and put back, the project's tokens kept in sync. Each figure
- * plays once when it comes into view; under reduced motion it shows its end state.
+ * In practice: what the system does and how each job runs. On the left the jobs, each with when
+ * you reach for it; on the right one large card with the picked job run through: how you start
+ * it, each step with the tool it calls and what that returns, and what you end up with. The list
+ * moves on by itself, its progress drawn in the landing's spectrum, until the reader picks one.
  */
 
-/** Plays once in view: `true` from the moment the figure is half on screen, at once under reduced motion. */
-const usePlay = (delay = 0) => {
-    const ref = useRef<HTMLDivElement>(null);
-    const inView = useInView(ref, { once: true, amount: 0.5 });
-    const reduce = useReducedMotion() ?? false;
-    const [on, setOn] = useState(reduce);
-
-    useEffect(() => {
-        if (reduce) return setOn(true);
-        if (!inView) return;
-        const timer = setTimeout(() => setOn(true), delay);
-        return () => clearTimeout(timer);
-    }, [inView, reduce, delay]);
-
-    return { ref, on, reduce };
+type Step = {
+    /** The tool or prompt the step calls, or what the agent does itself. */
+    tool: string;
+    args?: string;
+    result: string;
+    /** The agent's own step, not a call to Continuum. */
+    local?: boolean;
 };
 
-/** A label on a part of the figure: the part's name in mono, on the accent. */
-const Tag = ({ children, className }: { children: ReactNode; className?: string }) => (
-    <span
+type Job = {
+    id: string;
+    title: string;
+    /** When you reach for it. */
+    when: string;
+    /** How you start it: what you ask, or the command. */
+    start: string;
+    /** What runs it. */
+    via: string;
+    steps: Step[];
+    outcome: string;
+    /** What it does to your UI, filmed: in place of the steps once a job has one. */
+    film?: () => ReactNode;
+    /** The film's length in seconds, so the list waits for it to end. */
+    length?: number;
+};
+
+const jobs: Job[] = [
+    {
+        id: 'build',
+        title: 'Build a screen',
+        when: 'Starting a page. Your agent composes it from the system, never from a blank file.',
+        start: 'Build the members page under Settings.',
+        via: 'build_screen prompt · continuum-taste skill',
+        steps: [
+            {
+                tool: 'get_page_kind',
+                args: 'settings',
+                result: 'one column at 640, groups as list cards, one primary action',
+            },
+            {
+                tool: 'find_pattern',
+                args: '"list of members"',
+                result: 'a Table in its own frame, search in its toolbar, a menu per row',
+            },
+            {
+                tool: 'get_component',
+                args: 'SettingRow',
+                result: 'title and description left, one control right, controls 34 high',
+            },
+            { tool: 'get_spacing', args: 'the list card', result: 'p-5, and gap-6 between groups' },
+            { tool: 'audit_source', args: 'members.tsx', result: 'clean' },
+        ],
+        outcome: 'members.tsx: six parts, theme tokens only, no arbitrary values.',
+        film: () => <BuildFilm />,
+        length: BUILD_SECONDS,
+    },
+    {
+        id: 'improve',
+        title: 'Improve a screen',
+        when: 'Bringing an existing page in line, whatever it was built in.',
+        start: 'Bring the customers page in line.',
+        via: 'improve_ui prompt',
+        steps: [
+            {
+                tool: 'audit_source',
+                args: 'customers.tsx',
+                result: 'against the index anatomy: views as tabs, search outside the table, the table in a card',
+            },
+            {
+                tool: 'audit_ui',
+                args: 'the rendered page',
+                result: 'what only shows on screen: rows 52 high, the table 41',
+            },
+            {
+                tool: 'apply',
+                args: 'the sure fixes',
+                result: 'views to the dock, search to the table bar, the card gone',
+                local: true,
+            },
+            {
+                tool: 'ask',
+                args: 'two primary actions in the head',
+                result: 'proposed to you, not changed: keep New customer, make Export secondary',
+                local: true,
+            },
+            {
+                tool: 'audit_source',
+                args: 'customers.tsx',
+                result: 'clean, then looked at in light and dark',
+            },
+        ],
+        outcome: 'The customers page on the system, with every structural change agreed first.',
+        film: () => <ImproveFilm />,
+        length: IMPROVE_SECONDS,
+    },
+    {
+        id: 'audit',
+        title: 'Audit any stack',
+        when: 'Checking UI in React, Vue, Angular, Svelte, HTML or CSS, or a page as it renders.',
+        start: 'Audit the plan card in every app.',
+        via: 'audit_source · audit_ui',
+        steps: [
+            {
+                tool: 'audit_source',
+                args: 'PlanCard.tsx, .vue, .component.ts, .svelte',
+                result: 'each read as its own stack, against the values in your app.css',
+            },
+            {
+                tool: 'finding',
+                args: 'font-weight 600',
+                result: '500: two weights, 400 and 500',
+                local: true,
+            },
+            {
+                tool: 'finding',
+                args: 'colour #6b7280',
+                result: 'a raw grey; its role is neutral-600',
+                local: true,
+            },
+            {
+                tool: 'fix',
+                args: 'per stack',
+                result: 'font-medium text-neutral-600 in the TSX; font-weight: 500 and var(--color-neutral-600) in the styles',
+                local: true,
+            },
+        ],
+        outcome:
+            'Every finding says what is off in units, what Continuum wants, why, and the fix written for your stack.',
+        film: () => <AuditFilm />,
+        length: AUDIT_SECONDS,
+    },
+    {
+        id: 'padding',
+        title: 'Fix padding',
+        when: 'A box feels cramped or loose. Its spacing is worked out from what it holds, not guessed.',
+        start: '/continuum-fix-padding PlanCard.tsx',
+        via: 'continuum-fix-padding skill · get_spacing',
+        steps: [
+            {
+                tool: 'read',
+                args: 'PlanCard',
+                result: 'a 14 label, a 24 figure, a 13 note over two lines',
+                local: true,
+            },
+            {
+                tool: 'get_spacing',
+                args: 'type averaged over 4 lines: 16px',
+                result: '0.75 × 16 × (1 + 0.6 · log₂ 4) = 26.4px',
+            },
+            { tool: 'snap', args: '26.4px', result: 'p-7, the nearest Tailwind step', local: true },
+            {
+                tool: 'get_spacing',
+                args: 'label → figure → note',
+                result: 'pairs, so gap-1.5 each',
+            },
+        ],
+        outcome: 'p-4 gap-3 becomes p-7 gap-1.5: classes on the scale, never an arbitrary value.',
+        film: () => <PaddingFilm />,
+        length: PADDING_SECONDS,
+    },
+    {
+        id: 'theme',
+        title: 'Theme a product',
+        when: 'Giving a product its own look, before the first screen.',
+        start: 'Our theme: accent #3939e5, tinted greys, Geist, rounder corners.',
+        via: 'theme builder · create_theme · check_theme',
+        steps: [
+            {
+                tool: 'create_theme',
+                args: 'accent, greys, font, corners',
+                result: "app.css: every colour, size and corner in Tailwind's names, light and dark",
+            },
+            {
+                tool: 'create_theme',
+                args: 'the same options',
+                result: 'DESIGN.md: the brief your agent builds every screen from',
+            },
+            {
+                tool: 'check_theme',
+                args: 'app.css',
+                result: 'contrast per mode, each miss with the step that passes',
+            },
+        ],
+        outcome: 'One theme every part reads, the same in the builder, your code and your agent.',
+        film: () => <ThemeFilm />,
+        length: THEME_SECONDS,
+    },
+];
+
+/** How long a job shows before the list moves on, while nobody has picked one. */
+const HOLD = 7;
+
+/** A job in the list: its name and when you reach for it, the current one washed and timed. */
+const JobTab = ({
+    job,
+    on,
+    playing,
+    onPick,
+    onDone,
+}: {
+    job: Job;
+    on: boolean;
+    playing: boolean;
+    onPick: () => void;
+    onDone: () => void;
+}) => (
+    <button
+        aria-selected={on}
         className={cn(
-            'absolute whitespace-nowrap rounded-[4px] bg-primary-500 px-1.5 py-px font-mono text-[10px] text-on-action leading-4',
-            className,
+            'relative flex w-full flex-col gap-1.5 overflow-hidden rounded-card p-5 text-left transition-colors duration-150',
+            on ? 'bg-selected' : 'hover:bg-neutral-950/5',
+            focusRing,
         )}
+        onClick={onPick}
+        role="tab"
+        type="button"
     >
-        {children}
-    </span>
+        <span
+            className={cn(
+                'font-medium text-base transition-colors duration-150',
+                on ? 'text-neutral-950' : 'text-neutral-700',
+            )}
+        >
+            {job.title}
+        </span>
+        <span className="text-neutral-600 text-sm leading-[1.5]">{job.when}</span>
+        {on && playing && (
+            <motion.span
+                animate={{ scaleX: 1 }}
+                aria-hidden
+                className="absolute inset-x-5 bottom-0 h-px origin-left bg-spectrum"
+                initial={{ scaleX: 0 }}
+                key={job.id}
+                onAnimationComplete={onDone}
+                transition={{ duration: job.length ?? HOLD, ease: 'linear' }}
+            />
+        )}
+    </button>
 );
 
-/* ---------- Create: a page assembling from its recipe ---------- */
-
-/** The page's blocks, in the order the recipe names them, each with where it sits. */
-const blocks = [
-    { key: 'nav', className: 'top-0 bottom-0 left-0 w-[22%] border-r' },
-    { key: 'header', className: 'top-0 right-0 left-[22%] h-9 border-b' },
-    {
-        key: 'table',
-        className: 'top-12 right-3 bottom-3 left-[calc(22%+12px)] rounded-[4px] border',
-    },
-] as const;
-
-const CreateFigure = () => {
-    const { ref, on, reduce } = usePlay(200);
-
+/** The picked job, run through: how it starts, each step with its call and its answer, the result. */
+const Run = ({ job }: { job: Job }) => {
+    const reduce = useReducedMotion() ?? false;
+    const item = (index: number) => ({
+        initial: reduce ? false : { opacity: 0, y: 4 },
+        animate: { opacity: 1, y: 0 },
+        transition: { duration: 0.3, ease, delay: reduce ? 0 : 0.08 + index * 0.09 },
+    });
+    if (job.film) {
+        return (
+            <motion.div
+                animate={{ opacity: 1 }}
+                // Fills the panel, which is sized by its min-height, not a height a child could read.
+                className="absolute inset-0"
+                exit={{ opacity: 0 }}
+                initial={reduce ? false : { opacity: 0 }}
+                key={job.id}
+                transition={{ duration: 0.15 }}
+            >
+                {job.film()}
+            </motion.div>
+        );
+    }
     return (
-        <div className="absolute inset-0 flex items-center justify-center p-6" ref={ref}>
-            <div className="relative h-full w-full max-w-[280px] overflow-hidden rounded-md border border-neutral-200 bg-neutral-50">
-                {/* The blueprint the page is laid on, dashed until the parts fill it. */}
-                <div className="absolute inset-2 rounded-[4px] border border-neutral-300 border-dashed" />
-                {blocks.map((block, index) => (
-                    <motion.div
-                        animate={on ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.97 }}
-                        className={cn('absolute border-neutral-200 bg-neutral-50', block.className)}
-                        initial={reduce ? false : { opacity: 0, scale: 0.97 }}
-                        key={block.key}
-                        transition={{ duration: 0.4, ease, delay: index * 0.22 }}
-                    >
-                        {block.key === 'nav' && (
-                            <div className="flex flex-col gap-2 p-2.5 pt-3">
-                                <span className="h-1.5 w-3/4 rounded-full bg-neutral-300" />
-                                {[0, 1, 2, 3].map(item => (
-                                    <span
-                                        className={cn(
-                                            'h-1.5 rounded-full',
-                                            item === 1
-                                                ? 'w-full bg-primary-500/70'
-                                                : 'w-2/3 bg-neutral-200',
-                                        )}
-                                        key={item}
-                                    />
-                                ))}
-                            </div>
-                        )}
-                        {block.key === 'header' && (
-                            <div className="flex h-full items-center justify-between px-3">
-                                <span className="h-1.5 w-16 rounded-full bg-neutral-400" />
-                                <span className="h-4 w-10 rounded-[3px] bg-primary-500" />
-                            </div>
-                        )}
-                        {block.key === 'table' && (
-                            <div className="flex flex-col">
-                                {[0, 1, 2, 3, 4].map(row => (
-                                    <div
-                                        className={cn(
-                                            'flex h-6 items-center gap-2 px-2',
-                                            row > 0 && 'border-neutral-200 border-t',
-                                        )}
-                                        key={row}
-                                    >
-                                        <span
-                                            className={cn(
-                                                'size-2.5 shrink-0 rounded-full',
-                                                row === 0 ? 'bg-transparent' : 'bg-neutral-200',
-                                            )}
-                                        />
-                                        <span
-                                            className={cn(
-                                                'h-1.5 rounded-full',
-                                                row === 0
-                                                    ? 'w-10 bg-neutral-300'
-                                                    : 'w-14 bg-neutral-200',
-                                            )}
-                                        />
-                                        <span className="ml-auto h-1.5 w-6 rounded-full bg-neutral-200" />
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </motion.div>
-                ))}
-                <motion.div
-                    animate={on ? { opacity: 1, y: 0 } : { opacity: 0, y: 3 }}
-                    initial={reduce ? false : { opacity: 0, y: 3 }}
-                    transition={{ duration: 0.3, ease, delay: 0.75 }}
-                >
-                    <Tag className="top-11 right-3">Table</Tag>
-                </motion.div>
-            </div>
-        </div>
-    );
-};
-
-/* ---------- Refine: a drifted row measured and put back ---------- */
-
-const RefineFigure = () => {
-    const { ref, on, reduce } = usePlay(700);
-
-    return (
-        <div className="absolute inset-0 flex items-center justify-center p-6" ref={ref}>
-            <div className="flex w-full max-w-[280px] flex-col rounded-md border border-neutral-200 bg-neutral-50">
-                {['Ana Ruiz', 'Sam Okoro', 'Lea Brandt'].map((name, index) => {
-                    const drifted = index === 1;
-                    return (
-                        <div
-                            className={cn(
-                                'relative flex h-10 items-center',
-                                index > 0 && 'border-neutral-200 border-t',
-                                drifted && 'bg-neutral-100',
-                            )}
-                            key={name}
-                        >
-                            {/* The redline: the drifted inset, measured against the rows above and below. */}
-                            {drifted && (
-                                <motion.span
-                                    animate={{ width: on ? 12 : 19 }}
-                                    aria-hidden
-                                    className={cn(
-                                        'absolute inset-y-1.5 left-0 border-y border-r border-dashed transition-colors duration-300',
-                                        on
-                                            ? 'border-primary-500 bg-primary-500/15'
-                                            : 'border-error-500 bg-error-500/15',
-                                    )}
-                                    initial={reduce ? false : { width: 19 }}
-                                    transition={{ duration: 0.45, ease }}
-                                />
-                            )}
-                            <motion.div
-                                animate={{ paddingLeft: drifted && !on ? 19 : 12 }}
-                                className="flex min-w-0 flex-1 items-center gap-2.5 pr-3"
-                                initial={reduce ? false : { paddingLeft: drifted ? 19 : 12 }}
-                                transition={{ duration: 0.45, ease }}
-                            >
-                                <span className="size-5 shrink-0 rounded-full bg-neutral-200" />
-                                <span className="truncate text-[12px] text-neutral-800">
-                                    {name}
-                                </span>
-                                <motion.span
-                                    animate={{ height: drifted && !on ? 24 : 20 }}
-                                    className="ml-auto w-12 shrink-0 rounded-[4px] border border-neutral-200 bg-neutral-50"
-                                    initial={reduce ? false : { height: drifted ? 24 : 20 }}
-                                    transition={{ duration: 0.45, ease }}
-                                />
-                            </motion.div>
-                            {drifted && (
-                                <span
-                                    className={cn(
-                                        'absolute -top-2.5 left-1 rounded-[4px] px-1.5 py-px font-mono text-[10px] text-on-action leading-4 transition-colors duration-300',
-                                        on ? 'bg-primary-500' : 'bg-error-500',
-                                    )}
-                                >
-                                    {on ? '12px' : '19px → 12px'}
-                                </span>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
-    );
-};
-
-/* ---------- Standards: the project's tokens, kept in sync ---------- */
-
-const tokens: { name: string; value: string; swatch: ReactNode }[] = [
-    {
-        name: 'accent',
-        value: '#ffa31a',
-        swatch: <span className="size-4 rounded-[4px] bg-primary-500" />,
-    },
-    {
-        name: 'font',
-        value: 'Geist',
-        swatch: (
-            <span className="w-4 text-center font-medium text-[12px] text-neutral-950">Aa</span>
-        ),
-    },
-    {
-        name: 'corners',
-        value: '6px',
-        swatch: (
-            <span className="size-4 rounded-tl-[6px] border-neutral-500 border-t-[1.5px] border-l-[1.5px]" />
-        ),
-    },
-    {
-        name: 'components',
-        value: 'MemberRow, PlanCard',
-        swatch: (
-            <span className="grid size-4 grid-cols-2 gap-0.5">
-                {[0, 1, 2, 3].map(cell => (
-                    <span className="rounded-[1.5px] bg-neutral-400" key={cell} />
-                ))}
-            </span>
-        ),
-    },
-];
-
-const StandardsFigure = () => {
-    const { ref, on, reduce } = usePlay(300);
-
-    return (
-        <div className="absolute inset-0 flex items-center justify-center p-6" ref={ref}>
-            <div className="flex w-full max-w-[280px] flex-col rounded-md border border-neutral-200 bg-neutral-50">
-                <div className="flex h-8 items-center gap-2 border-neutral-200 border-b px-3">
-                    <span className="font-mono text-[11px] text-neutral-600">acme-ops</span>
-                    <span className="ml-auto flex items-center gap-1.5 text-[11px] text-neutral-500">
-                        <motion.span
-                            animate={on ? { rotate: 360 } : { rotate: 0 }}
-                            className="flex"
-                            initial={reduce ? false : { rotate: 0 }}
-                            transition={{ duration: 0.8, ease }}
-                        >
-                            <RefreshCw aria-hidden className="size-3" strokeWidth={2} />
-                        </motion.span>
-                        synced
+        <motion.div
+            animate={{ opacity: 1 }}
+            className="flex h-full flex-col"
+            exit={{ opacity: 0 }}
+            initial={reduce ? false : { opacity: 0 }}
+            key={job.id}
+            transition={{ duration: 0.15 }}
+        >
+            <div className="flex flex-col gap-2 border-neutral-200 border-b p-6">
+                <span className="text-neutral-500 text-xs">You start it</span>
+                <span className="font-mono text-neutral-950 text-sm">
+                    <span aria-hidden className="mr-2 select-none text-neutral-500">
+                        &gt;
                     </span>
-                </div>
-                {tokens.map((token, index) => (
-                    <motion.div
-                        animate={on ? { opacity: 1, x: 0 } : { opacity: 0, x: -4 }}
-                        className={cn(
-                            'flex h-8 items-center gap-2.5 px-3',
-                            index > 0 && 'border-neutral-200 border-t',
-                        )}
-                        initial={reduce ? false : { opacity: 0, x: -4 }}
-                        key={token.name}
-                        transition={{ duration: 0.35, ease, delay: 0.3 + index * 0.1 }}
-                    >
-                        <span className="flex size-4 shrink-0 items-center justify-center">
-                            {token.swatch}
-                        </span>
-                        <span className="text-[12px] text-neutral-500">{token.name}</span>
-                        <span className="ml-auto truncate font-mono text-[11px] text-neutral-800">
-                            {token.value}
-                        </span>
-                    </motion.div>
-                ))}
+                    {job.start}
+                </span>
+                <span className="font-mono text-neutral-500 text-xs">{job.via}</span>
             </div>
-        </div>
+            <ol className="flex flex-1 flex-col gap-4 p-6 font-mono text-xs leading-5">
+                {job.steps.map((step, index) => (
+                    <motion.li
+                        className="flex flex-col gap-1"
+                        key={`${step.tool}-${index}`}
+                        {...item(index)}
+                    >
+                        <span className="flex min-w-0 items-baseline gap-2.5">
+                            <span
+                                aria-hidden
+                                className={cn(
+                                    'size-1.5 shrink-0 -translate-y-px self-center rounded-full',
+                                    step.local ? 'bg-neutral-500' : 'bg-spectrum-round',
+                                )}
+                            />
+                            <span className="text-neutral-950">{step.tool}</span>
+                            {step.args && (
+                                <span className="truncate text-neutral-600">{step.args}</span>
+                            )}
+                        </span>
+                        <span className="flex min-w-0 gap-2 pl-4 text-neutral-500">
+                            <CornerDownRight
+                                aria-hidden
+                                className="mt-[3px] size-3.5 shrink-0 text-neutral-400"
+                                strokeWidth={2}
+                            />
+                            <span className="min-w-0">{step.result}</span>
+                        </span>
+                    </motion.li>
+                ))}
+            </ol>
+            <motion.div
+                className="flex flex-col gap-1 border-neutral-200 border-t p-6"
+                {...item(job.steps.length)}
+            >
+                <span className="text-neutral-500 text-xs">You end up with</span>
+                <span className="text-neutral-950 text-sm leading-[1.5]">{job.outcome}</span>
+            </motion.div>
+        </motion.div>
     );
 };
 
-/* ---------- The section ---------- */
+export const Uses = () => {
+    const [current, setCurrent] = useState(0);
+    const [picked, setPicked] = useState(false);
+    const reduce = useReducedMotion() ?? false;
+    const job = jobs[current] ?? jobs[0];
+    if (!job) return null;
+    const playing = !picked && !reduce;
 
-const uses = [
-    {
-        figure: CreateFigure,
-        title: 'Create new interfaces',
-        body: 'Every page starts from a recipe and the parts it names, never a blank file.',
-    },
-    {
-        figure: RefineFigure,
-        title: 'Refine existing ones',
-        body: 'A screen is read against the patterns, and what drifted is put back in place.',
-    },
-    {
-        figure: StandardsFigure,
-        title: 'Keep standards in reach',
-        body: "Your theme and your own components, synced, so every screen builds on the project's truth.",
-    },
-];
-
-export const Uses = () => (
-    <Section
-        description="The same rules and parts hold whether you start a page, tidy one up or hand it to an agent."
-        eyebrow="In practice"
-        id="uses"
-        title="One system, from the first screen to the last fix."
-    >
-        <Reveal>
-            <ul className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                {uses.map(use => (
-                    <li
-                        className="flex min-w-0 flex-col rounded-panel border border-neutral-200 bg-neutral-50"
-                        key={use.title}
-                    >
-                        <div
-                            aria-hidden
-                            className="relative m-2 mb-0 h-52 overflow-hidden rounded-[calc(var(--radius-panel)-8px)] border border-neutral-200 bg-neutral-100"
-                        >
-                            <use.figure />
-                        </div>
-                        <div className="flex flex-col gap-1.5 p-6 pt-5">
-                            <h3 className="font-medium text-base text-neutral-950">{use.title}</h3>
-                            <p className="text-[15px] text-neutral-600 leading-[1.6]">{use.body}</p>
-                        </div>
-                    </li>
-                ))}
-            </ul>
-        </Reveal>
-    </Section>
-);
+    return (
+        <Section
+            description="Two skills for your agent and an MCP server for any client, on the same rules. Pick a job to see the steps it takes and what each one returns."
+            eyebrow="In practice"
+            id="uses"
+            title="What it does, and how it runs."
+        >
+            <Reveal className="grid gap-8 lg:grid-cols-[336px_minmax(0,1fr)] lg:gap-12">
+                <div aria-label="Jobs" className="flex flex-col gap-2" role="tablist">
+                    {jobs.map((item, index) => (
+                        <JobTab
+                            job={item}
+                            key={item.id}
+                            on={index === current}
+                            onDone={() => setCurrent(value => (value + 1) % jobs.length)}
+                            onPick={() => {
+                                setPicked(true);
+                                setCurrent(index);
+                            }}
+                            playing={playing}
+                        />
+                    ))}
+                </div>
+                <div
+                    // The desktop stage is 720 × 640; a narrower one keeps that shape, so a film keeps its framing.
+                    className="relative aspect-[9/8] overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 lg:aspect-auto lg:min-h-[640px]"
+                    role="tabpanel"
+                >
+                    <AnimatePresence initial={false} mode="wait">
+                        <Run job={job} key={job.id} />
+                    </AnimatePresence>
+                </div>
+            </Reveal>
+        </Section>
+    );
+};

@@ -36,7 +36,7 @@ const componentIndex = (): ComponentIndex => ({
         .filter(group => group.items.length > 0),
 });
 
-/** The home page: the landing from site/, dark and amber, with the product shown live. */
+/** The home page: the landing from site/, dark, with the product shown live. */
 const HomePage = () => (
     <>
         <JsonLd

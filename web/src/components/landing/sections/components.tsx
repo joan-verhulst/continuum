@@ -3,17 +3,15 @@
 import { Stage } from '@playground/layout';
 import { entries } from '@playground/showcase/entries';
 import { type Entry, knobDefaults } from '@playground/showcase/kit';
-import { buttonVariants, cn, focusRing } from 'continuum';
+import { buttonVariants, cn, focusRing, Theme } from 'continuum';
 import { ArrowRight } from 'lucide-react';
-import { useInView } from 'motion/react';
-import { type ReactNode, useEffect, useRef, useState } from 'react';
+import { PRODUCT_THEME } from '../theme';
 import { KitchenSinkWall } from '../wall';
 import { Reveal, Section } from '../web';
 
 /*
  * The components, first thing after the screen: the whole kit pinned to one board, full width, then
- * a grid of cards to scan, each a component live in an even tile with its name and a line, and one
- * way on to the rest.
+ * a few of its parts, each in a card as it renders, two to a row, and one way on to the rest.
  */
 
 /** The docs' families, as the server reads them: their pages give each card its link. */
@@ -27,27 +25,20 @@ export type ComponentIndex = {
     }[];
 };
 
-/** The cards, picked so the rows read as a product's parts: inputs, figures, feedback, navigation. */
+/** The cards, two to a row: four parts, then four charts. */
 const featured = [
-    'select',
-    'date-picker',
     'command-menu',
-    'stat-card',
-    'area-chart',
-    'segmented',
-    'bar-list',
-    'tabs',
-    'chat-composer',
-    'combobox',
-    'badge',
-    'switch',
+    'menu',
+    'popover-item',
+    'chat-typing',
+    'uptime-strip',
+    'bullet-chart',
+    'donut-chart',
+    'rose-chart',
 ] as const;
 
-/**
- * Previews too big for a tile even scaled with it: drawn smaller still, pinned to the top left and
- * left to run off the tile's right and foot, so they read as a crop of something larger.
- */
-const cropped = new Set<string>(['area-chart']);
+/** The charts, set at the tile's top left rather than its middle. */
+const charts = new Set<string>(['uptime-strip', 'bullet-chart', 'donut-chart', 'rose-chart']);
 
 const byId = new Map(entries.map(entry => [entry.id, entry]));
 const shown: Entry[] = featured.flatMap(id => byId.get(id) ?? []);
@@ -55,88 +46,43 @@ const shown: Entry[] = featured.flatMap(id => byId.get(id) ?? []);
 /** A name as letters and digits only, so "Segmented control" meets "SegmentedControl". */
 const plain = (name: string) => name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
-/** The stage every preview is drawn on, in px; the card scales it to its own width. */
-const STAGE = { width: 400, height: 260 };
-
-/** Scales a box drawn at STAGE's size to the width it is given, keeping its proportions. */
-const ScaledStage = ({ children }: { children: ReactNode }) => {
-    const box = useRef<HTMLDivElement>(null);
-    const [scale, setScale] = useState(1);
-    useEffect(() => {
-        const node = box.current;
-        if (!node) return;
-        const observer = new ResizeObserver(([entry]) => {
-            if (entry) setScale(entry.contentRect.width / STAGE.width);
-        });
-        observer.observe(node);
-        return () => observer.disconnect();
-    }, []);
+/** A part in a card as it renders, inert, then its name and a line; the whole card opens its page. */
+const Card = ({ entry, href }: { entry: Entry; href: string }) => {
+    const { name, description, knobs, Preview } = entry;
     return (
-        <div
-            className="relative w-full overflow-hidden"
-            ref={box}
-            style={{ aspectRatio: `${STAGE.width} / ${STAGE.height}` }}
-        >
-            <div
-                className="absolute top-0 left-0 origin-top-left"
-                style={{ width: STAGE.width, height: STAGE.height, transform: `scale(${scale})` }}
-            >
-                {children}
-            </div>
-        </div>
-    );
-};
-
-/**
- * A component, live: its preview on the canvas inset in the card, then its name and a line. The
- * stage is inert, so the preview draws itself as a picture, and the whole card opens its page.
- */
-const Card = ({ entry, href, index }: { entry: Entry; href: string; index: number }) => {
-    const { id, name, description, stageClassName, knobs, Preview } = entry;
-    // A preview mounts once its card is mostly on screen: the open ones (the select, the command
-    // menu) scroll their chosen row into view as they mount, which would otherwise move the page.
-    const tile = useRef<HTMLDivElement>(null);
-    const seen = useInView(tile, { once: true, amount: 0.6 });
-    return (
-        <Reveal
-            className="group/tile relative flex min-w-0 flex-col rounded-panel border border-neutral-200 bg-neutral-50 transition-[border-color] duration-150 hover:border-neutral-300"
-            delay={index % 3}
-        >
-            <div
-                className="m-2 mb-0 overflow-hidden rounded-[calc(var(--radius-panel)-8px)] bg-neutral-100"
-                ref={tile}
-            >
-                <ScaledStage>
-                    <Stage
-                        className={cn(
-                            'size-full min-h-0 overflow-hidden bg-neutral-100 p-6',
-                            stageClassName,
-                        )}
-                        inert
-                    >
-                        {seen &&
-                            (cropped.has(id) ? (
-                                <div className="absolute top-6 left-6 w-[560px] origin-top-left scale-[0.8]">
-                                    <Preview knobs={knobDefaults(knobs)} />
-                                </div>
-                            ) : (
-                                <Preview knobs={knobDefaults(knobs)} />
-                            ))}
-                    </Stage>
-                </ScaledStage>
+        <div className="group/tile relative flex min-w-0 flex-col rounded-panel border border-neutral-200 bg-neutral-50 transition-[border-color] duration-150 hover:border-neutral-300">
+            <div className="relative m-2 mb-0 aspect-[4/3] overflow-hidden rounded-[calc(var(--radius-panel)-8px)] sm:aspect-video">
+                {/* The playground's own stage: it holds the part's popups. The card is its frame. */}
+                <Stage
+                    className={cn(
+                        'size-full min-h-0 rounded-none border-0 bg-neutral-100 p-6',
+                        // An open dialog's scrim would darken the tile; the part shows without it.
+                        '[&_[data-slot=dialog-overlay]]:hidden',
+                        // A chart as it is, set 24px from the top and left, each as wide as the
+                        // tile (the donut and the rose cap themselves narrower than the others).
+                        charts.has(entry.id) && 'items-start justify-start *:max-w-none',
+                    )}
+                    inert
+                >
+                    <Preview knobs={knobDefaults(knobs)} />
+                </Stage>
+                {/* The hairline over the part, so what runs to the edge runs under a frame. */}
+                <span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 rounded-[inherit] border border-neutral-200"
+                />
             </div>
             <a
                 className={cn(
-                    'flex items-start gap-3 rounded-b-panel px-4 pt-3 pb-4 after:absolute after:inset-0 after:rounded-panel after:content-[""]',
+                    // Padded by the formula: a 14 name over a 13 line, a pair (p-4, gap-1).
+                    'flex items-start gap-3 rounded-b-panel p-4 after:absolute after:inset-0 after:rounded-panel after:content-[""]',
                     focusRing,
                 )}
                 href={href}
             >
                 <div className="flex min-w-0 flex-1 flex-col gap-1">
                     <h3 className="font-medium text-neutral-950 text-sm">{name}</h3>
-                    <span className="line-clamp-2 min-h-8 text-pretty text-neutral-600 text-xs">
-                        {description}
-                    </span>
+                    <span className="text-pretty text-neutral-600 text-xs">{description}</span>
                 </div>
                 <ArrowRight
                     aria-hidden
@@ -144,7 +90,7 @@ const Card = ({ entry, href, index }: { entry: Entry; href: string; index: numbe
                     strokeWidth={2}
                 />
             </a>
-        </Reveal>
+        </div>
     );
 };
 
@@ -159,19 +105,20 @@ export const Components = ({ index }: { index: ComponentIndex }) => {
             className="overflow-x-clip"
             description="A comprehensive collection of components and design foundations, built around a cohesive visual language. Designed to work together, flexible enough to make every project your own."
             eyebrow={`${index.total} components`}
+            gap="md:gap-32"
             id="components"
             title="Everything works better together."
         >
-            <div className="flex flex-col gap-12 md:gap-32">
+            {/* The wall and the cards are the product: they wear its theme, the accent on the action. */}
+            <Theme className="flex flex-col gap-12 md:gap-32" mode="dark" theme={PRODUCT_THEME}>
                 <Reveal>
                     <KitchenSinkWall />
                 </Reveal>
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {shown.map((entry, position) => (
+                <div className="grid gap-4 lg:grid-cols-2">
+                    {shown.map(entry => (
                         <Card
                             entry={entry}
                             href={hrefs.get(plain(entry.name)) ?? '/components'}
-                            index={position}
                             key={entry.id}
                         />
                     ))}
@@ -185,7 +132,7 @@ export const Components = ({ index }: { index: ComponentIndex }) => {
                         <ArrowRight strokeWidth={2} />
                     </a>
                 </Reveal>
-            </div>
+            </Theme>
         </Section>
     );
 };

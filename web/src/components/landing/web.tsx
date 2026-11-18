@@ -54,7 +54,7 @@ export const Pill = ({
             className,
         )}
     >
-        {dot && <span aria-hidden className="size-1.5 rounded-full bg-primary-500" />}
+        {dot && <span aria-hidden className="size-1.5 rounded-full bg-spectrum-round" />}
         {children}
     </span>
 );
@@ -93,6 +93,8 @@ type SectionProps = Omit<ComponentProps<'section'>, 'title'> & {
     centred?: boolean;
     /** A link for the section: under a centred header, beside a left one on wide screens. */
     aside?: ReactNode;
+    /** The gap between the header and what it shows, for a section that wants more than the page's. */
+    gap?: string;
 };
 
 /** A section of the page: its header (pill, title, lead), then whatever it shows. */
@@ -102,12 +104,13 @@ export const Section = ({
     description,
     centred = true,
     aside,
+    gap,
     children,
     className,
     ...props
 }: SectionProps) => (
     <section className={cn('scroll-mt-20 py-16 md:py-32', className)} {...props}>
-        <Container className="flex flex-col gap-12 md:gap-16">
+        <Container className={cn('flex flex-col gap-12 md:gap-16', gap)}>
             {(eyebrow || title || description) && (
                 <Reveal
                     className={cn(
@@ -125,12 +128,12 @@ export const Section = ({
                     >
                         {eyebrow && <Pill>{eyebrow}</Pill>}
                         {title && (
-                            <h2 className="max-w-[512px] text-balance font-medium text-2xl text-neutral-950 leading-[1.15] tracking-[-0.02em] md:text-3xl">
+                            <h2 className="max-w-[640px] text-balance font-medium text-3xl text-neutral-950 leading-[1.1] tracking-[-0.02em] md:text-4xl">
                                 {title}
                             </h2>
                         )}
                         {description && (
-                            <p className="max-w-[576px] text-base text-neutral-600 leading-[1.6]">
+                            <p className="max-w-[640px] text-base text-neutral-600 leading-[1.6] md:text-lg">
                                 {description}
                             </p>
                         )}
@@ -183,6 +186,89 @@ const Mark = ({ className }: { className: string }) => (
     </span>
 );
 
+/*
+ * The landing's rulers: the page measured in the system's own 4px unit, both ways. A rail runs down
+ * each side, 64px out from the content, and a divider across the page between sections, each a
+ * hairline with ticks on it: every 4px, longer every 16, longest every 80. The dividers' ticks are
+ * counted from the column's edge, so they meet the rails' on the same marks, and a registration
+ * mark sits where a divider crosses a rail. The wide pieces (the boards, the product's window, the
+ * wall) cover the rails; the rulers pick up again below them.
+ */
+
+const TICK = 'color-mix(in oklab, var(--color-neutral-200) 70%, transparent)';
+const MAJOR = 'var(--color-neutral-300)';
+
+/** The three tick lengths, as gradients laid along `to`, each at its own length on the `edge` side. */
+const ticks = (to: 'bottom' | 'right', edge: 'left' | 'right' | 'bottom') => {
+    const across = to === 'bottom';
+    const size = (length: number) => (across ? `${length}px 100%` : `100% ${length}px`);
+    const at = across ? `${edge} top` : `left ${edge}`;
+    return [
+        [TICK, 4, 3],
+        [TICK, 16, 6],
+        [MAJOR, 80, 10],
+    ]
+        .map(
+            ([colour, every, length]) =>
+                `repeating-linear-gradient(to ${to}, ${colour} 0 1px, transparent 1px ${every}px) ${at} / ${size(length as number)} no-repeat`,
+        )
+        .join(', ');
+};
+
+/** The rails' two hairlines and their ticks, on the 1232 column; the caller places and sizes them. */
+export const RailLines = ({ className }: { className?: string }) => (
+    <div aria-hidden className={cn('pointer-events-none', className)}>
+        <div className="relative mx-auto h-full w-full max-w-[1232px] border-neutral-200 border-x">
+            <span
+                className="absolute inset-y-0 right-full w-2.5"
+                style={{ background: ticks('bottom', 'right') }}
+            />
+            <span
+                className="absolute inset-y-0 left-full w-2.5"
+                style={{ background: ticks('bottom', 'left') }}
+            />
+        </div>
+    </div>
+);
+
+/**
+ * The rails: a hairline 64px out from each side of the content (the 1152 column, 40px wider each
+ * side), its ticks on the outside. From xl up, where there is room for that margin. Marked
+ * `data-rails`, so the footer can run them on into its light.
+ */
+export const Rails = () => (
+    <div className="absolute inset-0 -z-10 hidden xl:block" data-rails>
+        <RailLines className="size-full" />
+    </div>
+);
+
+/**
+ * Where one section ends and the next begins: a hairline across the page, ruled above, and a
+ * registration mark where it crosses each rail. The ticks start 800px (ten of the longest) out from
+ * the rail, so they land on the rail's marks wherever it sits; the strip is clipped to the page.
+ */
+export const Divider = () => (
+    <div aria-hidden className="relative hidden md:block">
+        <div className="relative h-2.5 overflow-hidden">
+            <span
+                className="absolute bottom-0 h-2.5"
+                style={{
+                    left: 'calc(50% - 616px - 800px)',
+                    width: 'calc(1232px + 1600px)',
+                    background: ticks('right', 'bottom'),
+                }}
+            />
+        </div>
+        <div className="h-px bg-neutral-200" />
+        <div className="absolute inset-x-0 bottom-0 h-px">
+            <div className="relative mx-auto hidden h-full w-full max-w-[1232px] xl:block">
+                <Mark className="top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 text-neutral-500" />
+                <Mark className="top-1/2 right-0 translate-x-1/2 -translate-y-1/2 text-neutral-500" />
+            </div>
+        </div>
+    </div>
+);
+
 /**
  * The page's layout grid drawn faintly, a design tool's columns: twelve on the page's own 1152px
  * column (four on phones), in bands with a hairline either side. It fills the box it is put in
@@ -220,6 +306,7 @@ export const RuledFrame = ({
     outerClassName,
     top = false,
     grid = true,
+    glow = false,
 }: {
     children: ReactNode;
     className?: string;
@@ -229,6 +316,8 @@ export const RuledFrame = ({
     top?: boolean;
     /** The layout grid inside; off where a figure lights the board instead. */
     grid?: boolean;
+    /** The landing's spectrum rising from the board's foot, clipped to its corners. */
+    glow?: boolean;
 }) => (
     <div
         className={cn(
@@ -240,12 +329,22 @@ export const RuledFrame = ({
         <div
             className={cn(
                 'relative rounded-panel border border-neutral-200 bg-neutral-50',
+                // With the glow, the board brightens a step towards its foot, where the light comes from.
+                glow && 'bg-linear-to-b from-neutral-50 to-neutral-100',
                 className,
             )}
         >
             {/* The layout grid, clipped to the board even when what lies on it runs out. */}
             {grid && (
                 <LayoutGrid className="rounded-[inherit] [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]" />
+            )}
+            {glow && (
+                <div
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
+                >
+                    <div className="absolute inset-x-[12%] -bottom-[28%] h-[45%] rounded-full bg-spectrum opacity-30 blur-[96px]" />
+                </div>
             )}
             <Mark className="top-4 left-4" />
             <Mark className="top-4 right-4" />

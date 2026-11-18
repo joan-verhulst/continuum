@@ -228,10 +228,20 @@ const CustomerSheet = () => {
  * the fold and the picture reads as a conversation scrolled to its end, never as an emptied one.
  * The thread is its own scroll region, the formula's block gap (40) under the head; its top edge
  * fades over 24, so what is above the fold slips softly out under that gap and never touches the
- * title.
+ * title. The history reaches back to an earlier, resolved exchange, so the thread overflows its room
+ * at every spacing a theme picks: tighter spacing never leaves the leftover room as a gap under the
+ * head.
  */
 const Thread = () => (
     <ChatThread className="-mx-4 min-h-0 flex-1 [mask-image:linear-gradient(to_bottom,transparent,black_--spacing(6))] *:first:mt-auto">
+        <ChatEvent time="2 Sep">Elena Brandt wrote in by email</ChatEvent>
+        <ChatMessage author="Elena Brandt" avatar={<Person initials="EB" />} time="2 Sep">
+            Could the invoices go to our new finance address from October on?
+        </ChatMessage>
+        <ChatMessage status="read" time="2 Sep" variant="own">
+            Done: from October they go to finance@umbrella.health.
+        </ChatMessage>
+        <ChatEvent time="2 Sep">Maya Chen resolved the conversation</ChatEvent>
         <ChatEvent time="14:02">Elena Brandt wrote in by email</ChatEvent>
         <ChatMessage author="Elena Brandt" avatar={<Person initials="EB" />} time="14:02">
             Hi, we were charged €4,800 twice for October. Could you refund the second?

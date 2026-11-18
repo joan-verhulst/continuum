@@ -1,7 +1,11 @@
 import '@fontsource-variable/geist';
 import '@fontsource-variable/geist-mono';
-// The presets on the landing set their screens in Inter.
+// Every font a theme can pick (themeFontFamilies in continuum), so the landing's Customize and the
+// site's theme builder show the one chosen rather than a system fallback.
 import '@fontsource-variable/inter';
+import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/ibm-plex-sans';
+import '@fontsource-variable/figtree';
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';

@@ -80,7 +80,87 @@ import {
     Upload,
     Wallet,
 } from 'lucide-react';
-import { type ReactNode, useEffect, useState } from 'react';
+import {
+    animate,
+    type MotionValue,
+    motion,
+    useInView,
+    useReducedMotion,
+    useScroll,
+    useTransform,
+} from 'motion/react';
+import { createContext, type ReactNode, useContext, useEffect, useRef, useState } from 'react';
+
+/* ---------- The board at work ---------- */
+
+/** The pieces that are used while the board is on screen, one interaction at a time. */
+type Actor = 'table' | 'tabs' | 'reminders' | 'filters' | 'setup' | 'fee' | 'terms' | 'upload';
+
+/**
+ * The order the pieces are used in, one per beat, looping. Each piece comes up a whole number of
+ * times its states, so the loop ends where it began: the table and the tabs three times (three
+ * states), the rest twice (there and back).
+ */
+const SCRIPT: Actor[] = [
+    'table',
+    'reminders',
+    'tabs',
+    'filters',
+    'setup',
+    'fee',
+    'table',
+    'terms',
+    'upload',
+    'tabs',
+    'reminders',
+    'filters',
+    'table',
+    'fee',
+    'setup',
+    'tabs',
+    'terms',
+    'upload',
+];
+
+/** A beat: long enough to see one change land before the next starts somewhere else. */
+const BEAT_MS = 1600;
+
+/** How many beats have passed since the board started playing; 0 is the board as drawn. */
+const BeatContext = createContext(0);
+
+/** How many times a piece has been used in the loop so far: its state is this, wrapped. */
+const useStep = (actor: Actor) => {
+    const beat = useContext(BeatContext);
+    if (beat === 0) return 0;
+    const at = (beat - 1) % SCRIPT.length;
+    return SCRIPT.slice(0, at + 1).filter(name => name === actor).length;
+};
+
+/**
+ * A number that eases to its target, for controls that only jump when set (the slider, an upload's
+ * bar). Going back down it snaps, so a reset reads as a new start rather than a rewind.
+ */
+const useTween = (target: number, duration: number) => {
+    const [value, setValue] = useState(target);
+    const current = useRef(target);
+    useEffect(() => {
+        if (target < current.current) {
+            current.current = target;
+            setValue(target);
+            return;
+        }
+        const control = animate(current.current, target, {
+            duration,
+            ease: [0.65, 0, 0.35, 1],
+            onUpdate: next => {
+                current.current = next;
+                setValue(next);
+            },
+        });
+        return () => control.stop();
+    }, [target, duration]);
+    return value;
+};
 
 /*
  * The kitchen-sink wall: the library laid out as a designer pins a system up, face on, on a dotted
@@ -90,7 +170,8 @@ import { type ReactNode, useEffect, useState } from 'react';
  *
  * Every piece is one part used as its spec says, in one product: Kestrel Studio invoicing its four
  * clients, on Monday 16 November 2026. It is a picture: inert, out of the tab order and the outline.
- * Nothing moves.
+ * While it is on screen it is used, one piece a beat: a filter picked, a tab opened, a switch
+ * turned, each with its component's own motion. Still under reduced motion.
  */
 
 const icon = { strokeWidth: 2 } as const;
@@ -214,54 +295,75 @@ const KeyFigures = () => (
 
 /* ---------- Lists ---------- */
 
-/** A list of objects: the ruled table, its search and filters in its own toolbar. */
-const InvoiceTable = () => (
-    <Table
-        toolbar={
-            <TableToolbar>
-                <TableSearch aria-label="Search invoices" placeholder="Search invoices" />
-                <TableToolbarEnd>
-                    <SegmentedControl aria-label="Status" defaultValue="open">
-                        <SegmentedControlItem value="all">All</SegmentedControlItem>
-                        <SegmentedControlItem value="open">Open</SegmentedControlItem>
-                        <SegmentedControlItem value="paid">Paid</SegmentedControlItem>
-                    </SegmentedControl>
-                    <FilterMenu>
-                        <FilterMenuTrigger />
-                    </FilterMenu>
-                </TableToolbarEnd>
-            </TableToolbar>
-        }
-    >
-        <TableHeader>
-            <TableRow>
-                <TableHead>Invoice</TableHead>
-                <TableHead>Client</TableHead>
-                <TableHead>Due</TableHead>
-                <TableHead numeric>Amount</TableHead>
-                <TableHead>Status</TableHead>
-            </TableRow>
-        </TableHeader>
-        <TableBody>
-            {invoices.map(invoice => (
-                <TableRow key={invoice.number}>
-                    <TableCell>{invoice.number}</TableCell>
-                    <TableCell>
-                        <span className="inline-flex items-center gap-2">
-                            <Avatar fallback={invoice.initials} size={24} />
-                            {invoice.client}
-                        </span>
-                    </TableCell>
-                    <TableCell className="font-normal text-neutral-700">{invoice.due}</TableCell>
-                    <TableCell numeric>{invoice.amount}</TableCell>
-                    <TableCell>
-                        <Badge tone={tones[invoice.status]}>{invoice.status}</Badge>
-                    </TableCell>
+const statuses = ['open', 'paid', 'all'] as const;
+
+/** Whether a row is in the view the status filter picks: open is everything not yet paid. */
+const inView = (view: (typeof statuses)[number], status: keyof typeof tones) =>
+    view === 'all' || (view === 'paid' ? status === 'Paid' : status !== 'Paid');
+
+/**
+ * A list of objects: the ruled table, its search and filters in its own toolbar. At work, the
+ * status filter steps Open, Paid, All, and the rows outside the view fade back rather than leave,
+ * so the board keeps its shape.
+ */
+const InvoiceTable = () => {
+    const view = statuses[useStep('table') % statuses.length] ?? 'open';
+    return (
+        <Table
+            toolbar={
+                <TableToolbar>
+                    <TableSearch aria-label="Search invoices" placeholder="Search invoices" />
+                    <TableToolbarEnd>
+                        <SegmentedControl aria-label="Status" value={view}>
+                            <SegmentedControlItem value="all">All</SegmentedControlItem>
+                            <SegmentedControlItem value="open">Open</SegmentedControlItem>
+                            <SegmentedControlItem value="paid">Paid</SegmentedControlItem>
+                        </SegmentedControl>
+                        <FilterMenu>
+                            <FilterMenuTrigger />
+                        </FilterMenu>
+                    </TableToolbarEnd>
+                </TableToolbar>
+            }
+        >
+            <TableHeader>
+                <TableRow>
+                    <TableHead>Invoice</TableHead>
+                    <TableHead>Client</TableHead>
+                    <TableHead>Due</TableHead>
+                    <TableHead numeric>Amount</TableHead>
+                    <TableHead>Status</TableHead>
                 </TableRow>
-            ))}
-        </TableBody>
-    </Table>
-);
+            </TableHeader>
+            <TableBody>
+                {invoices.map(invoice => (
+                    <TableRow
+                        className={cn(
+                            'transition-opacity duration-300',
+                            !inView(view, invoice.status) && 'opacity-30',
+                        )}
+                        key={invoice.number}
+                    >
+                        <TableCell>{invoice.number}</TableCell>
+                        <TableCell>
+                            <span className="inline-flex items-center gap-2">
+                                <Avatar fallback={invoice.initials} size={24} />
+                                {invoice.client}
+                            </span>
+                        </TableCell>
+                        <TableCell className="font-normal text-neutral-700">
+                            {invoice.due}
+                        </TableCell>
+                        <TableCell numeric>{invoice.amount}</TableCell>
+                        <TableCell>
+                            <Badge tone={tones[invoice.status]}>{invoice.status}</Badge>
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    );
+};
 
 /** A ranked breakdown: the bar list in a list card. */
 const PaidBy = () => (
@@ -380,37 +482,71 @@ const InvoiceFacts = () => (
     </DescriptionList>
 );
 
-/** The facets of one client: line tabs under its title, label-over-value facts in the panel. */
-const Client = () => (
-    <Card layout="list">
-        <div className="flex items-center gap-3">
-            <Avatar fallback="HC" />
-            <div className="flex min-w-0 flex-col gap-0.5 text-xs">
-                <span className="truncate font-medium text-neutral-950">Harbour &amp; Co</span>
-                <span className="truncate text-neutral-600">accounts@harbour.co</span>
+const facets = ['invoices', 'payments', 'notes'] as const;
+
+/** Two facts, label over value, as each tab's panel holds them. */
+const Facts = ({ facts }: { facts: [string, string][] }) => (
+    <>
+        {facts.map(([label, value]) => (
+            <div className="flex flex-col gap-1.5" key={label}>
+                <span className="text-neutral-600">{label}</span>
+                <span className="font-medium text-neutral-950 tabular-nums">{value}</span>
             </div>
-        </div>
-        <Tabs defaultValue="invoices">
-            <TabsList>
-                <TabsTrigger value="invoices">
-                    Invoices <TabsCount>12</TabsCount>
-                </TabsTrigger>
-                <TabsTrigger value="payments">Payments</TabsTrigger>
-                <TabsTrigger value="notes">Notes</TabsTrigger>
-            </TabsList>
-            <TabsContent className="grid grid-cols-2 gap-x-6 text-xs" value="invoices">
-                <div className="flex flex-col gap-1.5">
-                    <span className="text-neutral-600">Outstanding</span>
-                    <span className="font-medium text-neutral-950 tabular-nums">€2,420.00</span>
-                </div>
-                <div className="flex flex-col gap-1.5">
-                    <span className="text-neutral-600">Paid this year</span>
-                    <span className="font-medium text-neutral-950 tabular-nums">€18,600.00</span>
-                </div>
-            </TabsContent>
-        </Tabs>
-    </Card>
+        ))}
+    </>
 );
+
+/**
+ * The facets of one client: line tabs under its title, label-over-value facts in the panel. At
+ * work, the tabs step through the three facets, each panel the same two facts high.
+ */
+const Client = () => {
+    const facet = facets[useStep('tabs') % facets.length] ?? 'invoices';
+    return (
+        <Card layout="list">
+            <div className="flex items-center gap-3">
+                <Avatar fallback="HC" />
+                <div className="flex min-w-0 flex-col gap-0.5 text-xs">
+                    <span className="truncate font-medium text-neutral-950">Harbour &amp; Co</span>
+                    <span className="truncate text-neutral-600">accounts@harbour.co</span>
+                </div>
+            </div>
+            <Tabs value={facet}>
+                <TabsList>
+                    <TabsTrigger value="invoices">
+                        Invoices <TabsCount>12</TabsCount>
+                    </TabsTrigger>
+                    <TabsTrigger value="payments">Payments</TabsTrigger>
+                    <TabsTrigger value="notes">Notes</TabsTrigger>
+                </TabsList>
+                <TabsContent className="grid grid-cols-2 gap-x-6 text-xs" value="invoices">
+                    <Facts
+                        facts={[
+                            ['Outstanding', '€2,420.00'],
+                            ['Paid this year', '€18,600.00'],
+                        ]}
+                    />
+                </TabsContent>
+                <TabsContent className="grid grid-cols-2 gap-x-6 text-xs" value="payments">
+                    <Facts
+                        facts={[
+                            ['Last payment', '€1,860.00'],
+                            ['Pays in', '9 days'],
+                        ]}
+                    />
+                </TabsContent>
+                <TabsContent className="grid grid-cols-2 gap-x-6 text-xs" value="notes">
+                    <Facts
+                        facts={[
+                            ['Contact', 'Eva Bakker'],
+                            ['Prefers', 'Bank transfer'],
+                        ]}
+                    />
+                </TabsContent>
+            </Tabs>
+        </Card>
+    );
+};
 
 /* ---------- Forms and settings ---------- */
 
@@ -444,77 +580,103 @@ const DueDate = () => (
     </Card>
 );
 
-/** One of a few, read together: a radio group, each option with its label. */
-const Terms = () => (
-    <Card>
-        <CardTitle>Payment terms</CardTitle>
-        <RadioGroup aria-label="Payment terms" defaultValue="14">
-            {['7', '14', '30'].map(days => (
-                <Field className="flex-row items-center gap-2.5" key={days}>
-                    <RadioGroupItem value={days} />
-                    <FieldLabel>Net {days} days</FieldLabel>
-                </Field>
-            ))}
-        </RadioGroup>
-    </Card>
-);
+/** One of a few, read together: a radio group, each option with its label. At work, 14 then 30. */
+const Terms = () => {
+    const days = useStep('terms') % 2 === 1 ? '30' : '14';
+    return (
+        <Card>
+            <CardTitle>Payment terms</CardTitle>
+            <RadioGroup aria-label="Payment terms" value={days}>
+                {['7', '14', '30'].map(days => (
+                    <Field className="flex-row items-center gap-2.5" key={days}>
+                        <RadioGroupItem value={days} />
+                        <FieldLabel>Net {days} days</FieldLabel>
+                    </Field>
+                ))}
+            </RadioGroup>
+        </Card>
+    );
+};
 
-/** Settings: setting rows in a list card, a switch and the picker that depends on it. */
-const Reminders = () => (
-    <Card layout="list">
-        <SettingGroup title="Reminders">
-            <SettingRow
-                control={<Switch defaultChecked />}
-                description="When an invoice falls due, and after."
-                title="Payment reminders"
+/**
+ * Settings: setting rows in a list card, a switch and the picker that depends on it. At work, the
+ * switch goes off and the picker under it greys with it, then both come back.
+ */
+const Reminders = () => {
+    const on = useStep('reminders') % 2 === 0;
+    return (
+        <Card layout="list">
+            <SettingGroup title="Reminders">
+                <SettingRow
+                    control={<Switch checked={on} />}
+                    description="When an invoice falls due, and after."
+                    title="Payment reminders"
+                />
+                <SettingRow
+                    control={
+                        <Select defaultValue="7">
+                            <SelectTrigger className="w-28" indicator="right" size="sm">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent align="end">
+                                <SelectItem value="3">3 days</SelectItem>
+                                <SelectItem value="7">7 days</SelectItem>
+                                <SelectItem value="14">14 days</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    }
+                    dependent
+                    description="Until it is paid."
+                    disabled={!on}
+                    title="Remind every"
+                />
+            </SettingGroup>
+        </Card>
+    );
+};
+
+/** A value on a range: the block slider, its name and value inside the box. At work, 2% to 4% and back. */
+const LateFee = () => {
+    const fee = useTween(useStep('fee') % 2 === 1 ? 4 : 2, 0.7);
+    return (
+        <Card>
+            <BlockSlider
+                format={([value]) => `${Math.round(value ?? 0)}% a month`}
+                label="Late fee"
+                max={8}
+                min={0}
+                value={[fee]}
             />
-            <SettingRow
-                control={
-                    <Select defaultValue="7">
-                        <SelectTrigger className="w-28" indicator="right" size="sm">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent align="end">
-                            <SelectItem value="3">3 days</SelectItem>
-                            <SelectItem value="7">7 days</SelectItem>
-                            <SelectItem value="14">14 days</SelectItem>
-                        </SelectContent>
-                    </Select>
-                }
-                dependent
-                description="Until it is paid."
-                title="Remind every"
-            />
-        </SettingGroup>
-    </Card>
-);
+            <p className="text-neutral-600 text-xs">Added once an invoice is 14 days late.</p>
+        </Card>
+    );
+};
 
-/** A value on a range: the block slider, its name and value inside the box. */
-const LateFee = () => (
-    <Card>
-        <BlockSlider
-            defaultValue={[2]}
-            format={([value]) => `${value}% a month`}
-            label="Late fee"
-            max={8}
-            min={0}
-        />
-        <p className="text-neutral-600 text-xs">Added once an invoice is 14 days late.</p>
-    </Card>
-);
-
-/** Applied filters: the Filter button with its count, a soft chip per group, then Clear all. */
-const Filters = () => (
-    <Card>
-        <FilterBar onClear={() => {}}>
-            <FilterMenu>
-                <FilterMenuTrigger count={2} />
-            </FilterMenu>
-            <Chip action={<ChipAction />}>Status is Overdue</Chip>
-            <Chip action={<ChipAction />}>Client is Lumen Labs</Chip>
-        </FilterBar>
-    </Card>
-);
+/**
+ * Applied filters: the Filter button with its count, a soft chip per group, then Clear all. At
+ * work, the client filter is taken off, the count with it, then put back.
+ */
+const Filters = () => {
+    const both = useStep('filters') % 2 === 0;
+    return (
+        <Card>
+            <FilterBar onClear={() => {}}>
+                <FilterMenu>
+                    <FilterMenuTrigger count={both ? 2 : 1} />
+                </FilterMenu>
+                <Chip action={<ChipAction />}>Status is Overdue</Chip>
+                {both && (
+                    <Chip
+                        action={<ChipAction />}
+                        className="starting:scale-95 starting:opacity-0 transition-[opacity,scale] duration-200"
+                    >
+                        Client is Lumen Labs
+                    </Chip>
+                )}
+            </FilterBar>
+        </Card>
+    );
+};
 
 /** The page's actions: secondary before the one primary, a ghost menu last. */
 const Actions = () => (
@@ -557,24 +719,27 @@ const Usage = () => (
     </Card>
 );
 
-/** Upload: the dashed well on the card, the file under it with its bar while it goes up. */
-const Receipts = () => (
-    <Card>
-        <DropZone
-            accept=".pdf,.jpg"
-            description="PDF or JPG, up to 10 MB each."
-            title="Drop receipts here"
-        />
-        <DropZoneFiles>
-            <DropZoneFile
-                name="receipt-adobe-nov.pdf"
-                progress={64}
-                size={248000}
-                status="uploading"
+/** Upload: the dashed well on the card, the file under it with its bar while it goes up. At work, it lands. */
+const Receipts = () => {
+    const progress = useTween(useStep('upload') % 2 === 1 ? 100 : 64, 1.2);
+    return (
+        <Card>
+            <DropZone
+                accept=".pdf,.jpg"
+                description="PDF or JPG, up to 10 MB each."
+                title="Drop receipts here"
             />
-        </DropZoneFiles>
-    </Card>
-);
+            <DropZoneFiles>
+                <DropZoneFile
+                    name="receipt-adobe-nov.pdf"
+                    progress={Math.round(progress)}
+                    size={248000}
+                    status={progress >= 100 ? 'done' : 'uploading'}
+                />
+            </DropZoneFiles>
+        </Card>
+    );
+};
 
 /** Paging a table: the pager, folded to "3 of 15" in a narrow box. */
 const Pager = () => (
@@ -583,26 +748,47 @@ const Pager = () => (
     </Card>
 );
 
-/** Onboarding: the checklist card, done steps ticked, the next one open with its action. */
-const Setup = () => (
-    <Checklist completed={3} title="Set up invoicing" total={5}>
-        <ChecklistItem done title="Add your company details" />
-        <ChecklistItem done title="Connect your bank" />
-        <ChecklistItem done title="Send your first invoice" />
-        <ChecklistItem
-            action={
-                <>
-                    <Button>Invite</Button>
-                    <Button variant="ghost">Skip</Button>
-                </>
-            }
-            current
-            description="They see every invoice and receipt, read only."
-            title="Invite your accountant"
-        />
-        <ChecklistItem title="Import last year’s invoices" />
-    </Checklist>
-);
+/**
+ * Onboarding: the checklist card, done steps ticked, the next one open with its action. At work,
+ * the open step is done and the one after it opens, then the card is as it was.
+ */
+const Setup = () => {
+    const invited = useStep('setup') % 2 === 1;
+    return (
+        <Checklist completed={invited ? 4 : 3} title="Set up invoicing" total={5}>
+            <ChecklistItem done title="Add your company details" />
+            <ChecklistItem done title="Connect your bank" />
+            <ChecklistItem done title="Send your first invoice" />
+            <ChecklistItem
+                action={
+                    invited ? undefined : (
+                        <>
+                            <Button>Invite</Button>
+                            <Button variant="ghost">Skip</Button>
+                        </>
+                    )
+                }
+                current={!invited}
+                description={invited ? undefined : 'They see every invoice and receipt, read only.'}
+                done={invited}
+                title="Invite your accountant"
+            />
+            <ChecklistItem
+                action={
+                    invited ? (
+                        <>
+                            <Button>Import</Button>
+                            <Button variant="ghost">Skip</Button>
+                        </>
+                    ) : undefined
+                }
+                current={invited}
+                description={invited ? 'A CSV or the PDFs, matched to your clients.' : undefined}
+                title="Import last year’s invoices"
+            />
+        </Checklist>
+    );
+};
 
 /** A message that must stay: the alert in its tone, the fix as its action. */
 const Overdue = () => (
@@ -696,10 +882,11 @@ const Pair = ({ children, className }: { children: ReactNode; className?: string
  * starts a little higher or lower (`shift`), so the rows don't line up across the board, and holds
  * enough to run past the frame's foot.
  */
-const columns: { width: number; shift: number; pieces: ReactNode[] }[] = [
+const columns: { width: number; shift: number; drift: number; pieces: ReactNode[] }[] = [
     {
         width: 300,
         shift: -40,
+        drift: 96,
         pieces: [
             <PaymentDetails key="a" />,
             <NoRecurring key="b" />,
@@ -710,6 +897,7 @@ const columns: { width: number; shift: number; pieces: ReactNode[] }[] = [
     {
         width: 320,
         shift: 0,
+        drift: 48,
         pieces: [
             <InvoiceFacts key="a" />,
             <PaidBy key="b" />,
@@ -720,6 +908,7 @@ const columns: { width: number; shift: number; pieces: ReactNode[] }[] = [
     {
         width: 640,
         shift: -24,
+        drift: 16,
         pieces: [
             <KeyFigures key="a" />,
             <InvoiceTable key="b" />,
@@ -738,6 +927,7 @@ const columns: { width: number; shift: number; pieces: ReactNode[] }[] = [
     {
         width: 320,
         shift: -64,
+        drift: 64,
         pieces: [
             <Actions key="a" />,
             <DueDate key="b" />,
@@ -750,6 +940,7 @@ const columns: { width: number; shift: number; pieces: ReactNode[] }[] = [
     {
         width: 300,
         shift: -12,
+        drift: 112,
         pieces: [
             <BankFeed key="a" />,
             <Reminders key="b" />,
@@ -759,6 +950,34 @@ const columns: { width: number; shift: number; pieces: ReactNode[] }[] = [
         ],
     },
 ];
+
+/**
+ * One column, drifting up as the board passes through the screen: by `drift` px over the pass, from
+ * half below its place to half above. Each column at its own speed, the outer ones fastest and the
+ * middle almost still, so the board reads as depth rather than a slide. Still under reduced motion.
+ */
+const Column = ({
+    column,
+    progress,
+    still,
+}: {
+    column: (typeof columns)[number];
+    progress: MotionValue<number>;
+    still: boolean;
+}) => {
+    const y = useTransform(
+        progress,
+        [0, 1],
+        still
+            ? [column.shift, column.shift]
+            : [column.shift + column.drift / 2, column.shift - column.drift / 2],
+    );
+    return (
+        <motion.div className="flex shrink-0 flex-col gap-5" style={{ width: column.width, y }}>
+            {column.pieces}
+        </motion.div>
+    );
+};
 
 /** The dot grid the pieces are pinned to. */
 const dots = {
@@ -774,34 +993,56 @@ const fades = {
     ].join(', '),
 };
 
-export const KitchenSinkWall = ({ className }: { className?: string }) => (
-    <div
-        aria-label="Continuum's components laid out on a board: charts, figures, a table, buttons, fields, settings, tabs, badges and lists."
-        // The page's full width less the site's gutter, in a container like the hero's board.
-        className={cn('relative left-1/2 w-screen -translate-x-1/2 px-2 md:px-3', className)}
-        role="img"
-    >
-        <div className="relative h-[460px] overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 md:h-[720px]">
+export const KitchenSinkWall = ({ className }: { className?: string }) => {
+    const board = useRef<HTMLDivElement>(null);
+    const { scrollYProgress } = useScroll({ target: board, offset: ['start end', 'end start'] });
+    const still = useReducedMotion() ?? false;
+    // The board is used only while it is on screen, and never under reduced motion.
+    const onScreen = useInView(board, { amount: 0.3 });
+    const [beat, setBeat] = useState(0);
+    useEffect(() => {
+        if (!onScreen || still) return;
+        const timer = window.setInterval(() => setBeat(value => value + 1), BEAT_MS);
+        return () => window.clearInterval(timer);
+    }, [onScreen, still]);
+
+    return (
+        <BeatContext.Provider value={beat}>
             <div
-                className="pointer-events-none absolute top-0 left-1/2 flex -translate-x-1/2 select-none items-start gap-5 px-5 pt-10"
-                inert
-                style={dots}
+                aria-label="Continuum's components laid out on a board: charts, figures, a table, buttons, fields, settings, tabs, badges and lists."
+                // The page's full width less the site's gutter, in a container like the hero's board.
+                className={cn(
+                    'relative left-1/2 w-screen -translate-x-1/2 px-2 md:px-3',
+                    className,
+                )}
+                role="img"
             >
-                {columns.map((column, index) => (
+                <div
+                    className="relative h-[460px] overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 md:h-[720px]"
+                    ref={board}
+                >
                     <div
-                        className="flex shrink-0 flex-col gap-5"
-                        // biome-ignore lint/suspicious/noArrayIndexKey: fixed columns
-                        key={index}
-                        style={{
-                            width: column.width,
-                            transform: `translateY(${column.shift}px)`,
-                        }}
+                        className="pointer-events-none absolute top-0 left-1/2 flex -translate-x-1/2 select-none items-start gap-5 px-5 pt-10"
+                        inert
+                        style={dots}
                     >
-                        {column.pieces}
+                        {columns.map((column, index) => (
+                            <Column
+                                column={column}
+                                // biome-ignore lint/suspicious/noArrayIndexKey: fixed columns
+                                key={index}
+                                progress={scrollYProgress}
+                                still={still}
+                            />
+                        ))}
                     </div>
-                ))}
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0"
+                        style={fades}
+                    />
+                </div>
             </div>
-            <div aria-hidden className="pointer-events-none absolute inset-0" style={fades} />
-        </div>
-    </div>
-);
+        </BeatContext.Provider>
+    );
+};
