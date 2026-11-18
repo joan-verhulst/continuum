@@ -12,6 +12,8 @@ type ContinuumMarkProps = Omit<ComponentProps<'svg'>, 'children'> & {
     size?: number;
     /** Accessible name; without one the mark is decorative. */
     title?: string;
+    /** Line weight in viewBox units (of 32); by default it follows the size. */
+    strokeWidth?: number;
 };
 
 /**
@@ -19,8 +21,14 @@ type ContinuumMarkProps = Omit<ComponentProps<'svg'>, 'children'> & {
  * the current text colour, with a heavier line at small sizes so it holds up
  * as a favicon or in a sidebar tile.
  */
-export const ContinuumMark = ({ size = 24, title, className, ...props }: ContinuumMarkProps) => {
-    const strokeWidth = size <= 20 ? 3.5 : size <= 28 ? 2.75 : 2.5;
+export const ContinuumMark = ({
+    size = 24,
+    title,
+    strokeWidth,
+    className,
+    ...props
+}: ContinuumMarkProps) => {
+    const weight = strokeWidth ?? (size <= 20 ? 3.5 : size <= 28 ? 2.75 : 2.5);
 
     return (
         <svg
@@ -40,7 +48,7 @@ export const ContinuumMark = ({ size = 24, title, className, ...props }: Continu
                 stroke="currentColor"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                strokeWidth={strokeWidth}
+                strokeWidth={weight}
             />
         </svg>
     );
@@ -48,8 +56,9 @@ export const ContinuumMark = ({ size = 24, title, className, ...props }: Continu
 
 /**
  * The mark and the name as one lockup: the name in the system's medium weight
- * at three quarters of the mark's size, a third of the mark's size apart, so
- * the two read as a single mark rather than an icon beside a label.
+ * at three quarters of `size`, a third of `size` apart, and the mark drawn a
+ * little larger and heavier than on its own so it holds its weight against the
+ * name: the two read as a single mark rather than an icon beside a label.
  */
 export const ContinuumLogo = ({
     size = 24,
@@ -63,7 +72,7 @@ export const ContinuumLogo = ({
         style={{ gap: Math.round(size / 3), ...style }}
         {...props}
     >
-        <ContinuumMark size={size} />
+        <ContinuumMark size={Math.round(size * 1.15)} strokeWidth={3.25} />
         <span style={{ fontSize: Math.round(size * 0.75), letterSpacing: '-0.01em' }}>
             Continuum
         </span>

@@ -101,8 +101,9 @@ export const DonutChart = ({
     const shown = active !== null ? slices[active] : undefined;
     const edge = outer - EDGE / 2;
     const point = (angle: number) => ({
-        x: outer + edge * Math.sin(angle),
-        y: outer - edge * Math.cos(angle),
+        // Rounded, so the server and the browser draw the same path to the last digit.
+        x: Math.round((outer + edge * Math.sin(angle)) * 100) / 100,
+        y: Math.round((outer - edge * Math.cos(angle)) * 100) / 100,
     });
 
     return (

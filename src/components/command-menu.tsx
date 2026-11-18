@@ -250,8 +250,17 @@ export const CommandMenuList = ({ className, children, ...props }: ComponentProp
         listRef.current?.scrollTo({ top: 0 });
     }, [query]);
 
+    // The highlighted item kept in view by scrolling the list alone: scrollIntoView would scroll every
+    // ancestor too, the page included, so a menu shown open on a page pulled the page to itself.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: runs on each new active item; the list is read from its ref
     useEffect(() => {
-        if (active) document.getElementById(active)?.scrollIntoView({ block: 'nearest' });
+        const list = listRef.current;
+        const item = active ? document.getElementById(active) : null;
+        if (!list || !item) return;
+        const bounds = list.getBoundingClientRect();
+        const box = item.getBoundingClientRect();
+        if (box.top < bounds.top) list.scrollTop -= bounds.top - box.top;
+        else if (box.bottom > bounds.bottom) list.scrollTop += box.bottom - bounds.bottom;
     }, [active]);
 
     return (
