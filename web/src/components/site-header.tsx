@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, ContinuumLogo, cn, focusRing } from 'continuum';
-import { Menu, X } from 'lucide-react';
+import { ArrowUpRight, Menu, X } from 'lucide-react';
 import {
     animate,
     motion,
@@ -14,17 +14,16 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { type ComponentProps, type RefObject, useEffect, useId, useRef, useState } from 'react';
 import { inSection, sections } from '@/lib/nav';
-import { appLink, githubUrl } from '@/lib/site';
-import { GithubMark } from './github-mark';
+import { appLink } from '@/lib/site';
 import { ModeSwitch } from './mode';
 
 /*
  * The site's one header, on every page: a bar across the full page, held at the top as you scroll,
- * a hairline under it and the page showing faintly through. The logo left, the site's sections in
- * the middle, the current one amber on a pill that travels between them, and at the right GitHub and
- * the mode switch, small ghost icons, beside the one action, Get started. On the landing the pill
- * follows the section in view (Components is also a section there); on every other page it marks the
- * page's section. Under a laptop's width the links fold into a menu under the bar.
+ * a hairline under it and the page showing faintly through, its content on the page's 1152 column.
+ * The logo left, the site's sections in the middle held in one rounded group, the current one on a
+ * grey pill that travels between them, and at the right the mode switch, Pro (its name in the
+ * spectrum, leading to the plans) and the one action, Get started. On the landing the pill follows the section in view (see `landing`); on every other page it
+ * marks the page's section. Under a laptop's width the links fold into a menu under the bar.
  */
 
 /** The width the pill pinches to mid-move, and on entering or leaving. */
@@ -36,33 +35,49 @@ const BLUR_MAX = 4;
 const MOVE_DURATION = 0.5;
 
 /** The site's sections, each its own page; `id` is its section's id on the landing. */
-const links = sections.map(section => ({
-    id: section.href.slice(1),
-    label: section.label,
-    href: section.href,
-    section,
-}));
+const links = [
+    ...sections.map(section => ({
+        id: section.href.slice(1),
+        label: section.label,
+        href: section.href,
+        section,
+    })),
+];
 
-const ids = links.map(link => link.id);
+/** Pro, beside Get started: the paid plan sits with the way in, and leads to the plans. */
+const pro = '/#pricing';
+
+/**
+ * The landing's sections, top to bottom, and the link each one lights: Components over the gallery,
+ * AI over the MCP server and the jobs it runs. A section with no link lights none.
+ */
+const landing: readonly [section: string, link?: string][] = [
+    ['components', 'components'],
+    ['mcp', 'ai'],
+    ['uses', 'ai'],
+    ['how-it-works'],
+    ['before-after'],
+    ['built-with'],
+    ['pricing'],
+    ['get-started'],
+];
 
 /** A Button drawn as a link: the label is the Button's own children. */
 const linkTo = (href: string) => (props: ComponentProps<'a'>) => <a href={href} {...props} />;
 
 /**
- * On the landing, the section the reader is in: the last linked one whose top has passed the middle
- * of the screen. A section without a link of its own keeps the one above it current, so the pill
- * always travels from link to link; only above the first section is nothing current. Off on every
- * other page, where the same ids may name a page's own sections.
+ * On the landing, the link of the section the reader is in: the last section whose top has passed the
+ * middle of the screen, and the link it lights, if any. Above the first section, and over one with no
+ * link, nothing is current. Off on every other page, where the same ids may name a page's own sections.
  */
 const useSectionInView = (enabled: boolean) => {
     const [current, setCurrent] = useState<string>();
     const spy = () => {
         const line = window.innerHeight / 2;
-        setCurrent(
-            ids.findLast(
-                id => (document.getElementById(id)?.getBoundingClientRect().top ?? line) < line,
-            ),
+        const passed = landing.findLast(
+            ([id]) => (document.getElementById(id)?.getBoundingClientRect().top ?? line) < line,
         );
+        setCurrent(passed?.[1]);
     };
     const spyRef = useRef(spy);
     spyRef.current = spy;
@@ -232,41 +247,29 @@ const ActivePill = ({
     return (
         <motion.span
             aria-hidden
-            className="pointer-events-none absolute inset-y-0 left-0 rounded-control bg-primary-500/12"
+            className="pointer-events-none absolute inset-y-0 left-0 rounded-control bg-selected"
             style={{ x, width, opacity, scaleX, filter }}
         />
     );
 };
 
-/** The quiet icons beside the action: GitHub, and light or dark where the page can switch. */
-const IconLinks = ({ mode }: { mode: boolean }) => (
-    <>
-        <Button
-            aria-label="Continuum on GitHub"
-            // biome-ignore lint/a11y/useAnchorContent: the button names the link with its aria-label
-            render={<a href={githubUrl} rel="noreferrer" target="_blank" />}
-            size="icon"
-            title="GitHub"
-            variant="ghost"
-        >
-            <GithubMark className="size-4" />
-        </Button>
-        {/* The landing is dark whatever the choice, so the switch would do nothing there. */}
-        {mode && <ModeSwitch />}
-    </>
-);
+/** Beside the action: light or dark, where the page can switch (the landing is dark whatever the choice). */
+const IconLinks = ({ mode }: { mode: boolean }) => (mode ? <ModeSwitch /> : null);
+
+/** Pro's name, in the landing's spectrum: the one word in the bar that stands out. */
+const ProLabel = () => <span className="text-spectrum">Pro</span>;
 
 const linkClass = cn(
     // 34 high, on the control corner.
     'flex h-control items-center gap-2 rounded-control px-3 text-neutral-600 text-sm transition-[background-color,color] duration-150',
-    'hover:text-neutral-950 aria-[current]:text-primary-500 light:aria-[current]:text-primary-700',
+    'hover:text-neutral-950 aria-[current]:text-neutral-950',
     focusRing,
 );
 
 const menuLinkClass = cn(
     'flex h-option items-center gap-2 rounded-control px-3 text-neutral-700 text-sm transition-[background-color,color] duration-150',
     'hover:bg-neutral-950/5 hover:text-neutral-950',
-    'aria-[current]:bg-primary-500/12 aria-[current]:text-primary-500 light:aria-[current]:text-primary-700',
+    'aria-[current]:bg-selected aria-[current]:text-neutral-950',
     'outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:-outline-offset-2',
 );
 
@@ -305,8 +308,8 @@ export const SiteHeader = () => {
 
     return (
         <header className="sticky top-0 z-40 border-neutral-200 border-b bg-neutral-50/85 backdrop-blur-md">
-            <nav aria-label="Main" className="w-full px-4 sm:px-6" ref={nav}>
-                <div className="flex h-14 items-center gap-2 lg:gap-4">
+            <nav aria-label="Main" className="mx-auto w-full max-w-[1152px] px-4 sm:px-6" ref={nav}>
+                <div className="flex h-16 items-center gap-2 lg:gap-4">
                     {/* Both ends take the same share, so the links sit in the bar's middle. */}
                     <div className="flex flex-1">
                         {home ? (
@@ -327,33 +330,44 @@ export const SiteHeader = () => {
                             </Link>
                         )}
                     </div>
-                    <ul className="relative hidden items-center gap-0.5 lg:flex" ref={row}>
-                        <ActivePill
-                            index={links.findIndex(link => link.id === current)}
-                            list={row}
-                        />
-                        {links.map(link => (
-                            <li className="relative" key={link.id}>
-                                <Link
-                                    aria-current={current === link.id ? 'true' : undefined}
-                                    className={linkClass}
-                                    href={link.href}
-                                >
-                                    {link.label}
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
+                    {/* The links held together in one rounded group, its corner the control's plus its padding. */}
+                    <div className="hidden rounded-[calc(var(--radius-control)+4px)] border border-neutral-200 bg-neutral-100 p-1 lg:flex">
+                        <ul className="relative flex items-center gap-0.5" ref={row}>
+                            <ActivePill
+                                index={links.findIndex(link => link.id === current)}
+                                list={row}
+                            />
+                            {links.map(link => (
+                                <li className="relative" key={link.id}>
+                                    <Link
+                                        aria-current={current === link.id ? 'true' : undefined}
+                                        className={linkClass}
+                                        href={link.href}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                     <div className="flex flex-1 items-center justify-end gap-1">
-                        <div className="flex items-center gap-0.5 max-sm:hidden">
+                        <div className="flex items-center gap-1 max-sm:hidden">
                             <IconLinks mode={!home} />
                         </div>
+                        <Button
+                            className="ml-1 max-sm:hidden"
+                            render={linkTo(pro)}
+                            variant="secondary"
+                        >
+                            <ProLabel />
+                        </Button>
                         <Button
                             // On the narrowest phones the hero holds the same action right under the bar.
                             className="ml-1 max-[359px]:hidden"
                             render={linkTo(appLink())}
                         >
                             Get started
+                            <ArrowUpRight strokeWidth={2} />
                         </Button>
                         <Button
                             aria-controls={menuId}
@@ -388,11 +402,19 @@ export const SiteHeader = () => {
                                 </Link>
                             </li>
                         ))}
+                        {/* On phones the bar keeps only Get started; Pro waits here. */}
+                        <li className="sm:hidden">
+                            <a className={menuLinkClass} href={pro} onClick={() => setOpen(false)}>
+                                <ProLabel />
+                            </a>
+                        </li>
                     </ul>
-                    {/* On phones the bar keeps only the action; GitHub and the mode wait here. */}
-                    <div className="flex items-center gap-0.5 border-neutral-200 border-t pt-2 sm:hidden">
-                        <IconLinks mode={!home} />
-                    </div>
+                    {/* On phones the bar keeps only the action; the mode switch waits here. */}
+                    {!home && (
+                        <div className="flex items-center gap-1 border-neutral-200 border-t pt-2 sm:hidden">
+                            <IconLinks mode />
+                        </div>
+                    )}
                 </div>
             </nav>
         </header>

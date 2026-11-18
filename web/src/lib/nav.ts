@@ -1,6 +1,6 @@
 /*
- * The site's sections, in the header's order. The header, the footer and the landing's nav all
- * read these lists, so a section added here shows up everywhere.
+ * The site's sections, in the header's order. The header reads this list, so a section added here
+ * shows up in it; the footer maps every page from the content itself (lib/footer-links.ts).
  */
 
 export type Section = {
@@ -24,33 +24,3 @@ export const inSection = (pathname: string, section: Section) =>
     [section.href, ...(section.also ?? [])].some(
         href => pathname === href || pathname.startsWith(`${href}/`),
     );
-
-/** The footer's columns: every section, then the rest of the site. */
-export const footerColumns: readonly { title: string; links: readonly Section[] }[] = [
-    {
-        title: 'System',
-        links: [
-            { href: '/components', label: 'Components' },
-            { href: '/charts', label: 'Charts' },
-            { href: '/examples', label: 'Examples' },
-            { href: '/foundations', label: 'Foundations' },
-        ],
-    },
-    {
-        title: 'With AI',
-        links: [
-            { href: '/ai', label: 'Overview' },
-            { href: '/ai/mcp-server', label: 'MCP server' },
-            { href: '/ai/skills', label: 'Skills' },
-            { href: '/ai/audit', label: 'Audit' },
-        ],
-    },
-    {
-        title: 'Tools',
-        links: [
-            { href: '/tools/theme-builder', label: 'Theme builder' },
-            { href: '/tools', label: 'All tools' },
-            { href: '/docs/install', label: 'Install' },
-        ],
-    },
-];
