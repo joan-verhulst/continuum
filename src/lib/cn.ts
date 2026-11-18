@@ -5,6 +5,8 @@ const twMerge = extendTailwindMerge({
     extend: {
         theme: {
             text: ['xxs'],
+            // The control icon's two sizes, so size-icon replaces a size-4 rather than sitting beside it.
+            spacing: ['icon', 'icon-lg'],
             radius: ['chip', 'item', 'control', 'card', 'panel', 'dock', 'pill'],
             shadow: ['float', 'sheet', 'action', 'card', 'control', 'nav-active', 'composer'],
         },

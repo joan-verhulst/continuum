@@ -25,7 +25,7 @@ export const chipVariants = cva(
             },
             size: {
                 sm: 'h-chip px-2 [&_svg:not([class*=size-])]:size-3',
-                md: 'h-segment px-2.5 [&_svg:not([class*=size-])]:size-4',
+                md: 'h-control-sm px-2.5 [&_svg:not([class*=size-])]:size-4',
             },
         },
         defaultVariants: { variant: 'soft', size: 'sm' },

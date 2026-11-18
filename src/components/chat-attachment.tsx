@@ -3,8 +3,10 @@
 import { File as FileIcon, FileText, X } from 'lucide-react';
 import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '../lib/cn';
+import { truncationTail } from '../lib/truncate';
 import { Button, focusRing } from './button';
 import { ChatToken } from './chat-reference';
+import { Truncate } from './truncate';
 
 /** Splits "Application.pdf" into its name and ".pdf"; a name with no dot has no extension. */
 const splitName = (name: string, ext?: string) => {
@@ -49,6 +51,11 @@ export type ChatAttachmentProps = Omit<ComponentProps<'div'>, 'children'> & {
     onRemove?: () => void;
     /** The remove button's name; "Remove <name>" by default. */
     removeLabel?: string;
+    /**
+     * Where a long file name cuts: in the `middle` by default, so the end that tells one file from
+     * the next stays (`invoice-2026-…-0142`); `end` for names read from the start.
+     */
+    truncate?: 'end' | 'middle';
 };
 
 /**
@@ -66,6 +73,7 @@ export const ChatAttachment = ({
     status,
     onRemove,
     removeLabel,
+    truncate = 'middle',
     className,
     ...props
 }: ChatAttachmentProps) => {
@@ -180,9 +188,18 @@ export const ChatAttachment = ({
                 {icon ?? <Icon strokeWidth={2} />}
             </span>
             <span className="flex min-w-0 flex-col">
-                <span className="truncate font-medium text-xxs" data-slot="chat-attachment-name">
+                <Truncate
+                    at={truncate}
+                    className="font-medium text-xxs"
+                    data-slot="chat-attachment-name"
+                    // The extension has its own line, so the name keeps the end it would keep with it.
+                    end={Math.max(
+                        0,
+                        truncationTail(parts.base + parts.ext).length - parts.ext.length,
+                    )}
+                >
                     {parts.base}
-                </span>
+                </Truncate>
                 {parts.ext && (
                     <span
                         className="truncate text-neutral-600 text-xxs"

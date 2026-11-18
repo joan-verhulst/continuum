@@ -29,7 +29,7 @@ export const breadcrumbListVariants = cva(
     {
         variants: {
             size: {
-                md: 'font-normal text-xs',
+                md: 'font-normal text-xs leading-4',
                 // The 2024 and 2025 product headers set the trail a size up, in medium.
                 lg: 'font-medium text-sm',
             },

@@ -2,14 +2,11 @@
 
 import { cva, type VariantProps } from 'class-variance-authority';
 import { Search } from 'lucide-react';
-import { type ComponentProps, createContext, type ReactNode, useContext } from 'react';
+import { type ComponentProps, type ReactNode, useContext } from 'react';
 import { cn } from '../lib/cn';
 import { useOverflowScroll } from '../lib/overflow-scroll';
 import { Input, type InputProps } from './input';
-
-type TableVariant = 'ruled' | 'rows';
-
-const TableContext = createContext<TableVariant>('ruled');
+import { FoldContext, FoldedContext, TableContext } from './table-context';
 
 // The frame is its own container, so a table answers the room it is given wherever it sits: under
 // 640 a column marked `optional` goes and the bar keeps to one line.
@@ -70,7 +67,12 @@ export const Table = ({ variant, className, wrapperClassName, toolbar, ...props 
                     style={edges.overflows ? style : undefined}
                 >
                     <table
-                        className={cn(tableVariants({ variant: value }), className)}
+                        className={cn(
+                            tableVariants({ variant: value }),
+                            // With a selection column, a tree steps by its width: box to chevron.
+                            '[&:has([data-slot=table-select-cell])]:[--tree-step:44px]',
+                            className,
+                        )}
                         data-slot="table"
                         data-variant={value}
                         {...props}
@@ -194,87 +196,22 @@ const tableRowVariants = cva('', {
 
 export const TableRow = ({ className, ...props }: ComponentProps<'tr'>) => {
     const variant = useContext(TableContext);
+    // The row a fold hangs from, or a row a fold has just shown.
+    const fold = useContext(FoldContext);
+    const folded = useContext(FoldedContext);
 
     return (
         <tr
-            className={cn(tableRowVariants({ variant }), className)}
+            className={cn(
+                tableRowVariants({ variant }),
+                // Rows a fold shows fade in, so they read as come from the row above.
+                folded &&
+                    'starting:opacity-0 transition-[background-color,opacity] duration-200 ease-out-strong',
+                className,
+            )}
+            data-folded={folded || undefined}
+            data-open={fold?.open || undefined}
             data-slot="table-row"
-            {...props}
-        />
-    );
-};
-
-type CellAlignProps = {
-    align?: 'left' | 'right';
-    /** Tabular figures, right aligned. */
-    numeric?: boolean;
-    /**
-     * A column the table can do without (an owner, a last seen): it goes once the frame is under
-     * 640, so the essential columns keep their room. Mark the head and every cell of the column.
-     */
-    optional?: boolean;
-};
-
-const alignClass = ({ align, numeric, optional }: CellAlignProps) =>
-    cn(
-        numeric && 'tabular-nums',
-        optional && '@max-[640px]/table:hidden',
-        (align ?? (numeric ? 'right' : 'left')) === 'right' ? 'text-right' : 'text-left',
-    );
-
-const tableHeadVariants = cva('whitespace-nowrap font-normal text-xs', {
-    variants: {
-        variant: {
-            ruled: 'h-table-row border-neutral-200 border-b bg-neutral-100 p-3 text-neutral-600',
-            rows: 'px-3 py-0.5 text-neutral-700',
-        },
-    },
-});
-
-export type TableHeadProps = Omit<ComponentProps<'th'>, 'align'> & CellAlignProps;
-
-export const TableHead = ({ align, numeric, optional, className, ...props }: TableHeadProps) => {
-    const variant = useContext(TableContext);
-
-    return (
-        <th
-            className={cn(
-                tableHeadVariants({ variant }),
-                alignClass({ align, numeric, optional }),
-                className,
-            )}
-            data-slot="table-head"
-            scope="col"
-            {...props}
-        />
-    );
-};
-
-// One line a cell: a narrow table scrolls rather than folding its rows into two-line ones. A second
-// line of meta under a name still stacks, as a block of its own.
-const tableCellVariants = cva('whitespace-nowrap text-xs', {
-    variants: {
-        variant: {
-            ruled: 'h-table-row border-neutral-200 border-b p-3 font-medium text-neutral-900',
-            // A translucent fill, so the rows read on the surface and on the canvas alike.
-            rows: 'h-control bg-neutral-950/4 px-3 py-2 font-normal text-neutral-600 first:rounded-l-control last:rounded-r-control first:text-neutral-800',
-        },
-    },
-});
-
-export type TableCellProps = Omit<ComponentProps<'td'>, 'align'> & CellAlignProps;
-
-export const TableCell = ({ align, numeric, optional, className, ...props }: TableCellProps) => {
-    const variant = useContext(TableContext);
-
-    return (
-        <td
-            className={cn(
-                tableCellVariants({ variant }),
-                alignClass({ align, numeric, optional }),
-                className,
-            )}
-            data-slot="table-cell"
             {...props}
         />
     );

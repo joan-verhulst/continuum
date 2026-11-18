@@ -83,7 +83,7 @@ export const selectTriggerVariants = cva(
         'data-placeholder:text-neutral-600 not-data-disabled:data-placeholder:hover:text-neutral-700',
         // Base UI may keep a disabled trigger focusable, so the attribute is the reliable hook.
         'disabled:cursor-not-allowed disabled:opacity-50 data-disabled:cursor-not-allowed data-disabled:opacity-50',
-        '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+        '[&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0',
         focusRing,
     ],
     {
@@ -91,7 +91,7 @@ export const selectTriggerVariants = cva(
             size: {
                 // The same two rows as Input, so a select and a text field sit level.
                 sm: 'h-control px-3',
-                md: 'h-control-lg px-3',
+                md: 'h-control-lg px-3 [--spacing-icon:var(--spacing-icon-lg)]',
             },
             invalid: {
                 // Its icons turn with the border, as an Input's do.
@@ -195,7 +195,7 @@ export const SelectContent = ({
                 <SelectPrimitive.Popup
                     className={cn(
                         // Never wider than the room beside the trigger, as a Combobox's list.
-                        'relative flex max-h-(--available-height) min-w-(--anchor-width) max-w-(--available-width) flex-col overflow-hidden rounded-item border border-neutral-200 bg-neutral-50 shadow-float outline-none',
+                        'relative flex max-h-(--available-height) min-w-(--anchor-width) max-w-(--available-width) flex-col overflow-hidden rounded-card border border-neutral-200 bg-neutral-50 shadow-float outline-none',
                         'origin-(--transform-origin) transition-[opacity,scale] duration-200 ease-out-strong data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
                         className,
                     )}

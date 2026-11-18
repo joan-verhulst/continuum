@@ -7,6 +7,7 @@ import { cn } from '../lib/cn';
 import { Button } from './button';
 import { StatusDot, type StatusDotTone } from './status-dot';
 import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
+import { Truncate } from './truncate';
 
 /*
  * The well is a read-only twin of Input: the same heights and radii, but filled with the 4% wash instead of
@@ -73,6 +74,11 @@ export type ValueFieldProps = Omit<ComponentProps<'div'>, 'children' | 'onCopy'>
         copiedLabel?: string;
         /** Vital only: the colour of the dot before the value; leave it out for no dot. */
         tone?: StatusDotTone;
+        /**
+         * Well only: where a long text value cuts. `end` by default; `middle` for a key, an ID, a
+         * hash or a URL, which are told apart by their end (`whsec_9f2c…a71d`).
+         */
+        truncate?: 'end' | 'middle';
     };
 
 /** A read-only fact in a form layout: a label over a filled well, or a compact vital row with a status dot. */
@@ -88,6 +94,7 @@ export const ValueField = ({
     copyLabel = 'Copy',
     copiedLabel = 'Copied',
     tone,
+    truncate = 'end',
     className,
     ...props
 }: ValueFieldProps) => {
@@ -150,7 +157,11 @@ export const ValueField = ({
                     className="min-w-0 flex-1 truncate tabular-nums"
                     data-slot="value-field-value"
                 >
-                    {shown}
+                    {truncate === 'middle' && typeof value === 'string' && !empty ? (
+                        <Truncate at="middle">{value}</Truncate>
+                    ) : (
+                        shown
+                    )}
                 </span>
                 {copyable && (
                     <CopyButton

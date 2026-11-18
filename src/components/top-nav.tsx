@@ -19,7 +19,7 @@ import { cn } from '../lib/cn';
 import { OverflowChevron, useOverflowScroll } from '../lib/overflow-scroll';
 import { focusRing } from './button';
 import { HeaderBarSidebarToggle } from './header-bar';
-import { navDrawerClasses, navItemClasses, useAppShellNav } from './sidebar';
+import { navDrawerClasses, sidebarItemClasses, useAppShellNav } from './sidebar';
 
 type TopNavContextValue = {
     /** Whether this bar is its shell's navigation, so it turns into a drawer when the shell narrows. */
@@ -235,7 +235,7 @@ export const TopNavLink = ({
         props: {
             'aria-current': active ? 'page' : undefined,
             className: cn(
-                navItemClasses,
+                sidebarItemClasses,
                 inDrawer
                     ? 'h-control text-neutral-950 text-xs'
                     : 'h-control w-auto shrink-0 px-3 text-neutral-600 text-xs hover:text-neutral-950 aria-[current=page]:text-neutral-950',

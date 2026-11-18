@@ -14,6 +14,7 @@ import { Button } from './button';
 import { useFieldControl } from './field';
 import { IconTile } from './icon-tile';
 import { Progress } from './progress';
+import { Truncate } from './truncate';
 
 /** "2.4 MB", "860 KB", "312 B": one decimal only where it still says something. */
 export const formatFileSize = (bytes: number) => {
@@ -206,6 +207,11 @@ export type DropZoneFileProps = Omit<ComponentProps<'li'>, 'onError'> & {
     /** Why it failed, in place of the size. */
     error?: ReactNode;
     onRemove?: () => void;
+    /**
+     * Where a long name cuts: in the `middle` by default, so the extension and the end that tells
+     * one file from the next stay (`invoice-2026-…-0142.pdf`); `end` for names read from the start.
+     */
+    truncate?: 'end' | 'middle';
 };
 
 /** One file: its tile, name and size, a bar while it uploads, and a ghost × to cancel or remove it. */
@@ -216,6 +222,7 @@ export const DropZoneFile = ({
     status = 'done',
     error,
     onRemove,
+    truncate = 'middle',
     className,
     ...props
 }: DropZoneFileProps) => {
@@ -243,7 +250,9 @@ export const DropZoneFile = ({
             </IconTile>
             <div className="flex min-w-0 flex-1 flex-col gap-1.5">
                 <div className="flex items-baseline justify-between gap-3 text-xs">
-                    <span className="min-w-0 truncate font-medium text-neutral-950">{name}</span>
+                    <Truncate at={truncate} className="font-medium text-neutral-950">
+                        {name}
+                    </Truncate>
                     {meta && (
                         <span
                             className={cn(

@@ -30,7 +30,7 @@ export const Switch = ({
         <SwitchPrimitive.Root
             className={cn(
                 // Track, thumb, inset and travel are all fixed px, so the thumb lands flush at any spacing unit.
-                'inline-flex h-6.25 w-12 shrink-0 cursor-pointer items-center rounded-full bg-neutral-300 p-[2px] transition-[background-color] duration-150',
+                'inline-flex h-6 w-12 shrink-0 cursor-pointer items-center rounded-full bg-neutral-300 p-[2px] transition-[background-color] duration-150',
                 'data-checked:bg-action data-checked:shadow-action data-checked:[background-image:var(--action-gradient)]',
                 // The root is a span, not a button, so the disabled state comes from its data attribute.
                 'data-disabled:cursor-not-allowed data-disabled:opacity-50',
@@ -43,8 +43,8 @@ export const Switch = ({
         >
             <SwitchPrimitive.Thumb
                 className={cn(
-                    'pointer-events-none block size-5.25 rounded-full bg-neutral-50 transition-[translate,background-color] duration-200 ease-out-strong motion-reduce:transition-none',
-                    'data-checked:translate-x-[23px] data-checked:bg-action-knob',
+                    'pointer-events-none block size-5 rounded-full bg-neutral-50 transition-[translate,background-color] duration-200 ease-out-strong motion-reduce:transition-none',
+                    'data-checked:translate-x-6 data-checked:bg-action-knob',
                 )}
                 data-slot="switch-thumb"
             />

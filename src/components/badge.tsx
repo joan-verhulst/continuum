@@ -9,7 +9,7 @@ export const badgeVariants = cva(
         variants: {
             variant: {
                 soft: 'rounded-chip px-1.5',
-                pill: 'rounded-pill px-2',
+                pill: 'rounded-chip px-2',
                 // A status with a marker in front: the soft badge's shape with a 6px dot.
                 dot: 'gap-1.5 rounded-chip px-1.5',
                 count: 'min-w-8 justify-center rounded-chip px-1.5',

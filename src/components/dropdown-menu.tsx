@@ -17,7 +17,7 @@ import { PopoverItem, popoverItemVariants } from './popover-item';
 import { ThemeScope, usePortalContainer } from './theme';
 
 const contentClass = [
-    'flex max-h-(--available-height) min-w-menu flex-col gap-1 overflow-y-auto rounded-item border border-neutral-200 bg-neutral-50 p-1 shadow-float outline-none',
+    'flex max-h-(--available-height) min-w-menu flex-col gap-1 overflow-y-auto rounded-card border border-neutral-200 bg-neutral-50 p-1 shadow-float outline-none',
     // Base UI keeps the popup mounted while it closes, so the same scale and fade play on the way out.
     'origin-(--transform-origin) transition-[opacity,scale] duration-200 ease-out-strong data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
 ];

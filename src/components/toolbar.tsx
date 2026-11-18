@@ -17,7 +17,8 @@ const toolbarVariants = cva(
                 // The field row's 38px: items stretch to the 30px left inside a 3px inset and the hairline. It
                 // keeps the inline bar's corner, not the dock's pill, so both variants follow the theme's corners.
                 // The inset is fixed px, not the spacing unit, so the items' corner calc below stays true.
-                floating: 'h-control-lg rounded-control p-[3px]',
+                floating:
+                    'h-control-lg rounded-control p-[3px] [--spacing-icon:var(--spacing-icon-lg)]',
             },
         },
         defaultVariants: { variant: 'inline' },
@@ -46,7 +47,7 @@ const toolbarButtonVariants = cva(
         'inline-flex cursor-pointer select-none items-center whitespace-nowrap font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150',
         'hover:text-neutral-950',
         // Base UI keeps a disabled toolbar button focusable, so it sets data-disabled rather than the disabled attribute.
-        'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+        'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0',
         // In a compact shell a button with an icon keeps only the icon, a square on the bar's height;
         // its label stays in the tree at no size, so a screen reader still says it. A button
         // without an icon keeps its label, since it has nothing else to show.
@@ -59,7 +60,7 @@ const toolbarButtonVariants = cva(
                 // The bar clips overflow, so the ring has to sit inside the button. The divider runs the full
                 // height, but the hover sits 2px inside it, the same shape as the chip.
                 inline: [
-                    'relative isolate gap-1.5 border-neutral-200 not-last:border-r px-3 focus-visible:-outline-offset-2',
+                    'relative isolate gap-2 border-neutral-200 not-last:border-r px-3 focus-visible:-outline-offset-2',
                     'before:absolute before:inset-[2px] before:-z-10 before:rounded-[calc(var(--radius-control)-3px)] before:transition-colors before:duration-150 hover:before:bg-neutral-950/5',
                 ],
                 // The bar's radius minus its 3px inset and 1px border, so the curves stay concentric.

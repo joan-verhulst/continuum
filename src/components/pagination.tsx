@@ -23,7 +23,7 @@ export const PaginationButton = ({
             'inline-flex size-control shrink-0 cursor-pointer select-none items-center justify-center rounded-control border border-neutral-200 font-medium text-neutral-600 text-sm tabular-nums transition-[border-color,color] duration-150',
             'hover:border-neutral-300 hover:text-neutral-950 aria-[current=page]:text-neutral-950',
             // Disabled as every control is: half strength, no pointer.
-            'disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
+            'disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-icon [&_svg]:shrink-0',
             focusRing,
             className,
         )}
@@ -161,7 +161,7 @@ export const Pagination = ({
                         )}
                     </div>
                     <span
-                        className="@max-[720px]/pagination:inline-flex hidden min-w-control justify-center whitespace-nowrap px-1 font-medium text-neutral-800 text-xs tabular-nums"
+                        className="@max-[720px]/pagination:inline-flex hidden h-control min-w-control items-center justify-center whitespace-nowrap px-1 font-medium text-neutral-800 text-xs tabular-nums"
                         data-slot="pagination-position"
                     >
                         <span className="sr-only">Page </span>

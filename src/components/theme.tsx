@@ -2,6 +2,7 @@
 
 import { mergeProps } from '@base-ui/react/merge-props';
 import { useRender } from '@base-ui/react/use-render';
+import { LucideProvider } from 'lucide-react';
 import { type CSSProperties, createContext, type ReactNode, useContext, useMemo } from 'react';
 import { cn } from '../lib/cn';
 
@@ -66,7 +67,14 @@ export const Theme = ({
         ),
     });
 
-    return <ThemeContext.Provider value={value}>{element}</ThemeContext.Provider>;
+    return (
+        <ThemeContext.Provider value={value}>
+            {/* Every lucide icon inside is 16 at stroke 2, the system's icon, unless it sets its own size. */}
+            <LucideProvider size={16} strokeWidth={2}>
+                {element}
+            </LucideProvider>
+        </ThemeContext.Provider>
+    );
 };
 
 const PortalContext = createContext<HTMLElement | null>(null);

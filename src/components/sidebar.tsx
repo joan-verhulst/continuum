@@ -19,6 +19,7 @@ import {
     useState,
 } from 'react';
 import { cn } from '../lib/cn';
+import { Badge } from './badge';
 import { focusRing, touchTarget } from './button';
 
 /** The shell's navigation drawer, as the parts inside an `AppShell` share it. */
@@ -317,7 +318,7 @@ export const SidebarHeader = ({ className, ...props }: ComponentProps<'div'>) =>
     <div
         className={cn(
             // Centred in the row with the logo 2px low, so a theme's height scale never squeezes it out.
-            'flex h-nav shrink-0 items-center justify-between pt-1 pr-4 pl-2',
+            'flex h-nav shrink-0 items-center justify-between pt-1 pr-3.5 pl-2',
             className,
         )}
         data-slot="sidebar-header"
@@ -374,7 +375,7 @@ export const SidebarToggle = ({
             aria-expanded={expanded}
             aria-label={label}
             className={cn(
-                'grid size-6.5 cursor-pointer place-items-center rounded-chip text-neutral-300 transition-colors duration-150 hover:text-neutral-600',
+                'grid size-7 cursor-pointer place-items-center rounded-chip text-neutral-300 transition-colors duration-150 hover:text-neutral-600',
                 touchTarget,
                 focusRing,
                 className,
@@ -391,14 +392,36 @@ export const SidebarToggle = ({
             type={type}
             {...props}
         >
-            <PanelLeft className="size-4.5" strokeWidth={2} />
+            <PanelLeft className="size-4" strokeWidth={2} />
         </button>
     );
 };
 
+/**
+ * A group's or a section's count: how many it holds. A plain figure in `neutral-500`, in the type
+ * of its row, tabular, at the row's end: a fact about the group, not something waiting.
+ */
+const SidebarCount = ({ children }: { children: ReactNode }) => (
+    <span className="shrink-0 font-normal text-neutral-500 tabular-nums" data-slot="sidebar-count">
+        {children}
+    </span>
+);
+
+/**
+ * An item's count: how many wait for the reader there (an inbox's new mail, invoices to send). A
+ * primary count badge, so what waits stands out from the rows around it.
+ */
+const SidebarItemCount = ({ children }: { children: ReactNode }) => (
+    <Badge data-slot="sidebar-count" tone="primary" variant="count">
+        {children}
+    </Badge>
+);
+
 type SidebarGroupProps = ComponentProps<'nav'> & {
     /** Small heading above the group ("Projects"). */
     label?: ReactNode;
+    /** How many the group holds, or what a search leaves of them, at the label's end. */
+    count?: ReactNode;
 };
 
 /**
@@ -406,7 +429,13 @@ type SidebarGroupProps = ComponentProps<'nav'> & {
  * Blocks are told apart by space, not a hairline: one that follows another
  * starts 24px down.
  */
-export const SidebarGroup = ({ label, className, children, ...props }: SidebarGroupProps) => (
+export const SidebarGroup = ({
+    label,
+    count,
+    className,
+    children,
+    ...props
+}: SidebarGroupProps) => (
     <nav
         className={cn(
             'flex shrink-0 flex-col gap-1 pt-2 pr-3 pl-2 [[data-slot=sidebar-group]+&]:pt-6',
@@ -417,35 +446,38 @@ export const SidebarGroup = ({ label, className, children, ...props }: SidebarGr
     >
         {label && (
             <p
-                className="px-2.5 py-1 font-normal text-neutral-600 text-xs"
+                className="flex items-center gap-2 py-1 pr-2 pl-2.5 font-normal text-neutral-600 text-xs"
                 data-slot="sidebar-label"
             >
-                {label}
+                <span className="min-w-0 flex-1 truncate">{label}</span>
+                {count !== undefined && <SidebarCount>{count}</SidebarCount>}
             </p>
         )}
         <div className="flex flex-col gap-0.5">{children}</div>
     </nav>
 );
 
-export const navItemClasses = [
-    'flex w-full cursor-pointer select-none items-center gap-2 rounded-item px-2.5 py-2 text-left font-normal transition-[background-color,color] duration-150',
+export const sidebarItemClasses = [
+    'flex w-full cursor-pointer select-none items-center gap-2 rounded-item py-2 pr-2 pl-2.5 text-left font-normal transition-[background-color,color] duration-150',
     'hover:bg-neutral-950/5',
     // The active item as the theme draws it: the wash by default, tinted, filled or raised.
     'aria-[current=page]:bg-nav-active aria-[current=page]:text-nav-active-fg aria-[current=page]:hover:bg-nav-active',
     'aria-[current=page]:[box-shadow:inset_0_0_0_1px_var(--color-nav-active-border),var(--shadow-nav-active)] aria-[current=page]:[background-image:var(--nav-active-image)]',
     // In a foldout, the piece of its guide line beside the page you are on, in the text's colour.
-    'in-data-[slot=nav-group-rows]:relative in-data-[slot=nav-group-rows]:aria-[current=page]:before:absolute in-data-[slot=nav-group-rows]:aria-[current=page]:before:inset-y-1.5 in-data-[slot=nav-group-rows]:aria-[current=page]:before:-left-[7px] in-data-[slot=nav-group-rows]:aria-[current=page]:before:w-px in-data-[slot=nav-group-rows]:aria-[current=page]:before:bg-neutral-950 in-data-[slot=nav-group-rows]:aria-[current=page]:before:content-[""]',
-    '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+    'in-data-[slot=sidebar-section-rows]:relative in-data-[slot=sidebar-section-rows]:aria-[current=page]:before:absolute in-data-[slot=sidebar-section-rows]:aria-[current=page]:before:inset-y-1.5 in-data-[slot=sidebar-section-rows]:aria-[current=page]:before:-left-1.5 in-data-[slot=sidebar-section-rows]:aria-[current=page]:before:w-px in-data-[slot=sidebar-section-rows]:aria-[current=page]:before:bg-neutral-950 in-data-[slot=sidebar-section-rows]:aria-[current=page]:before:content-[""]',
+    '[&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0',
     focusRing,
 ];
 
-type NavItemProps = ComponentProps<'button'> & {
+type SidebarItemProps = ComponentProps<'button'> & {
     /** Swaps the button for another element, e.g. `render={<a href="/inbox" />}`. */
     render?: useRender.RenderProp;
     active?: boolean;
-    /** Leading 16px icon or emoji. */
+    /** Leading 14px icon or emoji. */
     icon?: ReactNode;
-    /** Right-aligned Kbd or Badge. */
+    /** How many wait for the reader there, as a count badge at the row's end. */
+    count?: ReactNode;
+    /** Anything else at the row's end: a Kbd, or a chevron on a place that drills in. */
     trailing?: ReactNode;
     /**
      * `primary` is the call to action at the top ("New Sequence"), set 16px
@@ -461,10 +493,11 @@ type NavItemProps = ComponentProps<'button'> & {
  * rather than colour, set via aria-current so router links that set it
  * themselves work too. Chosen in the shell's drawer, it closes the drawer.
  */
-export const NavItem = ({
+export const SidebarItem = ({
     render,
     active,
     icon,
+    count,
     trailing,
     variant = 'default',
     className,
@@ -472,7 +505,7 @@ export const NavItem = ({
     type = 'button',
     onClick,
     ...props
-}: NavItemProps) => {
+}: SidebarItemProps) => {
     const shell = useShellNavigation();
 
     return useRender({
@@ -481,7 +514,7 @@ export const NavItem = ({
         props: {
             'aria-current': active ? 'page' : undefined,
             className: cn(
-                navItemClasses,
+                sidebarItemClasses,
                 variant === 'default' && 'h-control text-neutral-950 text-xs',
                 variant === 'project' && 'h-control text-neutral-950 text-sm',
                 variant === 'inset' &&
@@ -490,7 +523,7 @@ export const NavItem = ({
                     'mb-3.5 h-control bg-action text-on-action text-xs shadow-action [background-image:var(--action-gradient)] hover:bg-action-hover hover:[background-image:none]',
                 className,
             ),
-            'data-slot': 'nav-item',
+            'data-slot': 'sidebar-item',
             'data-variant': variant,
             // A rendered link or router element is not a button, so it gets no type.
             type: render ? undefined : type,
@@ -503,14 +536,23 @@ export const NavItem = ({
                 <>
                     {icon}
                     <span className="min-w-0 flex-1 truncate">{children}</span>
-                    {trailing && (
-                        <span className="ml-auto flex shrink-0 items-center">{trailing}</span>
+                    {(count !== undefined || trailing) && (
+                        <span className="ml-auto flex shrink-0 items-center gap-2">
+                            {count !== undefined && <SidebarItemCount>{count}</SidebarItemCount>}
+                            {trailing}
+                        </span>
                     )}
                 </>
             ),
         },
     });
 };
+
+/** @deprecated Use `SidebarItem`. */
+export const NavItem = SidebarItem;
+
+/** @deprecated Use `sidebarItemClasses`. */
+export const navItemClasses = sidebarItemClasses;
 
 type SidebarLevelProps = ComponentProps<'div'> & {
     /**
@@ -563,7 +605,7 @@ type SidebarBackProps = Omit<ComponentProps<'button'>, 'children'> & {
 };
 
 /**
- * The head of a nested level: a chevron back and the level's name, a nav row in medium weight.
+ * The head of a nested level: a chevron back and the level's name, on a sidebar item's row.
  * It takes the reader back to the level above; the page that is open stays.
  */
 export const SidebarBack = ({
@@ -574,7 +616,7 @@ export const SidebarBack = ({
     ...props
 }: SidebarBackProps) => (
     <button
-        className={cn(navItemClasses, 'h-control font-medium text-neutral-950 text-xs', className)}
+        className={cn(sidebarItemClasses, 'h-control text-neutral-950 text-xs', className)}
         data-slot="sidebar-back"
         type={type}
         {...props}
@@ -585,11 +627,13 @@ export const SidebarBack = ({
     </button>
 );
 
-type NavGroupProps = Omit<ComponentProps<typeof CollapsiblePrimitive.Root>, 'className'> & {
+type SidebarSectionProps = Omit<ComponentProps<typeof CollapsiblePrimitive.Root>, 'className'> & {
     className?: string;
-    /** Leading 16px icon or emoji. */
+    /** Leading 14px icon or emoji. */
     icon?: ReactNode;
     label: ReactNode;
+    /** How many pages it holds, as a count badge at the row's end, after the chevron. */
+    count?: ReactNode;
     /**
      * Holds the page you are on. Found by itself among its rows, open or closed; set it where the
      * page is not one of them (a page under it that the sidebar does not list).
@@ -598,10 +642,11 @@ type NavGroupProps = Omit<ComponentProps<typeof CollapsiblePrimitive.Root>, 'cla
 };
 
 /*
- * Where the guide line runs: down from the middle of the group's 16px icon, 10px into its row. The
- * rows hang 6px off it, so a page's label lines up with the group's.
+ * Where the guide line runs: down the middle of the section's 14px icon, 16px into its row (the
+ * row's 10 and half the icon's 14, less half the line). The rows hang 5px off it, so a page's label
+ * starts 32px in, where the section's own label does (10 + 14 + 8).
  */
-const guide = 'ml-[17px] border-neutral-200 border-l pl-1.5';
+const guide = 'ml-4 border-neutral-200 border-l pl-1.25';
 
 /**
  * A section that folds open to its pages, as deep as it needs: a foldout's rows can be foldouts
@@ -613,43 +658,46 @@ const guide = 'ml-[17px] border-neutral-200 border-l pl-1.5';
  * page darkens, so the way from a section to its page can be followed. The chevron shows on
  * hover when closed (always on a touch screen, which has none) and turns as the group opens.
  */
-export const NavGroup = ({
+export const SidebarSection = ({
     icon,
     label,
+    count,
     current,
     className,
     children,
     ...props
-}: NavGroupProps) => (
+}: SidebarSectionProps) => (
     <CollapsiblePrimitive.Root
         className={cn('flex flex-col', className)}
         data-current={current || undefined}
-        data-slot="nav-group"
+        data-slot="sidebar-section"
         {...props}
     >
         {/* Base UI marks only the open trigger (data-panel-open), so closed is the default look. */}
         <CollapsiblePrimitive.Trigger
             className={cn(
-                navItemClasses,
+                sidebarItemClasses,
                 'group h-control text-neutral-700 text-sm data-panel-open:text-neutral-950',
                 // The section that holds the page: set, or found among its rows, open or closed.
                 '[[data-current]>&]:bg-nav-section [[data-current]>&]:text-nav-section-fg',
-                '[[data-slot=nav-group]:has([aria-current=page])>&]:bg-nav-section',
-                '[[data-slot=nav-group]:has([aria-current=page])>&]:text-nav-section-fg',
-                '[[data-slot=nav-group]:has([aria-current=page])>&]:hover:bg-nav-section',
+                '[[data-slot=sidebar-section]:has([aria-current=page])>&]:bg-nav-section',
+                '[[data-slot=sidebar-section]:has([aria-current=page])>&]:text-nav-section-fg',
+                '[[data-slot=sidebar-section]:has([aria-current=page])>&]:hover:bg-nav-section',
                 // A foldout inside a foldout that holds the page darkens its piece of the guide line too.
-                '[[data-slot=nav-group-rows]>[data-slot=nav-group]:has([aria-current=page])>&]:relative [[data-slot=nav-group-rows]>[data-slot=nav-group]:has([aria-current=page])>&]:before:absolute [[data-slot=nav-group-rows]>[data-slot=nav-group]:has([aria-current=page])>&]:before:inset-y-1.5 [[data-slot=nav-group-rows]>[data-slot=nav-group]:has([aria-current=page])>&]:before:-left-[7px] [[data-slot=nav-group-rows]>[data-slot=nav-group]:has([aria-current=page])>&]:before:w-px [[data-slot=nav-group-rows]>[data-slot=nav-group]:has([aria-current=page])>&]:before:bg-neutral-950 [[data-slot=nav-group-rows]>[data-slot=nav-group]:has([aria-current=page])>&]:before:content-[""]',
+                '[[data-slot=sidebar-section-rows]>[data-slot=sidebar-section]:has([aria-current=page])>&]:relative [[data-slot=sidebar-section-rows]>[data-slot=sidebar-section]:has([aria-current=page])>&]:before:absolute [[data-slot=sidebar-section-rows]>[data-slot=sidebar-section]:has([aria-current=page])>&]:before:inset-y-1.5 [[data-slot=sidebar-section-rows]>[data-slot=sidebar-section]:has([aria-current=page])>&]:before:-left-1.5 [[data-slot=sidebar-section-rows]>[data-slot=sidebar-section]:has([aria-current=page])>&]:before:w-px [[data-slot=sidebar-section-rows]>[data-slot=sidebar-section]:has([aria-current=page])>&]:before:bg-neutral-950 [[data-slot=sidebar-section-rows]>[data-slot=sidebar-section]:has([aria-current=page])>&]:before:content-[""]',
             )}
-            data-slot="nav-group-trigger"
+            data-slot="sidebar-section-trigger"
         >
             {icon && (
-                <span className="grid size-4 shrink-0 place-items-center text-xs">{icon}</span>
+                <span className="grid size-icon shrink-0 place-items-center text-xs">{icon}</span>
             )}
             <span className="min-w-0 flex-1 truncate">{label}</span>
             <ChevronDown
                 className="-rotate-90 opacity-0 pointer-coarse:opacity-100 transition-[opacity,rotate] duration-200 ease-out-strong group-hover:opacity-100 group-data-panel-open:rotate-0 group-data-panel-open:opacity-100 motion-reduce:transition-none"
                 strokeWidth={2}
             />
+            {/* After the chevron, so its count lines up with the items' and the labels' at the row's end. */}
+            {count !== undefined && <SidebarCount>{count}</SidebarCount>}
         </CollapsiblePrimitive.Trigger>
         <CollapsiblePrimitive.Panel
             className={cn(
@@ -658,57 +706,71 @@ export const NavGroup = ({
                 'data-ending-style:h-0 data-starting-style:h-0 data-ending-style:opacity-0 data-starting-style:opacity-0',
                 'motion-reduce:transition-opacity',
             )}
-            data-slot="nav-group-content"
+            data-slot="sidebar-section-content"
             // Kept in the page while closed, so a closed section still knows it holds the page.
             keepMounted
         >
             {/* The padding sits inside, so a closed panel is truly 0px tall. */}
-            <div className={cn('my-1 flex flex-col gap-0.5', guide)} data-slot="nav-group-rows">
+            <div
+                className={cn('my-1 flex flex-col gap-0.5', guide)}
+                data-slot="sidebar-section-rows"
+            >
                 {children}
             </div>
         </CollapsiblePrimitive.Panel>
     </CollapsiblePrimitive.Root>
 );
 
+/** @deprecated Use `SidebarSection`. */
+export const NavGroup = SidebarSection;
+
 /**
- * Pushed to the bottom: who is signed in, and a bell. Inset 18px, the group's 8px and a nav row's
- * 10px, so the avatar's edge lines up with the nav icons and the logo above it.
+ * Pushed to the bottom: who is signed in, and a bell. Inset 18px on the left, the group's 8px and a
+ * row's 10px, so the avatar's edge lines up with the logo, the switcher's mark and the item icons
+ * above it; 14px on the right, so a 28 icon button's icon centres on the column the switcher's
+ * chevron and the items' chevrons and counts share.
  */
 export const SidebarFooter = ({ className, ...props }: ComponentProps<'div'>) => (
     <div
-        className={cn('mt-auto flex shrink-0 items-center gap-3 pt-4 pr-5 pb-6 pl-4.5', className)}
+        className={cn(
+            'mt-auto flex shrink-0 items-center gap-3 pt-4 pr-3.5 pb-6 pl-4.5',
+            className,
+        )}
         data-slot="sidebar-footer"
         {...props}
     />
 );
 
 type SidebarAccountProps = ComponentProps<'div'> & {
-    /** 36px logo or avatar. */
+    /** A 28 logo or avatar, the switcher's mark size: whatever is passed fills it. */
     avatar?: ReactNode;
+    /** The first line: who or what is signed in (a person, a workspace). */
     name: ReactNode;
-    plan?: ReactNode;
+    /** The quieter line under it, whatever says more about it: an email, a plan, a role, a place. */
+    detail?: ReactNode;
 };
 
 export const SidebarAccount = ({
     avatar,
     name,
-    plan,
+    detail,
     className,
     ...props
 }: SidebarAccountProps) => (
     <div
-        className={cn('flex min-w-0 flex-1 items-center gap-3', className)}
+        // The switcher's row again: a 28 mark, 10 to the name, so the two names start on one line.
+        className={cn('flex min-w-0 flex-1 items-center gap-2.5', className)}
         data-slot="sidebar-account"
         {...props}
     >
         {avatar && (
-            <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-chip [&>img]:size-full [&>img]:object-cover">
+            <span className="grid size-7 shrink-0 place-items-center overflow-hidden rounded-chip *:size-full [&>img]:object-cover">
                 {avatar}
             </span>
         )}
         <span className="flex min-w-0 flex-1 flex-col">
             <span className="truncate font-medium text-neutral-600 text-xs">{name}</span>
-            {plan && <span className="truncate font-medium text-neutral-600 text-xxs">{plan}</span>}
+            {detail && <span className="truncate text-neutral-600 text-xxs">{detail}</span>}
         </span>
     </div>
 );

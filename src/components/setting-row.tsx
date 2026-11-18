@@ -1,8 +1,10 @@
 'use client';
 
 import {
+    Children,
     type ComponentProps,
     createContext,
+    isValidElement,
     type ReactNode,
     useContext,
     useId,
@@ -34,7 +36,7 @@ export type SettingRowProps = Omit<ComponentProps<'div'>, 'title'> & {
     controlId?: string;
     /**
      * The row depends on the one above it (a setting that only matters while its parent is on). In
-     * a SettingGroup it sits with that parent, 16 below it, with no hairline between. Disabling it
+     * a SettingGroup it sits with that parent, 12 below it behind a guide line, with no hairline between. Disabling it
      * while the parent is off is the caller's, through `disabled`.
      */
     dependent?: boolean;
@@ -149,17 +151,58 @@ export const SettingRow = ({
 export type SettingGroupProps = Omit<ComponentProps<'fieldset'>, 'title'> & {
     /** A quiet heading over the rows, such as "Notifications"; it also names the group. */
     title?: ReactNode;
+    /**
+     * `ruled` (the default): settings 24, a hairline and 24 apart, a dependent 12 under its parent
+     * behind a guide line, for a group of plain settings. `boxed`: each setting with its dependents
+     * a bordered box of its own, 8 apart, for a group whose settings carry dependents that must hold
+     * together.
+     */
+    layout?: 'ruled' | 'boxed';
+};
+
+/** Whether a child depends on the setting before it: a `dependent` row, or an eyebrow marked so. */
+const isDependent = (child: ReactNode) =>
+    isValidElement<{ dependent?: boolean; 'data-dependent'?: unknown }>(child) &&
+    Boolean(child.props.dependent || child.props['data-dependent'] !== undefined);
+
+/**
+ * The children in boxes: a box starts at every setting and takes the dependents after it. Inside, the
+ * setting and its dependents are two groups, 20 apart; the dependents are plain rows 12 apart.
+ */
+const boxes = (children: ReactNode) => {
+    const runs: { head: ReactNode; dependents: ReactNode[] }[] = [];
+    for (const child of Children.toArray(children)) {
+        const last = runs[runs.length - 1];
+        if (last && isDependent(child)) last.dependents.push(child);
+        else runs.push({ head: child, dependents: [] });
+    }
+    return runs.map((run, index) => (
+        <div
+            className="flex flex-col gap-5 rounded-control border border-neutral-200 p-4"
+            data-slot="setting-box"
+            // The runs follow the children's order and never reorder, so the index is a stable key.
+            // biome-ignore lint/suspicious/noArrayIndexKey: see above
+            key={index}
+        >
+            {run.head}
+            {run.dependents.length > 0 && (
+                <div className="flex flex-col gap-3">{run.dependents}</div>
+            )}
+        </div>
+    ));
 };
 
 /**
- * Setting rows under an optional quiet title, 16 apart, each divided from the next by a hairline at
- * the content's width: closeness alone never groups. A `dependent` row sits with the row above it,
- * 16 below and with no hairline between, so the pair reads as one setting. Several dependents take
+ * Setting rows under an optional quiet title, 24, a hairline at the content's width and 24 apart. A
+ * `dependent` row sits with the row above it, 12 below with no hairline between, stepped in behind a
+ * guide line, so the pair reads as one setting; `layout="boxed"` puts each setting and its
+ * dependents in a bordered box instead. Several dependents take
  * an eyebrow naming what they belong to; mark that eyebrow `data-dependent` too, so it stays with
  * the parent.
  */
 export const SettingGroup = ({
     title,
+    layout = 'ruled',
     disabled = false,
     className,
     children,
@@ -186,18 +229,30 @@ export const SettingGroup = ({
                     {title}
                 </p>
             )}
-            <div
-                className={cn(
-                    'flex flex-col gap-4',
-                    // A hairline 16 above every row after the first, unless it depends on the one before.
-                    '[&>*+*:not([data-dependent])]:border-neutral-200 [&>*+*:not([data-dependent])]:border-t [&>*+*:not([data-dependent])]:pt-4',
-                )}
-                data-slot="setting-group-rows"
-            >
-                <SettingGroupDisabledContext.Provider value={disabled}>
-                    {children}
-                </SettingGroupDisabledContext.Provider>
-            </div>
+            {layout === 'boxed' ? (
+                <div className="flex flex-col gap-2" data-slot="setting-group-rows">
+                    <SettingGroupDisabledContext.Provider value={disabled}>
+                        {boxes(children)}
+                    </SettingGroupDisabledContext.Provider>
+                </div>
+            ) : (
+                <div
+                    className={cn(
+                        'flex flex-col gap-6',
+                        // 24, a hairline and 24 between settings; a row that depends on the one before has none.
+                        '[&>*+*:not([data-dependent])]:border-neutral-200 [&>*+*:not([data-dependent])]:border-t [&>*+*:not([data-dependent])]:pt-6',
+                        // A dependent sits 12 under its parent, stepped in behind a guide line 4 from the edge.
+                        '[&>[data-dependent]]:-mt-3 [&>[data-dependent]]:ml-1 [&>[data-dependent]]:border-neutral-200 [&>[data-dependent]]:border-l [&>[data-dependent]]:pl-4',
+                        // Dependents in a row keep the line unbroken: the 12 between them is padding, not a gap.
+                        '[&>[data-dependent]+[data-dependent]]:-mt-6 [&>[data-dependent]+[data-dependent]]:pt-3',
+                    )}
+                    data-slot="setting-group-rows"
+                >
+                    <SettingGroupDisabledContext.Provider value={disabled}>
+                        {children}
+                    </SettingGroupDisabledContext.Provider>
+                </div>
+            )}
         </fieldset>
     );
 };

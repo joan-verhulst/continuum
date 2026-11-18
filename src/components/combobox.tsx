@@ -312,7 +312,7 @@ export const ComboboxContent = ({
             >
                 <ComboboxPrimitive.Popup
                     className={cn(
-                        'relative flex max-h-(--available-height) min-w-(--anchor-width) max-w-(--available-width) flex-col overflow-hidden rounded-item border border-neutral-200 bg-neutral-50 shadow-float outline-none',
+                        'relative flex max-h-(--available-height) min-w-(--anchor-width) max-w-(--available-width) flex-col overflow-hidden rounded-card border border-neutral-200 bg-neutral-50 shadow-float outline-none',
                         'origin-(--transform-origin) transition-[opacity,scale] duration-200 ease-out-strong data-ending-style:scale-95 data-starting-style:scale-95 data-ending-style:opacity-0 data-starting-style:opacity-0 motion-reduce:transition-none',
                         className,
                     )}

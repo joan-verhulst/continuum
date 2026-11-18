@@ -158,10 +158,10 @@ export const TabsTrigger = ({
     return (
         <TabsPrimitive.Tab
             className={cn(
-                'inline-flex cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap font-medium text-xs transition-[background-color,color] duration-150',
+                'inline-flex cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap font-medium text-xs transition-[background-color,color] duration-150',
                 triggerVariants[variant],
                 // Base UI marks a disabled tab with data-disabled, which also covers a rendered non-button.
-                'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+                'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0',
                 focusRing,
                 className,
             )}

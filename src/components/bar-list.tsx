@@ -16,6 +16,7 @@ import {
 } from 'react';
 import { cn } from '../lib/cn';
 import { focusRing } from './button';
+import { Truncate } from './truncate';
 
 type BarListTone = 'neutral' | 'chart';
 
@@ -233,6 +234,11 @@ export type BarListItemProps = Omit<useRender.ComponentProps<'div'>, 'children'>
     disabled?: boolean;
     /** Classes for the list item that wraps the row. */
     itemClassName?: string;
+    /**
+     * Where a long text label cuts. `end` by default; `middle` for paths and URLs, whose last part
+     * tells the rows apart (`/docs/…/webhooks`).
+     */
+    truncate?: 'end' | 'middle';
 };
 
 /** One ranked row: icon, label and value over a bar sized to the value. Interactive with `href`, `onClick` or `render`. */
@@ -247,6 +253,7 @@ export const BarListItem = ({
     ref,
     className,
     itemClassName,
+    truncate = 'end',
     children,
     ...props
 }: BarListItemProps) => {
@@ -297,7 +304,11 @@ export const BarListItem = ({
                             className="min-w-0 flex-1 truncate font-normal text-neutral-950"
                             data-slot="bar-list-label"
                         >
-                            {children}
+                            {truncate === 'middle' && typeof children === 'string' ? (
+                                <Truncate at="middle">{children}</Truncate>
+                            ) : (
+                                children
+                            )}
                         </span>
                         <span
                             className="shrink-0 font-normal text-neutral-600 tabular-nums"

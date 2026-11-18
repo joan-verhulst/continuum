@@ -145,7 +145,7 @@ export const FilterConditionField = ({
 }: ComponentProps<'span'> & { icon?: ReactNode }) => (
     <span
         className={cn(
-            'inline-flex items-center gap-1.5 whitespace-nowrap border-neutral-200 border-r px-2.5 font-medium text-neutral-950 text-xs [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0 [&_svg]:text-neutral-600',
+            'inline-flex items-center gap-2 whitespace-nowrap border-neutral-200 border-r px-2.5 font-medium text-neutral-950 text-xs [&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0 [&_svg]:text-neutral-600',
             className,
         )}
         data-slot="filter-condition-field"

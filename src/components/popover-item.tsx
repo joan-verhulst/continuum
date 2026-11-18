@@ -12,13 +12,14 @@ import { Badge } from './badge';
  * The row every popup list is made of: a select's options, a combobox's, a menu's actions, a filter
  * menu's values, the command menu's commands. 36px, padded the same on both sides so the label and
  * a trailing check sit evenly, and cornered one step inside the panel round it: the panel's
- * `rounded-item` less its 4px padding and 1px border, so the curves stay concentric.
+ * `rounded-card` (16) less its 4px padding and 1px border, within a pixel of `rounded-item` (10), the
+ * corner every item takes, so the curves stay concentric and the item matches a nav item.
  */
 export const popoverItemVariants = cva(
     [
-        'relative flex h-option shrink-0 cursor-pointer select-none items-center gap-3 rounded-[calc(var(--radius-item)-5px)] px-3 py-2 font-medium text-xs outline-none',
+        'relative flex h-option shrink-0 cursor-pointer select-none items-center gap-2 rounded-item px-3 py-2 font-medium text-xs outline-none',
         'data-disabled:pointer-events-none data-disabled:opacity-50',
-        '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+        '[&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0',
     ],
     {
         variants: {

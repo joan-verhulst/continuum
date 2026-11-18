@@ -13,14 +13,14 @@ export const inputVariants = cva(
     [
         'group/input flex w-full min-w-0 items-center gap-2 border transition-[border-color] duration-150',
         'has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-focus has-[input:focus-visible]:outline-offset-2',
-        '[&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+        '[&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0',
     ],
     {
         variants: {
             size: {
                 // The control row (level with a button) and the field row (level with a large one).
                 sm: 'h-control rounded-control px-3',
-                md: 'h-control-lg rounded-control px-3',
+                md: 'h-control-lg rounded-control px-3 [--spacing-icon:var(--spacing-icon-lg)]',
             },
             variant: {
                 outline: 'shadow-control',

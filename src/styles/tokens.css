@@ -528,8 +528,14 @@
     --spacing-control-sm: calc(var(--spacing-control) - 6px);
     /* A segmented item in its track (2px inset, 1px border); the medium chip and the vital row */
     --spacing-segment: calc(var(--spacing-control) - 5px);
-    /* The small chip, which a combobox holds 3.5px inside its box and border */
-    --spacing-chip: calc(var(--spacing-control) - 9px);
+    /* The small chip, which a combobox holds 6px inside its box and border */
+    --spacing-chip: calc(var(--spacing-control) - 10px);
+    /* The icon in a 34 control (a button, a field, a tab, a toolbar or menu row, a nav item): 14. A 38
+     * control (the large button, the medium field and select, the floating toolbar) sets its own
+     * --spacing-icon to icon-lg, 16, so the bigger box keeps the bigger icon. Both follow the theme's
+     * control size, as the heights do, and land on even pixels so a 2 stroke stays crisp. */
+    --spacing-icon: round(nearest, calc(14px * var(--continuum-size-scale, 1)), 2px);
+    --spacing-icon-lg: round(nearest, calc(16px * var(--continuum-size-scale, 1)), 2px);
     /* A dock item, a calendar day, a date-range preset */
     --spacing-cell: round(nearest, calc(32px * var(--continuum-size-scale, 1)), 1px);
     /* A row in a popup list */

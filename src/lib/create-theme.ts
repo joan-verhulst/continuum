@@ -448,11 +448,11 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
         light[fill] = 'var(--color-primary-100)';
         light[text] = 'var(--color-primary-700)';
         // The 100 reads back to the 900 in dark, a muddy step darker than the canvas it should
-        // lift from: the accent's 600 shows through instead, lighter and in its own hue.
-        dark[fill] = 'color-mix(in oklab, var(--continuum-p-600) 20%, transparent)';
-        // 700 reads back to a deep step on the dark tint; the raw 300 sits too near the 600 the
-        // fill is made of, so the text takes the 200 to stand apart from it.
-        dark[text] = 'var(--continuum-p-200)';
+        // lift from: the accent's 500 shows through instead, at 30%, so the row lifts clearly off
+        // the dark canvas in the accent's own hue (the 600 at 20% read as a dull navy).
+        dark[fill] = 'color-mix(in oklab, var(--continuum-p-500) 30%, transparent)';
+        // The text takes the 100, near white in the accent's hue, so it reads clearly on that fill.
+        dark[text] = 'var(--continuum-p-100)';
     };
     if (nav === 'tinted') {
         tintAt('--color-nav-active', '--color-nav-active-fg');

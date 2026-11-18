@@ -190,11 +190,11 @@ export const SegmentedControlItem = ({ className, ...props }: SegmentedControlIt
     <Toggle
         className={cn(
             // The track's radius minus its 2px inset and 1px border, so the curves stay concentric in every theme.
-            'inline-flex h-segment shrink-0 cursor-pointer select-none items-center justify-center gap-1.5 whitespace-nowrap rounded-[calc(var(--radius-item)-3px)] px-2.5 font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150',
+            'inline-flex h-segment shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-[calc(var(--radius-item)-3px)] px-2.5 font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150',
             'hover:bg-neutral-950/5 hover:text-neutral-800',
             // The thumb under it is the fill; the item only takes the thumb's text colour.
             'data-pressed:text-segment-fg data-pressed:hover:bg-transparent data-pressed:hover:text-segment-fg',
-            'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+            'data-disabled:pointer-events-none data-disabled:opacity-50 [&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0',
             focusRing,
             className,
         )}

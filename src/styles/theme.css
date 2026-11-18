@@ -67,6 +67,59 @@
             background-position: 0% 0;
         }
     }
+
+    /*
+     * The thinking loaders (thinking.tsx). animate-think: a square swells to full and back as a
+     * wave passes; nine of them in a 3 by 3 grid, a diagonal apart, roll the wave from corner to
+     * corner. animate-glint: a band of light crossing a line of words, letter by letter.
+     * animate-breathe: an opacity swell, out and back, for the square at the end of words still
+     * coming. animate-sweep: a short segment crossing its track, slow off the ends and quick over
+     * the middle, so each pass reads as one breath and the gap between passes as a rest.
+     */
+    --animate-think: think 1.4s ease-in-out infinite;
+    --animate-glint: glint 2s linear infinite;
+    --animate-breathe: breathe 1.2s ease-in-out infinite alternate;
+    --animate-sweep: sweep 2.4s cubic-bezier(0.77, 0, 0.175, 1) infinite;
+
+    @keyframes think {
+        0%,
+        60%,
+        100% {
+            opacity: 0.2;
+            scale: 0.6;
+        }
+        30% {
+            opacity: 1;
+            scale: 1;
+        }
+    }
+
+    @keyframes glint {
+        from {
+            background-position: 100% 0;
+        }
+        to {
+            background-position: -100% 0;
+        }
+    }
+
+    @keyframes breathe {
+        from {
+            opacity: 1;
+        }
+        to {
+            opacity: 0.25;
+        }
+    }
+
+    @keyframes sweep {
+        from {
+            translate: -100% 0;
+        }
+        to {
+            translate: 400% 0;
+        }
+    }
 }
 
 /*
@@ -226,6 +279,8 @@
      * row 40 · table-row 41 · tab 44 · control-xl 48 · bar 52 · header 54 · nav 56, as drawn.
      */
     --spacing-chip: var(--spacing-chip);
+    --spacing-icon: var(--spacing-icon);
+    --spacing-icon-lg: var(--spacing-icon-lg);
     --spacing-control-sm: var(--spacing-control-sm);
     --spacing-segment: var(--spacing-segment);
     --spacing-cell: var(--spacing-cell);

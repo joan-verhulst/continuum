@@ -5,6 +5,7 @@ export * from './components/avatar';
 export * from './components/badge';
 export * from './components/bar-list';
 export * from './components/block-slider';
+export * from './components/branch-graph';
 export * from './components/breadcrumb';
 export * from './components/button';
 export * from './components/calendar';
@@ -36,12 +37,14 @@ export * from './components/field';
 export * from './components/filter-condition';
 export * from './components/filter-menu';
 export * from './components/header-bar';
+export * from './components/hold-button';
 export * from './components/icon-tile';
 export * from './components/info-tip';
 export * from './components/input';
 export * from './components/kbd';
 export * from './components/logo';
 export * from './components/notice';
+export * from './components/optimistic-undo';
 export * from './components/option-row';
 export * from './components/page-content';
 export * from './components/pagination';
@@ -63,13 +66,19 @@ export * from './components/status-dot';
 export * from './components/stepper';
 export * from './components/switch';
 export * from './components/table';
+export * from './components/table-cell';
+export * from './components/table-edit-cell';
+export * from './components/table-fold';
+export * from './components/table-head';
 export * from './components/tabs';
 export * from './components/textarea';
 export * from './components/theme';
+export * from './components/thinking';
 export * from './components/toast';
 export * from './components/toolbar';
 export * from './components/tooltip';
 export * from './components/top-nav';
+export * from './components/truncate';
 export * from './components/value-field';
 export { cn } from './lib/cn';
 export {
@@ -156,6 +165,7 @@ export {
     boxPadding,
     estimateLines,
     type InnerBox,
+    insideRoom,
     type SpacingParams,
     type SpacingStep,
     snapToSpacing,
@@ -167,3 +177,4 @@ export {
     toSpacingStep,
     typeSize,
 } from './lib/spacing';
+export { splitForTruncation, truncationTail } from './lib/truncate';
