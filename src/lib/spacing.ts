@@ -8,8 +8,10 @@
  *   the type size averaged over its lines, so one large figure does not size a whole card.
  * - A box of boxes pads at least a step past its children: r × their padding.
  * - Between alike boxes (cards in a row, a list's rows): g × their padding.
- * - Between unlike blocks standing free (a page head and its table, a chart and a section): each
- *   claims its own room, growing with what it holds, and the gap is the sum.
+ * - Between unlike blocks (a page head and its table, a chart and a section; inside a card, a title
+ *   and its list, a figure and its badge): each claims its own room, growing with what it holds,
+ *   and the gap is the sum. Inside a box with a surface a block claims less (× inside) and counts
+ *   only its first lines (insideLines), so a long list does not push its own title away.
  * - Between texts: t × the size of the text after the gap (type sets the space above a line in that
  *   line's own size), tight for a pair that belongs together and loose between blocks, growing with
  *   the lines either side: × (1 + β·log₂ lines).
@@ -36,6 +38,10 @@ export type SpacingParams = {
     room: number;
     /** How fast that room grows with the lines and rows the block holds. */
     roomGrowth: number;
+    /** The share of its room a block claims inside a box with a surface (a card), beside an unlike block. */
+    inside: number;
+    /** The most lines a block counts toward its room inside a box with a surface. */
+    insideLines: number;
     /** No padding past this, in px. */
     cap: number;
 };
@@ -53,6 +59,10 @@ export const spacingDefaults: SpacingParams = {
        about 56, a bare title over a short settings card about 32. */
     room: 0.375,
     roomGrowth: 1.85,
+    /* Fitted 17 Nov 2026 to the cards Continuum draws by eye (a stat card's badge 12 under its
+       figure, a card's title 16 over its list): off by about 1px on average across them. */
+    inside: 0.6,
+    insideLines: 3,
     cap: 48,
 };
 
@@ -144,10 +154,21 @@ export const blockRoom = (
 };
 
 /**
- * The gap between two unlike blocks that stand free in a group with no surface (a page head and its
- * table, a chart and the section under it), in px, unsnapped: each brings its own room, so the gap
- * is the sum, and it grows with how much either side holds. A page head over a dense table lands
- * near 64; a bare title over a short card near 32.
+ * The room a block claims beside an unlike block inside a box with a surface (a card's title over
+ * its list, a figure over its badge), in px, unsnapped: the free-standing room, scaled by `inside`
+ * and counting at most `insideLines` lines, since inside a card both blocks are seen together and a
+ * list's length should not push its own title away. A stat card's figure over its badge lands on 12,
+ * a card's title over its list near 14.
+ */
+export const insideRoom = ({ size, lines }: TypeRun, params: SpacingParams = spacingDefaults) =>
+    params.inside *
+    blockRoom({ runs: [{ size, lines: Math.min(lines, params.insideLines) }] }, params);
+
+/**
+ * The gap between two unlike blocks (a page head and its table, a chart and the section under it;
+ * inside a card, each with its insideRoom), in px, unsnapped: each brings its own room, so the gap is
+ * the sum, and it grows with how much either side holds. A page head over a dense table lands near
+ * 64; a bare title over a short card near 32.
  */
 export const blockGap = (before: number, after: number) => before + after;
 

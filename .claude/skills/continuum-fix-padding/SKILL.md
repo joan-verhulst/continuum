@@ -18,6 +18,7 @@ Defaults are in `scripts/spacing.ts` (the same file as `src/lib/spacing.ts` in t
 | Padding of a box of boxes | at least `r ×` the inner boxes' padding | r 1.5 |
 | Gap between alike boxes | `g ×` the inner boxes' padding (cards in a row, a list's items) | g 1.1 |
 | Gap between unlike blocks | in a group with no surface (the page column, a section), each block **claims its own room** and the gap is the sum: room = `c × size × (1 + γ·log₂ lines)`, every line and row it holds counted. A page head over a dense table lands near 64, over ten rows near 56; a bare title over a short card near 32 | c 0.375, γ 1.85 |
+| Gap between unlike blocks inside a card | the same sum, each block claiming `i ×` its room and counting at most its first `n` lines, so a long list does not push its own title away: a stat card's figure → its badge 12, a card's title → its list near 14. Never the alike-box gap here | i 0.6, n 3 |
 | Gap between two texts | `t ×` the size of the text **after** the gap `× (1 + β·log₂ lines either side)`; tight for a pair, loose between blocks | pair 0.25, block 1.5, β 0.6 |
 | Cap | no padding past 48px | |
 | Scale | snap to Tailwind steps: 0, 0.5 … 3.5 (every 2px), 4, 5 … 12, 14, 16, 20, 24 | |

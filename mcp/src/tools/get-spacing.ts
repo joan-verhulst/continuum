@@ -4,6 +4,7 @@ import {
     boxGap,
     boxPadding,
     estimateLines,
+    insideRoom,
     spacingDefaults,
     spacingSteps,
     type TypeRun,
@@ -77,7 +78,7 @@ export const getSpacingTool = defineTool({
         box: z
             .enum(['text', 'boxes', 'gap-between-boxes', 'gap-between-blocks', 'gap-between-texts'])
             .describe(
-                "What to work out: 'text' the padding of a box holding text (runs); 'boxes' the padding of a box holding boxes (children, and runs for any text of its own); 'gap-between-boxes' the gap between alike sibling boxes, cards in a row or a list's items (children's padding); 'gap-between-blocks' the gap between two unlike blocks standing free in a group with no surface, a page head and its table or a chart and the section under it (blocks: each claims room by what it holds, and the gap is the sum); 'gap-between-texts' the gap between two texts (runs: [before, after], and pair).",
+                "What to work out: 'text' the padding of a box holding text (runs); 'boxes' the padding of a box holding boxes (children, and runs for any text of its own); 'gap-between-boxes' the gap between alike sibling boxes, cards in a row or a list's items (children's padding); 'gap-between-blocks' the gap between two unlike blocks, standing free (a page head and its table, a chart and the section under it) or inside a card with inside: true (a title over its list, a figure over its badge) (blocks: each claims room by what it holds, and the gap is the sum; never 'gap-between-boxes' for unlike blocks); 'gap-between-texts' the gap between two texts (runs: [before, after], and pair).",
             ),
         runs: z
             .array(run)
@@ -111,6 +112,12 @@ export const getSpacingTool = defineTool({
             .describe(
                 "For 'gap-between-texts': 'tight' for two texts that belong together (a title and its subtitle, a label and its value, a figure and its caption), 'loose' between blocks.",
             ),
+        inside: z
+            .boolean()
+            .optional()
+            .describe(
+                "For 'gap-between-blocks': true when the two blocks sit inside a box with a surface (a card): each then claims 0.6× its room and counts at most its first three lines, so a long list does not push its own title away.",
+            ),
         unit: z
             .number()
             .int()
@@ -122,7 +129,7 @@ export const getSpacingTool = defineTool({
             ),
     },
     annotations: readOnly,
-    handle: ({ box, runs = [], children = [], blocks = [], pair, unit = 4 }) => {
+    handle: ({ box, runs = [], children = [], blocks = [], pair, inside = false, unit = 4 }) => {
         const params = spacingDefaults;
         const texts = runs.map(linesOf);
         let px: number;
@@ -182,6 +189,14 @@ export const getSpacingTool = defineTool({
                 }
                 const all = [...own, ...inner.map(item => ({ size: item.size, lines: 1 }))];
                 const lines = all.reduce((sum, item) => sum + item.lines, 0);
+                if (inside) {
+                    const counted = Math.min(lines, params.insideLines);
+                    const room = insideRoom({ size: typeSize(all), lines }, params);
+                    return {
+                        room,
+                        text: `${params.inside} × ${params.room} × ${one(typeSize(all))}px × (1 + ${params.roomGrowth}·${log(counted)}) = ${one(room)}`,
+                    };
+                }
                 const room = blockRoom({ runs: own, children: inner }, params);
                 return {
                     room,
@@ -193,7 +208,7 @@ export const getSpacingTool = defineTool({
             if (!before || !after) throw new ToolError('Two blocks are needed.');
             px = blockGap(before.room, after.room);
             prefix = 'gap';
-            working = `each block claims its own room, before: ${before.text}; after: ${after.text}; the gap is the sum = ${one(px)}px`;
+            working = `each block claims its own room${inside ? ' (inside a card: a share of it, its first lines)' : ''}, before: ${before.text}; after: ${after.text}; the gap is the sum = ${one(px)}px`;
         } else {
             const [before, after] = texts;
             if (texts.length !== 2 || !before || !after) {

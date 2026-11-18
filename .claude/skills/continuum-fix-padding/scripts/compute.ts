@@ -24,6 +24,7 @@ import {
     boxGap,
     boxPadding,
     estimateLines,
+    insideRoom,
     type SpacingParams,
     snapToSpacing,
     spacingClass,
@@ -46,6 +47,8 @@ type Result = {
     room: number;
     /** Its type size, averaged over its lines and inner boxes. */
     size: number;
+    /** Its lines of content: its own, and one for each box inside it. */
+    lines: number;
     gaps: { between: string; px: number; className: string }[];
     children: Result[];
 };
@@ -68,11 +71,18 @@ const solve = (box: BoxNode, params: SpacingParams): Result => {
 
     const surface = box.surface !== false;
     const alike = box.set ?? Boolean(box.row);
+    // Beside an unlike block, each claims its room: standing free, all of it; inside a box with a
+    // surface (a card), its insideRoom.
     const roomOf = (index: number) => {
         const solved = children[index];
-        return solved && 'reach' in solved
-            ? solved.room
-            : blockRoom({ runs: [runOf(box.children[index] as TextNode)] }, params);
+        const { size, lines } =
+            solved && 'reach' in solved ? solved : runOf(box.children[index] as TextNode);
+        if (!surface) {
+            return solved && 'reach' in solved
+                ? solved.room
+                : blockRoom({ runs: [{ size, lines }] }, params);
+        }
+        return insideRoom({ size, lines }, params);
     };
 
     const gaps: Result['gaps'] = [];
@@ -83,9 +93,9 @@ const solve = (box: BoxNode, params: SpacingParams): Result => {
         const px =
             isBox(child) || isBox(before)
                 ? snapToSpacing(
-                      surface || alike
-                          ? boxGap(reaches, params)
-                          : blockGap(roomOf(index - 1), roomOf(index)),
+                      // Alike boxes share one gap from their padding; unlike ones, inside a card or
+                      // standing free, each claim their own room.
+                      alike ? boxGap(reaches, params) : blockGap(roomOf(index - 1), roomOf(index)),
                   )
                 : snapToSpacing(
                       textGap(
@@ -108,6 +118,10 @@ const solve = (box: BoxNode, params: SpacingParams): Result => {
         reach: surface ? padding : Math.max(0, ...reaches),
         room: blockRoom({ runs: ownRuns, children: inner }, params),
         size,
+        lines: [...ownRuns, ...inner.map(() => ({ lines: 1 }))].reduce(
+            (sum, run) => sum + run.lines,
+            0,
+        ),
         gaps,
         children: boxes,
     };
