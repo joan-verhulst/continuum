@@ -6,6 +6,8 @@
             "!dist",
             "!mcp/dist",
             "!mcp/fixtures",
+            "!labs/evals/runs",
+            "!labs/evals/fixtures",
             "!playground/dist",
             "!reference",
             "!.claude/skills/*/assets",
