@@ -1,7 +1,7 @@
 'use client';
 
 import { Button, ContinuumLogo, cn, focusRing } from 'continuum';
-import { ArrowUpRight, Menu, X } from 'lucide-react';
+import { LogIn, Menu, X } from 'lucide-react';
 import {
     animate,
     motion,
@@ -16,13 +16,14 @@ import { type ComponentProps, type RefObject, useEffect, useId, useRef, useState
 import { inSection, sections } from '@/lib/nav';
 import { appLink } from '@/lib/site';
 import { ModeSwitch } from './mode';
+import { GetStartedPro } from './pro-button';
 
 /*
  * The site's one header, on every page: a bar across the full page, held at the top as you scroll,
  * a hairline under it and the page showing faintly through, its content on the page's 1152 column.
  * The logo left, the site's sections in the middle held in one rounded group, the current one on a
- * grey pill that travels between them, and at the right the mode switch, Pro (its name in the
- * spectrum, leading to the plans) and the one action, Get started. On the landing the pill follows the section in view (see `landing`); on every other page it
+ * grey pill that travels between them, and at the right the mode switch, Sign in (an icon, straight
+ * to the app) and the one action, Buy for €299 (GetStartedPro), leading to Pro's checkout. On the landing the pill follows the section in view (see `landing`); on every other page it
  * marks the page's section. Under a laptop's width the links fold into a menu under the bar.
  */
 
@@ -44,9 +45,6 @@ const links = [
     })),
 ];
 
-/** Pro, beside Get started: the paid plan sits with the way in, and leads to the plans. */
-const pro = '/#pricing';
-
 /**
  * The landing's sections, top to bottom, and the link each one lights: Components over the gallery,
  * AI over the MCP server and the jobs it runs. A section with no link lights none.
@@ -54,9 +52,9 @@ const pro = '/#pricing';
 const landing: readonly [section: string, link?: string][] = [
     ['components', 'components'],
     ['mcp', 'ai'],
+    ['before-after'],
     ['uses', 'ai'],
     ['how-it-works'],
-    ['before-after'],
     ['built-with'],
     ['pricing'],
     ['get-started'],
@@ -256,9 +254,6 @@ const ActivePill = ({
 /** Beside the action: light or dark, where the page can switch (the landing is dark whatever the choice). */
 const IconLinks = ({ mode }: { mode: boolean }) => (mode ? <ModeSwitch /> : null);
 
-/** Pro's name, in the landing's spectrum: the one word in the bar that stands out. */
-const ProLabel = () => <span className="text-spectrum">Pro</span>;
-
 const linkClass = cn(
     // 34 high, on the control corner.
     'flex h-control items-center gap-2 rounded-control px-3 text-neutral-600 text-sm transition-[background-color,color] duration-150',
@@ -354,21 +349,19 @@ export const SiteHeader = () => {
                         <div className="flex items-center gap-1 max-sm:hidden">
                             <IconLinks mode={!home} />
                         </div>
+                        {/* Sign in: straight to the app, for those who have it. */}
                         <Button
-                            className="ml-1 max-sm:hidden"
-                            render={linkTo(pro)}
+                            aria-label="Sign in"
+                            className="ml-1"
+                            render={linkTo(appLink())}
+                            size="icon"
+                            title="Sign in"
                             variant="secondary"
                         >
-                            <ProLabel />
+                            <LogIn strokeWidth={2} />
                         </Button>
-                        <Button
-                            // On the narrowest phones the hero holds the same action right under the bar.
-                            className="ml-1 max-[359px]:hidden"
-                            render={linkTo(appLink())}
-                        >
-                            Get started
-                            <ArrowUpRight strokeWidth={2} />
-                        </Button>
+                        {/* The page's one action, on every width: the hero holds none of its own. */}
+                        <GetStartedPro className="ml-1" />
                         <Button
                             aria-controls={menuId}
                             aria-expanded={open}
@@ -402,12 +395,6 @@ export const SiteHeader = () => {
                                 </Link>
                             </li>
                         ))}
-                        {/* On phones the bar keeps only Get started; Pro waits here. */}
-                        <li className="sm:hidden">
-                            <a className={menuLinkClass} href={pro} onClick={() => setOpen(false)}>
-                                <ProLabel />
-                            </a>
-                        </li>
                     </ul>
                     {/* On phones the bar keeps only the action; the mode switch waits here. */}
                     {!home && (

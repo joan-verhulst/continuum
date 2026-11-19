@@ -57,11 +57,6 @@ export const SiteFooter = () => {
                         aria-hidden
                         className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle,var(--color-neutral-200)_1px,transparent_1.4px)] bg-size-[16px_16px]"
                     />
-                    {/* Over the dots, the hero board's step: brighter towards the foot, where the light is. */}
-                    <span
-                        aria-hidden
-                        className="pointer-events-none absolute inset-0 bg-linear-to-b from-transparent to-neutral-100"
-                    />
                     <FooterShader className="absolute inset-0" />
                     {/* The shader draws the name in its light; this one sets where, and stands in without WebGL. */}
                     <p

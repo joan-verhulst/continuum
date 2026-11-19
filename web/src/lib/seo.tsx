@@ -138,17 +138,19 @@ export const techArticleLd = ({
     isPartOf: { '@type': 'WebSite', name: brand.name, url: siteUrl },
 });
 
-/** SoftwareApplication: the theme builder and the tools that open it, free in the browser. */
+/** A software product, with an offer when it has a standalone price. */
 export const softwareApplicationLd = ({
     name,
     description,
     path,
     category = 'DesignApplication',
+    priceEUR,
 }: {
     name: string;
     description: string;
     path: string;
     category?: string;
+    priceEUR?: number;
 }): Thing => ({
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -157,7 +159,9 @@ export const softwareApplicationLd = ({
     url: absolute(path),
     applicationCategory: category,
     operatingSystem: 'Any (web browser)',
-    offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+    ...(priceEUR !== undefined && {
+        offers: { '@type': 'Offer', price: String(priceEUR), priceCurrency: 'EUR' },
+    }),
 });
 
 /** WebApplication: a free tool that runs in the browser (the tools under /tools). */

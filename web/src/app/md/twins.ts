@@ -5,6 +5,7 @@ import {
     components,
     foundationTopics,
     fullBody,
+    inventory,
     mcpManifest,
     readme,
     referenceMarkdown,
@@ -218,7 +219,7 @@ const known = (): Map<string, Twin> => {
     add({
         path: '/components',
         title: 'Components',
-        summary: `Every part of Continuum, ${components().length} React components on Base UI and Tailwind v4, by what they do.`,
+        summary: `Every part of Continuum, ${inventory().components} React components (${inventory().charts} of them charts) on Base UI and Tailwind v4, by what they do.`,
         group: 'Components',
         markdown: () =>
             doc(

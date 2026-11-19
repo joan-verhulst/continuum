@@ -48,7 +48,7 @@ const jobs: Job[] = [
     {
         id: 'build',
         title: 'Build a screen',
-        when: 'Starting a page. Your agent composes it from the system, never from a blank file.',
+        when: 'Give your agent a page brief. It can look up the layout and components that fit.',
         start: 'Build the members page under Settings.',
         via: 'build_screen prompt · continuum-taste skill',
         steps: [
@@ -77,7 +77,7 @@ const jobs: Job[] = [
     {
         id: 'improve',
         title: 'Improve a screen',
-        when: 'Bringing an existing page in line, whatever it was built in.',
+        when: 'Bring an existing page into line with your design system and review layout changes before they’re applied.',
         start: 'Bring the customers page in line.',
         via: 'improve_ui prompt',
         steps: [
@@ -116,7 +116,7 @@ const jobs: Job[] = [
     {
         id: 'audit',
         title: 'Audit any stack',
-        when: 'Checking UI in React, Vue, Angular, Svelte, HTML or CSS, or a page as it renders.',
+        when: 'Find the code behind a visual inconsistency, even when your apps use different frameworks.',
         start: 'Audit the plan card in every app.',
         via: 'audit_source · audit_ui',
         steps: [
@@ -152,7 +152,7 @@ const jobs: Job[] = [
     {
         id: 'padding',
         title: 'Fix padding',
-        when: 'A box feels cramped or loose. Its spacing is worked out from what it holds, not guessed.',
+        when: 'Calculate spacing from the type and content inside each card.',
         start: '/continuum-fix-padding PlanCard.tsx',
         via: 'continuum-fix-padding skill · get_spacing',
         steps: [
@@ -181,7 +181,7 @@ const jobs: Job[] = [
     {
         id: 'theme',
         title: 'Theme a product',
-        when: 'Giving a product its own look, before the first screen.',
+        when: 'Try your own colours and type on a working screen before exporting the theme.',
         start: 'Our theme: accent #3939e5, tinted greys, Geist, rounder corners.',
         via: 'theme builder · create_theme · check_theme',
         steps: [
@@ -351,14 +351,9 @@ export const Uses = () => {
     const playing = !picked && !reduce;
 
     return (
-        <Section
-            description="Two skills for your agent and an MCP server for any client, on the same rules. Pick a job to see the steps it takes and what each one returns."
-            eyebrow="In practice"
-            id="uses"
-            title="What it does, and how it runs."
-        >
+        <Section id="uses" title="Build a page or polish the one you have">
             <Reveal className="grid gap-8 lg:grid-cols-[336px_minmax(0,1fr)] lg:gap-12">
-                <div aria-label="Jobs" className="flex flex-col gap-2" role="tablist">
+                <div aria-label="Example tasks" className="flex flex-col gap-2" role="tablist">
                     {jobs.map((item, index) => (
                         <JobTab
                             job={item}

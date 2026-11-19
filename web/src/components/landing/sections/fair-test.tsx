@@ -1,244 +1,70 @@
 'use client';
 
 import { Overview } from '@screens/overview';
-import { Button, cn, focusRing } from 'continuum';
-import { ArrowRight, ChevronsLeftRight } from 'lucide-react';
-import {
-    animate,
-    motion,
-    useInView,
-    useMotionValue,
-    useMotionValueEvent,
-    useReducedMotion,
-    useTransform,
-} from 'motion/react';
-import {
-    type KeyboardEvent,
-    type PointerEvent,
-    useEffect,
-    useLayoutEffect,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
+import { BottomBar, Dock, DockItem } from 'continuum';
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { useMemo, useState } from 'react';
 import { PlainOverview } from '../films/plain-overview';
-import { ease, Reveal, Section, Shot, Window } from '../web';
+import { ease, Shot } from '../web';
 
 /*
- * Before and after: one page as an agent built it, and the same page once Continuum brought it in
- * line (improve_ui with the project's app.css), under one drag divider at their real size. It is the
- * page the In practice "Improve a screen" film fixes, so the film shows how it got from one side to
- * the other. Both are drawn at the width the screens are laid out for and cropped by the window,
- * never scaled, so 13px stays 13px.
+ * Before and after, as a switch: one page shown as it is with Continuum (the playground's own
+ * Overview screen, live in the page's theme), and at the press of the switch as an agent builds it
+ * without the system (a hand-built stand-in: the default shadcn look, a purple primary, a gradient
+ * header, cards on cards, mixed weights, loose 16px everything). One screen at a time, so the frame
+ * never holds two busy pages at once.
  *
- * The right is the playground's own Overview screen, live in the page's theme. The left is a
- * hand-built stand-in for a page an agent builds without the system (the default shadcn look: a
- * purple primary, a gradient header, cards on cards, mixed weights, loose 16px everything).
+ * Both are drawn at the width they are laid out for and cropped by the frame, never scaled, so 13px
+ * stays 13px. The switch is the system's floating bottom bar, over the screen at the frame's foot.
  */
 
-/* ---------- The comparison ---------- */
+type Side = 'continuum' | 'plain';
 
-const clamp = (value: number) => Math.min(100, Math.max(0, value));
-
-// Where the divider rests until it is measured: a little left of the Continuum page's title, so that
-// side shows its whole column and the plain side its sidebar. The hint then swings it this far over
-// the plain page and back.
-const start = 26;
-const swing = 32;
-
-/**
- * The two outputs stacked at 1:1, the right one cut away left of the divider. Drag anywhere on it,
- * or focus the handle and use the arrow keys. On a phone both shift left past the sidebar, by the
- * same amount, so the crop lands on the page rather than on two sidebars.
- */
-const Comparison = () => {
-    const frame = useRef<HTMLDivElement>(null);
-    const handle = useRef<HTMLDivElement>(null);
+export const Comparison = () => {
+    const [side, setSide] = useState<Side>('continuum');
     const reduce = useReducedMotion();
-    const position = useMotionValue(start);
-    const [value, setValue] = useState(start);
-    const screen = useRef<HTMLDivElement>(null);
-    const rest = useRef(start);
-    const touched = useRef(false);
-    const inView = useInView(frame, { once: true, amount: 0.5 });
-
-    useMotionValueEvent(position, 'change', next => setValue(Math.round(next)));
-    const clip = useTransform(position, next => `inset(0 0 0 ${next}%)`);
-    const left = useTransform(position, next => `${next}%`);
-    // The handle stays whole at either end, while the line runs to the edge.
-    const knob = useTransform(position, next => `clamp(24px, ${next}%, calc(100% - 24px))`);
-
-    // Until it is moved, the divider rests 24px left of the Continuum page's title, wherever the
-    // crop puts it at this width.
-    useLayoutEffect(() => {
-        const element = frame.current;
-        if (!element) return;
-        const place = () => {
-            const bounds = element.getBoundingClientRect();
-            const title = screen.current?.querySelector('h1')?.getBoundingClientRect();
-            if (touched.current || !title || bounds.width === 0) return;
-            rest.current = clamp(((title.left - bounds.left - 24) / bounds.width) * 100);
-            if (!position.isAnimating()) position.set(rest.current);
-        };
-        place();
-        const observer = new ResizeObserver(place);
-        observer.observe(element);
-        return () => observer.disconnect();
-    }, [position]);
-
-    // Once, as it comes into view: the divider swings over the plain page and back, so it reads as
-    // something to drag.
-    useEffect(() => {
-        if (!inView || reduce || touched.current) return;
-        const from = rest.current;
-        const hint = animate(position, [from, Math.min(from + swing, 90), from], {
-            duration: 1.8,
-            ease,
-            delay: 0.4,
-        });
-        return () => hint.stop();
-    }, [inView, reduce, position]);
-
-    // The screens are heavy and never change; made once, so a drag only moves the clip.
-    const plain = useMemo(() => <PlainOverview />, []);
-    const continuum = useMemo(
-        () => (
-            <Shot>
-                <Overview />
-            </Shot>
-        ),
+    // The screens are heavy and never change: made once, so switching only swaps which one shows.
+    const screens = useMemo(
+        () => ({
+            continuum: (
+                <Shot>
+                    <Overview />
+                </Shot>
+            ),
+            plain: <PlainOverview />,
+        }),
         [],
     );
 
-    const take = () => {
-        touched.current = true;
-        position.stop();
-    };
-
-    const fromPointer = (clientX: number) => {
-        const rect = frame.current?.getBoundingClientRect();
-        if (!rect || rect.width === 0) return;
-        position.set(clamp(((clientX - rect.left) / rect.width) * 100));
-    };
-
-    const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {
-        if (event.button !== 0) return;
-        take();
-        event.currentTarget.setPointerCapture(event.pointerId);
-        fromPointer(event.clientX);
-        handle.current?.focus({ preventScroll: true });
-    };
-
-    const onPointerMove = (event: PointerEvent<HTMLDivElement>) => {
-        if (event.currentTarget.hasPointerCapture(event.pointerId)) fromPointer(event.clientX);
-    };
-
-    const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-        const step = event.shiftKey ? 10 : 5;
-        const keys: Record<string, number> = {
-            ArrowLeft: value - step,
-            ArrowRight: value + step,
-            PageDown: value - 20,
-            PageUp: value + 20,
-            Home: 0,
-            End: 100,
-        };
-        const next = keys[event.key];
-        if (next === undefined) return;
-        event.preventDefault();
-        take();
-        position.set(clamp(next));
-    };
-
-    const layer = 'absolute inset-y-0 left-0 max-sm:-translate-x-[264px]';
-
     return (
-        <Window
-            bar={
-                <div className="flex w-full items-center justify-between gap-3 text-xs">
-                    <span className="flex min-w-0 items-baseline gap-2">
-                        <span className="font-medium text-neutral-950">Before</span>
-                        <span className="truncate text-neutral-500 max-sm:hidden">
-                            as your agent built it
-                        </span>
-                    </span>
-                    <span className="text-neutral-500 max-md:hidden">Drag to compare</span>
-                    <span className="flex min-w-0 items-baseline justify-end gap-2">
-                        <span className="truncate text-neutral-500 max-sm:hidden">
-                            improve_ui and your app.css
-                        </span>
-                        <span className="font-medium text-neutral-950">After</span>
-                    </span>
-                </div>
-            }
-            className="h-152 md:h-192"
-        >
-            <div
-                className="absolute inset-0 cursor-ew-resize touch-pan-y select-none"
-                onPointerDown={onPointerDown}
-                onPointerMove={onPointerMove}
-                ref={frame}
-            >
-                {/* Both are pictures here: nothing inside them takes focus or a click. */}
-                <div aria-hidden className="absolute inset-0" inert>
-                    <div className={layer}>{plain}</div>
-                </div>
+        <div className="relative h-152 overflow-hidden rounded-panel border border-neutral-200 bg-neutral-100 shadow-float md:aspect-video md:h-auto">
+            {/* A picture of each page: nothing inside takes focus or a click. */}
+            <AnimatePresence initial={false}>
                 <motion.div
+                    animate={{ opacity: 1 }}
                     aria-hidden
-                    className="absolute inset-0"
+                    className="absolute inset-y-0 left-0 w-full min-w-260 *:w-full max-sm:-translate-x-[264px]"
+                    exit={{ opacity: 0 }}
                     inert
-                    style={{ clipPath: clip }}
+                    initial={{ opacity: 0 }}
+                    key={side}
+                    transition={{ duration: reduce ? 0 : 0.3, ease }}
                 >
-                    <div className={cn(layer, 'w-7xl')} ref={screen}>
-                        {continuum}
-                    </div>
+                    {screens[side]}
                 </motion.div>
+            </AnimatePresence>
 
-                <motion.div
-                    className="pointer-events-none absolute inset-y-0 z-10 w-px -translate-x-1/2 bg-neutral-950/60"
-                    style={{ left }}
-                />
-                <motion.div
-                    aria-label="Divider between the page before and after Continuum"
-                    aria-valuemax={100}
-                    aria-valuemin={0}
-                    aria-valuenow={value}
-                    aria-valuetext={`Before ${value}%, after ${100 - value}%`}
-                    className={cn(
-                        '-translate-1/2 absolute top-1/2 z-20 grid size-10 cursor-ew-resize place-items-center rounded-full border border-neutral-200 bg-neutral-50 text-neutral-600 shadow-float',
-                        focusRing,
-                    )}
-                    onKeyDown={onKeyDown}
-                    ref={handle}
-                    role="slider"
-                    style={{ left: knob }}
-                    tabIndex={0}
+            {/* The switch: the system's own floating bar at the frame's foot, a dock of two views. */}
+            <BottomBar className="z-20" floating>
+                <Dock
+                    aria-label="Show the page"
+                    onValueChange={value => setSide(value === 'plain' ? 'plain' : 'continuum')}
+                    value={side}
                 >
-                    <ChevronsLeftRight className="size-4" strokeWidth={2} />
-                </motion.div>
-            </div>
-        </Window>
+                    <DockItem value="continuum">With Continuum</DockItem>
+                    <DockItem value="plain">Default AI output</DockItem>
+                </Dock>
+            </BottomBar>
+        </div>
     );
 };
-
-/** The proof in place of logos: one page before and after Continuum, one divider between them. */
-export const FairTest = () => (
-    <Section
-        aside={
-            // The write-up of the run comes with the real test; until then this goes to the comparison.
-            // biome-ignore lint/a11y/useAnchorContent: the button renders its label into the link
-            <Button render={<a href="/compare/shadcn-ui" />} size="lg" variant="secondary">
-                Compare with shadcn/ui
-                <ArrowRight strokeWidth={2} />
-            </Button>
-        }
-        description="Continuum helps bring those decisions together, making it easier to maintain consistency across components, layouts and entire applications. Here is one page as an agent built it, and the same page after Continuum brought it in line. Drag to compare."
-        eyebrow="Before and after"
-        id="before-after"
-        title="Good interfaces are the result of hundreds of considered decisions."
-    >
-        <Reveal>
-            <Comparison />
-        </Reveal>
-    </Section>
-);

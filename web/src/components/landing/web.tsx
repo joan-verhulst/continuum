@@ -11,6 +11,7 @@ import {
     useRef,
     useState,
 } from 'react';
+import { HeroLight } from './hero-light';
 
 /*
  * The site's web register: the page talks in editorial sizes, the product inside it never changes.
@@ -316,7 +317,7 @@ export const RuledFrame = ({
     top?: boolean;
     /** The layout grid inside; off where a figure lights the board instead. */
     grid?: boolean;
-    /** The landing's spectrum rising from the board's foot, clipped to its corners. */
+    /** The hero's light (HeroLight), shining through the board's headline, clipped to its corners. */
     glow?: boolean;
 }) => (
     <div
@@ -329,21 +330,33 @@ export const RuledFrame = ({
         <div
             className={cn(
                 'relative rounded-panel border border-neutral-200 bg-neutral-50',
-                // With the glow, the board brightens a step towards its foot, where the light comes from.
-                glow && 'bg-linear-to-b from-neutral-50 to-neutral-100',
+                // With the glow, the board brightens a step towards the middle of its foot, where the
+                // light comes from, and stays the surface towards its corners.
+                glow &&
+                    'bg-[radial-gradient(ellipse_80%_70%_at_50%_100%,var(--color-neutral-100),var(--color-neutral-50))]',
                 className,
             )}
+            // The light looks for its glass (the headline) on the whole board.
+            data-light-scope={glow ? '' : undefined}
         >
-            {/* The layout grid, clipped to the board even when what lies on it runs out. */}
+            {/* The layout grid, clipped to the board even when what lies on it runs out; fainter
+                under the hero's light. */}
             {grid && (
-                <LayoutGrid className="rounded-[inherit] [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]" />
+                <LayoutGrid
+                    className={cn(
+                        'rounded-[inherit] [mask-image:linear-gradient(to_bottom,transparent,black_12%,black_88%,transparent)]',
+                        glow && 'opacity-50',
+                    )}
+                />
             )}
             {glow && (
                 <div
                     aria-hidden
                     className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
                 >
-                    <div className="absolute inset-x-[12%] -bottom-[28%] h-[45%] rounded-full bg-spectrum opacity-30 blur-[96px]" />
+                    {/* Without WebGL, the spectrum's blurred strip stands in for the light. */}
+                    <div className="absolute inset-x-[12%] -bottom-[28%] in-data-lit:hidden h-[45%] rounded-full bg-spectrum opacity-30 blur-[96px]" />
+                    <HeroLight />
                 </div>
             )}
             <Mark className="top-4 left-4" />

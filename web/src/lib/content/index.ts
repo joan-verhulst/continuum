@@ -8,12 +8,14 @@
  * - entries: entryInfos(), entryInfo(id), entriesFor(component), componentsWithEntries(),
  *   chartsWithEntries()
  * - screens: screenInfos(), blockInfos()
+ * - inventory: inventory() (what ships, counted), showcaseComponents()
  * - mcp: mcpManifest()
  * - skills: skills(), skill(name)
  * - markdown: parseMarkdown, fullBody, findSection, plainText, firstSentence, clip
  * - slugs: kebab, headingSlug (also safe on the client, from '@/lib/content/slugs')
  */
 export * from './entries';
+export * from './inventory';
 export * from './markdown';
 export * from './mcp';
 export * from './references';

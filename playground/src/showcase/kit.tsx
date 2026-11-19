@@ -86,6 +86,36 @@ export type PreviewProps = { knobs: KnobValues };
 export const knobDefaults = (knobs: readonly Knob[] = []): KnobValues =>
     Object.fromEntries(knobs.map(knob => [knob.id, knob.default]));
 
+/**
+ * The states a preview shows, one change at a time: its defaults, then each other value of each
+ * knob on its own (a switch adds one). The honest count of what a component looks like, rather
+ * than every combination of its knobs.
+ */
+export const knobStates = (knobs: readonly Knob[] = []) =>
+    knobs.reduce((sum, knob) => sum + ('switch' in knob ? 1 : knob.options.length - 1), 1);
+
+/**
+ * Every distinct combination of a preview's knobs: each set of values counted once by the knobs
+ * that mean something for it, so a knob another one makes meaningless (`when`) adds nothing there.
+ */
+export const knobCombinations = (knobs: readonly Knob[] = []) => {
+    let sets: KnobValues[] = [{}];
+    for (const knob of knobs) {
+        const values: (string | boolean)[] =
+            'switch' in knob ? [false, true] : knob.options.map(option => option.value);
+        sets = sets.flatMap(set => values.map(value => ({ ...set, [knob.id]: value })));
+    }
+    const seen = new Set(
+        sets.map(set =>
+            knobs
+                .filter(knob => knob.when?.(set) ?? true)
+                .map(knob => `${knob.id}=${String(set[knob.id])}`)
+                .join('&'),
+        ),
+    );
+    return seen.size;
+};
+
 export const o = (value: string, label = value): KnobOption => ({ value, label });
 
 /** Options named after their values, capitalised. */

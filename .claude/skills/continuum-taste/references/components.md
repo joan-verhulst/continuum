@@ -40,6 +40,11 @@ are sidebar items (`SidebarItem`), a section that folds open to its pages is a `
 long index drills into a `SidebarLevel`; all of them, with the header, the switcher and the footer, make one
 sidebar. (The old names `NavItem`, `NavGroup` and `navItemClasses` still work, as aliases.)
 - 256 wide, no fill, no border; a column: header, the switcher, groups, footer at the bottom.
+- **Bordered** (`bordered`), **when** the canvas behind is busy enough (a tint, an image, a pattern) that a
+  borderless sidebar's edge gets lost, or the product wants the navigation to read as a panel of its own
+  beside the page: a 1px `neutral-200` hairline on `panel` corners (20), with the AppPanel's 8 gutter round it,
+  still no fill. Otherwise leave it off: on a plain canvas the sidebar shares it, and one framed panel (the
+  page) is quieter than two.
 - **One row for every part.** A sidebar item, a section's row and the back row are the same row: 34 high,
   padding 8 vertical, 10 left and 8 right, gap 8, `item` corners (10), full width; a 14 icon (or an emoji in a 14 box)
   leading; the label 13/400, truncating. A chevron in a row is 14 too. Hover 5% wash; focus ring.

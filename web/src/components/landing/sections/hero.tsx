@@ -6,6 +6,7 @@ import { ProjectFlow } from '@playground/theme-editor/flow';
 import { ExportDialog } from '@playground/theme-editor/parts';
 import {
     Button,
+    ContinuumMark,
     cn,
     createThemeCss,
     focusRing,
@@ -19,15 +20,16 @@ import {
     type ThemeMode,
     type ThemeOptions,
 } from 'continuum';
-import { ArrowRight, Moon, RotateCcw, SlidersHorizontal, Sparkles, Sun } from 'lucide-react';
+import { Moon, RotateCcw, SlidersHorizontal, Sun } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
-import { type ComponentProps, type ReactNode, useDeferredValue, useMemo, useState } from 'react';
+import { type ReactNode, useDeferredValue, useMemo, useState } from 'react';
 import { compact, load, store } from '@/app/tools/theme-builder/state';
-import { appLink, themeBuilderLink } from '@/lib/site';
+import { themeBuilderLink } from '@/lib/site';
 import { heroScreens } from '../hero-screens';
 import { RimLight } from '../rim-light';
 import { PRODUCT_THEME, productTheme } from '../theme';
-import { ease, Reveal, RuledFrame, Shot } from '../web';
+import { ease, Reveal, RuledFrame, Section, Shot } from '../web';
+import { Comparison } from './fair-test';
 
 /*
  * The hero, on the board: the news, the promise, one way in, and under it the product itself. The
@@ -313,73 +315,91 @@ const HeroWindow = () => {
                     </div>
                 </Theme>
             </div>
+            <MadeByBadge />
         </div>
     );
 };
 
-/** A Button drawn as a link: the label is the Button's own children. */
-const linkTo = (href: string) => (props: ComponentProps<'a'>) => <a href={href} {...props} />;
+/**
+ * What the window is, said as what it shows rather than how it was made: built with Continuum, each
+ * screen from one prompt. A pill on the window's foot, half over its edge, in the shape of the
+ * hero's own "New" pill above.
+ */
+const MadeByBadge = () => (
+    <div className="absolute bottom-0 left-1/2 z-20 -translate-x-1/2 translate-y-1/2">
+        <div className="inline-flex h-9 items-center gap-2 whitespace-nowrap rounded-full border border-neutral-200 bg-neutral-50 py-1 pr-4 pl-1 text-neutral-950 text-xs">
+            <span className="flex h-7 items-center gap-1.5 rounded-full bg-neutral-950/8 pr-2.5 pl-2 font-medium">
+                <ContinuumMark size={14} />
+                Built with Continuum
+            </span>
+            <span className="text-neutral-600">
+                <span className="sm:hidden">from a prompt</span>
+                <span className="max-sm:hidden">
+                    Every screen here came from one prompt to Claude Code
+                </span>
+            </span>
+        </div>
+    </div>
+);
 
-// The board holds the words alone; the product's window follows under it, outside, at the page's full
-// width, so the screen reads as the thing shown rather than something lying on the board.
+// The board fills the first screen: the words centred in it, the before and after lying on its foot
+// and running out of it. The four screens follow as a section of their own (Screens, below).
 export const Hero = () => (
-    <>
-        <RuledFrame glow outerClassName="pb-0 md:pb-0" top>
-            <section
-                aria-labelledby="hero-title"
-                className="flex scroll-mt-20 flex-col px-2 py-20 md:px-3 md:py-48"
-                id="top"
+    // Room under the board for the part of the before and after that runs out of it, plus a
+    // section's gap before the divider: 408 + 64 on phones, 448 + 128 from md.
+    <RuledFrame glow outerClassName="pb-118 md:pb-[calc(min(1408px,100vw-146px)*9/16-192px)]" top>
+        <section
+            aria-labelledby="hero-title"
+            // As tall as the screen under the site's header (64) and the board's own inset.
+            className="flex min-h-[calc(100svh-80px)] scroll-mt-20 flex-col px-2 pt-16 md:min-h-[calc(100svh-89px)] md:px-3 md:pt-20"
+            id="top"
+        >
+            {/* The words, centred in the room above the before and after. */}
+            <div className="mx-auto my-auto flex max-w-[760px] flex-col items-center gap-6 px-2 pb-12 text-center md:pb-16">
+                <Reveal>
+                    <h1
+                        className="text-balance font-medium text-4xl text-neutral-950 leading-[1.05] tracking-[-0.02em] md:text-5xl"
+                        id="hero-title"
+                    >
+                        A better way to build consistent interfaces.
+                    </h1>
+                </Reveal>
+                <Reveal delay={1}>
+                    <p className="mx-auto max-w-[580px] text-pretty text-base text-neutral-950/66 leading-[1.6] md:text-lg">
+                        A complete design system and developer toolkit for modern product teams.
+                        With reusable components, AI agent skills, MCP integrations and tools to
+                        streamline your workflow.
+                    </p>
+                </Reveal>
+            </div>
+            {/* Before and after: the same page with Continuum and as a plain agent builds it. Its top
+                (200 on phones, 320 from md) lies on the board; a negative margin as large as the
+                rest lets that run out of the board's foot. */}
+            <Reveal
+                className="relative z-10 mx-auto -mb-102 w-full md:mb-[calc(320px-min(1408px,100vw-146px)*9/16)] md:w-[min(1408px,calc(100vw-146px))]"
+                delay={2}
             >
-                <div className="mx-auto flex max-w-[760px] flex-col items-center gap-8 px-2 text-center">
-                    <div className="flex flex-col items-center gap-6">
-                        <Reveal>
-                            <a
-                                className={cn(
-                                    'group inline-flex h-8 items-center gap-2 rounded-full border border-neutral-200 bg-neutral-50 px-1 text-neutral-950 text-xs transition-[border-color] duration-150 hover:border-neutral-300',
-                                    focusRing,
-                                )}
-                                href="#mcp"
-                            >
-                                <span className="flex h-6 items-center gap-1 rounded-full bg-neutral-950/8 pr-2.5 pl-2 font-medium text-neutral-950">
-                                    <Sparkles className="size-3.5" strokeWidth={2} />
-                                    New
-                                </span>
-                                <span className="whitespace-nowrap font-medium">
-                                    <span className="hidden sm:inline">an </span>MCP connection
-                                    <span className="hidden sm:inline"> for every project</span>
-                                </span>
-                                <span className="flex size-6 items-center justify-center rounded-full border border-neutral-200 transition-[translate] duration-150 group-hover:translate-x-0.5">
-                                    <ArrowRight className="size-3" strokeWidth={2} />
-                                </span>
-                            </a>
-                        </Reveal>
-                        <Reveal delay={1}>
-                            <h1
-                                className="text-balance font-medium text-4xl text-neutral-950 leading-[1.05] tracking-[-0.02em] md:text-5xl"
-                                id="hero-title"
-                            >
-                                A better way to build consistent interfaces.
-                            </h1>
-                        </Reveal>
-                        <Reveal delay={2}>
-                            <p className="mx-auto max-w-[580px] text-pretty text-base text-neutral-600 leading-[1.6] md:text-lg">
-                                A complete design system and developer toolkit for modern product
-                                teams. With reusable components, AI agent skills, MCP integrations
-                                and tools to streamline your workflow.
-                            </p>
-                        </Reveal>
-                    </div>
-                    <Reveal className="flex flex-wrap items-center justify-center gap-3" delay={3}>
-                        <Button render={linkTo(appLink())} size="lg">
-                            Get started
-                            <ArrowRight strokeWidth={2} />
-                        </Button>
-                    </Reveal>
-                </div>
-            </section>
-        </RuledFrame>
-        <div className="px-2 pt-3 pb-16 md:px-3 md:pb-32">
-            <Reveal delay={4}>
+                <Comparison />
+            </Reveal>
+        </section>
+    </RuledFrame>
+);
+
+/**
+ * The product's screens, as a section of their own under the hero: a head like every section's,
+ * then the window with the four screens as tabs and Customize, at the page's full width.
+ */
+export const Screens = () => (
+    <>
+        <Section
+            className="pb-12 md:pb-16"
+            description="Every screen here was built from scratch with Continuum. Describe the page you need and it looks finished the first time, no designer and no rounds of fixes."
+            title="A good-looking screen, from the first prompt."
+        >
+            {null}
+        </Section>
+        <div className="px-2 pb-16 md:px-3 md:pb-32">
+            <Reveal>
                 <HeroWindow />
             </Reveal>
         </div>

@@ -1,11 +1,12 @@
+import { InventoryCount } from '@/components/landing/sections/inventory';
 import { FrameSection, JumpLinks, PageHero } from '@/components/page-frame';
 import { type GalleryItem, PreviewGrid } from '@/components/preview/gallery';
 import {
     chartsWithEntries,
     componentGroups,
-    components,
     componentsWithEntries,
     firstSentence,
+    inventory,
 } from '@/lib/content';
 import { JsonLd, pageMetadata, techArticleLd } from '@/lib/seo';
 
@@ -16,12 +17,12 @@ import { JsonLd, pageMetadata, techArticleLd } from '@/lib/seo';
  */
 
 const lead = () =>
-    `Continuum has ${components().length} React components for dashboards and tool UI, on Base UI and Tailwind v4, grouped by what they do; each page shows the part live, says when to use it and when not, and gives its values in units.`;
+    `Continuum has ${inventory().components} React components for dashboards and tool UI, ${inventory().charts} of them charts, on Base UI and Tailwind v4, grouped by what they do; each page shows the part live, says when to use it and when not, and gives its values in units.`;
 
 export const metadata = pageMetadata({
     title: 'React components for dashboards and tool UI — Continuum',
     absoluteTitle: true,
-    description: `${components().length} React components for dense dashboards and tool UI, on Base UI and Tailwind v4: what each is for, what not, a live preview and its values.`,
+    description: `${inventory().components} React components for dense dashboards and tool UI, on Base UI and Tailwind v4: what each is for, what not, a live preview and its values.`,
     path: '/components',
 });
 
@@ -67,7 +68,7 @@ const ComponentsPage = () => {
                     />
                 }
                 crumbs={[{ name: 'Components', path: '/components' }]}
-                eyebrow={`${components().length} components · ${chartsWithEntries().length} charts`}
+                eyebrow={<InventoryCount totals={inventory()} />}
                 lead={lead()}
                 title="Components"
             />

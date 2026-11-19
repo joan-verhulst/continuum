@@ -1,9 +1,10 @@
 'use client';
 
-import { Badge, Button, cn, Input } from 'continuum';
+import { Button, cn, Input } from 'continuum';
 import { Check } from 'lucide-react';
 import { type FormEvent, type ReactNode, useId, useState } from 'react';
-import { appLink } from '@/lib/site';
+import { joinEarlyAccess } from '@/lib/early-access';
+import { proLaunchPriceEUR } from '@/lib/site';
 import { RimLight } from '../rim-light';
 import { Reveal, Section } from '../web';
 
@@ -16,9 +17,8 @@ import { Reveal, Section } from '../web';
 type Plan = {
     id: string;
     name: string;
-    badge?: string;
-    /** Where a price would sit; a word until a price is set. */
-    figure: string;
+    price: string;
+    priceNote: string;
     line: string;
     action: ReactNode;
     includes: string[];
@@ -26,15 +26,9 @@ type Plan = {
     lead?: boolean;
 };
 
-/**
- * Where an early-access address goes. Until the list exists the form only confirms, so the page
- * can be read and tried before launch.
- */
-const joinEarlyAccess = async (_email: string, _plan: string) => {};
-
 const EarlyAccessForm = ({
     plan,
-    label = 'Get early access',
+    label = 'Join the Pro waitlist',
     variant = 'primary',
 }: {
     plan: string;
@@ -87,38 +81,44 @@ const EarlyAccessForm = ({
 const plans: Plan[] = [
     {
         id: 'free',
-        name: 'Free',
-        figure: '€0',
-        line: 'Open, and free for good. No account: your themes stay in your browser.',
+        name: 'Free tools',
+        price: '€0',
+        priceNote: 'No account needed',
+        line: 'Try your theme on real screens in the browser.',
         action: (
             <Button
                 className="w-full"
-                render={props => <a {...props} href={appLink()} />}
+                render={props => <a {...props} href="/tools" />}
                 size="lg"
                 variant="secondary"
             >
-                Open the app
+                Explore the tools
             </Button>
         ),
         includes: [
-            'The component library, on Base UI and Tailwind v4',
-            'The chart kit',
-            'The theme builder, with its contrast checks',
-            'Your theme as app.css, in light and dark',
+            'Build a colour palette',
+            'Check contrast in light and dark mode',
+            'Preview colour blindness simulations',
+            'Export Tailwind CSS and a design brief for your agent',
         ],
     },
     {
         id: 'pro',
         name: 'Pro',
-        badge: 'Soon',
-        figure: 'Early access',
-        line: 'Per person, priced at launch. Leave your email and we write once, when Pro opens.',
-        action: <EarlyAccessForm plan="pro" />,
+        price: `€${proLaunchPriceEUR}`,
+        priceNote: 'One-time payment at launch',
+        line: 'Bring Continuum into the product you’re building and give your coding agent the same design rules.',
+        action: (
+            <div className="flex flex-col gap-2">
+                <EarlyAccessForm plan="pro" />
+                <p className="text-neutral-600 text-sm">No payment is taken when you sign up.</p>
+            </div>
+        ),
         includes: [
-            'The skill, so your agent designs in Continuum',
-            'An MCP connection for each project',
-            'Theme sync: one source of truth across projects',
-            'Page recipes for dashboards, lists, forms and settings',
+            'Commercial licence for one developer',
+            'React component library and chart kit for production use',
+            'Claude Code skills for building and refining UI',
+            'MCP tools for looking up design rules and auditing existing screens',
         ],
         lead: true,
     },
@@ -139,17 +139,19 @@ const PlanColumn = ({ plan }: { plan: Plan }) => {
                     <h3 className="text-base text-neutral-600" id={titleId}>
                         {plan.name}
                     </h3>
-                    {plan.badge && <Badge tone="neutral">{plan.badge}</Badge>}
                 </div>
-                <p className="mt-3 font-medium text-3xl text-neutral-950 tabular-nums leading-[1.15] tracking-[-0.02em]">
-                    {plan.figure}
+                <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                    <span className="font-medium text-4xl text-neutral-950 tabular-nums leading-[1.15] tracking-[-0.02em]">
+                        {plan.price}
+                    </span>
+                    <span className="text-neutral-600 text-sm">{plan.priceNote}</span>
                 </p>
-                <p className="mt-3 max-w-[320px] text-base text-neutral-600 leading-[1.6]">
+                <p className="mt-3 max-w-[440px] text-base text-neutral-600 leading-[1.6]">
                     {plan.line}
                 </p>
             </div>
             <div>{plan.action}</div>
-            <ul aria-label={`In ${plan.name}`} className="flex flex-col gap-3">
+            <ul aria-label={`Included in ${plan.name}`} className="flex flex-col gap-3">
                 {plan.includes.map(item => (
                     <li className="flex gap-3 text-base text-neutral-800 leading-[1.5]" key={item}>
                         <Check
@@ -169,7 +171,11 @@ const PlanColumn = ({ plan }: { plan: Plan }) => {
     // does and the halo stays outside. Every layer between the grid and the parts stays a subgrid,
     // so the rows still line up.
     return plan.lead ? (
-        <article aria-labelledby={titleId} className={cn(subgrid, 'lg:col-span-2')}>
+        <article
+            aria-labelledby={titleId}
+            className={cn(subgrid, 'scroll-mt-24 lg:col-span-2')}
+            id="pro-early-access"
+        >
             <RimLight
                 className={cn(subgrid, 'rounded-panel [--rim-strength:0.45]')}
                 faceClassName={cn(face, 'bg-neutral-50')}
@@ -189,13 +195,11 @@ const PlanColumn = ({ plan }: { plan: Plan }) => {
     );
 };
 
-/** Pricing: what is free for good, and what Pro adds. */
 export const Pricing = () => (
     <Section
-        description="The components and the theme builder are open and free. Pro gives your agent the skill and keeps every project on one theme."
-        eyebrow="Pricing"
+        description="Get a feel for Continuum in the browser, then take it into your codebase when you’re ready to ship."
         id="pricing"
-        title="Free to build with. Pro to keep it whole."
+        title="Pricing"
     >
         <div className="flex flex-col gap-6">
             <Reveal delay={1}>

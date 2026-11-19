@@ -31,6 +31,7 @@ export const ToolLanding = ({ page }: { page: LegacyPage }) => {
                     name: `${page.name}, by Continuum`,
                     description: page.lead,
                     path,
+                    priceEUR: 0,
                 })}
             />
             <PageHero

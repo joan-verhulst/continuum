@@ -322,6 +322,8 @@ type SidebarOptions = {
     groupCounts: boolean;
     shortcuts: boolean;
     footer: boolean;
+    /** A hairline round it: the sidebar as a panel of its own. */
+    bordered?: boolean;
 };
 
 /** Reports' pages when it folds out: a few, so they fit under it. */
@@ -466,7 +468,7 @@ const FullSidebar = ({
     );
 
     return (
-        <Sidebar className={className} style={style}>
+        <Sidebar bordered={options.bordered} className={className} style={style}>
             <SidebarHeader>
                 <SidebarLogo>
                     <Boxes {...iconProps} />
@@ -585,6 +587,7 @@ const sidebarKnobs: Knob[] = [
         when: values => values.reports === 'fold' || values.level === 'top',
     },
     { id: 'footer', label: 'Footer', switch: true, default: true },
+    { id: 'border', label: 'Border', switch: true, default: false },
     {
         id: 'look',
         label: 'Look',
@@ -605,7 +608,8 @@ const SidebarPreview = ({ knobs }: PreviewProps) => {
     return (
         // On a piece of the canvas, as a sidebar sits on it, rather than loose on the surface.
         <FullSidebar
-            className="h-190 rounded-item bg-neutral-100"
+            // A piece of canvas on item corners; bordered, the sidebar draws its own panel corners.
+            className={knobs.border ? 'h-190 bg-neutral-100' : 'h-190 rounded-item bg-neutral-100'}
             iconProps={previewIcon}
             options={{
                 switcher: Boolean(knobs.switcher),
@@ -622,6 +626,7 @@ const SidebarPreview = ({ knobs }: PreviewProps) => {
                 groupCounts: Boolean(knobs.groupCounts),
                 shortcuts: Boolean(knobs.shortcuts),
                 footer: Boolean(knobs.footer),
+                bordered: Boolean(knobs.border),
             }}
             style={style}
         />

@@ -28,9 +28,12 @@ export const githubUrl = 'https://github.com/joan-verhulst/continuum';
 /** The product's name, and the short one for everything typed (domain, npx, npm). */
 export const brand = { name: 'Continuum', short: 'contui' } as const;
 
+/** Launch price for a one-time, single-developer commercial licence. */
+export const proLaunchPriceEUR = 299;
+
 /** One line on what Continuum is: the default description and the Open Graph fallback. */
 export const tagline =
-    'A design system for quiet, dense tool UI in React, with a skill and an MCP server that carry its decisions to Claude Code, and a free Tailwind v4 theme builder.';
+    'Continuum is a commercial design system for React products. Build screens with its components and give your coding agent the same rules for layout, theming and design review.';
 
 /** An absolute URL for a site path ('/components/button' → 'https://contui.dev/components/button'). */
 export const absolute = (path: string) => `${siteUrl}${path.startsWith('/') ? path : `/${path}`}`;

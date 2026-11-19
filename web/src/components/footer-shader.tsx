@@ -2,6 +2,8 @@
 
 import { cn } from 'continuum';
 import { useEffect, useRef } from 'react';
+import { fullScreenProgram, isPale, toRgb, WAVE } from '@/lib/gl';
+import { type Tunable, tunable } from '@/lib/tunable';
 
 /*
  * The footer's light: a glow from below, shining up through the name as if the letters were glass.
@@ -10,8 +12,11 @@ import { useEffect, useRef } from 'react';
  * for five wavelengths from red to violet, violet spreading furthest, and each is given its own colour:
  * the shafts' tips fan out into a rainbow while the light near the letters stays warm white.
  *
- * The source sits far below the panel's foot, so the shafts rise from the letters nearly straight,
- * spreading only a little (the box under the canvas brightens towards the foot, as the hero board does); it sways a little, very slowly, and under reduced motion it holds still. The shader draws
+ * The source sits at the middle of the box's foot, held still, so the shafts fan up and out
+ * from the letters towards the top corners; behind them a haze, the same
+ * light from a far softer name, spreads wider without adding to the brightness at the letters. A
+ * sway can move the source slowly from side to side (off by default; under reduced motion it always
+ * holds still). Every number is in LIGHT, set by eye at `?tune` (FooterTuner). The shader draws
  * the name itself, measured from the wordmark in the page (`[data-footer-name]`: its font, its
  * place, the mark's SVG), so the light can pass through it; the page's wordmark goes transparent only
  * once the shader runs (`data-lit` on the panel), so without WebGL the plain name shows. The canvas is clear
@@ -20,53 +25,58 @@ import { useEffect, useRef } from 'react';
  * the name.
  */
 
-const VERTEX = `
-attribute vec2 position;
-void main() { gl_Position = vec4(position, 0.0, 1.0); }
-`;
-
 const FRAGMENT = `
 precision highp float;
 uniform sampler2D face;
 uniform sampler2D edge;
 uniform sampler2D wide;
+uniform sampler2D haze;
 uniform vec2 size;
 uniform vec2 source;
 uniform vec3 surface;
 uniform float pale;
+uniform vec2 reach;
+uniform float falloff;
+uniform float exposure;
+uniform float colour;
+uniform float hazeStrength;
+uniform float hazeReach;
+uniform float drawGlass;
+uniform float margin;
+uniform float strength;
 
-float T(sampler2D t, vec2 uv) { return texture2D(t, vec2(uv.x, 1.0 - uv.y)).r; }
-
-// A visible wavelength, in nm, as RGB (after Dan Bruton's approximation).
-vec3 wave(float l) {
-    vec3 c = vec3(1.0, 0.0, 0.0);
-    if (l < 440.0) c = vec3(-(l - 440.0) / 60.0, 0.0, 1.0);
-    else if (l < 490.0) c = vec3(0.0, (l - 440.0) / 50.0, 1.0);
-    else if (l < 510.0) c = vec3(0.0, 1.0, -(l - 510.0) / 20.0);
-    else if (l < 580.0) c = vec3((l - 510.0) / 70.0, 1.0, 0.0);
-    else if (l < 645.0) c = vec3(1.0, -(l - 645.0) / 65.0, 0.0);
-    return clamp(c, 0.0, 1.0);
+// A mask at uv. The masks reach \`margin\` past the box on every side, so glass outside it (and the
+// walk towards a source outside it) still finds what lies there.
+float T(sampler2D t, vec2 uv) {
+    float s = 1.0 + 2.0 * margin;
+    return texture2D(t, vec2((uv.x + margin) / s, (1.0 + margin - uv.y) / s)).r;
 }
+
+${WAVE}
 
 // The light that came through the letters, at uv, for a spread k: walk back towards the glow and
 // gather the glass on the way, so a point beyond a letter (away from the glow) catches its light. The
 // walk is the same length wherever the glow is, so the shafts keep their reach with the glow behind
 // the name, and the wavelengths have room to part.
-float shaft(vec2 uv, float k) {
+float shaft(sampler2D t, vec2 uv, float k) {
     vec2 aspect = vec2(size.x / size.y, 1.0);
     // Never past the source itself.
     vec2 apart = (source - uv) * aspect;
-    float reach = min(k, length(apart));
-    vec2 toward = normalize(apart + 0.0001) / aspect * reach / 14.0;
+    float walk = min(k, length(apart));
+    vec2 toward = normalize(apart + 0.0001) / aspect * walk / 14.0;
     float sum = 0.0;
     float weight = 1.0;
+    float total = 0.0;
     vec2 p = uv;
     for (int i = 0; i < 14; i++) {
-        sum += T(wide, p) * weight;
-        weight *= 0.83;
+        sum += T(t, p) * weight;
+        total += weight;
+        weight *= falloff;
         p += toward;
     }
-    return sum / 5.0;
+    // Over the weights' own sum, so a longer or shorter falloff spreads the light without changing
+    // how much of it there is.
+    return sum / total;
 }
 
 void main() {
@@ -75,24 +85,29 @@ void main() {
 
     // Five wavelengths, 680 to 410 nm: the shorter, the further the glass spreads it.
     vec3 light = vec3(0.0);
+    vec3 haloed = vec3(0.0);
     vec3 white = vec3(0.0);
     for (int i = 0; i < 5; i++) {
         float t = float(i) / 4.0;
         vec3 hue = wave(mix(680.0, 410.0, t));
+        float k = mix(reach.x, reach.y, t);
         // Weighted by reach: the reds, which reach least, as strong near the letters as the blues are
         // further out, so every colour of the spectrum shows.
-        light += hue * shaft(uv, mix(0.16, 0.78, t)) * mix(1.25, 0.9, t);
+        float w = mix(1.25, 0.9, t);
+        light += hue * shaft(wide, uv, k) * w;
+        // The haze: the same light from a far softer name, reaching further, behind the shafts.
+        haloed += hue * shaft(haze, uv, k * hazeReach) * w;
         white += hue;
     }
-    light /= white;
+    light = (light + haloed * hazeStrength) / white;
     // Where the wavelengths part, keep their colour: the overlap would otherwise wash them to white.
     vec3 grey = vec3(dot(light, vec3(0.3333)));
-    light = max(grey + (light - grey) * 3.0, 0.0);
+    light = max(grey + (light - grey) * colour, 0.0);
 
     // The source is not drawn: the box under the canvas brightens towards its foot, as the hero's
     // board does, and that gradient is where the light comes from.
     // Exposed to match the light it had with the glow drawn, so its colours keep their balance.
-    light = 1.0 - exp(-light * 1.05);
+    light = 1.0 - exp(-light * exposure);
     float lit = clamp(max(light.r, max(light.g, light.b)), 0.0, 1.0);
 
     // The surface (and its dots) is the page's, under the canvas: the canvas gives only the light, as
@@ -100,7 +115,9 @@ void main() {
     // one it tints the white, since light can't darken it.
     vec3 hue = light / max(lit, 0.001);
     vec3 tint = surface * mix(vec3(1.0), hue, 0.9) * (1.0 - 0.1 * lit);
-    vec3 glowing = mix(light, tint * lit, pale);
+    // Strength dims the light evenly, as an opacity: its colours stay where they are.
+    vec3 glowing = mix(light, tint * lit, pale) * strength;
+    lit *= strength;
 
     // The letters, the glass the light comes through: lit a touch more near the glow, a hairline
     // where their edge faces it.
@@ -114,35 +131,14 @@ void main() {
     vec3 letters = ink * mix(0.9, 1.0, near) + vec3(rim) * (1.0 - pale) * 0.5;
     // A glow round the letters, as lit glass has: white on the dark surface, the light's own tint on
     // the light one.
-    float halo = T(edge, uv) * (1.0 - T(face, uv)) * 0.35 * (1.0 - pale);
-    float f = T(face, uv);
+    float halo = T(edge, uv) * (1.0 - T(face, uv)) * 0.35 * (1.0 - pale) * drawGlass;
+    // Where the page draws the glass itself (drawGlass 0), the canvas gives the light alone.
+    float f = T(face, uv) * drawGlass;
     float alpha = clamp(mix(min(lit + halo, 1.0), 1.0, f), 0.0, 1.0);
     vec3 colour = mix(glowing + vec3(halo), letters, f);
     gl_FragColor = vec4(clamp(colour, 0.0, 1.0), alpha);
 }
 `;
-
-/** A CSS colour as 0–1 RGB, through a 1×1 canvas, so any syntax the page uses (oklch included) reads. */
-const toRgb = (() => {
-    let context: CanvasRenderingContext2D | null = null;
-    return (css: string): [number, number, number] => {
-        context ??= document.createElement('canvas').getContext('2d', { willReadFrequently: true });
-        if (!context) return [0, 0, 0];
-        context.clearRect(0, 0, 1, 1);
-        context.fillStyle = css;
-        context.fillRect(0, 0, 1, 1);
-        const [r = 0, g = 0, b = 0] = context.getImageData(0, 0, 1, 1).data;
-        return [r / 255, g / 255, b / 255];
-    };
-})();
-
-const compile = (gl: WebGLRenderingContext, type: number, source: string) => {
-    const shader = gl.createShader(type);
-    if (!shader) return null;
-    gl.shaderSource(shader, source);
-    gl.compileShader(shader);
-    return gl.getShaderParameter(shader, gl.COMPILE_STATUS) ? shader : null;
-};
 
 /** The mark's SVG as an image, in white, so it can be drawn into the masks. */
 const markImage = (svg: SVGSVGElement) =>
@@ -165,68 +161,105 @@ const markImage = (svg: SVGSVGElement) =>
         image.src = url;
     });
 
+/** Paints the glass white, in the canvas's pixels from the box's top left, shifted `dx` sideways. */
+type Paint = (context: CanvasRenderingContext2D, dx: number) => void;
+
+/** A rectangle of glass: its centre in the box's 0–1 (y up, past 0 or 1 is outside), its size in box widths and heights. */
+export type GlassRect = { x: number; y: number; width: number; height: number };
+
+/** A rectangle of glass, painted where it lies, inside the box or out. */
+const rectPaint =
+    (canvas: HTMLCanvasElement, rect: GlassRect): Paint =>
+    (context, dx) =>
+        context.fillRect(
+            (rect.x - rect.width / 2) * canvas.width + dx,
+            (1 - rect.y - rect.height / 2) * canvas.height,
+            rect.width * canvas.width,
+            rect.height * canvas.height,
+        );
+
 /**
- * The wordmark drawn white on black at the canvas's pixel size, once per blur (in css px) and, for the
- * light it lets through, smeared sideways by its `spread`: where it
- * sits in the page, in its own font, so the shader's letters lie exactly on the page's.
+ * An element of the page as glass: where it sits, word by word in its own font (so text over several
+ * lines lies right too), with any SVG in it (the mark), so the shader's glass lies exactly on the page's.
  */
-const drawName = async (
-    canvas: HTMLCanvasElement,
-    name: HTMLElement,
-    blurs: { blur: number; spread?: number }[],
-) => {
-    const svg = name.querySelector('svg');
-    const mark = svg ? await markImage(svg) : null;
+const elementPaint = async (canvas: HTMLCanvasElement, name: HTMLElement): Promise<Paint> => {
+    const svgs = [...name.querySelectorAll('svg')];
+    const marks = await Promise.all(svgs.map(markImage));
     // Every place is read here, at one moment, after the wait: read on either side of it, a scroll
-    // in between would put the name off by however far the page moved.
+    // in between would put the glass off by however far the page moved.
     const box = canvas.getBoundingClientRect();
     const ratio = canvas.width / Math.max(1, box.width);
-    const style = getComputedStyle(name);
-    const text = [...name.childNodes].find(
-        node => node.nodeType === Node.TEXT_NODE && node.textContent?.trim(),
-    );
-    const range = document.createRange();
-    if (text) range.selectNodeContents(text);
-    const textRect = range.getBoundingClientRect();
-    const markRect = svg?.getBoundingClientRect();
-    const words = text?.textContent?.trim();
+    const words: { text: string; rect: DOMRect; style: CSSStyleDeclaration }[] = [];
+    const walker = document.createTreeWalker(name, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+        const parent = node.parentElement;
+        if (!parent || parent.closest('svg')) continue;
+        const style = getComputedStyle(parent);
+        for (const match of (node.textContent ?? '').matchAll(/\S+/g)) {
+            const range = document.createRange();
+            range.setStart(node, match.index);
+            range.setEnd(node, match.index + match[0].length);
+            const rect = range.getClientRects()[0];
+            if (rect) words.push({ text: match[0], rect, style });
+        }
+    }
+    const markRects = svgs.map(svg => svg.getBoundingClientRect());
 
-    /** The name and its mark, white, shifted `dx` canvas px sideways. */
-    const paint = (context: CanvasRenderingContext2D, dx: number) => {
-        if (text && words) {
+    return (context, dx) => {
+        context.textBaseline = 'alphabetic';
+        for (const { text, rect, style } of words) {
             const fontSize = Number.parseFloat(style.fontSize) * ratio;
             context.font = `${style.fontWeight} ${fontSize}px ${style.fontFamily}`;
             const spacing = Number.parseFloat(style.letterSpacing);
-            if ('letterSpacing' in context && !Number.isNaN(spacing))
-                context.letterSpacing = `${spacing * ratio}px`;
-            const metrics = context.measureText(words);
-            context.textBaseline = 'alphabetic';
+            if ('letterSpacing' in context)
+                context.letterSpacing = `${Number.isNaN(spacing) ? 0 : spacing * ratio}px`;
+            const metrics = context.measureText(text);
             context.fillText(
-                words,
-                (textRect.left - box.left) * ratio + dx,
-                (textRect.top - box.top) * ratio + metrics.fontBoundingBoxAscent,
+                text,
+                (rect.left - box.left) * ratio + dx,
+                (rect.top - box.top) * ratio + metrics.fontBoundingBoxAscent,
             );
         }
-        if (markRect && mark) {
+        markRects.forEach((rect, index) => {
+            const mark = marks[index];
+            if (!mark) return;
             context.drawImage(
                 mark,
-                (markRect.left - box.left) * ratio + dx,
-                (markRect.top - box.top) * ratio,
-                markRect.width * ratio,
-                markRect.height * ratio,
+                (rect.left - box.left) * ratio + dx,
+                (rect.top - box.top) * ratio,
+                rect.width * ratio,
+                rect.height * ratio,
             );
-        }
+        });
     };
+};
 
-    return blurs.map(({ blur, spread = 0 }) => {
+/**
+ * The glass drawn white on black, once per blur (in css px) and, for the light it lets through,
+ * smeared sideways by its `spread`. Each mask reaches `margin` (in box sizes) past the box on every
+ * side. A soft mask is drawn small (a quarter of the canvas's pixels, its blur with it) and
+ * stretched by the shader, which keeps a slider's drag quick; a `skip`ped one is a black pixel.
+ */
+const drawMasks = (
+    canvas: HTMLCanvasElement,
+    paint: Paint,
+    margin: number,
+    blurs: { blur: number; spread?: number; skip?: boolean }[],
+) => {
+    const ratio = canvas.width / Math.max(1, canvas.clientWidth);
+    return blurs.map(({ blur, spread = 0, skip = false }) => {
         const mask = document.createElement('canvas');
-        mask.width = canvas.width;
-        mask.height = canvas.height;
+        const scale = skip ? 0 : blur >= 16 ? 0.25 : 1;
+        mask.width = Math.max(1, Math.round(canvas.width * (1 + 2 * margin) * scale));
+        mask.height = Math.max(1, Math.round(canvas.height * (1 + 2 * margin) * scale));
         const context = mask.getContext('2d');
         if (!context) return mask;
         context.fillStyle = '#000';
         context.fillRect(0, 0, mask.width, mask.height);
-        if (blur) context.filter = `blur(${blur * ratio}px)`;
+        if (skip) return mask;
+        context.scale(scale, scale);
+        context.translate(canvas.width * margin, canvas.height * margin);
+        if (blur) context.filter = `blur(${blur * ratio * scale}px)`;
         context.fillStyle = '#fff';
         if (!spread) {
             paint(context, 0);
@@ -246,39 +279,89 @@ const drawName = async (
     });
 };
 
-export const FooterShader = ({ className }: { className?: string }) => {
+/**
+ * The light's settings. The source is in the box's 0–1, y up, so a negative y is below its foot; the
+ * reach runs from the reds' (near) to the violets' (far), in box heights. Blur and spread shape the
+ * masks (css px), so changing them redraws the name; the rest are uniforms.
+ */
+export const LIGHT = {
+    x: 0.5,
+    y: -0.01,
+    sway: 0,
+    near: 0.04,
+    far: 0.99,
+    falloff: 0.9,
+    exposure: 1.3,
+    colour: 3,
+    blur: 58,
+    spread: 200,
+    haze: 0.3,
+    hazeReach: 1.6,
+    hazeBlur: 110,
+    hazeSpread: 420,
+    strength: 1,
+};
+
+export type Light = typeof LIGHT;
+
+/** The settings in effect, shared with the tuner (`?tune`). */
+export const lightStore = tunable<Light>(LIGHT);
+
+/** The settings that shape the masks, so a change to any of them redraws the name. */
+const maskKeys = ['blur', 'spread', 'hazeBlur', 'hazeSpread'] as const;
+
+/**
+ * Light shining through glass. The glass is either an element (a selector: text, and any SVG in it),
+ * looked for in the nearest `[data-light-scope]` round the canvas or else the canvas's parent, or a
+ * rectangle read from the settings, which may lie outside the box (`margin`, in box sizes, is how far
+ * past its edges the glass and the source can be). The surface is the scope's. With `letters`, the
+ * shader draws the glass itself (the footer's name, the page's own going transparent once it does);
+ * without, nothing of the glass is drawn and the canvas gives the light alone.
+ */
+export const GlassLight = <T extends Light>({
+    className,
+    glass,
+    store,
+    letters = false,
+    margin = 0,
+    bake,
+}: {
+    className?: string;
+    glass: string | ((light: T) => GlassRect);
+    store: Tunable<T>;
+    letters?: boolean;
+    margin?: number;
+    /** Filled with a function that draws the light and returns it as an image (a WebP data URL, alpha kept). */
+    bake?: { current: (() => string) | null };
+}) => {
     const canvas = useRef<HTMLCanvasElement>(null);
 
     useEffect(() => {
         const element = canvas.current;
         const panel = element?.parentElement;
-        const name = panel?.querySelector<HTMLElement>('[data-footer-name]');
+        const scope = element?.closest<HTMLElement>('[data-light-scope]') ?? panel;
+        const name = typeof glass === 'string' ? scope?.querySelector<HTMLElement>(glass) : null;
         const gl = element?.getContext('webgl', { antialias: false, premultipliedAlpha: true });
-        if (!element || !panel || !name || !gl) return;
-        const vertex = compile(gl, gl.VERTEX_SHADER, VERTEX);
-        const fragment = compile(gl, gl.FRAGMENT_SHADER, FRAGMENT);
-        const program = gl.createProgram();
-        if (!vertex || !fragment || !program) return;
-        gl.attachShader(program, vertex);
-        gl.attachShader(program, fragment);
-        gl.linkProgram(program);
-        if (!gl.getProgramParameter(program, gl.LINK_STATUS)) return;
-        // biome-ignore lint/correctness/useHookAtTopLevel: WebGL's useProgram, not a React hook
-        gl.useProgram(program);
-
-        // One triangle over the whole canvas.
-        gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
-        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
-        const position = gl.getAttribLocation(program, 'position');
-        gl.enableVertexAttribArray(position);
-        gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+        if (!element || !panel || !scope || !gl) return;
+        if (typeof glass === 'string' && !name) return;
+        const program = fullScreenProgram(gl, FRAGMENT);
+        if (!program) return;
         const uniform = {
             size: gl.getUniformLocation(program, 'size'),
             source: gl.getUniformLocation(program, 'source'),
             surface: gl.getUniformLocation(program, 'surface'),
             pale: gl.getUniformLocation(program, 'pale'),
+            reach: gl.getUniformLocation(program, 'reach'),
+            falloff: gl.getUniformLocation(program, 'falloff'),
+            exposure: gl.getUniformLocation(program, 'exposure'),
+            colour: gl.getUniformLocation(program, 'colour'),
+            hazeStrength: gl.getUniformLocation(program, 'hazeStrength'),
+            hazeReach: gl.getUniformLocation(program, 'hazeReach'),
+            strength: gl.getUniformLocation(program, 'strength'),
         };
-        const textures = ['face', 'edge', 'wide'].map((sampler, index) => {
+        gl.uniform1f(gl.getUniformLocation(program, 'drawGlass'), letters ? 1 : 0);
+        gl.uniform1f(gl.getUniformLocation(program, 'margin'), margin);
+        const textures = ['face', 'edge', 'wide', 'haze'].map((sampler, index) => {
             gl.activeTexture(gl.TEXTURE0 + index);
             const texture = gl.createTexture();
             gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -295,35 +378,77 @@ export const FooterShader = ({ className }: { className?: string }) => {
         let visible = false;
         let alive = true;
         const started = performance.now();
-        // The source's place, in the panel's 0–1 (y up): below the foot, in the middle.
-        // Far below the foot, so the shafts rise nearly straight rather than fanning from a point.
-        const glow = { x: 0.5, y: -0.9 };
+        let light = store.get();
+        // The sway, added to the source's place.
+        let sway = 0;
 
         const readSurface = () => {
-            const [r, g, b] = toRgb(getComputedStyle(panel).backgroundColor);
-            gl.uniform3f(uniform.surface, r, g, b);
-            gl.uniform1f(uniform.pale, 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.5 ? 1 : 0);
+            const rgb = toRgb(getComputedStyle(scope).backgroundColor);
+            gl.uniform3f(uniform.surface, ...rgb);
+            gl.uniform1f(uniform.pale, isPale(rgb) ? 1 : 0);
         };
 
         const draw = () => {
             gl.uniform2f(uniform.size, element.width, element.height);
-            gl.uniform2f(uniform.source, glow.x, glow.y);
+            gl.uniform2f(uniform.source, light.x + sway, light.y);
+            gl.uniform2f(uniform.reach, light.near, light.far);
+            gl.uniform1f(uniform.falloff, light.falloff);
+            gl.uniform1f(uniform.exposure, light.exposure);
+            gl.uniform1f(uniform.colour, light.colour);
+            gl.uniform1f(uniform.hazeStrength, light.haze);
+            gl.uniform1f(uniform.hazeReach, light.hazeReach);
+            gl.uniform1f(uniform.strength, light.strength);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
         };
+        // Read in the same task as the draw, while the frame is still in the buffer.
+        if (bake)
+            bake.current = () => {
+                draw();
+                return element.toDataURL('image/webp', 0.92);
+            };
 
-        // The name into the three masks: sharp for its face, a little soft for its edge, wide for
-        // the light it lets through.
+        // The name into the four masks: sharp for its face, a little soft for its edge, wide for
+        // the light it lets through, wider still for the haze behind it.
+        // While one is being drawn, a change only marks it to run once more after, with the latest
+        // values: a slider's drag skips what it passed through.
+        let running = false;
+        let again = false;
         const measure = async () => {
+            if (running) {
+                again = true;
+                return;
+            }
+            running = true;
+            do {
+                again = false;
+                await remask();
+            } while (again && alive);
+            running = false;
+        };
+
+        const remask = async () => {
             // Soft light needs few pixels: 0.75 of a css px, a fraction of a retina screen's.
             const ratio = 0.75;
-            element.width = Math.max(1, Math.round(element.clientWidth * ratio));
-            element.height = Math.max(1, Math.round(element.clientHeight * ratio));
-            gl.viewport(0, 0, element.width, element.height);
+            const width = Math.max(1, Math.round(element.clientWidth * ratio));
+            const height = Math.max(1, Math.round(element.clientHeight * ratio));
+            // Set only when it changed: setting it clears what is drawn.
+            if (element.width !== width || element.height !== height) {
+                element.width = width;
+                element.height = height;
+                gl.viewport(0, 0, width, height);
+            }
             await document.fonts.ready;
-            const masks = await drawName(element, name, [
-                { blur: 0.6 },
-                { blur: 4 },
-                { blur: 40, spread: 260 },
+            const paint =
+                typeof glass === 'string'
+                    ? name && (await elementPaint(element, name))
+                    : rectPaint(element, glass(light));
+            if (!paint) return;
+            const masks = drawMasks(element, paint, margin, [
+                // The glass's face and edge only where the shader draws it.
+                { blur: 0.6, skip: !letters },
+                { blur: 4, skip: !letters },
+                { blur: light.blur, spread: light.spread },
+                { blur: light.hazeBlur, spread: light.hazeSpread },
             ]);
             if (!alive) return;
             masks.forEach((mask, index) => {
@@ -340,12 +465,14 @@ export const FooterShader = ({ className }: { className?: string }) => {
         const loop = (now: number) => {
             // A sway of a few hundredths either side, once in about 50 s: the shafts stay alive
             // without anything to follow.
-            glow.x = 0.5 + 0.03 * Math.sin(((now - started) / 1000) * 0.125);
+            sway = light.sway * Math.sin(((now - started) / 1000) * 0.125);
             draw();
             if (visible && !still) frame = requestAnimationFrame(loop);
         };
 
         measure();
+        // Again once whatever brings the glass in (a reveal's rise) has settled.
+        const settled = window.setTimeout(measure, 1500);
         const sizes = new ResizeObserver(() => measure());
         sizes.observe(element);
         const seen = new IntersectionObserver(([entry]) => {
@@ -362,9 +489,22 @@ export const FooterShader = ({ className }: { className?: string }) => {
             attributes: true,
             attributeFilter: ['class', 'data-mode', 'data-theme', 'style'],
         });
+        // A change from the tuner: the masks again when their shape changed, else just a frame.
+        const tuned = store.subscribe(() => {
+            const before = light;
+            light = store.get();
+            const moved =
+                typeof glass !== 'string' &&
+                JSON.stringify(glass(before)) !== JSON.stringify(glass(light));
+            if (moved || maskKeys.some(key => before[key] !== light[key])) measure();
+            else draw();
+        });
 
         return () => {
             alive = false;
+            if (bake) bake.current = null;
+            window.clearTimeout(settled);
+            tuned();
             cancelAnimationFrame(frame);
             sizes.disconnect();
             seen.disconnect();
@@ -372,7 +512,12 @@ export const FooterShader = ({ className }: { className?: string }) => {
             delete panel.dataset.lit;
             gl.getExtension('WEBGL_lose_context')?.loseContext();
         };
-    }, []);
+    }, [glass, store, letters, margin, bake]);
 
     return <canvas aria-hidden className={cn('block size-full', className)} ref={canvas} />;
 };
+
+/** The footer's: the name, drawn by the shader in its light. */
+export const FooterShader = ({ className }: { className?: string }) => (
+    <GlassLight className={className} glass="[data-footer-name]" letters store={lightStore} />
+);

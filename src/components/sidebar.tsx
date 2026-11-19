@@ -286,12 +286,20 @@ export const AppPanel = ({ className, ...props }: ComponentProps<'main'>) => {
     );
 };
 
+export type SidebarProps = ComponentProps<'aside'> & {
+    /**
+     * A hairline round it, on panel corners, with the gutter the AppPanel keeps: the sidebar as a
+     * panel of its own beside the page. Off by default, so the sidebar shares the canvas.
+     */
+    bordered?: boolean;
+};
+
 /**
  * The email sequencing sidebar: no fill of its own, so it shares the canvas,
  * with a logo row, blocks of navigation and an account footer. In an `AppShell` narrower than
  * the sidebar's width it becomes the shell's drawer.
  */
-export const Sidebar = ({ className, id, ref, ...props }: ComponentProps<'aside'>) => {
+export const Sidebar = ({ className, id, ref, bordered = false, ...props }: SidebarProps) => {
     const shell = useShellNavigation();
     const ownId = useId();
     const drawerRef = useBothRefs(ref, shell?.setDrawer);
@@ -300,9 +308,11 @@ export const Sidebar = ({ className, id, ref, ...props }: ComponentProps<'aside'
         <aside
             className={cn(
                 'flex w-sidebar shrink-0 flex-col overflow-hidden',
+                bordered && 'm-2 rounded-panel border border-neutral-200',
                 shell && navDrawerClasses(shell.open),
                 className,
             )}
+            data-bordered={bordered || undefined}
             data-slot="sidebar"
             id={shell ? (id ?? ownId) : id}
             ref={shell ? drawerRef : ref}
