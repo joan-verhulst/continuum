@@ -46,8 +46,8 @@ shows (a selected row, an open menu, a checked switch); other states only in the
 Common traps: a dock item's corner is the dock's minus 4; a badge is 22 high with 11px medium text; a switch
 is 48 × 24 with a 20 knob; a stat card is label over value over a delta pill, nothing inline after the value;
 a ruled table's head is 41 high on the `neutral-100` fill; a select trigger shows its value at 13 and a 16
-chevron in `neutral-600`; an input's value is 13, not 14 or 16; a secondary button is a `neutral-100` fill
-with a hairline and 13/500 `neutral-950` text, and no button carries a shadow; a placeholder, a hint or a
+chevron in `neutral-600`; an input's value is 13, not 14 or 16; a secondary button has no fill,
+a hairline and 13/500 `neutral-950` text, and no button carries a shadow; a placeholder, a hint or a
 helper line is `neutral-600`, never `neutral-500`; an unchecked checkbox or radio has a `neutral-300` border,
 one step over the hairline; a badge's text is its tone's 800 on the tone's 500 at 20%; a rising delta is `success-800`.
 Widths of panels and popups are the fixed pixels in `foundations.md` (sidebar 256, toast 360, popover 288,
@@ -56,9 +56,10 @@ dialog 480, sheet 512), whatever the theme's spacing unit.
 ## Composing a screen
 
 Follow the kind's anatomy in `pages.md` top to bottom with its stated gaps, inside the shell (sidebar 256,
-panel inset 8, header bar 54, the column at its width, 96 below the header bar). Put the primary action where
+panel inset 8, header bar 54, the column at its width, 64 below the header bar). Put the primary action where
 the kind puts it. Give the column 96 of bottom padding when the page has a dock, and place the dock 24 above
-the panel's foot.
+the panel's foot. The artboard is as tall as its content: a page longer than the panel runs on past the foot,
+as it scrolls in the app.
 
 ## Checking
 

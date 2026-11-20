@@ -7,7 +7,8 @@ description: Use this skill whenever you build, design, restyle or review produc
 
 A design system for tool UI, distilled from real product screens. The look is **quiet, dense and precise**:
 13px type in two weights, hairline borders, one action colour, almost no shadow, controls on two heights so
-anything beside anything lines up, and one default theme with a builder for others.
+anything beside anything lines up, and one default theme with a builder for others. Quiet is how the parts
+look, never a reason to show less: what a reader needs is on the screen.
 
 The system is **described, not just implemented**: every value is stated in units and every page kind as an
 anatomy, so it can be drawn anywhere. The React library is one rendering of it; on a canvas or in plain CSS the
@@ -15,11 +16,13 @@ same files decide the same screen.
 
 ## The numbers, on one page
 
+For checking a value as you go, never instead of the references (Building something, step 2).
+
 - **Type**: 13px base (11 meta · 14 titles in overlays · 16 section titles · 18 KPI values · 24 page titles),
   line height 1.25, tracking 0.32px, Geist, weights 400 and 500 only, sentence case.
 - **Colour**: five ramps 50–950 used by role; surface `neutral-50`, canvas `neutral-100`, hairline `neutral-200`,
   secondary text `neutral-600` (hints, placeholders and helper text too: no read text is lighter),
-  primary text `neutral-950`; the focus ring and an unchecked checkbox's or radio's border `neutral-500`; dark
+  primary text `neutral-950`; the focus ring `neutral-500`; dark
   mode reverses each ramp. One action colour (near-black by default). Hover is a 5% wash, selection 7%. Status
   colour: 500 at 20% behind 800 text, every tone; a delta `success-800` for good news, `error-600` for bad, by meaning not direction.
 - **Lines**: a 1px hairline for every border; no dividers between sections; shadows only on what floats. A group
@@ -32,13 +35,15 @@ same files decide the same screen.
   claiming room by what it holds (about 32 under a bare title over a short card, 48 under a title and its line
   over a settings card, 64 over a dense table); side padding fixed by
   kind, content padding and gaps derived by the formula (`foundations.md`, `/continuum-fix-padding`).
-- **Layout**: sidebar 256 on the canvas, the panel inset 8, header bar 54, the page 96 below it in a centred
+- **Layout**: sidebar 256 on the canvas, the panel inset 8, header bar 54, the page 64 below it in a centred
   column of 640 (forms, settings) · 896 (overview, detail) · 1080 (tables) · 1280 (dense tables). Panel and
   popup widths (sidebar 256, toast 360, popover 288, dialog 480, sheet 512) are fixed pixels, not spacing.
 - **Decisions**: one primary action per view · an item opens on its own page · the sidebar holds places, not a
-  create button · every page has a breadcrumb · a list's views go in the floating dock, not tabs · one column on
-  a detail, a form and settings · a part is on the screen because the reader does something with it there, not
-  because a page of that kind usually has one · design at 1920 × 1080 and check it holds at 1440 × 900 and 390, in light and dark.
+  create button · every page has a breadcrumb · a list's views go in the floating dock, not tabs · one column,
+  in reading order; a side panel only for what stays in view while the work changes · every section on a page titled the
+  same way · a part is on the screen because the reader does something with it there, not because a page of
+  that kind usually has one · design at 1920 × 1080 and check it holds at 1440 × 900 and 390, in light and
+  dark. Each is stated in full in `pages.md` (Standing decisions).
 
 ## The files
 
@@ -60,13 +65,23 @@ same files decide the same screen.
 ## Building something
 
 1. **Take the content as given.** The fields, columns, actions and data are the product's; ask when they are
-   missing, assume the least and say so when no one can answer. Never invent a product.
-2. **Pick the medium file** for where the work happens: `media/react.md` in a React project (set it up if it is
-   not), `media/canvas.md` in Paper or Figma, `media/css.md` elsewhere.
+   missing, assume the least and say so when no one can answer. Never invent a product. When the request is
+   loose, first write down **what a reader opening this screen needs to know first and what they act on**.
+   That list is the content; every item on it reaches the screen.
+2. **Open what this screen needs before deciding anything.** This page is the procedure and a summary; the
+   decisions are in the references, and a screen built from this page alone misses them. Open:
+   - the medium file for where the work happens: `media/react.md` in a React project (set it up if it is not),
+     `media/canvas.md` in Paper or Figma, `media/css.md` elsewhere;
+   - the section of `pages.md` for the screen's kind (step 3), or `method.md` › When the screen is the work;
+   - for each item of content, the row in `patterns.md` whose **when** it meets;
+   - for each part, as it is chosen (step 6), its entry in `components.md` (charts in `charts.md`).
+
+   With the Continuum MCP server connected, the same lookups are tools (`get_page_kind`, `find_pattern`,
+   `get_component`), and `plan_screen` makes the first two for the whole screen.
 3. **Name the page kind** from what the screen is for (`pages.md`): it sets the width and the parts marked
    always. A product the references never covered is expected: `method.md`. When the screen is the work (an
-   editor, a player, a mail client, a canvas), it has no page kind: its layout is the genre's (or the
-   reference the person gave), its look and its parts are Continuum's (`method.md` › When the screen is the work).
+   editor, a player, a canvas), it has no page kind: the steps below lay it out from its content, and its
+   look and parts are Continuum's (`method.md` › When the screen is the work).
 4. **Group the content** before any part is chosen: write down which items belong together, as a tree. A
    group is what is read or acted on together: a setting and the settings that only mean something while it
    is on, a label and its value, a title and its line, the filters and the chips they applied, a record's
@@ -74,14 +89,49 @@ same files decide the same screen.
    eyebrow or a title over it), and its title is what a reader scans for, so it reads above the items it
    holds. The gaps then follow the tree: never more room inside a group than between it and its neighbours.
    A screen whose spacing feels off almost always has a group nobody named.
-5. **Choose the parts** for the content, piece by piece: the part in `components.md` (charts from `charts.md`) or
+5. **Place the groups**, deciding in this order:
+   - **Many at once, or one at a time:** how the reader goes through the content. Scanning, finding or
+     comparing many is a table or a grid. Working through items one by one to decide each (reviewing,
+     approving, judging, correcting) is a different screen, and it opens on the first item still to decide,
+     never on a grid of them all with this as a mode behind a toggle: the item in play fills the main region,
+     large, with the one before and after it as context and its decision actions in a bar pinned at the foot of
+     the main region, in view however far the item scrolls; the set is a narrow
+     list of small previews with each item's state at the left, to jump to any of them. Two versions of the
+     item that are compared (a source and its translation, a before and an after) sit side by side at equal
+     width inside the main region.
+   - **Regions:** what must stay in view together. One main region, holding what the reader works on most
+     (where the assigning, editing or deciding happens, not what they pick from); a second at its right only
+     for what stays in view while the main one changes (`pages.md` › The side panel), at the side panel's 360,
+     never wider and never an equal half. Regions share the panel's surface and meet on a hairline; a region
+     never takes a fill, which reads as the shell around it.
+   - **Size:** each thing is as big as its content and the task need (a document its page, a grid its columns,
+     a form its measure); what is judged closely (a photo to choose, a page to review) is large, what is
+     picked from (thumbnails, a list of items) small. Among peers, the one in play (live, current, the one
+     being decided) leads: more room and its state named, the rest quieter. A region takes the room left,
+     never stretching what it holds; what is smaller than its region sits centred in it, or where its genre
+     puts it. What has no size of its own (a room, a map, a canvas) fills its region. The item in play is set
+     at the size it is judged at: text read and compared closely at reading size (16, or 18 for one short item),
+     an image large; the 13 base is the interface around it.
+   - **Frames:** a unit gets one mark (step 4). A region gets no frame of its own: never a frame in a frame,
+     never a fill standing in for one. A unit inside a region (a pair compared, a receipt, a document) still
+     gets its one mark.
+   - **Controls where they act:** a control sits on what it changes. An item's actions on the item, and the
+     way to add one where it would go; a selection's beside it, or anchored to it when it is small; the view's
+     (zoom, the period) over what it views; the whole screen's in its head or the dock. One primary per view.
+6. **Choose the parts** for the content, piece by piece: the part in `components.md` (charts from `charts.md`) or
    the row in `patterns.md` whose **when** that content meets, and the variant or size for its spot. Content is
    mapped to parts, never parts filled with content; take the simpler thing where it does the job. Write only
    the layout between the parts, its gaps from the spacing formula. Where nothing fits, make a new part by the
    recipe in `method.md`, borrowing every value.
-6. **Build it** with real state for the main task, realistic data in the product's domain, and empty states.
-7. **Look at it** at 1920 × 1080, where it is designed, then at 1440 × 900 and at 390, in light and dark, and run
-   the check below until it holds.
+7. **Write the plan down before any code**: a few lines each for steps 1, 3, 4, 5 and 6 (what the reader needs
+   first, the kind, the groups, how they are placed, the parts), naming the sections of step 2 it rests on. A
+   reference screen is compared against after, never the starting point. When the Continuum MCP server is
+   connected, `plan_screen` gives this plan from
+   this same text: call it here.
+8. **Build it** with real state for the main task, realistic data in the product's domain, and empty states.
+9. **Look at it** at 1920 × 1080, where it is designed, then at 1440 × 900 and at 390, in light and dark, and run
+   the check below until it holds. When the MCP server is connected, `audit_ui` on the rendered page
+   (`get_snapshot_script` in the browser) checks it too.
 
 In doubt, do less, and do what an existing part already does. A reference screen shows one way to apply these
 files; where it differs from what they state, the files are right.
@@ -101,35 +151,10 @@ The same rules, read the other way. Each of these was got wrong on a real review
    within one step of what the formula gives is right (how rows are counted moves it a step): never a finding.
 4. **Structure is yours to check**, against the page kind's anatomy in `pages.md`: one primary action, views in
    the dock, no container in a container, space not dividers, the column at its kind's width, no part that
-   repeats another, every group of content marked (step 4 of building) and never more room inside it than around it. `audit_source` reads values from code; it sees structure only partly.
+   repeats another, every group of content marked (step 4 of building), placed by step 5 and never more room inside it than around it. `audit_source` reads values from code; it sees structure only partly.
 5. **Improving is not building.** Fix what departs from the rules and keep the content and the behaviour. A
    part the page kind allows but the page does not have (a search, a stat row, a filter) is a proposal for the
    report, never something to add.
-
-## Gotchas
-
-Each of these was got wrong on a real screen without it.
-
-- **A spacing no part draws comes from the formula**, never a guess or a number copied from another place
-  (`/continuum-fix-padding`, or `get_spacing` with the MCP server). Between a page head and a dense table that
-  is about 64, not 16.
-- **Closeness never groups.** Rows that belong together get a hairline around them or an eyebrow over them,
-  never a tighter gap. An eyebrow never repeats the title of what holds it.
-- **An index's toolbar is the table's own top bar**, inside its frame, not a row above it. Search is always in
-  it unless the items have nothing to type: never leave it out by guessing how readers look things up.
-- **A delta is coloured by what it means**: churn falling is good news, `success-800`; not by its direction.
-- **Colour is for state, never for a label.** A reference (`INV-1043`, `#4821`), an "Internal note" or "AI"
-  label, a tag stays neutral; a tone marks only a state that needs the eye (failed, overdue, paid). In an
-  accent theme the primary is loud: a primary pill that is not a state pulls the eye off the content.
-- **The page head starts 96 below the header bar's hairline** (128 on a large screen), measured from the bar,
-  never from the panel's top, and never squeezed to fit more in. Content longer than the panel runs on under
-  the floating dock and past the foot, as it scrolls in the app; never thin it out or fold it to end early.
-- **Design at 1920 × 1080**, not 1440: the system is drawn there and holds below it.
-- **Never invent content** to fill a part: a part with nothing real to show is left out.
-- **A page head stays lean, by moving things, not dropping them**: the title, at most one badge (the state
-  that needs the eye), one meta line of plain text, the page's actions. What else the object carries moves to
-  where it is read: people with roles to a card of their own, history to a timeline, a second state into the
-  meta line as text. Only what repeats something already on the screen (an icon tile echoing the nav) goes.
 
 ## Check
 
@@ -137,7 +162,7 @@ Every part earns its place (each control changes something the reader sees, each
 for, nothing is there because the anatomy or a reference screen had it) · components first where a part is the
 same thing, never a near one bent to fit · only roles, never
 a hex · hairline, not shadow · space, not dividers (full-width ones in
-floating containers only) · the column at its kind's width · one column on a detail, a form, settings · corners
+floating containers only) · the column at its kind's width · one column on a form and settings · corners
 nested and concentric · controls on 34 or 38 · two weights, 13 base · icons at stroke 2 · one action colour and
 one primary action per view · views in the dock · a breadcrumb on every page · a visible focus ring · no read text lighter than
 `neutral-600` · works in

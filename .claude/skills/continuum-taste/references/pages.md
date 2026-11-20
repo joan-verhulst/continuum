@@ -12,7 +12,7 @@ canvas (neutral-100)
 ├── sidebar  256 wide, straight on the canvas, no fill, no border; its own 8–12 of inset keeps items off the panel
 └── panel    8 from the canvas at the top, right and bottom, flush with the sidebar · panel corners (20) · hairline · surface
     ├── header bar  54 high · hairline below · breadcrumb left (16 in) · at most two actions right (8 in)
-    ├── the page    a centred column (below), starting 96 below the header bar's hairline (128 on a large screen)
+    ├── the page    a centred column (below), starting 64 below the header bar's hairline
     └── floating dock, when the page has views: centred, 24 above the panel's bottom edge
 ```
 
@@ -104,6 +104,23 @@ The title row every page starts with:
 - **20** between the section head and its content.
 - Sections are apart by the **block gap** (each claims room by what it holds, about 32 to 64) and never
   divided by a line. A long document's sections are 64 apart.
+- **One way per page.** Every section on a page puts its title the same way: all as a section head over its
+  content, or all as the title inside their card. Never a section title over one block beside a card that
+  carries its own.
+
+## The side panel
+
+**Only for what stays in view while the main column is worked or changes**: the settings of what is selected
+in an editor, the summary and steps of a flow that hold through each of its steps (what it costs, where it is),
+a record's details while its tabs change, a queue waiting on the reader. A static panel at the panel's right
+edge, never a second column of cards inside the page's column. What is read once, in order, stays in the
+column. Most pages have none; no page has two.
+
+- Fixed at **360** wide, the full height under the header bar, apart from the main area by a **full-height
+  hairline**; it scrolls on its own and the page's column stays centred in what is left.
+- Inside, its sections are stacked and **split by full-width hairlines**, no cards: each 20 padding, a title 13
+  medium `neutral-950` with its count 13 `neutral-600` after it, its rows 12 below and 12 apart.
+- Below 1280 it leaves the right edge and its sections come under the main column, in the same order.
 
 ## The page kinds
 
@@ -123,17 +140,16 @@ Reads how things are going over one period; it holds no create action.
 1. **The page head**, always: the title and a line. At its right, a control only **when it changes everything
    below it**: the period picker (a 34 select or date-range picker) when the reader can pick the period the
    figures are measured over, a filter when the whole page can be narrowed. A page on one fixed period says so
-   in its line ("The last 30 days") and has no picker. A live state (people online now, a sync running) is not
-   the head's: it belongs to the card of the figure it describes.
-2. **The figure that leads**, always, as a chart card full width (its anatomy in `charts.md`): the measure the
-   page is about over the period, its figure and change in the card's head, the chart under it.
-3. **Stat cards**, **when the page has other figures the reader comes for**, two to four of them: in a row, 16
-   apart; 16 padding; a 13 regular `neutral-600` label, the value 18 medium `neutral-950` 4 below, a delta pill
-   (22 high, success or error, neutral when flat) 12 below. Never added to fill the row: three that matter beat
-   four. **A stat card never repeats the chart's figure.**
-4. **Breakdowns**, **when the reader's next question is "from where" or "what moved"**: two list cards side by
-   side, 16 apart (20 padding, a 13 `neutral-600` title, a ranked bar list or a short `rows` table), or an
-   activity list. A page whose leading figure has no parts to break into ends at the stat cards.
+   in its line ("The last 30 days") and has no picker.
+2. **Stat cards**, **when the page has figures the reader comes for besides the leading one**, two to four of
+   them, first, the block gap under the head, built as Key figures (`patterns.md`). Read first because they
+   answer "how are we doing" at a glance. Never added to fill the row: three that matter beat four.
+3. **The figure that leads**, always, as a chart card full width under the stat cards (its anatomy in
+   `charts.md`): the measure the page is about over the period, its figure and change in the card's head,
+   the chart under it. With no stat cards it follows the head.
+4. **Breakdowns**, **when the reader's next question is "from where" or "what moved"**: what answers it (a
+   ranked bar list, a short table, an activity list), each a section of its own. A page whose leading figure
+   has no parts to break into ends at the chart.
 
 ### Index (`wide`, 1080; `dense` only for a very dense table)
 
@@ -141,7 +157,7 @@ Finds one thing among many and opens it. **A row opens the item's own page**, wi
 a pane beside the list, and never the item's editor in a sheet.
 
 1. **The page head**, always: the title and a line on what the list holds ("The companies on a plan or a trial,
-   and the ones that have left"; a count in the dock is not also in the head). At its right, only what acts on
+   and the ones that have left"). At its right, only what acts on
    the whole list: a secondary action **when the list has one** (Export), and the primary (New customer)
    **when items are made here and the list has no views**; with views it is the dock action. A list nobody
    adds to by hand has no primary.
@@ -160,7 +176,8 @@ a pane beside the list, and never the item's editor in a sheet.
 3. **Applied filters**, only when there are any, in a row under the toolbar, still inside the table's frame: one soft chip per group (24 high, 8 side,
    13, `pill` corners, the `neutral-100` fill and no border, `neutral-600` text, a 12 × at its end: "Channel is
    Online store or Wholesale"), wrapping to more lines if needed, and a ghost "Clear all" at the end.
-4. **The table**, always, the block gap below the head (a dense table claims a lot of room: about 64 under a head with its line; the toolbar is inside its frame, not a step between them): ruled, in its frame (`control` corners, the hairline, the surface). Head 41
+4. **The table**, always, the block gap below the head: ruled, in its frame (`control` corners, the hairline,
+   the surface). Head 41
    high, `neutral-100` fill, 13 regular `neutral-600`, 12 padding. Rows 41 high, 12 padding, a hairline
    between rows, the first column (the name) 13 medium `neutral-900`, meta columns `neutral-700`, numbers
    tabular and right-aligned, status as a badge, people as a 24 avatar with the name. Hover 3% wash; a
@@ -180,10 +197,11 @@ a pane beside the list, and never the item's editor in a sheet.
 7. **Empty**, in the table's place: a left-aligned dashed panel with what goes here, one sentence and one
    secondary button; a filter that matched nothing offers to clear it.
 
-### Detail (`default`, 896): one column, never split
+### Detail (`default`, 896)
 
-Everything about one object, stacked. **No side column of facts** beside the main one; history and comments
-go in a sheet.
+Everything about one record (a customer, an invoice, a project, a run in progress), stacked in the order the
+reader asks for it; history and comments go in a sheet. When the record has facets and its details are wanted
+whichever one is open, the details move to the side panel and stay there while the facets change.
 
 1. **Title row**, always: the object's avatar or icon tile (36) left, 16 from the text; the name 24 medium with
    its status badge beside it (8 apart); a meta line 14 `neutral-600` 4 below ("northwind.com · A customer
@@ -199,13 +217,15 @@ go in a sheet.
 
    Pill tabs are for a tight spot inside a card or a dialog.
 3. **Numbers**, **when the object's figures are what the reader opens it for** (an account's revenue, a
-   cycle's progress): up to three stat cards, 16 apart. A fact that happens to be a number (a seat count, a
-   plan's price) goes in the facts grid instead.
-4. **Facts**, when the object has attributes to look up: a list card (20 padding) titled "Details" (13 regular
-   `neutral-600`), holding a grid of label-over-value pairs, three across, 24 between columns and 20 between
-   rows: the label 13 regular `neutral-600`, the value 13 medium `neutral-950` 6 below.
-5. The rest, each a list card or a section, each only when the object has it: usage meters, recent activity
-   (with "Full history" opening the sheet), related tables.
+   cycle's progress, how long a run has taken): up to three stat cards, built as Key figures (`patterns.md`),
+   and under them, when one of those figures is read over time, its chart card. A fact that happens to be a
+   number (a seat count, a plan's price) goes with the facts instead.
+4. **Facts**, when the object has attributes to look up: label and value rows (Key–value facts, `patterns.md`)
+   in one list card titled "Details" (13 regular `neutral-600`), or in the side panel when the page has one.
+   Several groups of facts (billing, the contract, the account owner) are titled groups of that one list, never a card each
+   built alike.
+5. The rest, each a list card or a section, each only when the object has it: usage meters, the people or
+   things that are part of it, recent activity (with "Full history" opening the sheet), related tables.
 
 ### Create or edit one object (`narrow`, 640)
 
@@ -245,10 +265,9 @@ dialog over the page it came from.
    becomes a section (16 medium title, 20 above its cards), each kind a card of its own; sections 48 apart.
 3. **A setting row**, for each thing that is switched, picked or done: the title 13 medium `neutral-950` over
    its description 13 regular `neutral-600` (2 between), the control at the right, the row at least 38 high.
-   **One control per setting**, chosen by what the setting is: a **switch** (48 × 24, round, `neutral-300`
-   off, the action colour on, a 21 knob) when it turns a thing on; a **picker** (a 34 select with the value
-   and a right chevron: "Select ›", "After a day ›") when it sets a value; a **secondary button** when it
-   does a thing ("Add seats"). Never a row of checkboxes per channel, never a group of radios in a row.
+   **One control per setting**, chosen by what the setting is: a **switch** when it turns a thing on; a
+   **picker** (a 34 select with the value and a right chevron: "Select ›", "After a day ›") when it sets a
+   value; a **secondary button** when it does a thing ("Add seats").
 4. **A dependent setting**, one that only means something while another is on, sits with the setting it
    depends on and is dimmed (50%) while that one is off. **Ruled**: between the same two hairlines, **12 below
    it** (against 24 and a hairline between settings), **stepped in behind a 1px `neutral-200` guide line** (4
@@ -318,9 +337,9 @@ Each line below narrows a part the page has; it never adds one.
 
 | Kind                | Narrow                                                                                           |
 | ------------------- | ------------------------------------------------------------------------------------------------ |
-| Overview            | The head's control, when it has one, under the title; the chart card full width; stat cards two across; a pair of list cards one column. |
+| Overview            | The head's control, when it has one, under the title; stat cards two across; the chart card full width. |
 | Index               | The search takes the toolbar's row; the selects fold into the one Filter button (the page decides, not the table); a table's optional columns hide and the rest scroll sideways, each cell on one line; pagination becomes ‹ 3 of 25 ›; the dock scrolls and its action is its icon. |
-| Detail              | The title row stacks: the avatar and name, the meta line, then the actions; the tabs scroll; the numbers one column; the facts two across. |
+| Detail              | The title row stacks: the avatar and name, the meta line, then the actions; the tabs scroll; the numbers one column; the side panel's sections come under the column. |
 | Create or edit, settings, assistant | Unchanged: they are one column already. A segmented control of more than four options becomes a select. |
 | Sign in             | The card takes the screen less 16 a side.                                                        |
 
@@ -351,7 +370,8 @@ notice).
   enough to keep them in sight; a long one, or one worked in like an editor, takes the dock too.
 - **A part earns its place.** An anatomy says what a page may hold and when; a control that changes nothing
   the reader sees, or a card for a number nobody came for, is left out.
-- **One column.** A detail, a form and a settings page never split into two columns.
+- **One column**, in reading order. A form and a settings page never split into two columns, and unlike cards
+  never sit side by side in a grid; what stays in view beside the work goes in the side panel.
 - **Space, not lines**, between sections and groups; a container only for a self-contained unit or a divided
   list.
 - **A group is marked, never implied**: a hairline, a container (never inside another), or an eyebrow. Not a

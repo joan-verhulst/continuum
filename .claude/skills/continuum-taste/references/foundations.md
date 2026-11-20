@@ -103,7 +103,8 @@ may make the tint the accent's palest step instead.
 ### Status colour
 
 Only in badges, deltas, status dots, icon tiles, meters near a limit, and invalid states. Never on a whole row,
-never for emphasis. `primary` means information and the assistant (a scheduled badge, the AI chip), not
+never for emphasis. **Colour is for a state, never for a label**: a reference (`INV-1043`), a tag or a kind stays
+neutral, and a tone marks only a state that needs the eye (failed, overdue, paid). `primary` means information and the assistant (a scheduled badge, the AI chip), not
 importance.
 
 | Use                                | Recipe                                                             |
@@ -231,18 +232,17 @@ stops at `3xl`. Most of a screen is `xs`; a screen with many sizes is wrong.
   kept only where nothing else can mark an edge: rows inside a table or list that is itself a bordered
   container (a table, a description list, the settings in a group card), the parts of a floating container, the
   header bar the page scrolls under. Inside a card the rule runs at the content's width; in a floating
-  container, full width. On a page: no line
+  container, full width, edge to edge, never inset by the container's padding. On a page: no line
   between sections, no line under a page title. Line tabs sit on a hairline of their own, which is their
   track, not a divider.
 - **A group is marked, never implied.** Things that belong together are shown to by one of three means: a
   hairline between them and their neighbours, a container around them, or an eyebrow (a small quiet title)
-  over them. Closeness alone, a tighter gap, is not a group: it reads as a mistake in the rhythm. A container
+  over them, which never repeats the title of what holds it. Closeness alone, a tighter gap, is not a group: it reads as a mistake in the rhythm. A container
   never sits inside a container, so inside a card the mark is a hairline or an eyebrow.
-- **Dividers in floating containers** (dialogs, sheets, popovers, menus) run **full width**, edge to edge, never
-  inset by the container's padding.
 - **No card inside a card** as a general rule: a sheet or dialog holds its parts with space and full-width rules.
-  A card is for a self-contained unit (a KPI, a chart, a group of settings). The one exception is a highlighted
-  item inside a group, such as the plan in force inside a billing group.
+  A card is for a self-contained unit (a KPI, a chart, a group of settings). The one exception: an item in a list
+  card that must read as one unit apart from its neighbours (the option in force among others, a setting with
+  its dependents) takes a box of its own, on the `control` corner.
 - Floating things (dock, toolbar, menu, popover) are the surface colour with a hairline and the `float` shadow.
 
 ## Radius
@@ -263,7 +263,9 @@ Corners nest, each smaller than what holds it: **panel ⊃ card ⊃ control ⊃ 
 
 An element **inset in a rounded container takes the container's radius minus the inset**, so the curves stay
 concentric: a 32px dock item inside the 38px dock (3px inset, 1px border) is `dock − 4px`; a knob inside a 2px
-track is `track − 2px`.
+track is `track − 2px`. At a rounded end it sits as far from that end as from the top and bottom: an avatar, a
+checkbox, an icon or a chip at the start or end of a pill or a rounded row is inset the same on all three
+sides, never by the side padding a label takes.
 
 **The corner scale.** Every token is its value times one scale, which a theme sets (1 by default; 0 squares
 everything; 2 doubles). Growing, a corner stops 8px past its own value, so a doubled panel is 28px rather than
@@ -462,7 +464,7 @@ A chart's marks reveal once as it enters, the one motion past 400ms; its values 
 | Content column, `dense` (a very dense table)             | 1280                               |
 | Side padding of the column, below its width        | 16; 24 from a 640px screen; 16 in a compact shell |
 | `inset` (several dense tables): the panel less, a side | 64 from 1024px; 128 from 1536px     |
-| The page's top offset below the header bar         | 96; 128 on a large screen (from 1536px); 40 in a compact shell |
+| The page's top offset below the header bar         | 64 at every width; 40 in a compact shell |
 | Designed at, then checked at                       | 1920 × 1080; then 1440 × 900 and 390, light and dark |
 
 The column is centred and never runs to the panel's edge unless a page is explicitly asked to be `full`.
@@ -493,7 +495,7 @@ answer to the screen, since they float over it.
   results line, the dock's counts, a table's optional columns, keyboard hints on touch. Hidden, never folded
   into a "⋯" menu.
 - **Stack**, blocks side by side: the page head (the title, its line, then the actions), stat cards four
-  across become two, two cards side by side become one column, a facts grid three across becomes two.
+  across become two, two cards side by side become one column.
   Stacking costs height, which a phone has; width it has not.
 
 Fold into a smaller control only what can neither scroll nor go: pagination to ‹ 3 of 25 ›, a segmented control

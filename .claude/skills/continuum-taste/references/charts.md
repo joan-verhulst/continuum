@@ -137,6 +137,11 @@ The card's own figure at 24 stays the only thing larger. A named thing being rea
   `neutral-400` over the plot's full height, and its label always shown at the plot's foot beside the rule
   (on its left past the middle): 11 `neutral-600` on the chart's background, a 6 dot of its tone or a 12 icon in
   front. Nothing at the plot's top edge, no pin, no shadow: a note about the data, never louder than the series.
+  **Two labels never overlap**: a label that would touch another takes its rule's other side, and when neither
+  side is clear it steps up a row (the kit does this; drawn by hand, do the same).
+- **A measure and its companion** (revenue and orders, an error rate and a latency): two series in one card
+  with their key when they share a unit; two charts, one under the other over the same period with the same
+  markers, when they do not. Never one plot with two scales.
 
 ## Colour
 
