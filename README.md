@@ -36,9 +36,12 @@ pnpm dev
 `/continuum-taste build the invoices page`. `/continuum-fix-padding <file>` works out padding and gaps with the
 spacing formula.
 
-**MCP server.** Gives any agent the system as tools: component specs, page anatomies, patterns, tokens, the
-spacing formula, the theme builder, and an audit that says what to fix in UI that already exists, in any stack
-(React, Angular, Vue, plain CSS, Qt, a Paper or Figma canvas). Try it in another project:
+**MCP server.** Gives any agent the system as tools: a plan for a screen before any code, component specs, page
+anatomies, patterns, tokens, the spacing formula, the theme builder, and an audit of the rendered page or the
+source that says what to fix, in any stack (React, Angular, Vue, plain CSS, Qt, a Paper or Figma canvas). It
+serves the same text as the skill, so the two work together: the skill carries the decisions, the server plans
+from them and checks the result. Building a screen runs in that order: load the skill, `plan_screen`, build,
+then `audit_ui` on the rendered page. Try it in another project:
 
 - "Using Continuum, what's the spec of a Select?"
 - "Audit `src/components/Header.tsx` against Continuum and fix what it finds."

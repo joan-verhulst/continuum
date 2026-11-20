@@ -35,9 +35,13 @@ carry it into other projects. For any UI work here, the system is described in
   `references/foundations.md`, composition in `pages.md`, a part's spec in `components.md`, a recipe in
   `patterns.md`; the Tailwind names for the values live only in `references/media/react.md`. The `DESIGN.md`
   brief in `theme-export.ts` is the short form of foundations and pages for projects, so change both together.
+  The order a screen is built in (SKILL.md, Building something) is the skill's; the MCP quotes it (`plan_screen`
+  reads SKILL.md's step 5 from its bundle), never restates it.
   The README describes the package for people and points at the skill for the rest.
-- A design mistake an agent makes is fixed in the skill's text, then checked by re-running the same prompt with
-  only the skill's markdown to read; a component changes only on a judgement of the component itself.
+- A design mistake an agent makes is fixed in the skill's text as a general decision, then checked on prompts
+  that did not shape the fix, with the run's record showing it actually read the skill (the eval harness, kept outside this repo in `../continuum-evals/lab`, records it as
+  `sources`); one build per cell is noise, so judge on several. A component changes only on a judgement of the
+  component itself.
 - Experiments that are not part of the package live outside `src/`: `labs/` for their code (the raster lab), and
   `playground/src/lab` or `playground/src/raster` for their pages. They stay out of the skill.
 - Never edit the built copies under `.claude/skills/*/assets`, `references/screens` or `continuum-fix-padding/scripts/spacing.ts`;
