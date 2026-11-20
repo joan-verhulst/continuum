@@ -1,3 +1,7 @@
+import { createHash } from 'node:crypto';
+import { writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { z } from 'zod';
 import { snapshotScript } from '../audit/snapshot-script';
 import { defineTool, readOnly, text } from '../support/tool';
@@ -29,11 +33,20 @@ export const getSnapshotScriptTool = defineTool({
     annotations: readOnly,
     handle: ({ root, maxNodes }) => {
         const script = snapshotScript(root, maxNodes);
+        // Also saved as a file, so a script runner (Playwright, a project's own) takes it by path: a long
+        // script copied by hand is where an audit is given up. Only the system's temp folder is written.
+        const file = join(
+            tmpdir(),
+            `continuum-snapshot-${createHash('sha1').update(script).digest('hex').slice(0, 10)}.js`,
+        );
+        writeFileSync(file, script);
         return text(
             [
                 '# Snapshot script',
                 '',
-                'Run it in the page, in the mode you want checked, then pass the object it returns to `audit_ui` as `tree` (with `format` left empty).',
+                'Run it in the page, in the mode you want checked, then pass the object it returns to `audit_ui`: as `treeFile`, the path to the JSON it was saved to, or as `tree` (with `format` left empty).',
+                '',
+                `It is saved at \`${file}\`: give that path to whatever runs scripts in the page, rather than copying the script below.`,
                 '',
                 '- **Playwright**: `const tree = await page.evaluate(script)` with the script as a string.',
                 '- **A browser tool’s javascript call** (Claude in Chrome, the built-in browser, Chrome DevTools MCP): run it as given; if the tool only returns text, wrap it as `JSON.stringify(<script>)`.',

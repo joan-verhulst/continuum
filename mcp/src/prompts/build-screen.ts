@@ -21,17 +21,19 @@ const buildingSteps = () => {
 const tools = (stack: string) =>
     [
         'With this server:',
-        "- The page kind: `get_page_kind` gives its width, the parts marked always and each other part's condition.",
+        '- When the `continuum-taste` skill is installed, load it before anything else: the steps below plan from and check against its text, and never replace it.',
+        "- First, the plan: `plan_screen` with what the screen is for and its content items; write the plan it asks for out in your reply before any code. `get_page_kind` gives a kind's anatomy alone.",
         `- The parts: \`list_components\`, then \`get_component\` (medium '${stack}') for each part you choose; \`find_pattern\` for a need (key figures, filters, an empty state…), which says when it is the answer.`,
         '- Spacing: `get_spacing` for every box that holds content; every other value from the specs or `get_foundation`, never invented.',
-        `- Before looking: \`audit_source\` on the files you wrote${stack === 'canvas' ? ", or `audit_ui` on the canvas's computed styles" : ', or `audit_ui` on a snapshot of the running page (`get_snapshot_script`)'}; apply the fixes, propose the advice, audit again until clean.`,
+        '- Before looking: `audit_source` on the files you wrote; apply the fixes, audit again until clean.',
+        `- Last: ${stack === 'canvas' ? "`audit_ui` on the canvas's computed styles" : '`audit_ui` on the rendered page (run `get_snapshot_script` in the browser and pass its result)'}. It judges the composition too (blocks side by side, key figures before the chart, sections titled one way, long lists, the column's width): compare each piece of advice with your plan, and change the page where the plan was wrong.`,
     ].join('\n');
 
 export const buildScreenPrompt = definePrompt({
     name: 'build_screen',
     title: 'Build a screen',
     description:
-        "Build a screen in Continuum the skill's way: name its page kind, choose a part for each piece of content, work out its spacing with the formula, audit until clean, and look at it at 1920 × 1080, 1440 × 900 and 390.",
+        "Build a screen in Continuum the skill's way: plan it first (its kind, what a reader needs first, its order in one column), choose a part for each piece of content, work out its spacing with the formula, audit the source and then the rendered page, and look at it at 1920 × 1080, 1440 × 900 and 390.",
     args: {
         screen: z
             .string()

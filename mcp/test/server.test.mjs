@@ -23,6 +23,7 @@ test('a client is offered every tool, building first, then improving, then themi
     assert.deepEqual(
         tools.map(tool => tool.name),
         [
+            'plan_screen',
             'list_components',
             'get_component',
             'find_pattern',

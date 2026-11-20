@@ -33,13 +33,37 @@ const mentions = (sentence: string, wordsOfPart: string[]) => {
     );
 };
 
+/** The showcase kit's helpers an in-use piece may use, and what each stands for in a product. */
+const playgroundHelpers: [RegExp, string][] = [
+    [
+        /<App(Window|Scene)\b/,
+        '`AppWindow` is the page frame: the shell, header bar and page column; `AppScene` is that page with an overlay held open over it.',
+    ],
+    [
+        /<OpenDialog\b/,
+        '`OpenDialog` is a dialog held open: `Dialog` > `DialogContent` > `DialogHeader` (`DialogTitle` = its title), `DialogBody` (its children), `DialogFooter` (its footer).',
+    ],
+    [
+        /<DialogActions\b/,
+        '`DialogActions` is the footer: `DialogClose` as a secondary Button (Cancel), then `DialogClose` as the primary Button (its action).',
+    ],
+    [
+        /useStageContainer|container=\{stage\}/,
+        '`useStageContainer` and `container={stage}` keep an overlay inside the preview; leave them out, overlays portal to the body.',
+    ],
+    [
+        /<Labelled(InUse)?\b/,
+        '`Labelled` is a `Field` laid in a row: the control, then its `FieldLabel`, 10 apart.',
+    ],
+];
+
 const react = (part: ComponentMatch) => {
     const out = [`## In React\n\n\`import { ${part.exports.join(', ')} } from '${part.from}';\``];
     if (part.entry) {
         const knobs = knobsOf(part.entry);
         if (knobs.length > 0)
             out.push(`Variants and states (the playground's knobs):\n${renderKnobs(knobs)}`);
-        const inUse = inUseOf(part.entry);
+        const inUse = inUseOf(part.entry, part.exports);
         if (inUse?.title) {
             const head = `In use: ${inUse.title}${inUse.note ? `. ${inUse.note}` : ''}`;
             // Only code that shows the part itself; a wrapper round another component says nothing.
@@ -47,11 +71,15 @@ const react = (part: ComponentMatch) => {
                 inUse.code && part.exports.some(name => inUse.code?.includes(`<${name}`))
                     ? inUse.code
                     : undefined;
+            const helpers = code ? playgroundHelpers.filter(([pattern]) => pattern.test(code)) : [];
             const frame =
-                code && /<App(Window|Scene)\b/.test(code)
-                    ? " (AppWindow is the playground's page frame: the shell, header bar and column)"
+                helpers.length > 0
+                    ? `\n\nThe playground's own helpers in it, not in the library:\n${helpers.map(([, meaning]) => `- ${meaning}`).join('\n')}`
                     : '';
-            out.push(code ? `${head}${frame}\n\n\`\`\`tsx\n${code}\n\`\`\`` : head);
+            const cut = inUse.excerpt
+                ? ' (cut from a longer screen: the part with what holds it and what sits beside it)'
+                : '';
+            out.push(code ? `${head}${cut}\n\n\`\`\`tsx\n${code}\n\`\`\`${frame}` : head);
         }
     }
     out.push(

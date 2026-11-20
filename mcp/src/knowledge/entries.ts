@@ -114,10 +114,115 @@ export const renderKnobs = (knobs: Knob[]) =>
         })
         .join('\n');
 
-export type InUse = { title?: string; note?: string; code?: string };
+export type InUse = { title?: string; note?: string; code?: string; excerpt?: boolean };
 
-/** The entry's in-use piece: its title and note, and its code when it is short enough to read. */
-export const inUseOf = (entry: string, maxLines = 45): InUse | undefined => {
+const indentOf = (line: string) => line.length - line.trimStart().length;
+
+/** Where the JSX element opening at line `at` closes, by prettier's indentation. */
+const closeOf = (lines: string[], at: number) => {
+    const first = lines[at]?.trimEnd() ?? '';
+    if (first.endsWith('/>') || /<\/[\w.]+>$/.test(first)) return at;
+    const depth = indentOf(lines[at] ?? '');
+    for (let index = at + 1; index < lines.length; index++) {
+        const line = lines[index] ?? '';
+        if (!line.trim()) continue;
+        if (indentOf(line) < depth) return index - 1;
+        if (indentOf(line) === depth && /^(<\/|\/>)/.test(line.trim())) return index;
+    }
+    return lines.length - 1;
+};
+
+/** The element enclosing line `at`: the nearest opening tag above it, less indented. */
+const parentOf = (lines: string[], at: number) => {
+    const depth = indentOf(lines[at] ?? '');
+    for (let index = at - 1; index >= 0; index--) {
+        const line = lines[index] ?? '';
+        if (!line.trim() || indentOf(line) >= depth) continue;
+        return /^<[A-Za-z]/.test(line.trim()) ? index : undefined;
+    }
+    return undefined;
+};
+
+const dedent = (lines: string[]) => {
+    const depth = Math.min(...lines.filter(line => line.trim()).map(indentOf));
+    return lines.map(line => line.slice(depth)).join('\n');
+};
+
+/** Lines `from`..`to` with each child element longer than `fold` lines folded to its open and close. */
+const folded = (lines: string[], from: number, to: number, fold = 10) => {
+    const childDepth = indentOf(lines[from + 1] ?? '');
+    const out: string[] = [];
+    for (let index = from; index <= to; index++) {
+        const line = lines[index] ?? '';
+        out.push(line);
+        if (index === from || index === to) continue;
+        if (indentOf(line) !== childDepth || !/^<[A-Za-z]/.test(line.trim())) continue;
+        const close = closeOf(lines, index);
+        if (close - index + 1 <= fold || !/>\s*$/.test(line)) continue;
+        out.push(`${' '.repeat(childDepth + 4)}{/* … */}`, lines[close] ?? '');
+        index = close;
+    }
+    return out;
+};
+
+/**
+ * The part where it is used in a long piece: its first element, widened to the elements around it
+ * while the whole stays within `maxLines`, so the excerpt shows what holds the part and what sits
+ * beside it. A part too long to show whole has its long children folded; a parent too long to
+ * show whole keeps its opening line and its close.
+ */
+export const excerptOf = (code: string, names: string[], maxLines = 45) => {
+    const lines = code.split('\n');
+    const tag = new RegExp(`<(?:${names.join('|')})\\b`);
+    const at = lines.findIndex(line => tag.test(line));
+    if (at < 0) return undefined;
+    let start = at;
+    let end = closeOf(lines, at);
+    let body = lines.slice(start, end + 1);
+    if (body.length > maxLines) {
+        body = folded(lines, start, end);
+        if (body.length > maxLines) body = [...body.slice(0, maxLines - 1), '// …'];
+    }
+    for (;;) {
+        const parent = parentOf(lines, start);
+        if (parent === undefined) break;
+        const parentEnd = closeOf(lines, parent);
+        if (parentEnd - parent + 1 <= maxLines && body.length === end - start + 1) {
+            start = parent;
+            end = parentEnd;
+            body = lines.slice(start, end + 1);
+            continue;
+        }
+        const open = lines[parent] ?? '';
+        const name = /^<([\w.]+)/.exec(open.trim())?.[1];
+        if (!/>\s*$/.test(open) || !name || body.length + 4 > maxLines) break;
+        const cut = `${' '.repeat(indentOf(lines[start] ?? ''))}{/* … */}`;
+        return dedent([
+            open,
+            ...(start > parent + 1 ? [cut] : []),
+            ...body,
+            ...(end < parentEnd - 1 ? [cut] : []),
+            `${' '.repeat(indentOf(open))}</${name}>`,
+        ]);
+    }
+    return dedent(body);
+};
+
+/** The source's top-level `const` declarations, each to the line that closes it at column 0. */
+const declarations = (source: string) =>
+    [...source.matchAll(/^const (\w+)\b/gm)].map(match => {
+        const start = match.index ?? 0;
+        const end = /\n(?:\);|\};|\)|\];)\n/.exec(source.slice(start));
+        const text = end ? source.slice(start, start + end.index + end[0].length) : '';
+        return { name: match[1] ?? '', text: text.trim() };
+    });
+
+/**
+ * The entry's in-use piece: its title and note, and the code that shows the part (`names`) in it:
+ * the piece's own component, or a component it renders, or the inline render; cut round the part
+ * when it is long.
+ */
+export const inUseOf = (entry: string, names: string[] = [], maxLines = 45): InUse | undefined => {
     const at = entry.search(/export const inUse\b/);
     if (at < 0) return undefined;
     const block = balanced(entry, entry.indexOf('{', at));
@@ -126,17 +231,26 @@ export const inUseOf = (entry: string, maxLines = 45): InUse | undefined => {
         return match?.[2]?.replace(/\s+/g, ' ');
     };
     const component = /render:\s*\([^)]*\)\s*=>\s*<(\w+)/.exec(block)?.[1];
+    const all = declarations(entry);
+    const own = all.find(declaration => declaration.name === component);
+    // The playground's previews are knobs on a bare part, not the part in use.
+    const others = all.filter(
+        declaration => declaration !== own && !/Preview$/.test(declaration.name),
+    );
+    const render = /render:\s*\([^)]*\)\s*=>\s*([\s\S]*)/.exec(block)?.[1]?.replace(/,?\s*\}$/, '');
+    const candidates = [
+        ...(own ? [own.text] : []),
+        ...others.map(declaration => declaration.text),
+        ...(render ? [dedent(render.trim().split('\n'))] : []),
+    ];
+    const tag = names.length > 0 ? new RegExp(`<(?:${names.join('|')})\\b`) : undefined;
+    const text = tag ? candidates.find(candidate => tag.test(candidate)) : own?.text;
     let code: string | undefined;
-    if (component) {
-        const start = entry.search(new RegExp(`^const ${component}\\b`, 'm'));
-        if (start >= 0) {
-            // A top-level declaration ends at the first line that closes at column 0.
-            const end = /\n(?:\);|\};|\))\n/.exec(entry.slice(start));
-            const text = end
-                ? entry.slice(start, start + end.index + end[0].length).trim()
-                : undefined;
-            if (text && text.split('\n').length <= maxLines) code = text;
-        }
+    let excerpt = false;
+    if (text && text.split('\n').length <= maxLines) code = text;
+    else if (text && names.length > 0) {
+        code = excerptOf(text, names, maxLines);
+        excerpt = code !== undefined;
     }
-    return { title: field('title'), note: field('note'), code };
+    return { title: field('title'), note: field('note'), code, excerpt };
 };

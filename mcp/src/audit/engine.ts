@@ -1,5 +1,6 @@
 import type { SystemValues } from '../system/values';
 import type { AuditReport, ElementFact, Fact, Finding, Medium, Mode, UINode } from '../types';
+import { analyseComposition } from './composition';
 import { elementParts, treeParts } from './match';
 import { report } from './report';
 import { judge } from './rules';
@@ -146,7 +147,8 @@ export const auditFacts = (input: AuditInput, options: AuditOptions): AuditRepor
         const byPlace = new Map<string, Finding[]>();
         for (const each of findings) byPlace.set(each.at, [...(byPlace.get(each.at) ?? []), each]);
         findings.push(...treeParts(tree, medium, at => byPlace.get(at) ?? []));
-        if (options.structure !== false) findings.push(...analyseStructure(tree, system, mode));
+        if (options.structure !== false)
+            findings.push(...analyseStructure(tree, system, mode), ...analyseComposition(tree));
     }
 
     const guessed = input.facts.filter(fact => fact.guessed).length;

@@ -1,3 +1,4 @@
+import { readFile } from 'node:fs/promises';
 import { z } from 'zod';
 import { auditUi } from '../audit/ui';
 import { mediumArgument, modeArgument, themeArgument } from '../support/arguments';
@@ -85,6 +86,12 @@ export const auditUiTool = defineTool({
             .describe(
                 "The UI as a tree of boxes: the object get_snapshot_script's script returns, unchanged; or a styles tree, nodes { id, name, type, text, styles: { camelCase CSS }, children }, or { root: <node tree>, styles: { <node id>: <computed styles> } }, or a bare map of node id to computed styles.",
             ),
+        treeFile: z
+            .string()
+            .optional()
+            .describe(
+                'The path to a JSON file holding the tree, as saved from the page: for a large page, in place of passing tree itself.',
+            ),
         format: z
             .enum(['snapshot', 'styles'])
             .optional()
@@ -108,10 +115,17 @@ export const auditUiTool = defineTool({
             ),
     },
     annotations: readOnly,
-    handle: async ({ tree, format, facts, medium, theme, mode, structure }) => {
+    handle: async ({ tree: given, treeFile, format, facts, medium, theme, mode, structure }) => {
+        const tree = treeFile
+            ? JSON.parse(
+                  await readFile(treeFile, 'utf8').catch(() => {
+                      throw new ToolError(`Could not read the tree file "${treeFile}".`);
+                  }),
+              )
+            : given;
         if (tree === undefined && !facts?.length)
             throw new ToolError(
-                'Pass tree (the result of get_snapshot_script, or a canvas styles tree) or facts.',
+                'Pass tree or treeFile (the result of get_snapshot_script, or a canvas styles tree) or facts.',
             );
         const system = await loadSystem(theme).catch(() => {
             throw new ToolError(

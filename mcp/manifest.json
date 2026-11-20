@@ -3,6 +3,11 @@
     "version": "0.1.0",
     "tools": [
         {
+            "name": "plan_screen",
+            "title": "Plan a screen",
+            "description": "Plan a screen before writing any of it: give what it is for and the content it holds, and get its likely page kind with the anatomy and width (or, when the screen is the work, such as an editor, a canvas, a board or a map, how the work fills the panel), the pattern and parts for each item of content, and the plan to write out first: what a reader needs to know first, the order (one column on a page), the groups, whether a side panel is earned, which lists can grow, how sections are titled. Call it first when building a screen, write the plan down, then build it from get_component and audit the rendered page with audit_ui."
+        },
+        {
             "name": "list_components",
             "title": "List components",
             "description": "List every part of Continuum by group (App frame, Navigation, Actions, Inputs, Forms and settings, Filtering, Overlays, Content, Labels and identity, Status, Messages, AI, Charts), each with what it is for in one sentence. Call this first when composing a screen, to see the parts before drawing or writing any; then get_component for each part you use. Names joined by ' · ' are one entry (a part and its pieces)."
@@ -67,7 +72,7 @@
         {
             "name": "build_screen",
             "title": "Build a screen",
-            "description": "Build a screen in Continuum the skill's way: name its page kind, choose a part for each piece of content, work out its spacing with the formula, audit until clean, and look at it at 1920 × 1080, 1440 × 900 and 390.",
+            "description": "Build a screen in Continuum the skill's way: plan it first (its kind, what a reader needs first, its order in one column), choose a part for each piece of content, work out its spacing with the formula, audit the source and then the rendered page, and look at it at 1920 × 1080, 1440 × 900 and 390.",
             "args": [
                 {
                     "name": "screen",
