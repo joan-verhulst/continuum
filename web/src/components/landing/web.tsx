@@ -354,8 +354,8 @@ export const RuledFrame = ({
                     aria-hidden
                     className="pointer-events-none absolute inset-0 overflow-hidden rounded-[inherit]"
                 >
-                    {/* Without WebGL, the spectrum's blurred strip stands in for the light. */}
-                    <div className="absolute inset-x-[12%] -bottom-[28%] in-data-lit:hidden h-[45%] rounded-full bg-spectrum opacity-30 blur-[96px]" />
+                    {/* Only without WebGL (`data-unlit`), the spectrum's blurred strip stands in for the light: with it, nothing shows before the light fades in. */}
+                    <div className="absolute inset-x-[12%] -bottom-[28%] in-data-unlit:block hidden h-[45%] rounded-full bg-spectrum opacity-30 blur-[96px]" />
                     <HeroLight />
                 </div>
             )}

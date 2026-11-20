@@ -235,6 +235,73 @@ const elementPaint = async (canvas: HTMLCanvasElement, name: HTMLElement): Promi
 };
 
 /**
+ * Whether a 2D canvas applies `filter` (Safari's does not: there a blur set on it is ignored and the
+ * light comes out in hard bands). Tested once, by blurring a dot and reading beside it.
+ */
+const canvasFilter = (() => {
+    let works: boolean | undefined;
+    return () => {
+        if (works !== undefined) return works;
+        const test = document.createElement('canvas');
+        test.width = test.height = 20;
+        const context = test.getContext('2d', { willReadFrequently: true });
+        if (!context) {
+            works = false;
+            return works;
+        }
+        context.fillStyle = '#000';
+        context.fillRect(0, 0, 20, 20);
+        context.filter = 'blur(4px)';
+        context.fillStyle = '#fff';
+        context.fillRect(9, 9, 2, 2);
+        works = (context.getImageData(4, 10, 1, 1).data[0] ?? 0) > 0;
+        return works;
+    };
+})();
+
+/**
+ * A blur without `filter`, for Safari: the canvas halved step by step until a pixel spans about the
+ * blur's radius, then doubled back up, each step smoothed, so the steps' bilinear filtering spreads
+ * it as a blur would. Drawn back over the canvas in place.
+ */
+const blurInPlace = (canvas: HTMLCanvasElement, radius: number) => {
+    const { width, height } = canvas;
+    const smallest = Math.max(1, radius / 1.5);
+    const sizes: [number, number][] = [];
+    let w = width;
+    let h = height;
+    while (w / 2 >= width / smallest && w > 2 && h > 2) {
+        w = Math.max(1, Math.round(w / 2));
+        h = Math.max(1, Math.round(h / 2));
+        sizes.push([w, h]);
+    }
+    if (!sizes.length) return;
+    let current: HTMLCanvasElement = canvas;
+    const step = (to: [number, number]) => {
+        const next = document.createElement('canvas');
+        [next.width, next.height] = to;
+        const context = next.getContext('2d');
+        if (!context) return;
+        context.imageSmoothingEnabled = true;
+        context.imageSmoothingQuality = 'high';
+        context.drawImage(current, 0, 0, next.width, next.height);
+        current = next;
+    };
+    for (const size of sizes) step(size);
+    for (const size of sizes.slice(0, -1).reverse()) step(size);
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.save();
+    context.setTransform(1, 0, 0, 1, 0, 0);
+    context.globalCompositeOperation = 'copy';
+    context.globalAlpha = 1;
+    context.imageSmoothingEnabled = true;
+    context.imageSmoothingQuality = 'high';
+    context.drawImage(current, 0, 0, width, height);
+    context.restore();
+};
+
+/**
  * The glass drawn white on black, once per blur (in css px) and, for the light it lets through,
  * smeared sideways by its `spread`. Each mask reaches `margin` (in box sizes) past the box on every
  * side. A soft mask is drawn small (a quarter of the canvas's pixels, its blur with it) and
@@ -259,10 +326,15 @@ const drawMasks = (
         if (skip) return mask;
         context.scale(scale, scale);
         context.translate(canvas.width * margin, canvas.height * margin);
-        if (blur) context.filter = `blur(${blur * ratio * scale}px)`;
+        const radius = blur * ratio * scale;
+        // Where `filter` works the blur is drawn with the glass; elsewhere the sharp glass is
+        // blurred after (blurInPlace).
+        const later = blur > 0 && !canvasFilter();
+        if (blur && !later) context.filter = `blur(${radius}px)`;
         context.fillStyle = '#fff';
         if (!spread) {
             paint(context, 0);
+            if (later) blurInPlace(mask, radius);
             return mask;
         }
         // Smeared sideways rather than scaled: the name again and again, shifted out to `spread` css px
@@ -275,6 +347,7 @@ const drawMasks = (
             context.globalAlpha = i === 0 ? 1 : 0.32 * (1 - Math.abs(i) / (steps + 1)) ** 1.5;
             paint(context, (i / steps) * spread * ratio);
         }
+        if (later) blurInPlace(mask, radius);
         return mask;
     });
 };
@@ -325,6 +398,7 @@ export const GlassLight = <T extends Light>({
     letters = false,
     margin = 0,
     bake,
+    fadeIn = 0,
 }: {
     className?: string;
     glass: string | ((light: T) => GlassRect);
@@ -333,6 +407,11 @@ export const GlassLight = <T extends Light>({
     margin?: number;
     /** Filled with a function that draws the light and returns it as an image (a WebP data URL, alpha kept). */
     bake?: { current: (() => string) | null };
+    /**
+     * Fades the light up from dark over this many ms from its first draw (0, the default, shows it at
+     * once). The shader's own, under the settings: nothing in the store changes, so nothing is left dim.
+     */
+    fadeIn?: number;
 }) => {
     const canvas = useRef<HTMLCanvasElement>(null);
 
@@ -342,7 +421,10 @@ export const GlassLight = <T extends Light>({
         const scope = element?.closest<HTMLElement>('[data-light-scope]') ?? panel;
         const name = typeof glass === 'string' ? scope?.querySelector<HTMLElement>(glass) : null;
         const gl = element?.getContext('webgl', { antialias: false, premultipliedAlpha: true });
+        // Without WebGL, the panel says so (`data-unlit`), so a stand-in for the light shows only then.
+        if (panel && !gl) panel.dataset.unlit = '';
         if (!element || !panel || !scope || !gl) return;
+        let first = true;
         if (typeof glass === 'string' && !name) return;
         const program = fullScreenProgram(gl, FRAGMENT);
         if (!program) return;
@@ -381,6 +463,19 @@ export const GlassLight = <T extends Light>({
         let light = store.get();
         // The sway, added to the source's place.
         let sway = 0;
+        // How far the light has come up from dark, 0–1: held at 0 until the first draw, then raised.
+        let fade = fadeIn > 0 && !still ? 0 : 1;
+        let ramp = 0;
+        const rampUp = () => {
+            const from = performance.now();
+            const step = (now: number) => {
+                const t = Math.min(1, (now - from) / fadeIn);
+                fade = 1 - (1 - t) ** 3;
+                draw();
+                if (t < 1 && alive) ramp = requestAnimationFrame(step);
+            };
+            ramp = requestAnimationFrame(step);
+        };
 
         const readSurface = () => {
             const rgb = toRgb(getComputedStyle(scope).backgroundColor);
@@ -397,7 +492,7 @@ export const GlassLight = <T extends Light>({
             gl.uniform1f(uniform.colour, light.colour);
             gl.uniform1f(uniform.hazeStrength, light.haze);
             gl.uniform1f(uniform.hazeReach, light.hazeReach);
-            gl.uniform1f(uniform.strength, light.strength);
+            gl.uniform1f(uniform.strength, light.strength * fade);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
         };
         // Read in the same task as the draw, while the frame is still in the buffer.
@@ -427,8 +522,9 @@ export const GlassLight = <T extends Light>({
         };
 
         const remask = async () => {
-            // Soft light needs few pixels: 0.75 of a css px, a fraction of a retina screen's.
-            const ratio = 0.75;
+            // Soft light needs few pixels: 0.75 of a css px, a fraction of a retina screen's. Glass the
+            // shader draws itself (the footer's name) needs the screen's own, or it blurs on a phone.
+            const ratio = letters ? Math.min(window.devicePixelRatio || 1, 3) : 0.75;
             const width = Math.max(1, Math.round(element.clientWidth * ratio));
             const height = Math.max(1, Math.round(element.clientHeight * ratio));
             // Set only when it changed: setting it clears what is drawn.
@@ -460,6 +556,10 @@ export const GlassLight = <T extends Light>({
             draw();
             // Now the shader draws the name, the page's own may step aside.
             panel.dataset.lit = '';
+            if (first) {
+                first = false;
+                if (fade < 1) rampUp();
+            }
         };
 
         const loop = (now: number) => {
@@ -502,6 +602,7 @@ export const GlassLight = <T extends Light>({
 
         return () => {
             alive = false;
+            cancelAnimationFrame(ramp);
             if (bake) bake.current = null;
             window.clearTimeout(settled);
             tuned();
@@ -512,7 +613,7 @@ export const GlassLight = <T extends Light>({
             delete panel.dataset.lit;
             gl.getExtension('WEBGL_lose_context')?.loseContext();
         };
-    }, [glass, store, letters, margin, bake]);
+    }, [glass, store, letters, margin, bake, fadeIn]);
 
     return <canvas aria-hidden className={cn('block size-full', className)} ref={canvas} />;
 };

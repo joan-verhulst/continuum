@@ -1,214 +1,228 @@
 'use client';
 
-import { Button, cn, Input } from 'continuum';
-import { Check } from 'lucide-react';
-import { type FormEvent, type ReactNode, useId, useState } from 'react';
-import { joinEarlyAccess } from '@/lib/early-access';
+import { Button } from 'continuum';
+import { ArrowRight, Check } from 'lucide-react';
+import { motion, useInView, useReducedMotion, type Variants } from 'motion/react';
+import Link from 'next/link';
+import { useEffect, useRef } from 'react';
+import { GlassLight, type GlassRect } from '@/components/footer-shader';
+import { proCheckout } from '@/components/pro-button';
 import { proLaunchPriceEUR } from '@/lib/site';
-import { RimLight } from '../rim-light';
-import { Reveal, Section } from '../web';
+import { tunable } from '@/lib/tunable';
+import { PRO_LIGHT } from '../pro-light';
+import { ease, Reveal, Section } from '../web';
 
 /*
- * Pricing as a shape: three columns in one ruled panel, so they read as one decision rather than
- * three adverts. The rows line up across the columns (what it is, the action, what is in it), and
- * only Pro's early-access button takes the action colour: one primary in the view.
+ * Pricing as one offer, played once it comes into view. The Pro card, the section's full width, holds the hero's light: it
+ * opens dim and the light comes up from the card's foot while the offer sharpens in on it (Pro, the
+ * price, the line, and the one action: Start building with Pro, the price being just above it). Under the card, on the
+ * page, what comes with it as a plain checklist, item by item (the library's leads to it), and the
+ * free way in as one quiet row: the tools, at no cost, with the secondary action.
  */
 
-type Plan = {
-    id: string;
-    name: string;
-    price: string;
-    priceNote: string;
-    line: string;
-    action: ReactNode;
-    includes: string[];
-    /** The column the page wants you to look at: lit round its edge, two thirds wide. */
-    lead?: boolean;
-};
-
-const EarlyAccessForm = ({
-    plan,
-    label = 'Join the Pro waitlist',
-    variant = 'primary',
-}: {
-    plan: string;
-    label?: string;
-    /** One primary in the view: any other column's form takes the secondary button. */
-    variant?: 'primary' | 'secondary';
-}) => {
-    const id = useId();
-    const [state, setState] = useState<'idle' | 'sending' | 'sent'>('idle');
-
-    const submit = async (event: FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-        const email = new FormData(event.currentTarget).get('email');
-        if (typeof email !== 'string' || !email) return;
-        setState('sending');
-        await joinEarlyAccess(email, plan);
-        setState('sent');
-    };
-
-    return (
-        <div aria-live="polite" className="@container">
-            {state === 'sent' ? (
-                <p className="flex h-control-lg items-center gap-2 text-base text-neutral-950">
-                    <Check aria-hidden className="size-4 text-neutral-600" strokeWidth={2} />
-                    You're on the list.
-                </p>
-            ) : (
-                <form className="flex @min-[18rem]:flex-row flex-col gap-2" onSubmit={submit}>
-                    <label className="sr-only" htmlFor={`${id}-email`}>
-                        Email address
-                    </label>
-                    <Input
-                        autoComplete="email"
-                        className="@min-[18rem]:flex-1"
-                        id={`${id}-email`}
-                        name="email"
-                        placeholder="you@company.com"
-                        required
-                        type="email"
-                    />
-                    <Button loading={state === 'sending'} size="lg" type="submit" variant={variant}>
-                        {label}
-                    </Button>
-                </form>
-            )}
-        </div>
-    );
-};
-
-const plans: Plan[] = [
-    {
-        id: 'free',
-        name: 'Free tools',
-        price: '€0',
-        priceNote: 'No account needed',
-        line: 'Try your theme on real screens in the browser.',
-        action: (
-            <Button
-                className="w-full"
-                render={props => <a {...props} href="/tools" />}
-                size="lg"
-                variant="secondary"
-            >
-                Explore the tools
-            </Button>
-        ),
-        includes: [
-            'Build a colour palette',
-            'Check contrast in light and dark mode',
-            'Preview colour blindness simulations',
-            'Export Tailwind CSS and a design brief for your agent',
-        ],
-    },
-    {
-        id: 'pro',
-        name: 'Pro',
-        price: `€${proLaunchPriceEUR}`,
-        priceNote: 'One-time payment at launch',
-        line: 'Bring Continuum into the product you’re building and give your coding agent the same design rules.',
-        action: (
-            <div className="flex flex-col gap-2">
-                <EarlyAccessForm plan="pro" />
-                <p className="text-neutral-600 text-sm">No payment is taken when you sign up.</p>
-            </div>
-        ),
-        includes: [
-            'Commercial licence for one developer',
-            'React component library and chart kit for production use',
-            'Claude Code skills for building and refining UI',
-            'MCP tools for looking up design rules and auditing existing screens',
-        ],
-        lead: true,
-    },
+/** What Pro is and does; the payment is said once, under the price. */
+const included = [
+    'library',
+    'Claude Code skills that build and refine UI',
+    'MCP server: look up the rules, audit screens',
+    'A good-looking screen from the first prompt',
+    'Your own theme on every component and chart',
+    'Commercial licence for one developer',
 ];
 
-/** Spans the grid's three rows, so a card's parts line up with its neighbour's. */
-const subgrid = 'grid grid-cols-1 gap-y-6 lg:row-span-3 lg:grid-rows-subgrid';
-const face = cn(subgrid, 'rounded-panel p-6 sm:p-8');
-const card = cn(face, 'border border-neutral-200');
+/** The card's light: the hero's, from under its foot. */
+const lightStore = tunable(PRO_LIGHT);
 
-const PlanColumn = ({ plan }: { plan: Plan }) => {
-    const titleId = `plan-${plan.id}`;
+const glassRect = (light: typeof PRO_LIGHT): GlassRect => ({
+    x: light.glassX,
+    y: light.glassY,
+    width: light.glassWidth,
+    height: light.glassHeight,
+});
 
-    const parts = (
-        <>
-            <div className="flex flex-col">
-                <div className="flex h-6 items-center gap-2">
-                    <h3 className="text-base text-neutral-600" id={titleId}>
-                        {plan.name}
-                    </h3>
-                </div>
-                <p className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-                    <span className="font-medium text-4xl text-neutral-950 tabular-nums leading-[1.15] tracking-[-0.02em]">
-                        {plan.price}
-                    </span>
-                    <span className="text-neutral-600 text-sm">{plan.priceNote}</span>
-                </p>
-                <p className="mt-3 max-w-[440px] text-base text-neutral-600 leading-[1.6]">
-                    {plan.line}
-                </p>
-            </div>
-            <div>{plan.action}</div>
-            <ul aria-label={`Included in ${plan.name}`} className="flex flex-col gap-3">
-                {plan.includes.map(item => (
-                    <li className="flex gap-3 text-base text-neutral-800 leading-[1.5]" key={item}>
-                        <Check
-                            aria-hidden
-                            className="mt-1 size-4 shrink-0 text-neutral-500"
-                            strokeWidth={2}
-                        />
-                        {item}
-                    </li>
-                ))}
-            </ul>
-        </>
-    );
+/** How dim the card is before the scene plays, as a share of the light's full strength. */
+const DIM = 0.04;
 
-    // The lead card wears the hero's light: the spectrum flowing slowly round its edge, quietly, in
-    // place of the border. The face is opaque in the page's own colour, so it reads as the Free card
-    // does and the halo stays outside. Every layer between the grid and the parts stays a subgrid,
-    // so the rows still line up.
-    return plan.lead ? (
-        <article
-            aria-labelledby={titleId}
-            className={cn(subgrid, 'scroll-mt-24 lg:col-span-2')}
-            id="pro-early-access"
-        >
-            <RimLight
-                className={cn(subgrid, 'rounded-panel [--rim-strength:0.45]')}
-                faceClassName={cn(face, 'bg-neutral-50')}
-                glow={0.25}
-                haloBlur={12}
-                lap={24}
-                loop
-                ring
-            >
-                {parts}
-            </RimLight>
-        </article>
-    ) : (
-        <article aria-labelledby={titleId} className={card}>
-            {parts}
-        </article>
-    );
+/** The scene's timing, in seconds from the moment the card comes into view. */
+const TIMING = {
+    light: 1.6,
+    offer: 0.3,
+    list: 0.9,
+    stagger: 0.08,
 };
 
-export const Pricing = () => (
-    <Section
-        description="Get a feel for Continuum in the browser, then take it into your codebase when you’re ready to ship."
-        id="pricing"
-        title="Pricing"
-    >
-        <div className="flex flex-col gap-6">
-            <Reveal delay={1}>
-                <div className="grid gap-4 lg:grid-cols-3 lg:grid-rows-[auto_auto_1fr]">
-                    {plans.map(plan => (
-                        <PlanColumn key={plan.id} plan={plan} />
+/** Each piece sharpens out of a blur as it rises into place, at its own delay. */
+const arrive: Variants = {
+    hidden: { opacity: 0, y: 24, filter: 'blur(12px)' },
+    shown: (delay: number) => ({
+        opacity: 1,
+        y: 0,
+        filter: 'blur(0px)',
+        transition: { duration: 0.7, ease, delay },
+    }),
+};
+
+/**
+ * @param families The library's component families (their names, each to its page), as the
+ * Components section reads them from the sources.
+ */
+export const Pricing = ({ families }: { families: Record<string, string> }) => {
+    const card = useRef<HTMLElement>(null);
+    const reduce = useReducedMotion();
+    // Once, when half of the card is in view.
+    const inView = useInView(card, { once: true, amount: 0.5 });
+    const state = reduce || inView ? 'shown' : 'hidden';
+
+    // The card opens dim and its light comes up once the scene plays.
+    useEffect(() => {
+        if (reduce) {
+            lightStore.set({ strength: PRO_LIGHT.strength });
+            return;
+        }
+        if (!inView) {
+            lightStore.set({ strength: PRO_LIGHT.strength * DIM });
+            return;
+        }
+        let frame = 0;
+        const started = performance.now();
+        const step = (now: number) => {
+            const t = Math.min(1, (now - started) / (TIMING.light * 1000));
+            const eased = 1 - (1 - t) ** 3;
+            lightStore.set({ strength: PRO_LIGHT.strength * (DIM + (1 - DIM) * eased) });
+            if (t < 1) frame = requestAnimationFrame(step);
+        };
+        frame = requestAnimationFrame(step);
+        return () => cancelAnimationFrame(frame);
+    }, [inView, reduce]);
+
+    return (
+        // The section's header, as every section of the page has it, then the card and the list.
+        <Section
+            description="Get a feel for Continuum in the browser, then take it into your codebase when you’re ready to ship."
+            id="pricing"
+            title="Pricing"
+        >
+            <div className="flex flex-col items-center gap-10 md:gap-12">
+                {/* The card: the light in it, the offer on the light. */}
+                <article
+                    aria-labelledby="plan-pro"
+                    className="relative isolate w-full scroll-mt-24 overflow-hidden rounded-panel border border-neutral-200"
+                    id="pro-early-access"
+                    ref={card}
+                >
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 -z-10 bg-neutral-50"
+                        data-light-scope=""
+                    >
+                        {/* Only without WebGL, the spectrum's blurred strip stands in for the light. */}
+                        <div className="absolute inset-x-[12%] -bottom-[28%] in-data-unlit:block hidden h-[45%] rounded-full bg-spectrum opacity-30 blur-[96px]" />
+                        <GlassLight
+                            className="absolute inset-0"
+                            glass={glassRect}
+                            margin={0.75}
+                            store={lightStore}
+                        />
+                    </div>
+                    <motion.div
+                        animate={state}
+                        className="flex flex-col items-center px-6 py-20 text-center sm:px-12 md:py-32"
+                        custom={TIMING.offer}
+                        initial="hidden"
+                        variants={arrive}
+                    >
+                        <h3 className="text-base text-neutral-700" id="plan-pro">
+                            Pro
+                        </h3>
+                        <p className="mt-3 font-medium text-[64px] text-neutral-950 tabular-nums leading-none tracking-[-0.04em] md:text-[96px]">
+                            €{proLaunchPriceEUR}
+                        </p>
+                        <p className="mt-4 text-neutral-700 text-sm">One-time payment at launch</p>
+                        <p className="mt-4 max-w-[520px] text-base text-neutral-800 leading-[1.6]">
+                            Bring Continuum into the product you’re building and give your coding
+                            agent the same design rules.
+                        </p>
+                        {/* The price is just above, so the action says what comes next, not the sale. */}
+                        <Button
+                            className="mt-8"
+                            render={props => <a {...props} href={proCheckout} />}
+                            size="lg"
+                        >
+                            Start building with Pro
+                            <ArrowRight strokeWidth={2} />
+                        </Button>
+                    </motion.div>
+                </article>
+
+                {/* What comes with it, on the page under the card, item by item. */}
+                <ul
+                    aria-label="Included in Pro"
+                    className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                >
+                    {included.map((item, index) => (
+                        <motion.li
+                            animate={state}
+                            className="flex items-start gap-3 rounded-card border border-neutral-200 bg-neutral-50 px-5 py-4 text-base text-neutral-900 leading-6"
+                            custom={TIMING.list + index * TIMING.stagger}
+                            initial="hidden"
+                            key={item}
+                            variants={arrive}
+                        >
+                            {/* A bare check, no box (a box reads as a checkbox), on the first line of the text. */}
+                            <span
+                                aria-hidden
+                                className="flex h-6 shrink-0 items-center text-neutral-500"
+                            >
+                                <Check className="size-4" strokeWidth={2} />
+                            </span>
+                            {item === 'library' ? (
+                                <Link
+                                    className="rounded-chip underline decoration-neutral-400 underline-offset-4 transition-[text-decoration-color] duration-150 hover:decoration-neutral-950 focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2"
+                                    href="/components"
+                                >
+                                    React library: {Object.keys(families).length} families and
+                                    charts
+                                </Link>
+                            ) : (
+                                item
+                            )}
+                        </motion.li>
                     ))}
-                </div>
-            </Reveal>
-        </div>
-    </Section>
-);
+                </ul>
+
+                {/* The free way in: one quiet row under Pro, no light, the secondary action. */}
+                <Reveal className="w-full">
+                    <article
+                        aria-labelledby="plan-free"
+                        className="flex w-full flex-col gap-6 rounded-panel border border-neutral-200 p-6 sm:p-8 md:flex-row md:items-center md:justify-between"
+                    >
+                        <div className="flex flex-col gap-2">
+                            <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                                <span
+                                    className="font-medium text-base text-neutral-950"
+                                    id="plan-free"
+                                >
+                                    Free tools
+                                </span>
+                                <span className="text-neutral-600 text-sm">
+                                    €0 · No account needed
+                                </span>
+                            </p>
+                            <p className="text-base text-neutral-600 leading-[1.6]">
+                                Try your theme on real screens in the browser.
+                            </p>
+                        </div>
+                        <Button
+                            className="shrink-0"
+                            render={props => <a {...props} href="/tools" />}
+                            size="lg"
+                            variant="secondary"
+                        >
+                            Explore the tools
+                        </Button>
+                    </article>
+                </Reveal>
+            </div>
+        </Section>
+    );
+};

@@ -1,4 +1,5 @@
-import { ContinuumMark, cn } from 'continuum';
+import { ContinuumMark } from '@playground/brand';
+import { cn } from 'continuum';
 import Link from 'next/link';
 import { type FooterColumn, footerMap } from '@/lib/footer-links';
 import { githubUrl } from '@/lib/site';
@@ -44,10 +45,10 @@ const MapColumn = ({ column, wide }: { column: FooterColumn; wide?: boolean }) =
  */
 export const SiteFooter = () => {
     const { components, columns } = footerMap();
-    // Where the page has rails (the landing), the footer starts right where they end, so they run into
-    // its top edge.
+    // It waits under the page, which peels up off it (FooterPeel), 12 in from the page's edge as from
+    // the window's.
     return (
-        <footer className="mt-16 px-3 pb-3 md:mt-32 [body:has([data-rails])_&]:mt-0">
+        <footer className="p-3">
             <div className="overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50">
                 {/* The light in its own box, inset from the footer's edge, its corner the panel's less the
                     inset. The shader reads this box's surface colour, so it needs its own fill; the dots,

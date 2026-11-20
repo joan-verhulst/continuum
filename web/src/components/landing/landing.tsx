@@ -6,6 +6,7 @@ import { Hero, Screens } from './sections/hero';
 import { HowItWorks } from './sections/how-it-works';
 import { Mcp } from './sections/mcp';
 import { Pricing } from './sections/pricing';
+import { Questions } from './sections/questions';
 import { Uses } from './sections/uses';
 import { productThemeCss } from './theme';
 import { Divider, Rails, RuledFrame } from './web';
@@ -37,7 +38,9 @@ export const Landing = ({ componentIndex }: { componentIndex: ComponentIndex }) 
                 <Divider />
                 <HowItWorks />
                 <Divider />
-                <Pricing />
+                <Pricing families={componentIndex.families} />
+                <Divider />
+                <Questions />
             </main>
         </ToastProvider>
     </Theme>

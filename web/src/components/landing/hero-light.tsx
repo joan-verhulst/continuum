@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { GlassLight, type GlassRect, type Light } from '@/components/footer-shader';
 import { lightGroups } from '@/components/footer-tuner';
 import { Tuner, type TunerGroup } from '@/components/tuner';
@@ -93,14 +93,48 @@ const groups: TunerGroup<HeroLightValues>[] = [
     },
 ];
 
+/** How dark the light goes once the board has scrolled most of the way out, as a share of full. */
+const DIMMED = 0.1;
+
 export const HeroLight = () => {
     // Save image in the tuner: the light as drawn now, baked to an image for where a shader would be too much.
     const bake = useRef<(() => string) | null>(null);
+    const marker = useRef<HTMLSpanElement>(null);
+
+    // The light dims as the board scrolls up out of view, and comes back as it scrolls in: full
+    // with the board's top at the window's, DIMMED once 60% of the board has gone.
+    useEffect(() => {
+        const board = marker.current?.closest<HTMLElement>('[data-light-scope]');
+        if (!board) return;
+        const full = heroLightStore.defaults.strength;
+        let frame = 0;
+        const update = () => {
+            frame = 0;
+            const box = board.getBoundingClientRect();
+            const t = Math.min(1, Math.max(0, -box.top / (box.height * 0.6)));
+            heroLightStore.set({ strength: full * (1 - (1 - DIMMED) * t * t * (3 - 2 * t)) });
+        };
+        const schedule = () => {
+            if (!frame) frame = requestAnimationFrame(update);
+        };
+        update();
+        window.addEventListener('scroll', schedule, { passive: true });
+        window.addEventListener('resize', schedule);
+        return () => {
+            cancelAnimationFrame(frame);
+            window.removeEventListener('scroll', schedule);
+            window.removeEventListener('resize', schedule);
+        };
+    }, []);
+
     return (
         <>
+            <span hidden ref={marker} />
+            {/* The board opens dark and the light comes up in it, over 1.8 s from its first draw. */}
             <GlassLight
                 bake={bake}
                 className="absolute inset-0"
+                fadeIn={1800}
                 glass={glassRect}
                 margin={MARGIN}
                 store={heroLightStore}

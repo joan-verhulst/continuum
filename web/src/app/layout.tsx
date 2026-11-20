@@ -10,10 +10,12 @@ import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import type { ReactNode } from 'react';
 import { Tencil } from 'tencil/react';
+import { FooterPeel } from '@/components/footer-peel';
 import { SiteTheme } from '@/components/mode';
 import { ModeScript } from '@/components/mode-script';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
+import { SiteSearch } from '@/components/site-search';
 import { rootMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = rootMetadata;
@@ -41,8 +43,9 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
             <SiteTheme>
                 <ModeScript />
                 <SiteHeader />
-                {children}
-                <SiteFooter />
+                <FooterPeel footer={<SiteFooter />}>{children}</FooterPeel>
+                {/* The site's one search, ⌘K from any page. */}
+                <SiteSearch />
             </SiteTheme>
             {/* Tencil's overlay, for pinning fixes on the running site; renders nothing outside development. */}
             <Tencil />
