@@ -19,6 +19,25 @@ export const sections: readonly Section[] = [
     { href: '/tools', label: 'Tools' },
 ];
 
+/**
+ * The sections whose pages sit in a shell: a sidebar beside them, a top bar with the trail and the
+ * search over them. The docs sections share one shell; the tools have one of their own, listing
+ * only the tools. Compare stays a page of the site.
+ */
+export const shellPrefixes = [
+    '/docs',
+    '/foundations',
+    '/components',
+    '/charts',
+    '/examples',
+    '/ai',
+    '/tools',
+] as const;
+
+/** Whether a path's page sits in a shell, the docs' or the tools'. */
+export const inShell = (pathname: string) =>
+    shellPrefixes.some(prefix => pathname === prefix || pathname.startsWith(`${prefix}/`));
+
 /** Whether a path is in a section: its index, a page under it, or one of its `also` paths. */
 export const inSection = (pathname: string, section: Section) =>
     [section.href, ...(section.also ?? [])].some(

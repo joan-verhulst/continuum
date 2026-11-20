@@ -11,6 +11,7 @@ import {
 import { ArrowLeft, ArrowRight, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
+import { inShell } from '@/lib/nav';
 import { breadcrumbLd, type Crumb, JsonLd, MarkdownAlternate } from '@/lib/seo';
 import { Container, Pill, Reveal, RuledFrame } from './landing/web';
 
@@ -97,37 +98,44 @@ export const PageHero = ({
     /** The page's one primary and at most a secondary. */
     actions?: ReactNode;
     children?: ReactNode;
-}) => (
-    <>
-        <JsonLd data={breadcrumbLd([{ name: 'Home', path: '/' }, ...crumbs])} />
-        {crumbs.length > 0 && <MarkdownAlternate path={crumbs[crumbs.length - 1]?.path ?? '/'} />}
-        <RuledFrame outerClassName="pb-0 md:pb-0" top>
-            <div
-                className={cn(
-                    'flex flex-col items-center gap-10 px-4 pt-20 text-center sm:px-10 md:pt-48',
-                    children ? 'pb-12 md:pb-16' : 'pb-20 md:pb-48',
-                )}
-            >
-                <Crumbs crumbs={crumbs} />
-                <div className="flex max-w-[720px] flex-col items-center gap-6">
-                    {eyebrow && <Pill>{eyebrow}</Pill>}
-                    <h1 className="text-balance font-medium text-4xl text-neutral-950 leading-[1.05] tracking-[-0.02em] md:text-5xl">
-                        {title}
-                    </h1>
-                    <p className="max-w-[620px] text-pretty text-base text-neutral-600 leading-[1.6] md:text-lg">
-                        {lead}
-                    </p>
-                </div>
-                {actions && (
-                    <div className="flex flex-wrap items-center justify-center gap-3">
-                        {actions}
+}) => {
+    // In the docs the trail sits in their top bar instead, and the board stands a little lower.
+    const docs = inShell(crumbs[0]?.path ?? '/');
+    return (
+        <>
+            <JsonLd data={breadcrumbLd([{ name: 'Home', path: '/' }, ...crumbs])} />
+            {crumbs.length > 0 && (
+                <MarkdownAlternate path={crumbs[crumbs.length - 1]?.path ?? '/'} />
+            )}
+            <RuledFrame outerClassName="pb-0 md:pb-0" top>
+                <div
+                    className={cn(
+                        'flex flex-col items-center gap-10 px-4 pt-20 text-center sm:px-10',
+                        docs ? 'md:pt-32' : 'md:pt-48',
+                        children ? 'pb-12 md:pb-16' : docs ? 'pb-20 md:pb-32' : 'pb-20 md:pb-48',
+                    )}
+                >
+                    {!docs && <Crumbs crumbs={crumbs} />}
+                    <div className="flex max-w-[720px] flex-col items-center gap-6">
+                        {eyebrow && <Pill>{eyebrow}</Pill>}
+                        <h1 className="text-balance font-medium text-4xl text-neutral-950 leading-[1.05] tracking-[-0.02em] md:text-5xl">
+                            {title}
+                        </h1>
+                        <p className="max-w-[620px] text-pretty text-base text-neutral-600 leading-[1.6] md:text-lg">
+                            {lead}
+                        </p>
                     </div>
-                )}
-            </div>
-            {children && <div className="px-4 pb-4 sm:px-10 sm:pb-10">{children}</div>}
-        </RuledFrame>
-    </>
-);
+                    {actions && (
+                        <div className="flex flex-wrap items-center justify-center gap-3">
+                            {actions}
+                        </div>
+                    )}
+                </div>
+                {children && <div className="px-4 pb-4 sm:px-10 sm:pb-10">{children}</div>}
+            </RuledFrame>
+        </>
+    );
+};
 
 /** The sections of a long index, as quiet capsules under the hero's lead: one jump to each. */
 export const JumpLinks = ({ links }: { links: readonly NavItem[] }) => (
@@ -365,7 +373,8 @@ export const PrevNext = ({
     const { previous, next } = neighbours(groups, path);
     if (!previous && !next) return null;
     return (
-        <Container className="max-w-[944px] pt-8 md:pt-12">
+        // The reading column (608, the article's), so the pair shares the text's edges.
+        <Container className="max-w-[656px] pt-8 md:pt-12">
             <nav aria-label={`${label}: previous and next`} className="grid gap-4 sm:grid-cols-2">
                 {previous && <Neighbour item={previous} side="previous" />}
                 {next && <Neighbour item={next} side="next" />}

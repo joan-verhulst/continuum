@@ -2,9 +2,10 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { ArticleSection, P } from '@/components/article';
 import { Container } from '@/components/landing/web';
-import { LinkList } from '@/components/link-list';
 import { Inline, Markdown } from '@/components/markdown';
 import { Article, PageHero, PrevNext } from '@/components/page-frame';
+import { PreviewGrid } from '@/components/preview/gallery';
+import { componentCards } from '@/lib/component-cards';
 import { clip } from '@/lib/content';
 import { foundationsFor, linkSentence } from '@/lib/cross-links';
 import { JsonLd, pageMetadata, techArticleLd } from '@/lib/seo';
@@ -99,17 +100,20 @@ const ExamplePage = async ({ params }: Params) => {
                         <Markdown source={narrow} />
                     </ArticleSection>
                 )}
-                {parts.length > 0 && (
+            </Article>
+            {/* The page's container, as the example above: its cards as wide as the example. */}
+            {parts.length > 0 && (
+                <Container>
                     <ArticleSection
                         description="The components it is built from, each with its own page."
                         id="components"
                         tight
                         title="Components"
                     >
-                        <LinkList rows={parts} />
+                        <PreviewGrid items={componentCards(parts)} />
                     </ArticleSection>
-                )}
-            </Article>
+                </Container>
+            )}
             <PrevNext
                 groups={examples().map(item => ({
                     href: `/examples/${item.path}`,

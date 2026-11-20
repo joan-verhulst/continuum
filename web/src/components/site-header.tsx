@@ -1,6 +1,7 @@
 'use client';
 
-import { Button, ContinuumLogo, cn, focusRing } from 'continuum';
+import { ContinuumLogo } from '@playground/brand';
+import { Button, cn, focusRing } from 'continuum';
 import { LogIn, Menu, X } from 'lucide-react';
 import {
     animate,
@@ -13,7 +14,7 @@ import {
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { type ComponentProps, type RefObject, useEffect, useId, useRef, useState } from 'react';
-import { inSection, sections } from '@/lib/nav';
+import { inSection, inShell, sections } from '@/lib/nav';
 import { appLink } from '@/lib/site';
 import { ModeSwitch } from './mode';
 import { GetStartedPro } from './pro-button';
@@ -271,6 +272,7 @@ const menuLinkClass = cn(
 export const SiteHeader = () => {
     const pathname = usePathname() ?? '/';
     const home = pathname === '/';
+    const docs = inShell(pathname);
     const [open, setOpen] = useState(false);
     const inView = useSectionInView(home);
     const current = home ? inView : links.find(link => inSection(pathname, link.section))?.id;
@@ -303,7 +305,12 @@ export const SiteHeader = () => {
 
     return (
         <header className="sticky top-0 z-40 border-neutral-200 border-b bg-neutral-50/85 backdrop-blur-md">
-            <nav aria-label="Main" className="mx-auto w-full max-w-[1152px] px-4 sm:px-6" ref={nav}>
+            {/* The docs run the full width, their sidebar at the left edge: the bar runs with them. */}
+            <nav
+                aria-label="Main"
+                className={cn('mx-auto w-full px-4 sm:px-6', !docs && 'max-w-[1152px]')}
+                ref={nav}
+            >
                 <div className="flex h-16 items-center gap-2 lg:gap-4">
                     {/* Both ends take the same share, so the links sit in the bar's middle. */}
                     <div className="flex flex-1">
@@ -346,6 +353,7 @@ export const SiteHeader = () => {
                         </ul>
                     </div>
                     <div className="flex flex-1 items-center justify-end gap-1">
+                        {/* No search button here for now: ⌘K still opens it, and the docs keep their field. */}
                         <div className="flex items-center gap-1 max-sm:hidden">
                             <IconLinks mode={!home} />
                         </div>

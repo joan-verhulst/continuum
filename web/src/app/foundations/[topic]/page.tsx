@@ -5,6 +5,8 @@ import { Container } from '@/components/landing/web';
 import { LinkList } from '@/components/link-list';
 import { Inline, Markdown } from '@/components/markdown';
 import { Article, PageHero, PrevNext } from '@/components/page-frame';
+import { PreviewGrid } from '@/components/preview/gallery';
+import { componentCards } from '@/lib/component-cards';
 import { clip, foundationTopics, fullBody } from '@/lib/content';
 import { examplesFor, partsNamedIn } from '@/lib/cross-links';
 import { JsonLd, pageMetadata, techArticleLd } from '@/lib/seo';
@@ -81,17 +83,22 @@ const FoundationPage = async ({ params }: Params) => {
                         <Markdown source={child.body} />
                     </ArticleSection>
                 ))}
-                {parts.length > 0 && (
+            </Article>
+            {/* The page's container, as the figure above: its cards as wide as the figure. */}
+            {parts.length > 0 && (
+                <Container>
                     <ArticleSection
                         description="The components and charts this topic names, each with its own page."
                         id="parts"
                         tight
                         title="Parts it names"
                     >
-                        <LinkList rows={parts} />
+                        <PreviewGrid items={componentCards(parts)} />
                     </ArticleSection>
-                )}
-                {shaped.length > 0 && (
+                </Container>
+            )}
+            {shaped.length > 0 && (
+                <Article className="pt-0 md:pt-0">
                     <ArticleSection
                         description="The reference screens whose page kind these values shape."
                         id="examples"
@@ -100,8 +107,8 @@ const FoundationPage = async ({ params }: Params) => {
                     >
                         <LinkList rows={shaped} />
                     </ArticleSection>
-                )}
-            </Article>
+                </Article>
+            )}
             <PrevNext
                 groups={foundationTopics().map(item => ({
                     href: `/foundations/${item.slug}`,

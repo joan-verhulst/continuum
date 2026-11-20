@@ -216,8 +216,23 @@ const Tile = ({ item, index }: { item: GalleryItem; index: number }) => {
 };
 
 /** A family's parts as live cards, three across from lg, two from sm. */
-export const PreviewGrid = ({ items }: { items: readonly GalleryItem[] }) => (
-    <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+export const PreviewGrid = ({
+    items,
+    columns = 3,
+    className,
+}: {
+    items: readonly GalleryItem[];
+    /** Three across on the gallery; two in a docs page's reading column. */
+    columns?: 2 | 3;
+    className?: string;
+}) => (
+    <ul
+        className={cn(
+            'grid grid-cols-1 gap-4 sm:grid-cols-2',
+            columns === 3 && 'lg:grid-cols-3',
+            className,
+        )}
+    >
         {items.map((item, index) => (
             <Tile index={index} item={item} key={item.href} />
         ))}
