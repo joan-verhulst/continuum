@@ -1,9 +1,0 @@
-{
-    "name": "screen",
-    "private": true,
-    "type": "module",
-    "scripts": {
-        "dev": "vite",
-        "shot": "node shot.mjs"
-    }
-}
