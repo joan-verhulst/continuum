@@ -1,15 +1,7 @@
-import {
-    AppPanel,
-    AppShell,
-    Button,
-    ContinuumLogo,
-    Field,
-    FieldLabel,
-    Input,
-    SheetArea,
-} from 'continuum';
+import { AppPanel, AppShell, Button, Field, FieldLabel, Input, SheetArea } from 'continuum';
 import { ArrowRight } from 'lucide-react';
 import { type FormEvent, type ReactNode, useState } from 'react';
+import { ContinuumLogo } from './brand';
 import {
     AsideSlotProvider,
     FooterSlotProvider,

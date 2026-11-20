@@ -83,6 +83,9 @@ const TOP = 8;
 /** A marker's label: its inset above the plot's foot, and its gap from the rule. */
 const LABEL_INSET = 4;
 const LABEL_GAP = 4;
+/** Labels that would touch stack upward a row at a time, 4 apart, never over each other. */
+const LABEL_ROW = 20;
+const LABEL_SPACE = 4;
 const X_LABEL_GAP = 16;
 const TOOLTIP_OFFSET = 12;
 const DOT_RADIUS = 4;
@@ -1041,21 +1044,21 @@ export const Cartesian = <Row extends ChartRow, X = unknown>({
                                 </div>
                             )}
 
-                            {markers?.map(marker => {
-                                const x = xOf(markOf(marker.index));
-                                // Beside its rule, at the plot's foot; past the middle it sits on the
-                                // rule's left, so it never runs off the frame.
-                                const before = x > left + plotWidth / 2;
-                                return (
+                            {markers &&
+                                placeMarkerLabels(
+                                    markers.map(marker => xOf(markOf(marker.index))),
+                                    markers,
+                                    left,
+                                    left + plotWidth,
+                                ).map(({ marker, x, before, row }) => (
                                     <ChartMarkerLabel
                                         before={before}
                                         key={`${marker.index}-${marker.label}`}
                                         marker={marker}
                                         x={x}
-                                        y={top + plotHeight - LABEL_INSET}
+                                        y={top + plotHeight - LABEL_INSET - row * LABEL_ROW}
                                     />
-                                );
-                            })}
+                                ))}
 
                             {(!empty || loading) && (
                                 // The plot's own place in the card: the marks and their grid inside, the labels out.
@@ -1328,6 +1331,75 @@ const toneFill: Record<string, string> = {
     warning: 'bg-warning-500',
     error: 'bg-error-500',
     neutral: 'bg-neutral-400',
+};
+
+/** A label's width, near enough to keep two apart: 11 type, its dot or icon, its padding. */
+const labelWidth = (marker: ChartMarker) =>
+    Math.ceil(marker.label.length * 6.2) + (marker.icon ? 12 : 6) + 4 + 8;
+
+/**
+ * Where each marker's label goes. Beside its rule at the plot's foot, on the rule's right before the
+ * middle and its left past it, so it never runs off the frame. A label that would touch one already
+ * placed takes the rule's other side, and when neither side is clear it steps up a row: two labels
+ * never sit over each other, however close their markers are. A label also keeps off the other
+ * markers' rules when a side lets it.
+ */
+const placeMarkerLabels = (
+    xs: number[],
+    markers: readonly ChartMarker[],
+    start: number,
+    end: number,
+) => {
+    const placed: { from: number; to: number; row: number }[] = [];
+    const order = markers.map((_, index) => index).sort((a, b) => (xs[a] ?? 0) - (xs[b] ?? 0));
+    const result: { marker: ChartMarker; x: number; before: boolean; row: number }[] = [];
+    for (const index of order) {
+        const marker = markers[index] as ChartMarker;
+        const x = xs[index] ?? 0;
+        const width = labelWidth(marker);
+        const span = (before: boolean) =>
+            before
+                ? { from: x - LABEL_GAP - width, to: x - LABEL_GAP }
+                : { from: x + LABEL_GAP, to: x + LABEL_GAP + width };
+        const preferred = x > start + (end - start) / 2;
+        // Another marker's rule runs the plot's full height, so no row clears it: a side whose label
+        // would cross one comes last, and is taken only when both sides do.
+        const crossesRule = (before: boolean) => {
+            const { from, to } = span(before);
+            return xs.some(
+                (other, at) =>
+                    at !== index && other >= from - LABEL_SPACE && other <= to + LABEL_SPACE,
+            );
+        };
+        const sides = [preferred, !preferred]
+            .filter(before => {
+                const { from, to } = span(before);
+                return from >= start && to <= end;
+            })
+            .sort((a, b) => Number(crossesRule(a)) - Number(crossesRule(b)));
+        if (sides.length === 0) sides.push(preferred);
+        const clear = (before: boolean, row: number) => {
+            const { from, to } = span(before);
+            return placed.every(
+                other =>
+                    other.row !== row ||
+                    to + LABEL_SPACE <= other.from ||
+                    from >= other.to + LABEL_SPACE,
+            );
+        };
+        let choice = { before: preferred, row: 0 };
+        search: for (let row = 0; row < markers.length; row += 1) {
+            for (const before of sides) {
+                if (clear(before, row)) {
+                    choice = { before, row };
+                    break search;
+                }
+            }
+        }
+        placed.push({ ...span(choice.before), row: choice.row });
+        result.push({ marker, x, ...choice });
+    }
+    return result;
 };
 
 /**

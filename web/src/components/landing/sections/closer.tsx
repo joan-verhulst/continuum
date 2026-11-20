@@ -1,6 +1,7 @@
 'use client';
 
-import { Button, ContinuumMark, createThemeCss, Theme } from 'continuum';
+import { ContinuumMark } from '@playground/brand';
+import { Button, createThemeCss, Theme } from 'continuum';
 import { ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { themeBuilderUrl } from '@/lib/site';

@@ -54,7 +54,6 @@ import * as iconTile from './icon-tile';
 import * as infoTip from './info-tip';
 import * as input from './input';
 import * as kbd from './kbd';
-import * as logo from './logo';
 import * as menu from './menu';
 import * as meter from './meter';
 import * as notice from './notice';
@@ -98,7 +97,6 @@ export const entries: Entry[] = [
     rail.entry,
     headerBar.entry,
     bottomBar.entry,
-    logo.entry,
     tabs.entry,
     breadcrumb.entry,
     pagination.entry,
@@ -224,7 +222,6 @@ export const inUse: Record<string, InUse> = {
     'breadcrumb': breadcrumb.inUse,
     'header-bar': headerBar.inUse,
     'pagination': pagination.inUse,
-    'logo': logo.inUse,
     'command-menu': commandMenu.inUse,
     'dialog': dialog.inUse,
     'sheet': sheet.inUse,

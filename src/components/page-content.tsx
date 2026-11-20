@@ -4,9 +4,9 @@ import { cn } from '../lib/cn';
 
 export const pageContentVariants = cva(
     // Content-box, so the cap is the content's width and the side padding sits outside it. A page
-    // starts well clear of the header bar: 96px, 128px on a large screen. In a compact shell (a
-    // phone) the screen can't spare that: 16px a side and 40px down.
-    'mx-auto box-content min-w-0 px-4 pt-24 sm:px-6 2xl:pt-32 @max-shell-compact/shell:px-4 @max-shell-compact/shell:pt-10',
+    // starts clear of the header bar: 64px at every width. In a compact shell (a phone) the screen
+    // can't spare that: 16px a side and 40px down.
+    'mx-auto box-content min-w-0 px-4 pt-16 sm:px-6 @max-shell-compact/shell:px-4 @max-shell-compact/shell:pt-10',
     {
         variants: {
             width: {

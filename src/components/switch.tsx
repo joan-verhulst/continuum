@@ -44,7 +44,8 @@ export const Switch = ({
             <SwitchPrimitive.Thumb
                 className={cn(
                     'pointer-events-none block size-5 rounded-full bg-neutral-50 transition-[translate,background-color] duration-200 ease-out-strong motion-reduce:transition-none',
-                    'data-checked:translate-x-6 data-checked:bg-action-knob',
+                    // The travel is a size, not room: translate-x-6 would follow the theme's spacing unit.
+                    'data-checked:translate-x-[24px] data-checked:bg-action-knob',
                 )}
                 data-slot="switch-thumb"
             />

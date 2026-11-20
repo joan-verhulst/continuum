@@ -1705,6 +1705,11 @@
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
+  .continuum .translate-x-6, .continuum.translate-x-6 {
+    --tw-translate-x: calc(var(--spacing) * 6);
+    translate: var(--tw-translate-x) var(--tw-translate-y);
+  }
+
   .continuum .-translate-y-1\/2, .continuum.-translate-y-1\/2 {
     --tw-translate-y: calc(calc(1 / 2 * 100%) * -1);
     translate: var(--tw-translate-x) var(--tw-translate-y);
@@ -2819,8 +2824,8 @@
     padding-top: calc(var(--spacing) * 4);
   }
 
-  .continuum .pt-24, .continuum.pt-24 {
-    padding-top: calc(var(--spacing) * 24);
+  .continuum .pt-16, .continuum.pt-16 {
+    padding-top: calc(var(--spacing) * 16);
   }
 
   .continuum .pt-\[calc\(\(var\(--marker\)-var\(--text-xs--line-height\)\)\/2\)\], .continuum.pt-\[calc\(\(var\(--marker\)-var\(--text-xs--line-height\)\)\/2\)\] {
@@ -4822,8 +4827,8 @@
     opacity: 1;
   }
 
-  .continuum .data-checked\:translate-x-6[data-checked], .continuum.data-checked\:translate-x-6[data-checked] {
-    --tw-translate-x: calc(var(--spacing) * 6);
+  .continuum .data-checked\:translate-x-\[24px\][data-checked], .continuum.data-checked\:translate-x-\[24px\][data-checked] {
+    --tw-translate-x: 24px;
     translate: var(--tw-translate-x) var(--tw-translate-y);
   }
 
@@ -5439,10 +5444,6 @@
   @media (min-width: 96rem) {
     .continuum .\32 xl\:px-content-inset, .continuum.\32 xl\:px-content-inset {
       padding-inline: var(--spacing-content-inset, var(--spacing-content-inset));
-    }
-
-    .continuum .\32 xl\:pt-32, .continuum.\32 xl\:pt-32 {
-      padding-top: calc(var(--spacing) * 32);
     }
   }
 

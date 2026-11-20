@@ -1,12 +1,12 @@
 'use client';
 
+import { ContinuumMark } from '@playground/brand';
 import { FooterSlotProvider } from '@playground/layout';
 import { sameTheme } from '@playground/projects';
 import { ProjectFlow } from '@playground/theme-editor/flow';
 import { ExportDialog } from '@playground/theme-editor/parts';
 import {
     Button,
-    ContinuumMark,
     cn,
     createThemeCss,
     focusRing,

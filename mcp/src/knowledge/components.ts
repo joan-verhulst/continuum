@@ -189,7 +189,6 @@ const aliases: Record<string, string> = {
     pie: 'DonutChart',
     donut: 'DonutChart',
     sparkline: 'AreaChart',
-    logo: 'ContinuumLogo',
     formfield: 'Field',
     field: 'Field',
     setting: 'SettingRow',
@@ -228,7 +227,6 @@ export const closestNames = (name: string, count = 3) => {
 
 /** Parts whose showcase entry no rule below finds: they are shown inside another's. */
 const entryOverrides: Record<string, string> = {
-    ContinuumMark: 'logo.tsx',
     ChartFrame: 'charts/area-chart.tsx',
 };
 

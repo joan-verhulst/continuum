@@ -10,7 +10,6 @@ import {
     BreadcrumbList,
     BreadcrumbPage,
     BreadcrumbSeparator,
-    ContinuumLogo,
     cn,
     DropdownMenuItem,
     DropdownMenuLabel,
@@ -59,6 +58,7 @@ import {
 } from 'lucide-react';
 import { type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
+import { ContinuumLogo } from './brand';
 import {
     AsideSlotProvider,
     DockSlotProvider,
@@ -518,7 +518,7 @@ const AccountSwitcher = ({
     return (
         <SidebarSwitcher
             aria-label="Joan Verhulst. Account"
-            detail="Free plan"
+            detail="Personal workspace"
             mark={<Avatar fallback="JV" />}
             name="Joan Verhulst"
             placement="footer"

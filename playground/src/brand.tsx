@@ -1,5 +1,11 @@
+import { cn } from 'continuum';
 import type { ComponentProps } from 'react';
-import { cn } from '../lib/cn';
+
+/*
+ * Continuum's own brand: the mark and the lockup, for the app's chrome and the site (web/ imports it
+ * as @playground/brand). Not part of the library: a product shows its own mark in SidebarLogo or
+ * TopNavBrand.
+ */
 
 // One line: from the C's tip round the left lobe, through the crossing, round the
 // right lobe and back to the crossing. The stretch it never draws opens the left

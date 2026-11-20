@@ -42,7 +42,6 @@ export * from './components/icon-tile';
 export * from './components/info-tip';
 export * from './components/input';
 export * from './components/kbd';
-export * from './components/logo';
 export * from './components/notice';
 export * from './components/optimistic-undo';
 export * from './components/option-row';

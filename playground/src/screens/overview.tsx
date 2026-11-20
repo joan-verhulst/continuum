@@ -108,6 +108,23 @@ export const Overview = () => {
                 </Select>
             </PageHead>
 
+            {/* The figures read first; stacked rather than squeezed on a phone: two across, which costs height, not width. */}
+            <div className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-4 gap-4">
+                <StatCard delta="+3" label="Active customers" value={String(activeCustomers)} />
+                <StatCard
+                    delta={shown.newDelta}
+                    label="New customers"
+                    value={String(shown.newCustomers)}
+                />
+                <StatCard
+                    delta={shown.churnDelta}
+                    label="Churn"
+                    trend={shown.churnDelta.startsWith('+') ? 'down' : 'up'}
+                    value={shown.churn}
+                />
+                <StatCard delta="+5" label="Open tickets" trend="down" value="23" />
+            </div>
+
             <ChartCard
                 comparison={shown.words}
                 data={range}
@@ -124,23 +141,6 @@ export const Overview = () => {
                 x="date"
                 xTicks={4}
             />
-
-            {/* Stacked rather than squeezed on a phone: two across, which costs height, not width. */}
-            <div className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-4 gap-4">
-                <StatCard delta="+3" label="Active customers" value={String(activeCustomers)} />
-                <StatCard
-                    delta={shown.newDelta}
-                    label="New customers"
-                    value={String(shown.newCustomers)}
-                />
-                <StatCard
-                    delta={shown.churnDelta}
-                    label="Churn"
-                    trend={shown.churnDelta.startsWith('+') ? 'down' : 'up'}
-                    value={shown.churn}
-                />
-                <StatCard delta="+5" label="Open tickets" trend="down" value="23" />
-            </div>
 
             <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-2 gap-4">
                 <Card layout="list">

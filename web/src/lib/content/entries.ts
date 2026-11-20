@@ -84,7 +84,6 @@ export const entryInfo = (id: string) => entryInfos().find(e => e.id === id);
 const aliases: Record<string, string[]> = {
     'activity-list': ['activity'],
     'bottom-bar': ['bottom-bar'],
-    'continuum-mark': ['logo'],
     'date-picker': ['date-picker', 'date-range-picker'],
     'dropdown-menu': ['menu'],
     'filter-conditions': ['filter-condition'],

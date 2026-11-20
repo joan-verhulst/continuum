@@ -4,7 +4,6 @@ import {
     Avatar,
     Badge,
     Button,
-    ContinuumMark,
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
@@ -23,7 +22,7 @@ import {
     TopNavLink,
     TopNavLinks,
 } from 'continuum';
-import { Bell, Inbox, LifeBuoy, Search, Users, Workflow } from 'lucide-react';
+import { Bell, Boxes, Inbox, LifeBuoy, Search, Users, Workflow } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';
 import { type Entry, type InUse, icon, type Knob, type PreviewProps, previewIcon } from '../kit';
@@ -55,7 +54,7 @@ const TopNavPreview = ({ knobs }: PreviewProps) => {
             <TopNav>
                 <TopNavBrand
                     href="#"
-                    logo={<ContinuumMark size={22} />}
+                    logo={<Boxes {...icon} />}
                     onClick={event => event.preventDefault()}
                 >
                     {knobs.name ? 'Northwind' : undefined}

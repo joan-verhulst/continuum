@@ -1,6 +1,7 @@
 'use client';
 
 import { ArticleSection, CodeBlock, column } from '@playground/article';
+import { ContinuumLogo } from '@playground/brand';
 import { Home } from '@playground/home';
 import {
     AsidePanel,
@@ -28,7 +29,6 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
     Button,
-    ContinuumLogo,
     Dialog,
     DialogBody,
     DialogContent,
