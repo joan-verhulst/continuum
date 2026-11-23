@@ -46,6 +46,12 @@ export type RampEditorProps = {
     kind: 'primary' | 'grey';
     /** The greys' own hue and tint, set under the charts they are charts of. */
     tint?: { hue: number; tint: number; onChange: (next: { hue: number; tint: number }) => void };
+    /**
+     * Which mode's midtones the Midtones slider bends, and the ramp shows: dark reads the greys back
+     * to front, so it bends its own. Given, the slider carries a Light and Dark toggle; the ends and
+     * the rest of the shape are the two modes' and have none.
+     */
+    midtonesMode?: { value: 'light' | 'dark'; onChange: (mode: 'light' | 'dark') => void };
     gamut: Gamut;
 };
 
@@ -90,6 +96,7 @@ export const RampEditor = ({
     kind,
     gamut,
     tint,
+    midtonesMode,
 }: RampEditorProps) => {
     // The step being set; none until one is picked, on the strip or on a chart.
     const [picked, setPicked] = useState<number | null>(null);
@@ -250,6 +257,7 @@ export const RampEditor = ({
                 reference={reference}
                 seed={seed}
                 shape={shape}
+                midtonesMode={midtonesMode}
                 textLine={textLine}
                 tint={tint}
             />

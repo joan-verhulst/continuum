@@ -661,6 +661,7 @@ const ProjectPage = ({ project, store, state, onChange }: ProjectPageProps) => {
             </HeaderActions>
             <ProjectFlow
                 dirty={dirty}
+                onPreviewMode={setMode}
                 inUse={inUse}
                 name={project.name}
                 onExport={() => setExporting(true)}

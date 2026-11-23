@@ -5,6 +5,7 @@ import {
     defaultThemeOptions,
     drawnType,
     drawnUnit,
+    Input,
     type ThemeOptions,
     themeFonts,
     useTheme,
@@ -413,6 +414,79 @@ export const ButtonsEditor = ({ theme, set }: TabProps) => (
             />
         </Question>
     </div>
+);
+
+/* ---------- Fields ---------- */
+
+/** A field and a secondary button on a card, outlined or filled, as they sit in a form. */
+export const FieldsEditor = ({ theme, set }: TabProps) => (
+    <Question>
+        <Pick
+            answers={(
+                [
+                    { value: 'outline', label: 'Outline' },
+                    { value: 'filled', label: 'Filled' },
+                ] as const
+            ).map(answer => ({
+                ...answer,
+                specimen: (
+                    <SpecimenScope
+                        className="flex w-full items-center gap-2 rounded-item border border-neutral-200 bg-neutral-50 p-2"
+                        patch={{ controls: answer.value }}
+                        theme={theme}
+                    >
+                        <Input aria-hidden placeholder="Search" readOnly size="sm" tabIndex={-1} />
+                        <Button tabIndex={-1} variant="secondary">
+                            Filter
+                        </Button>
+                    </SpecimenScope>
+                ),
+            }))}
+            columns={2}
+            label="Fields"
+            onChange={controls => set({ controls: controls === 'outline' ? undefined : controls })}
+            value={theme.controls ?? defaultThemeOptions.controls}
+        />
+    </Question>
+);
+
+/* ---------- Cards ---------- */
+
+/** A card with a head, plain or framed: a title over a few rows, as a settings or list card holds. */
+export const CardsEditor = ({ theme, set }: TabProps) => (
+    <Question>
+        <Pick
+            answers={(
+                [
+                    { value: 'plain', label: 'Plain' },
+                    { value: 'framed', label: 'Framed' },
+                ] as const
+            ).map(answer => ({
+                ...answer,
+                specimen: (
+                    <SpecimenScope
+                        className="w-full rounded-item bg-neutral-100 p-3"
+                        patch={{ cards: answer.value }}
+                        theme={theme}
+                    >
+                        <span className="card-frame flex w-full flex-col border border-neutral-200 [--card-gap:calc(var(--spacing)*2)] [--card-pad:calc(var(--spacing)*2.5)] [--card-radius:var(--radius-item)]">
+                            <span className="card-head text-neutral-600 text-xs [--card-head-pad:0px]">
+                                Sessions
+                            </span>
+                            <span className="card-stage flex flex-col gap-1.5 [--card-stage-pad:calc(var(--spacing)*2.5)]">
+                                <span className="h-2 w-3/4 rounded-chip bg-neutral-200" />
+                                <span className="h-2 w-1/2 rounded-chip bg-neutral-200" />
+                            </span>
+                        </span>
+                    </SpecimenScope>
+                ),
+            }))}
+            columns={2}
+            label="Cards"
+            onChange={cards => set({ cards: cards === 'plain' ? undefined : cards })}
+            value={theme.cards ?? defaultThemeOptions.cards}
+        />
+    </Question>
 );
 
 /* ---------- The active item ---------- */

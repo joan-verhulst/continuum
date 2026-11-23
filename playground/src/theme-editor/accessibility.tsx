@@ -549,7 +549,11 @@ const useBalance = (theme: ThemeOptions) => {
     return { balancing, start, stop };
 };
 
-const rampNames: Record<CurveRamp, string> = { neutral: 'Neutral', primary: 'Primary' };
+const rampNames: Record<CurveRamp, string> = {
+    neutral: 'Neutral',
+    neutralDark: 'Neutral in dark',
+    primary: 'Primary',
+};
 
 const keyNames: Record<CurveKey, string> = {
     lightest: 'Lightest',

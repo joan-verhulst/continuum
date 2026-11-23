@@ -4,7 +4,6 @@ import { Foundations } from './foundations';
 import { Home } from './home';
 import { McpPage } from './install/mcp-page';
 import { SkillsPage } from './install/skills-page';
-import { Rulers } from './lab/rulers';
 import { WallLab } from './lab/wall';
 import { LeaveDialog, type LeaveGuard, LeaveGuardProvider } from './leave-guard';
 import { type AppState, parseHash, toHash } from './meta';
@@ -19,6 +18,11 @@ import { Onboarding, useWelcome } from './welcome';
 
 /** Where the mode is kept, so a fresh visit opens in the one used last. */
 const MODE = 'continuum.mode';
+
+// TEMP-FRAMED-PREVIEW: `&cards=framed` in the URL draws every card framed, to check the framed style
+// while it is built. Remove with the switch once the theme builder offers it.
+const FRAMED_PREVIEW =
+    typeof window !== 'undefined' && window.location.hash.includes('cards=framed');
 
 const stored = (key: string) => {
     try {
@@ -279,6 +283,7 @@ export const App = () => {
             theme={worn.id}
         >
             {worn.css && <style>{worn.css}</style>}
+            {FRAMED_PREVIEW && <style>{'.continuum { --cards-framed: ; }'}</style>}
             <ToastProvider>
                 {onboarding ? (
                     <FirstRun guard={guard} navigate={navigate} state={state} welcome={welcome} />
@@ -315,7 +320,6 @@ export const App = () => {
                     onSave={() => leave(guard => guard?.save())}
                     open={asking}
                 />
-                <Rulers />
             </ToastProvider>
         </Theme>
     );

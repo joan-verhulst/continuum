@@ -10,6 +10,7 @@ import {
     defaultNeutral,
     defaultThemeOptions,
     type Gamut,
+    greyShapeOf,
     hexToOklch,
     type Oklch,
     oklchToHex,
@@ -63,7 +64,7 @@ const withShape = (
     const kept = Object.fromEntries(
         Object.entries(next).filter(([, value]) => value !== undefined),
     );
-    return kept.primary || kept.neutral ? kept : undefined;
+    return kept.primary || kept.neutral || kept.neutralDark ? kept : undefined;
 };
 
 /** A palette's colours as one strip of equal cells, so every palette lines up on its first step. */
@@ -217,17 +218,33 @@ export const PrimaryEditor = ({ theme, set, gamut }: EditorProps) => {
 };
 
 /** The greys' own colour with its hue and tint, then the ramp on its strip. */
-export const GreysEditor = ({ theme, set, gamut }: EditorProps) => {
+export const GreysEditor = ({
+    theme,
+    set,
+    gamut,
+    onPreviewMode,
+}: EditorProps & { onPreviewMode?: (mode: 'light' | 'dark') => void }) => {
     const neutral = theme.neutral ?? defaultThemeOptions.neutral;
 
     // The baseline greys carry no chroma, so their hue as read back from hex means nothing: give them the greys' own.
     const baseline = asOklch(defaultNeutral).map(color => ({ ...color, c: 0, h: neutral.hue }));
-    const ramp = themeNeutralCurves(theme) ?? baseline;
+    /*
+     * Dark reads the greys back to front, so it bends its own midtones; the ends and the rest of the
+     * shape are the two modes'. The ramp shows the mode the Midtones slider is on, so the slider
+     * always moves what is shown, and the preview turns to that mode with it.
+     */
+    const [mode, setMode] = useState<'light' | 'dark'>('light');
+    const pickMode = (next: 'light' | 'dark') => {
+        setMode(next);
+        onPreviewMode?.(next);
+    };
+    const lightRamp = themeNeutralCurves(theme) ?? baseline;
+    const ramp = themeNeutralCurves(theme, mode) ?? baseline;
     const reference =
         themeNeutralCurves({ ...theme, curves: withShape(theme.curves, 'neutral', undefined) }) ??
         baseline;
     // The greys as one colour: their 500, which a picked or typed colour gives its hue and chroma to.
-    const middle = oklchToHex(ramp[5] ?? { l: 0.55, c: 0, h: 0 });
+    const middle = oklchToHex(lightRamp[5] ?? { l: 0.55, c: 0, h: 0 });
     const setOwn = (hex?: string) => {
         const own = hex ? hexToOklch(hex) : null;
         if (!own) return;
@@ -239,6 +256,42 @@ export const GreysEditor = ({ theme, set, gamut }: EditorProps) => {
 
     const setNeutral = (next: { hue: number; tint: number }) =>
         set({ neutral: next.hue === 0 && next.tint === 0 ? undefined : next });
+
+    // A theme from before has one bend for both modes: dark follows light's until either moves.
+    const lightMidtones = theme.curves?.neutral?.midtones ?? 0;
+    const ownDark = theme.curves?.neutralDark?.midtones;
+    const setLightShape = (shape?: RampShape) => {
+        const curves = withShape(theme.curves, 'neutral', shape);
+        // Reset gives both modes back their resting curve.
+        if (!shape) {
+            const { neutralDark: _dark, ...rest } = curves ?? {};
+            set({ curves: rest.primary ? rest : undefined });
+            return;
+        }
+        const moved = (shape.midtones ?? 0) !== lightMidtones;
+        set({
+            curves:
+                moved && ownDark === undefined
+                    ? { ...curves, neutralDark: { midtones: lightMidtones } }
+                    : curves,
+        });
+    };
+    /** Dark's shape: its midtones are its own, everything else is the two modes' shape. */
+    const setDarkShape = (shape?: RampShape) => {
+        if (!shape) return setLightShape(undefined);
+        const { midtones, ...rest } = shape;
+        const shared: RampShape = Object.fromEntries(
+            Object.entries({ ...rest, midtones: theme.curves?.neutral?.midtones }).filter(
+                ([, value]) => value !== undefined,
+            ),
+        );
+        const curves = withShape(
+            theme.curves,
+            'neutral',
+            Object.keys(shared).length ? shared : undefined,
+        );
+        set({ curves: { ...curves, neutralDark: { midtones: midtones ?? 0 } } });
+    };
 
     // A grey of one's own with its hue and tint, then the ramp.
     return (
@@ -255,11 +308,12 @@ export const GreysEditor = ({ theme, set, gamut }: EditorProps) => {
                     gamut={gamut}
                     kind="grey"
                     name="Neutral"
-                    onShape={shape => set({ curves: withShape(theme.curves, 'neutral', shape) })}
+                    midtonesMode={{ value: mode, onChange: pickMode }}
+                    onShape={mode === 'dark' ? setDarkShape : setLightShape}
                     ramp={ramp}
                     reference={reference}
-                    shape={theme.curves?.neutral}
-                    swatches={themeNeutralRamp(theme)}
+                    shape={mode === 'dark' ? greyShapeOf(theme, 'dark') : theme.curves?.neutral}
+                    swatches={themeNeutralRamp(theme, mode)}
                     tint={{ hue: neutral.hue, tint: neutral.tint, onChange: setNeutral }}
                 />
             </Block>

@@ -14,6 +14,7 @@ import {
     StatusDot,
     toCss,
 } from 'continuum';
+import { Moon } from 'lucide-react';
 import {
     type KeyboardEvent,
     type PointerEvent,
@@ -243,6 +244,12 @@ export type RampGraphProps = {
      * chroma, the hue under hue. None for a colour's ramp, whose hue and chroma are the colour's.
      */
     tint?: { hue: number; tint: number; onChange: (next: { hue: number; tint: number }) => void };
+    /**
+     * Which mode's midtones the Midtones slider bends, and the ramp shows: dark reads the greys back
+     * to front, so it bends its own. Given, the slider carries a Light and Dark toggle; the ends and
+     * the rest of the shape are the two modes' and have none.
+     */
+    midtonesMode?: { value: 'light' | 'dark'; onChange: (mode: 'light' | 'dark') => void };
     /** The step picked to be set under the chart, by index. */
     picked?: number | null;
     onPick?: (index: number) => void;
@@ -305,6 +312,7 @@ const ChannelGraph = ({
     onPick,
     textLine,
     tint,
+    midtonesMode,
     active,
     onActivate,
 }: RampGraphProps & {
@@ -959,18 +967,53 @@ const ChannelGraph = ({
                     )}
                     {/* The rest shape the curve; on a pure grey only its lightness has one. */}
                     {(!tint || tint.tint > 0 || channel === 'l') &&
-                        controls.map(control => (
-                            <SliderRow
-                                display={control.format(currentOf(control.key))}
-                                key={control.key}
-                                label={control.label}
-                                max={control.max}
-                                min={control.min}
-                                onValueChange={value => writeControl(control, value)}
-                                step={control.step}
-                                value={currentOf(control.key)}
-                            />
-                        ))}
+                        controls.map(control => {
+                            const dark = midtonesMode?.value === 'dark';
+                            const own = Boolean(midtonesMode) && control.key === 'midtones';
+                            const row = (
+                                <SliderRow
+                                    display={control.format(currentOf(control.key))}
+                                    key={control.key}
+                                    label={own && dark ? 'Dark midtones' : control.label}
+                                    max={control.max}
+                                    min={control.min}
+                                    onValueChange={value => writeControl(control, value)}
+                                    step={control.step}
+                                    value={currentOf(control.key)}
+                                />
+                            );
+                            if (!own || !midtonesMode) return row;
+                            /*
+                             * The one slider each mode bends for itself, so it carries its mode: a
+                             * moon inside it, on while it bends dark's. It stands over the slider's
+                             * end, beside it in the tree rather than in it, so a press on it never
+                             * moves the value; the value steps left to make room.
+                             */
+                            return (
+                                <div
+                                    className="relative **:data-[slot=block-slider-info]:pr-10"
+                                    key={control.key}
+                                >
+                                    {row}
+                                    <Button
+                                        aria-label="Bend dark mode's midtones"
+                                        aria-pressed={dark}
+                                        className={cn(
+                                            'absolute top-1/2 right-1.5 -translate-y-1/2',
+                                            dark &&
+                                                'bg-neutral-950/7 text-neutral-950 hover:bg-neutral-950/10',
+                                        )}
+                                        onClick={() =>
+                                            midtonesMode.onChange(dark ? 'light' : 'dark')
+                                        }
+                                        size="icon-sm"
+                                        variant="ghost"
+                                    >
+                                        <Moon strokeWidth={2} />
+                                    </Button>
+                                </div>
+                            );
+                        })}
                 </div>
             )}
         </div>

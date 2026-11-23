@@ -545,8 +545,10 @@ export const rampColors = (theme: ThemeOptions, mode: ThemeMode, ramp: string) =
 /*
  * One ramp paints both modes, and dark mode reads it back to front: the 600 under a hint in light is
  * the 400 in dark, and the 500 that borders a box is the same grey in light and in dark. A curve
- * tuned until light reads well moves dark with it. The balance searches the curves' shapes (the
- * greys' and the primary's ends and midtones, the primary's saturation) for the one where every
+ * tuned until light reads well moves dark with it, but for the greys' midtones, which dark bends on
+ * its own (`neutralDark`): the greys are two ramps here, light's and dark's, that share their ends.
+ * The balance searches the curves' shapes (the greys' ends and each mode's midtones, the primary's
+ * ends, midtones and saturation) for the one where every
  * required pair passes in both modes with the least change to the ramps; an advised pair only
  * breaks a near tie.
  *
@@ -558,7 +560,7 @@ export const rampColors = (theme: ThemeOptions, mode: ThemeMode, ramp: string) =
  * are the check layer's own.
  */
 
-export type CurveRamp = 'neutral' | 'primary';
+export type CurveRamp = 'neutral' | 'neutralDark' | 'primary';
 export type CurveKey = 'lightest' | 'darkest' | 'midtones' | 'saturation';
 
 type Knob = {
@@ -577,13 +579,24 @@ const knobs: Knob[] = [
     { ramp: 'neutral', key: 'lightest', min: 0.9, max: 1, step: 0.002, stride: 16 },
     { ramp: 'neutral', key: 'darkest', min: 0.1, max: 0.45, step: 0.005, stride: 16 },
     { ramp: 'neutral', key: 'midtones', min: -1, max: 1, step: 0.05, stride: 8 },
+    { ramp: 'neutralDark', key: 'midtones', min: -1, max: 1, step: 0.05, stride: 8 },
     { ramp: 'primary', key: 'lightest', min: 0.9, max: 1, step: 0.002, stride: 16 },
     { ramp: 'primary', key: 'darkest', min: 0.1, max: 0.45, step: 0.005, stride: 16 },
     { ramp: 'primary', key: 'midtones', min: -1, max: 1, step: 0.05, stride: 8 },
     { ramp: 'primary', key: 'saturation', min: 0, max: 1.5, step: 0.05, stride: 8 },
 ];
 
-const curveRamps: CurveRamp[] = ['neutral', 'primary'];
+const curveRamps: CurveRamp[] = ['neutral', 'neutralDark', 'primary'];
+
+/** The ramps a mode's colours are traced to: each mode reads its own greys. */
+const rampsIn: Record<ThemeMode, CurveRamp[]> = {
+    light: ['neutral', 'primary'],
+    dark: ['neutralDark', 'primary'],
+};
+
+/** The greys' knobs build the dark greys too: they share the ends, and follow light's midtones. */
+const buildsFrom = (ramp: CurveRamp, knob: Knob) =>
+    knob.ramp === ramp || (ramp === 'neutralDark' && knob.ramp === 'neutral');
 const modes: ThemeMode[] = ['light', 'dark'];
 
 type Ramps = Record<CurveRamp, Oklch[]>;
@@ -599,8 +612,8 @@ const sameColor = (a: Oklch, b: Oklch) =>
     Math.abs(a.c - b.c) < 1e-6 &&
     (a.c < 1e-6 || Math.abs(a.h - b.h) < 1e-3);
 
-const sourceOf = (paint: Paint, ramps: Ramps): Source => {
-    for (const ramp of curveRamps) {
+const sourceOf = (paint: Paint, ramps: Ramps, order: CurveRamp[]): Source => {
+    for (const ramp of order) {
         const step = ramps[ramp].findIndex(color => sameColor(color, paint.color));
         if (step >= 0) return { ramp, step, alpha: paint.alpha };
     }
@@ -627,9 +640,9 @@ const itemsOf = (theme: ThemeOptions, ramps: Ramps): Item[] =>
                 {
                     check,
                     mode,
-                    fg: sourceOf(fg, ramps),
-                    bg: sourceOf(bg, ramps),
-                    under: sourceOf({ color: under.color, alpha: 1 }, ramps),
+                    fg: sourceOf(fg, ramps, rampsIn[mode]),
+                    bg: sourceOf(bg, ramps, rampsIn[mode]),
+                    under: sourceOf({ color: under.color, alpha: 1 }, ramps, rampsIn[mode]),
                 },
             ];
         });
@@ -661,10 +674,14 @@ const deltaE = (a: Oklch, b: Oklch) => {
 
 /** The greys' ends count twice: they are the page and its canvas, in either mode. */
 const changeWeight = (ramp: CurveRamp, step: number) =>
-    ramp === 'neutral' && (step <= 1 || step >= 9) ? 2 : 1;
+    ramp !== 'primary' && (step <= 1 || step >= 9) ? 2 : 1;
 
 /** A knob's value now: the shape's own, or what the curve is without it. */
 const startOf = (theme: ThemeOptions, knob: Knob, ramps: Ramps) => {
+    // Dark's midtones follow light's until it has its own.
+    if (knob.ramp === 'neutralDark') {
+        return theme.curves?.neutralDark?.midtones ?? theme.curves?.neutral?.midtones ?? 0;
+    }
     const set = theme.curves?.[knob.ramp]?.[knob.key];
     if (typeof set === 'number' && Number.isFinite(set)) return set;
     if (knob.key === 'lightest') return ramps[knob.ramp][0]?.l ?? 0.97;
@@ -685,6 +702,12 @@ const shapedTheme = (theme: ThemeOptions, x: number[], from: number[]): ThemeOpt
             moved = true;
         });
         if (moved) curves[ramp] = shape;
+    }
+    // Light's midtones moved alone: dark keeps the bend it had, as the editor does.
+    const darkAt = knobs.findIndex(knob => knob.ramp === 'neutralDark');
+    const lightAt = knobs.findIndex(knob => knob.ramp === 'neutral' && knob.key === 'midtones');
+    if (!curves.neutralDark && x[lightAt] !== from[lightAt]) {
+        curves.neutralDark = { midtones: from[darkAt] ?? 0 };
     }
     return { ...theme, curves };
 };
@@ -812,10 +835,10 @@ const reasonFor = (theme: ThemeOptions, items: Item[], failing: ThemeMode[]) => 
         return `It is the accent itself: ${which} fixes it, not a curve.`;
     }
     const greysOnly = items.every(({ fg, bg }) =>
-        [fg, bg].every(side => !('ramp' in side) || side.ramp === 'neutral'),
+        [fg, bg].every(side => !('ramp' in side) || side.ramp !== 'primary'),
     );
     return greysOnly
-        ? 'No grey curve passes both modes along with the rest: one ramp paints both, back to front.'
+        ? 'No grey curve passes both modes along with the rest: the two modes share the ends of the greys.'
         : 'No curve passes it along with the rest.';
 };
 
@@ -850,6 +873,8 @@ export function* balanceCurves(theme: ThemeOptions): Generator<void, Balance> {
 
     const base: Ramps = {
         neutral: rampColors(theme, 'light', 'neutral'),
+        // Dark's greys as dark reads them, put back in the ramp's own order.
+        neutralDark: rampColors(theme, 'dark', 'neutral').reverse(),
         primary: rampColors(theme, 'light', 'primary'),
     };
     const items = itemsOf(theme, base);
@@ -858,14 +883,18 @@ export function* balanceCurves(theme: ThemeOptions): Generator<void, Balance> {
     // A ramp is built once per shape of its own knobs; the search moves one knob at a time.
     const built = new Map<string, Oklch[]>();
     const rampAt = (ramp: CurveRamp, x: number[]) => {
-        const key = `${ramp}:${knobs.map((knob, i) => (knob.ramp === ramp ? x[i] : '')).join(',')}`;
+        const key = `${ramp}:${knobs.map((knob, i) => (buildsFrom(ramp, knob) ? x[i] : '')).join(',')}`;
         const found = built.get(key);
         if (found) return found;
-        const unmoved = knobs.every((knob, i) => knob.ramp !== ramp || x[i] === x0[i]);
+        const unmoved = knobs.every((knob, i) => !buildsFrom(ramp, knob) || x[i] === x0[i]);
         const shaped = shapedTheme(theme, x, x0);
         const values = unmoved
             ? base[ramp]
-            : parseRamp(ramp === 'neutral' ? themeNeutralRamp(shaped) : themeAccentRamp(shaped));
+            : parseRamp(
+                  ramp === 'primary'
+                      ? themeAccentRamp(shaped)
+                      : themeNeutralRamp(shaped, ramp === 'neutralDark' ? 'dark' : 'light'),
+              );
         built.set(key, values);
         return values;
     };
@@ -877,7 +906,11 @@ export function* balanceCurves(theme: ThemeOptions): Generator<void, Balance> {
         const found = evaluated.get(key);
         if (found) return found;
         measured++;
-        const ramps: Ramps = { neutral: rampAt('neutral', x), primary: rampAt('primary', x) };
+        const ramps: Ramps = {
+            neutral: rampAt('neutral', x),
+            neutralDark: rampAt('neutralDark', x),
+            primary: rampAt('primary', x),
+        };
         let sum = 0;
         let weights = 0;
         for (const ramp of curveRamps) {
@@ -1013,7 +1046,8 @@ export function* balanceCurves(theme: ThemeOptions): Generator<void, Balance> {
     for (const ramp of curveRamps) {
         const shape = shaped.curves?.[ramp];
         if (!shape || shape === theme.curves?.[ramp]) continue;
-        const tidy = tidyShape(theme, ramp, shape);
+        // Dark's midtones stay written even at 0: left out, dark would follow light's again.
+        const tidy = ramp === 'neutralDark' ? shape : tidyShape(theme, ramp, shape);
         if (tidy) curves[ramp] = tidy;
         else delete curves[ramp];
     }

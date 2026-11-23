@@ -26,9 +26,11 @@ import { type Balance, balanceCurves, measurePairs, measureSeries } from './chec
 import { DataEditor, GreysEditor, PrimaryEditor } from './colour';
 import {
     ButtonsEditor,
+    CardsEditor,
     CornersEditor,
     DensityEditor,
     ElevationEditor,
+    FieldsEditor,
     FontEditor,
     NavEditor,
     TypeSizeEditor,
@@ -76,6 +78,11 @@ export type FlowProps = {
     titleAs?: 'h1' | 'h2' | 'h3';
     /** Where the preview went in a narrow window; the playground hides it there, and says so. */
     narrowNote?: ReactNode;
+    /**
+     * Shows the preview in a mode: an editor working on one mode's colours (the greys' midtones)
+     * turns the preview to it. One way only: the preview's own switch leaves the editors be.
+     */
+    onPreviewMode?: (mode: ThemeMode) => void;
 };
 
 type Balancing = { state: 'idle' } | { state: 'busy' } | { state: 'done'; balance: Balance };
@@ -434,7 +441,7 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
             id: 'greys',
             label: 'Neutral',
             ask: 'The greys of text, borders and surfaces.',
-            panel: <GreysEditor {...editor} />,
+            panel: <GreysEditor {...editor} onPreviewMode={props.onPreviewMode} />,
             summary:
                 neutral.tint === 0
                     ? 'pure grey'
@@ -537,16 +544,18 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
             id: 'controls',
             label: 'Controls',
             title: 'Choose your controls',
-            ask: 'The main button, the corners, the sidebar and the shadows.',
+            ask: 'The main button, the fields, the cards, the corners, the sidebar and the shadows.',
             panel: (
                 <div className="flex flex-col gap-8">
                     <ButtonsEditor set={set} theme={theme} />
+                    <FieldsEditor set={set} theme={theme} />
+                    <CardsEditor set={set} theme={theme} />
                     <CornersEditor set={set} theme={theme} />
                     <NavEditor set={set} theme={theme} />
                     <ElevationEditor set={set} theme={theme} />
                 </div>
             ),
-            summary: `${accentAction ? 'primary' : 'neutral'} action, ${theme.actionStyle ?? 'flat'} · corners ${Math.round((theme.radius ?? 1) * 100)}% · ${theme.nav ?? 'neutral'} active item · ${theme.elevation ?? 'flat'} shadows`,
+            summary: `${accentAction ? 'primary' : 'neutral'} action, ${theme.actionStyle ?? 'flat'} · ${theme.controls ?? 'outline'} fields · ${theme.cards ?? 'plain'} cards · corners ${Math.round((theme.radius ?? 1) * 100)}% · ${theme.nav ?? 'neutral'} active item · ${theme.elevation ?? 'flat'} shadows`,
             checks: id => actionPairs.includes(id) || id === 'tint',
             balances: true,
         },
