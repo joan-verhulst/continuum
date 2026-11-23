@@ -35,13 +35,13 @@ const families = () => {
                 group.components.length === 0
                     ? chartsWithEntries().map(item => ({
                           href: `/charts/${item.slug}`,
-                          name: item.name,
+                          name: item.title,
                           summary: item.summary,
                           entry: item.entries[0]?.id,
                       }))
                     : group.components.map(item => ({
                           href: `/components/${item.slug}`,
-                          name: item.name,
+                          name: item.title,
                           summary: item.summary,
                           entry: withEntries.get(item.slug)?.entries[0]?.id,
                       }));

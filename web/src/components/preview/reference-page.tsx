@@ -48,23 +48,30 @@ const lower = (text: string) => text.charAt(0).toLowerCase() + text.slice(1);
 export const listOf = (names: readonly string[]) =>
     names.length > 1 ? `${names.slice(0, -1).join(', ')} and ${names.at(-1)}` : (names[0] ?? '');
 
-/** The page's opening sentence: what the thing is and when to use it. */
+/**
+ * The page's opening sentence: what the thing is and when to use it. `code` is the name as
+ * imported ('HeaderBar'), said after the name in words ('Header bar') when the two differ.
+ */
 export const leadOf = (
     kind: ReferencePageProps['kind'],
     name: string,
     summary: string,
     body: string,
+    code?: string,
 ) => {
     const { uses } = usesOf(body);
     const what = (uses.for ? firstSentence(plainText(uses.for)) : lower(summary)).replace(
         /\.$/,
         '',
     );
-    const names = name.split(' · ');
+    const codes = code?.split(' · ') ?? [];
+    const names = name
+        .split(' · ')
+        .map((each, i) => (codes[i] && codes[i] !== each ? `${each} (${codes[i]})` : each));
     if (names.length > 1) {
         return `${listOf(names)} are the Continuum ${kind}s for ${what}.`;
     }
-    return `${name} is the Continuum ${kind} for ${what}.`;
+    return `${names[0]} is the Continuum ${kind} for ${what}.`;
 };
 
 export const ReferencePage = ({
@@ -82,7 +89,7 @@ export const ReferencePage = ({
 }: ReferencePageProps) => {
     const { uses, rest } = usesOf(body);
     const faqs = faqsOf(name, uses);
-    const lead = leadOf(kind, name, summary, body);
+    const lead = leadOf(kind, name, summary, body, kind === 'chart' ? parts.join(' · ') : parts[0]);
     const related: Related[] = relatedTo(body, path);
     const usedIn = examplesUsing(parts);
     const foundations = foundationsFor(rest);

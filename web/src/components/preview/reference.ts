@@ -67,11 +67,11 @@ const byName = () => {
     const map = new Map<string, Related>();
     for (const item of components()) {
         for (const part of item.parts)
-            map.set(part, { name: item.name, href: `/components/${item.slug}` });
+            map.set(part, { name: item.title, href: `/components/${item.slug}` });
     }
     for (const item of charts().charts) {
         for (const part of item.parts)
-            map.set(part, { name: item.name, href: `/charts/${item.slug}` });
+            map.set(part, { name: item.title, href: `/charts/${item.slug}` });
     }
     return map;
 };

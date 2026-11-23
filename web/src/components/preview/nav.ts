@@ -8,7 +8,7 @@ import { charts, components } from '@/lib/content';
  */
 
 export const componentOrder = (): NavItem[] =>
-    components().map(item => ({ href: `/components/${item.slug}`, label: item.name }));
+    components().map(item => ({ href: `/components/${item.slug}`, label: item.title }));
 
 export const chartOrder = (): NavItem[] =>
-    charts().charts.map(item => ({ href: `/charts/${item.slug}`, label: item.name }));
+    charts().charts.map(item => ({ href: `/charts/${item.slug}`, label: item.title }));

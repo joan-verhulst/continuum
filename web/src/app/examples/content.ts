@@ -142,7 +142,7 @@ export const exampleParts = (example: Example) => {
             .filter(item => item.parts.some(part => uses.has(part)))
             .map(item => ({
                 href: `/components/${item.slug}`,
-                title: item.name,
+                title: item.title,
                 meta: item.group,
                 description: item.summary,
             })),
@@ -150,7 +150,7 @@ export const exampleParts = (example: Example) => {
             .charts.filter(item => item.parts.some(part => uses.has(part)))
             .map(item => ({
                 href: `/charts/${item.slug}`,
-                title: item.name,
+                title: item.title,
                 meta: 'Charts',
                 description: item.summary,
             })),

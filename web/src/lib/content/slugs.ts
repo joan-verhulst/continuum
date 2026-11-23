@@ -20,3 +20,12 @@ export const kebab = (name: string) =>
 
 /** A heading's slug: its words before any parenthesis or colon ('Index (`wide`, 1080; …)' → 'index'). */
 export const headingSlug = (heading: string) => kebab(heading.split(/[(:]/)[0] ?? heading);
+
+/**
+ * A part's name as words, for where people read it: 'HeaderBar' → 'Header bar', 'AreaChart' →
+ * 'Area chart'. The code name stays the page's slug and its import.
+ */
+export const words = (name: string) => {
+    const text = kebab(name).replace(/-/g, ' ');
+    return text.charAt(0).toUpperCase() + text.slice(1);
+};

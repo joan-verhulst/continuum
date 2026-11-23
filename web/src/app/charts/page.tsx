@@ -2,7 +2,7 @@ import { ArticleSection } from '@/components/article';
 import { Markdown } from '@/components/markdown';
 import { Article, FrameSection, PageHero } from '@/components/page-frame';
 import { PreviewGrid } from '@/components/preview/gallery';
-import { charts, chartsWithEntries, fullBody, inventory, plainText } from '@/lib/content';
+import { charts, chartsWithEntries, fullBody, inventory, plainText, words } from '@/lib/content';
 import { JsonLd, pageMetadata, techArticleLd } from '@/lib/seo';
 
 /*
@@ -47,7 +47,7 @@ const ChartsPage = () => {
                 <PreviewGrid
                     items={list.map(item => ({
                         href: `/charts/${item.slug}`,
-                        name: item.parts.join(' · '),
+                        name: item.parts.map(words).join(' · '),
                         summary: item.summary,
                         entry: item.entries[0]?.id,
                     }))}

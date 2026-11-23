@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import { chartOrder } from '@/components/preview/nav';
 import { summaries } from '@/components/preview/reference';
 import { leadOf, listOf, ReferencePage } from '@/components/preview/reference-page';
-import { chartsWithEntries, clip } from '@/lib/content';
+import { chartsWithEntries, clip, words } from '@/lib/content';
 import { pageMetadata } from '@/lib/seo';
 
 /*
@@ -23,9 +23,17 @@ export const generateMetadata = async ({ params }: { params: Promise<Params> }) 
     const item = find((await params).slug);
     if (!item) return {};
     return pageMetadata({
-        title: `${listOf(item.parts)} React chart${item.parts.length > 1 ? 's' : ''} — Continuum`,
+        title: `${listOf(item.parts.map(words))} React chart${item.parts.length > 1 ? 's' : ''} — Continuum`,
         absoluteTitle: true,
-        description: clip(leadOf('chart', item.parts.join(' · '), item.summary, item.body)),
+        description: clip(
+            leadOf(
+                'chart',
+                item.parts.map(words).join(' · '),
+                item.summary,
+                item.body,
+                item.parts.join(' · '),
+            ),
+        ),
         path: `/charts/${item.slug}`,
     });
 };
@@ -41,12 +49,12 @@ const ChartPage = async ({ params }: { params: Promise<Params> }) => {
             crumbs={[
                 { name: 'Components', path: '/components' },
                 { name: 'Charts', path: '/charts' },
-                { name: item.name, path },
+                { name: item.title, path },
             ]}
             entries={item.entries}
             group="Charts"
             kind="chart"
-            name={item.parts.length > 1 ? item.parts.join(' · ') : item.name}
+            name={item.parts.map(words).join(' · ')}
             order={chartOrder()}
             parts={item.parts}
             path={path}

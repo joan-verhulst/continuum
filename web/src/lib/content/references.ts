@@ -1,7 +1,7 @@
 import 'server-only';
 import { once, readRepoFile, referencesDir } from './files';
 import { firstSentence, type MdDoc, type MdSection, parseMarkdown, plainText } from './markdown';
-import { kebab } from './slugs';
+import { kebab, words } from './slugs';
 
 /*
  * The continuum-taste skill's references, read at build time: the system's own words are the
@@ -43,6 +43,8 @@ export const referenceMarkdown = (file: ReferenceFile) =>
 export type ReferenceComponent = {
     /** The first name, the part itself ('FilterMenu'). */
     name: string;
+    /** That name as words, for titles and lists ('Filter menu'). */
+    title: string;
     /** Every name in the heading, the part first ('FilterMenu', 'FilterMenuTrigger', …). */
     parts: string[];
     /** Kebab case of `name`: the page's URL, /components/filter-menu. */
@@ -77,6 +79,7 @@ const toComponent = (section: MdSection, group: MdSection): ReferenceComponent =
     const name = parts[0] ?? section.title;
     return {
         name,
+        title: words(name),
         parts,
         slug: kebab(name),
         group: group.title,
@@ -113,6 +116,8 @@ export const component = (slugOrName: string) =>
 /** One chart of charts.md's "Each chart" ('AreaChart · LineChart · BarChart' is one). */
 export type ReferenceChart = {
     name: string;
+    /** The name as words ('Area chart'). */
+    title: string;
     parts: string[];
     /** /charts/area-chart */
     slug: string;
@@ -129,6 +134,7 @@ export const charts = once(() => {
         const name = parts[0] ?? child.title;
         return {
             name,
+            title: words(name),
             parts,
             slug: kebab(name),
             summary: firstSentence(child.body),

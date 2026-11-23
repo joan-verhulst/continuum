@@ -23,7 +23,7 @@ export const footerMap = (): { components: FooterColumn; columns: FooterColumn[]
             href: '/components',
             links: components().map(item => ({
                 href: `/components/${item.slug}`,
-                label: item.name,
+                label: item.title,
             })),
         },
         columns: [
@@ -32,7 +32,7 @@ export const footerMap = (): { components: FooterColumn; columns: FooterColumn[]
                 href: '/charts',
                 links: charts().charts.map(item => ({
                     href: `/charts/${item.slug}`,
-                    label: item.name,
+                    label: item.title,
                 })),
             },
             {

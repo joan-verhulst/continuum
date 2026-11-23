@@ -23,9 +23,9 @@ export const generateMetadata = async ({ params }: { params: Promise<Params> }) 
     const item = find((await params).slug);
     if (!item) return {};
     return pageMetadata({
-        title: `${item.name} component — Continuum`,
+        title: `${item.title} component — Continuum`,
         absoluteTitle: true,
-        description: clip(leadOf('component', item.name, item.summary, item.body)),
+        description: clip(leadOf('component', item.title, item.summary, item.body, item.name)),
         path: `/components/${item.slug}`,
     });
 };
@@ -40,12 +40,12 @@ const ComponentPage = async ({ params }: { params: Promise<Params> }) => {
             body={item.body}
             crumbs={[
                 { name: 'Components', path: '/components' },
-                { name: item.name, path },
+                { name: item.title, path },
             ]}
             entries={item.entries}
             group={item.group}
             kind="component"
-            name={item.name}
+            name={item.title}
             order={componentOrder()}
             parts={item.parts}
             path={path}

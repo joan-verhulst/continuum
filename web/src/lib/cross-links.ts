@@ -37,7 +37,7 @@ export const partsNamedIn = (source: string, skip?: string): LinkRow[] => {
             .filter(item => item.parts.some(part => namesPart(text, part)))
             .map(item => ({
                 href: `/components/${item.slug}`,
-                title: item.name,
+                title: item.title,
                 meta: item.group,
                 description: item.summary,
             })),
@@ -45,7 +45,7 @@ export const partsNamedIn = (source: string, skip?: string): LinkRow[] => {
             .charts.filter(item => item.parts.some(part => namesPart(text, part)))
             .map(item => ({
                 href: `/charts/${item.slug}`,
-                title: item.name,
+                title: item.title,
                 meta: 'Charts',
                 description: item.summary,
             })),

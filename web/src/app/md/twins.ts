@@ -229,7 +229,7 @@ const known = (): Map<string, Twin> => {
                     g =>
                         `## ${g.name}\n\n${linkList(
                             g.components.map(c => ({
-                                title: c.name,
+                                title: c.title,
                                 path: `/components/${c.slug}`,
                                 summary: c.summary,
                             })),
@@ -240,12 +240,12 @@ const known = (): Map<string, Twin> => {
     for (const item of components()) {
         add({
             path: `/components/${item.slug}`,
-            title: item.name,
+            title: item.title,
             summary: item.summary,
             group: 'Components',
             markdown: () =>
                 doc(
-                    item.name,
+                    item.title,
                     `/components/${item.slug}`,
                     `**Family:** ${item.group}`,
                     item.parts.length > 1 ? `**Parts:** ${item.parts.join(' · ')}` : '',
@@ -270,7 +270,7 @@ const known = (): Map<string, Twin> => {
                 ...chartDoc.general.map(s => `## ${s.title}\n\n${fullBody(s)}`),
                 `## Each chart\n\n${linkList(
                     chartDoc.charts.map(c => ({
-                        title: c.name,
+                        title: c.title,
                         path: `/charts/${c.slug}`,
                         summary: c.summary,
                     })),
@@ -280,12 +280,12 @@ const known = (): Map<string, Twin> => {
     for (const chart of chartDoc.charts) {
         add({
             path: `/charts/${chart.slug}`,
-            title: chart.name,
+            title: chart.title,
             summary: chart.summary,
             group: 'Charts',
             markdown: () =>
                 doc(
-                    chart.name,
+                    chart.title,
                     `/charts/${chart.slug}`,
                     chart.parts.length > 1 ? `**Parts:** ${chart.parts.join(' · ')}` : '',
                     chart.body,

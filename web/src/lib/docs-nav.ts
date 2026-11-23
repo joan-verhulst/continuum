@@ -81,7 +81,7 @@ export const docsNav = (): DocsNav => {
                     label: group.name,
                     items: group.components.map(item => ({
                         href: `/components/${item.slug}`,
-                        label: item.name,
+                        label: item.title,
                     })),
                 })),
             ],
@@ -95,7 +95,7 @@ export const docsNav = (): DocsNav => {
                         { href: '/charts', label: 'Overview' },
                         ...charts().charts.map(item => ({
                             href: `/charts/${item.slug}`,
-                            label: item.name,
+                            label: item.title,
                         })),
                     ],
                 },
