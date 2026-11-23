@@ -1,9 +1,9 @@
 import {
     Button,
+    EditableCell,
     Table,
     TableBody,
     TableCell,
-    TableEditCell,
     TableFooter,
     TableHead,
     TableHeader,
@@ -70,7 +70,7 @@ const EditCellPreview = ({ knobs }: PreviewProps) => {
                 {lines.map(line => (
                     <TableRow key={line.id}>
                         {on('text') ? (
-                            <TableEditCell
+                            <EditableCell
                                 label={`Item of line ${line.id}`}
                                 onValueChange={value => set(line.id, 'item', value)}
                                 placeholder="What was done"
@@ -80,7 +80,7 @@ const EditCellPreview = ({ knobs }: PreviewProps) => {
                             <TableCell>{line.item}</TableCell>
                         )}
                         {on('number') ? (
-                            <TableEditCell
+                            <EditableCell
                                 inputMode="decimal"
                                 label={`Hours of ${line.item}`}
                                 numeric
@@ -94,7 +94,7 @@ const EditCellPreview = ({ knobs }: PreviewProps) => {
                             <TableCell numeric>{line.hours}</TableCell>
                         )}
                         {on('pick') ? (
-                            <TableEditCell
+                            <EditableCell
                                 container={stage}
                                 label={`VAT of ${line.item}`}
                                 onValueChange={value => set(line.id, 'vat', value)}
@@ -112,9 +112,9 @@ const EditCellPreview = ({ knobs }: PreviewProps) => {
 };
 
 export const entry: Entry = {
-    id: 'table-edit-cell',
+    id: 'editable-cell',
     name: 'Editable cell',
-    category: 'content',
+    category: 'tables',
     description:
         'A table cell that reads as its value and is edited where it sits: typed over, or picked from a set.',
     span: 2,
@@ -182,20 +182,20 @@ const InvoiceLines = () => {
                 <TableBody>
                     {lines.map(line => (
                         <TableRow key={line.id}>
-                            <TableEditCell
+                            <EditableCell
                                 label={`Item of line ${line.id}`}
                                 onValueChange={value => change(line.id, 'item', value)}
                                 placeholder="What was done"
                                 value={line.item}
                             />
-                            <TableEditCell
+                            <EditableCell
                                 inputMode="decimal"
                                 label={`Quantity of ${line.item}`}
                                 numeric
                                 onValueChange={value => changeNumber(line.id, 'quantity', value)}
                                 value={line.quantity}
                             />
-                            <TableEditCell
+                            <EditableCell
                                 inputMode="decimal"
                                 label={`Rate of ${line.item}`}
                                 numeric
@@ -203,8 +203,8 @@ const InvoiceLines = () => {
                                 value={line.rate}
                             >
                                 {euro.format(numberOf(line.rate))}
-                            </TableEditCell>
-                            <TableEditCell
+                            </EditableCell>
+                            <EditableCell
                                 label={`VAT of ${line.item}`}
                                 onValueChange={value => change(line.id, 'vat', value)}
                                 options={vatRates}

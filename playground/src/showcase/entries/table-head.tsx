@@ -114,7 +114,7 @@ const HeadPreview = ({ knobs }: PreviewProps) => (
 export const entry: Entry = {
     id: 'table-head',
     name: 'Table head',
-    category: 'content',
+    category: 'tables',
     description:
         'A column’s head; on the columns a reader orders by, a button that sorts them, with the order’s mark.',
     span: 2,

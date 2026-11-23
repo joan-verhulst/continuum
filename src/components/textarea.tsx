@@ -25,7 +25,7 @@ export const Textarea = ({
     return (
         <textarea
             className={cn(
-                'block min-h-24 w-full resize-y rounded-control border bg-transparent px-3 py-2.5 shadow-control transition-[border-color] duration-150',
+                'block min-h-24 w-full resize-y rounded-control border bg-control px-3 py-2.5 shadow-control transition-[border-color,background-color] duration-150',
                 inputTextClass,
                 'disabled:opacity-50',
                 focusRing,
@@ -33,7 +33,7 @@ export const Textarea = ({
                     ? 'border-error-500'
                     : control.disabled
                       ? 'border-neutral-200'
-                      : 'border-neutral-200 hover:border-neutral-300 hover:placeholder:text-neutral-700 focus:border-neutral-300',
+                      : 'border-neutral-200 hover:border-neutral-300 hover:bg-control-hover hover:placeholder:text-neutral-700 focus:border-neutral-300',
                 className,
             )}
             data-slot="textarea"

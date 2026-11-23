@@ -9,7 +9,7 @@ import { focusRing } from './button';
 import { chipClass, chipRemoveClass } from './chip';
 import { useField, useFieldControl } from './field';
 import { inputTextClass, inputVariants } from './input';
-import { PopoverItem } from './popover-item';
+import { MenuItem } from './menu-item';
 import { ThemeScope, usePortalContainer } from './theme';
 
 /*
@@ -339,13 +339,13 @@ export const ComboboxList = ({
     />
 );
 
-/** An option: a `PopoverItem` row, as in a select, with a check on the picked one. */
+/** An option: a `MenuItem` row, as in a select, with a check on the picked one. */
 export const ComboboxItem = ({
     className,
     children,
     ...props
 }: WithClassName<ComboboxPrimitive.Item.Props>) => (
-    <PopoverItem
+    <MenuItem
         className={className}
         data-slot="combobox-item"
         render={<ComboboxPrimitive.Item {...props} />}
@@ -356,7 +356,7 @@ export const ComboboxItem = ({
         }
     >
         {children}
-    </PopoverItem>
+    </MenuItem>
 );
 
 /*

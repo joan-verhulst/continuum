@@ -66,8 +66,13 @@ export type ThemeOptions = {
     neutral?: { hue: number; tint: number };
     /** The colours the ramps may use: Display P3, as Tailwind's palette, or sRGB, which every screen shows. */
     gamut?: Gamut;
-    /** How each ramp's curves are shaped; anything left out is Tailwind's. */
-    curves?: { primary?: RampShape; neutral?: RampShape };
+    /**
+     * How each ramp's curves are shaped; anything left out is Tailwind's. Dark mode reads the greys
+     * back to front, so one bend of their midtones moves the two modes opposite ways: `neutralDark`
+     * bends dark's own; the ends and the rest of the shape stay the two modes'. Left out, dark
+     * follows the greys' midtones.
+     */
+    curves?: { primary?: RampShape; neutral?: RampShape; neutralDark?: { midtones?: number } };
     /**
      * The base type size in px, 13 as drawn. Every size on the scale follows it, rounded to a whole
      * pixel, its line height 1.25 times that.
@@ -88,6 +93,20 @@ export type ThemeOptions = {
     action?: 'neutral' | 'accent';
     /** `lit` adds a top highlight and a ring; `glossy` adds a gradient as well. */
     actionStyle?: 'flat' | 'lit' | 'glossy';
+    /**
+     * What a control holds inside its hairline: `outline` nothing, as drawn; `filled` a faint ink
+     * wash, so fields, selects, secondary buttons and the segmented control's track read as things
+     * to press rather than outlines on the panel. Ghost buttons, plain inputs and the primary button
+     * are the same in both.
+     */
+    controls?: 'outline' | 'filled';
+    /**
+     * How a card with a head is drawn: `plain` one surface, as drawn; `framed` a frame a step off
+     * the page holding its head and foot, its content on a stage of its own inside it. Charts, stat
+     * cards, titled cards, checklists and settings cards; a card with no head, and a table,
+     * stay plain.
+     */
+    cards?: 'plain' | 'framed';
     /** The selected wash: a translucent neutral, or the accent's palest step. */
     tint?: 'neutral' | 'accent';
     /** The dock, rail and small chips: full pills, or a tighter 10px corner. */
@@ -159,6 +178,8 @@ export const defaultThemeOptions = {
     // A theme's own colour fills its main button unless it asks for near-black.
     action: 'accent' as 'accent' | 'neutral',
     actionStyle: 'flat' as const,
+    controls: 'outline' as const,
+    cards: 'plain' as const,
     tint: 'neutral' as const,
     nav: 'quiet' as const,
     elevation: 'flat' as const,
@@ -249,10 +270,26 @@ export const themeAccentCurves = (options: ThemeOptions): Oklch[] | null => {
     return buildRamp(seed, { step: step < 0 ? 5 : step, gamut: gamutOf(options), shape });
 };
 
-/** The grey ramp a set of options produces, as oklch colours; null for the baseline greys. */
-export const themeNeutralCurves = (options: ThemeOptions): Oklch[] | null => {
-    const neutral = options.neutral ?? defaultThemeOptions.neutral;
+/** The greys' shape a mode is built from: dark takes its own midtones when it has them. */
+export const greyShapeOf = (options: ThemeOptions, mode: 'light' | 'dark' = 'light') => {
     const shape = options.curves?.neutral;
+    const own = options.curves?.neutralDark?.midtones;
+    // The same bend as light's is light's own shape, so the two modes build the one ramp.
+    return mode === 'dark' && own !== undefined && own !== (shape?.midtones ?? 0)
+        ? { ...shape, midtones: own }
+        : shape;
+};
+
+/**
+ * The grey ramp a set of options produces for a mode, as oklch colours, in the ramp's own order
+ * (50 to 950; dark mode reads it back to front); null for the baseline greys.
+ */
+export const themeNeutralCurves = (
+    options: ThemeOptions,
+    mode: 'light' | 'dark' = 'light',
+): Oklch[] | null => {
+    const neutral = options.neutral ?? defaultThemeOptions.neutral;
+    const shape = greyShapeOf(options, mode);
     // No tint is the baseline whatever the hue says, unless the curves were shaped.
     if (neutral.tint === 0 && !touched(shape)) return null;
     return buildGreyRamp(neutral.hue, neutral.tint, neutralLightness, {
@@ -272,9 +309,12 @@ export const themeFonts = Object.fromEntries(
 const fontFamily = (font: ThemeFont) =>
     font in themeFonts ? themeFonts[font as keyof typeof themeFonts] : font;
 
-/** The neutral ramp a set of options produces, as stylesheet values. */
-export const themeNeutralRamp = (options: ThemeOptions): RampSteps => {
-    const curves = themeNeutralCurves(options);
+/** The neutral ramp a set of options produces for a mode, as stylesheet values, 50 to 950. */
+export const themeNeutralRamp = (
+    options: ThemeOptions,
+    mode: 'light' | 'dark' = 'light',
+): RampSteps => {
+    const curves = themeNeutralCurves(options, mode);
     return curves ? rampToCss(curves, gamutOf(options)) : defaultNeutral;
 };
 
@@ -325,6 +365,14 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
     if (neutral !== defaultNeutral) {
         steps.forEach((step, i) => {
             light[`--continuum-n-${step}`] = neutral[i] ?? '';
+        });
+    }
+    // Dark's own midtones: its greys between the shared ends, back to front, over the ramp's.
+    const darkGreys = themeNeutralRamp(options, 'dark');
+    if (darkGreys.some((value, i) => value !== neutral[i])) {
+        steps.forEach((_, i) => {
+            if (i === 0 || i === 10) return;
+            dark[`--color-neutral-${steps[10 - i]}`] = darkGreys[i] ?? '';
         });
     }
 
@@ -427,6 +475,25 @@ export const createThemeVariables = (options: ThemeOptions): ThemeVariables => {
                 ? `linear-gradient(180deg, ${lit(5)}, var(--continuum-p-500))`
                 : 'linear-gradient(180deg, var(--color-neutral-800), var(--color-neutral-950))';
     }
+
+    if ((options.controls ?? defaultThemeOptions.controls) === 'filled') {
+        /*
+         * A wash of the text colour, never a fixed grey: a neutral-100 fill vanishes on a neutral-100
+         * panel, the wash shows on every surface. The ink reads back in dark, so the one mix is a dark
+         * wash in light and a light one in dark; light stays fainter, so a filled field never reads as
+         * a disabled one. Hover deepens it as the border deepens.
+         */
+        const wash = (share: number) =>
+            `color-mix(in oklab, var(--color-neutral-950) ${share}%, transparent)`;
+        light['--color-control'] = wash(2.5);
+        light['--color-control-hover'] = wash(4.5);
+        dark['--color-control'] = wash(4);
+        dark['--color-control-hover'] = wash(6);
+        light['--color-segment-track'] = 'var(--color-control)';
+    }
+
+    // Empty turns the card-frame, card-head, card-stage and card-foot utilities to their framed values.
+    if ((options.cards ?? defaultThemeOptions.cards) === 'framed') light['--cards-framed'] = '';
 
     if ((options.tint ?? defaultThemeOptions.tint) === 'accent') {
         light['--color-tint'] = 'var(--color-primary-50)';

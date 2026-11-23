@@ -13,6 +13,16 @@ export type TableVariant = 'ruled' | 'rows';
 
 export const TableContext = createContext<TableVariant>('ruled');
 
+/* ---------- Moving rows and columns ---------- */
+
+/** What a drop hands over: the item's place before and after, counted among the items that move. */
+export type TableMoveHandler = (from: number, to: number) => void;
+
+// The body's handler, read by the grip of each row in it.
+export const RowMoveContext = createContext<TableMoveHandler | null>(null);
+// The header's handler, read by each movable head in it.
+export const ColumnMoveContext = createContext<TableMoveHandler | null>(null);
+
 /* ---------- Folds ---------- */
 
 export type FoldState = {
@@ -87,7 +97,14 @@ const badgeInCell = '[&_[data-slot=badge]]:-my-0.75 [&_[data-slot=badge]]:align-
 // row and still shows as one.
 const buttonInCell = '[&_[data-size=icon-sm]]:-my-1.5 [&_[data-size=icon-sm]]:align-middle';
 
-export const tableHeadVariants = cva(['whitespace-nowrap font-normal text-xs', boxInCell], {
+// A column being moved lifts over the others, its sides ruled so it reads as one strip; a column
+// being resized shows its edge in the accent down every cell.
+const moving = [
+    'data-dragging:relative data-dragging:z-10 data-dragging:shadow-[inset_1px_0_0_var(--color-neutral-200),inset_-1px_0_0_var(--color-neutral-200)]',
+    'data-resizing:shadow-[inset_-2px_0_0_var(--color-primary-500)]',
+];
+
+export const tableHeadVariants = cva(['whitespace-nowrap font-normal text-xs', boxInCell, moving], {
     variants: {
         variant: {
             ruled: 'h-table-row border-neutral-200 border-b bg-neutral-100 p-3 text-neutral-600',
@@ -99,7 +116,13 @@ export const tableHeadVariants = cva(['whitespace-nowrap font-normal text-xs', b
 // One line a cell: a narrow table scrolls rather than folding its rows into two-line ones. A second
 // line of meta under a name still stacks, as a block of its own.
 export const tableCellVariants = cva(
-    ['whitespace-nowrap text-xs', boxInCell, badgeInCell, buttonInCell],
+    [
+        'whitespace-nowrap text-xs data-dragging:bg-neutral-50',
+        boxInCell,
+        badgeInCell,
+        buttonInCell,
+        moving,
+    ],
     {
         variants: {
             variant: {

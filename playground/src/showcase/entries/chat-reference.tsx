@@ -39,7 +39,7 @@ const ChatReferencePreview = ({ knobs: values }: PreviewProps) => {
 export const entry: Entry = {
     id: 'chat-reference',
     name: 'Chat reference',
-    category: 'ai',
+    category: 'chat',
     description:
         'An id as a mono chip in the words, and the record it names dropped into the thread with a fact and its status.',
     knobs,
@@ -73,21 +73,24 @@ const AgentPage = () => (
                 <ChatMessage status="read" time="10:02 AM" variant="own">
                     Which invoices are overdue?
                 </ChatMessage>
-                <ChatMessage {...assistant} time="10:02 AM">
+                <ChatMessage
+                    {...assistant}
+                    attached={overdue.map(invoice => (
+                        <ChatReference
+                            key={invoice.token}
+                            // biome-ignore lint/a11y/useAnchorContent: the reference fills the link with its token, fact and status.
+                            render={<a href="#invoices" />}
+                            status={<Badge tone="error">{invoice.days}</Badge>}
+                            token={invoice.token}
+                        >
+                            {invoice.fact}
+                        </ChatReference>
+                    ))}
+                    time="10:02 AM"
+                >
                     Three, €2,280.00 in all. Northwind’s <ChatToken>#inv_7QX2mPa91L</ChatToken> is
                     the oldest.
                 </ChatMessage>
-                {overdue.map(invoice => (
-                    <ChatReference
-                        key={invoice.token}
-                        // biome-ignore lint/a11y/useAnchorContent: the reference fills the link with its token, fact and status.
-                        render={<a href="#invoices" />}
-                        status={<Badge tone="error">{invoice.days}</Badge>}
-                        token={invoice.token}
-                    >
-                        {invoice.fact}
-                    </ChatReference>
-                ))}
                 <ChatMessage {...assistant} time="10:02 AM">
                     Shall I send each customer a reminder?
                 </ChatMessage>

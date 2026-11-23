@@ -3,7 +3,7 @@
 import { type ComponentProps, type ReactNode, useContext, useId, useState } from 'react';
 import { cn } from '../lib/cn';
 import { hasContent, SuggestionsContext } from './chat-shared';
-import { PopoverItem, type PopoverItemProps } from './popover-item';
+import { MenuItem, type MenuItemProps } from './menu-item';
 
 export type ChatTriggerMatch = {
     /** The character that started it: "#", "@". */
@@ -141,7 +141,7 @@ export const ChatSuggestions = ({
     );
 };
 
-export type ChatSuggestionProps = Omit<PopoverItemProps, 'render' | 'onSelect'> & {
+export type ChatSuggestionProps = Omit<MenuItemProps, 'render' | 'onSelect'> & {
     /** Picks it, by Enter in the composer or a click: insert the reference, link the record. */
     onSelect: () => void;
     disabled?: boolean;
@@ -164,7 +164,7 @@ export const ChatSuggestion = ({
     const active = context?.activeId === id;
 
     return (
-        <PopoverItem
+        <MenuItem
             aria-disabled={disabled || undefined}
             aria-selected={active}
             // Concentric inside the panel: its corner (the item's and 4) less its 4 inset and 1 hairline.

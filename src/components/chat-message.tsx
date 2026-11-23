@@ -6,6 +6,7 @@ import type { ComponentProps, ReactNode } from 'react';
 import { cn } from '../lib/cn';
 import { focusRing } from './button';
 import { ChatTypingDots } from './chat-typing';
+import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 // Both variants share one layout: a header row across the top, then two columns side by side, the words
 // and the time with its tick at the foot of the second, 8 apart, 12 from the right and 10 from the
@@ -89,6 +90,11 @@ export type ChatMessageProps = Omit<ComponentProps<'article'>, 'title'> &
         badge?: ReactNode;
         /** Before the author, usually a 24px round Avatar. */
         avatar?: ReactNode;
+        /**
+         * At the header's right: facts about the message itself, as `ChatMessageStat`s, such as an AI
+         * reply's confidence, the files it read and whose profile it looked at. A dot goes between each.
+         */
+        stats?: ReactNode;
         /** When it was sent, as shown: "2:48 PM". */
         time?: ReactNode;
         /** Machine-readable `time`, set on the <time> element. */
@@ -108,6 +114,12 @@ export type ChatMessageProps = Omit<ComponentProps<'article'>, 'title'> &
         pending?: boolean;
         /** What a screen reader hears for a pending message with no words yet. */
         pendingLabel?: string;
+        /**
+         * What goes with the message, under it at its width and on its side, 6 apart: a
+         * `ChatAttachments` row of files, a `ChatReference` to a record (an invoice), or both, files
+         * first. They read as one with the message, never as the thread's next item.
+         */
+        attached?: ReactNode;
     };
 
 /** One message: `own` for the current user on the tint, `other` for agents and bots as a card. */
@@ -116,6 +128,7 @@ export const ChatMessage = ({
     author,
     badge,
     avatar,
+    stats,
     time,
     dateTime,
     status,
@@ -123,23 +136,33 @@ export const ChatMessage = ({
     retryLabel = 'Retry',
     pending = false,
     pendingLabel = 'Writing a reply',
+    attached,
     className,
     children,
-    ...props
+    ...rest
 }: ChatMessageProps) => {
+    // With something attached, the thread's entrance goes on the group, which is what it lays out.
+    const { 'data-enter': enter, ...props } = rest as typeof rest & { 'data-enter'?: string };
+    const grouped = attached != null && attached !== false;
     const own = variant === 'own';
     const state = status ? statuses[status] : undefined;
     const failed = status === 'failed';
-    const hasHeader = author != null || badge != null || avatar != null;
+    const hasHeader = author != null || badge != null || avatar != null || stats != null;
     const hasBody = children != null && children !== false && children !== '';
     const hasMeta = time != null || status != null;
     // Only the time and its tick fit beside the words; anything more takes its own row.
     const metaBeside = hasMeta && !failed;
 
-    return (
+    const message = (
         <article
             aria-busy={pending || undefined}
-            className={cn(chatMessageVariants({ variant }), className)}
+            className={cn(
+                chatMessageVariants({ variant }),
+                // In a group the group takes the side and the width; the message fills it.
+                grouped && 'ml-0 w-full max-w-none',
+                className,
+            )}
+            data-enter={grouped ? undefined : enter}
             data-pending={pending || undefined}
             data-slot="chat-message"
             data-status={status}
@@ -161,6 +184,14 @@ export const ChatMessage = ({
                         </span>
                     )}
                     {badge}
+                    {stats != null && (
+                        <span
+                            className="ml-auto flex shrink-0 items-center gap-1.5 pl-2 *:not-first:before:mr-1.5 *:not-first:before:text-neutral-400 *:not-first:before:content-['·']"
+                            data-slot="chat-message-stats"
+                        >
+                            {stats}
+                        </span>
+                    )}
                 </header>
             ) : (
                 // Without a name the reader would hear the words but not whose they are.
@@ -227,4 +258,75 @@ export const ChatMessage = ({
             )}
         </article>
     );
+
+    if (!grouped) return message;
+
+    return (
+        // The message and what goes with it read as one: the same side, the same width (the wider
+        // of the words and what is attached, up to two thirds for one's own), 6 apart.
+        <div
+            className={cn(
+                'flex min-w-0 flex-col gap-1.5',
+                own ? 'ml-auto w-fit max-w-2/3' : 'w-full',
+            )}
+            data-enter={enter}
+            data-slot="chat-message-group"
+            data-variant={variant ?? 'other'}
+        >
+            {message}
+            <div
+                className={cn(
+                    'flex min-w-0 flex-col gap-1.5',
+                    // Files keep to the message's side; a linked record spans the group and takes the
+                    // message's corner, so the two read as one shape.
+                    '*:data-[slot=chat-attachments]:ml-0 *:data-[slot=chat-attachments]:max-w-none',
+                    '**:data-[variant=record]:rounded-card *:data-[slot=chat-reference]:rounded-card',
+                )}
+                data-slot="chat-message-attached"
+            >
+                {attached}
+            </div>
+        </div>
+    );
 };
+
+export type ChatMessageStatProps = Omit<ComponentProps<'span'>, 'children'> & {
+    /** What the figure is, read out before it and shown on hover: "Confidence", "Files read". */
+    label: string;
+    /** A 12 icon before the figure. */
+    icon?: ReactNode;
+    /** The figure: "90%", "2". Leave it out for an icon that says it all (a profile looked at). */
+    value?: ReactNode;
+};
+
+/**
+ * One fact in a message's `stats`: a 12 icon and a figure, 11 `neutral-600` tabular. Quiet, as it is
+ * about the message rather than part of it; its tooltip names it, since the figure alone does not.
+ */
+export const ChatMessageStat = ({
+    label,
+    icon,
+    value,
+    className,
+    ...props
+}: ChatMessageStatProps) => (
+    <Tooltip>
+        <TooltipTrigger
+            render={
+                <span
+                    {...props}
+                    className={cn(
+                        'inline-flex items-center gap-1 text-neutral-600 text-xxs tabular-nums [&_svg]:size-3 [&_svg]:shrink-0 [&_svg]:text-neutral-500',
+                        className,
+                    )}
+                    data-slot="chat-message-stat"
+                />
+            }
+        >
+            <span className="sr-only">{label}: </span>
+            {icon}
+            {value}
+        </TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+);

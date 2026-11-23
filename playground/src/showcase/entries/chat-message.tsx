@@ -2,14 +2,16 @@ import {
     Avatar,
     Badge,
     Card,
-    ChatComposer,
     ChatEvent,
     ChatMessage,
+    ChatMessageStat,
     type ChatMessageStatus,
     ChatThread,
     ChatToken,
+    MessageComposer,
     StatCard,
 } from 'continuum';
+import { FileText, Gauge, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {
     AppScene,
@@ -67,6 +69,13 @@ const knobs: Knob[] = [
         when: values => !own(values),
     },
     {
+        id: 'stats',
+        label: 'Stats',
+        switch: true,
+        default: false,
+        when: values => !own(values),
+    },
+    {
         id: 'pending',
         label: 'Pending',
         options: [o('off', 'Off'), o('thinking', 'Thinking'), o('streaming', 'Streaming')],
@@ -82,6 +91,15 @@ const knobs: Knob[] = [
     },
     { id: 'event', label: 'System event', switch: true, default: false },
 ];
+
+/** What an AI reply drew on: how sure it is, how many files it read, and that it looked at a profile. */
+const AnswerStats = () => (
+    <>
+        <ChatMessageStat icon={<Gauge strokeWidth={2} />} label="Confidence" value="90%" />
+        <ChatMessageStat icon={<FileText strokeWidth={2} />} label="Files read" value="2" />
+        <ChatMessageStat icon={<UserRound strokeWidth={2} />} label="Looked at Joan's profile" />
+    </>
+);
 
 // No spaces to break at: the bubble has to wrap it anywhere rather than widen.
 const longRun = '😂'.repeat(40);
@@ -130,6 +148,7 @@ const ChatMessagePreview = ({ knobs: values }: PreviewProps) => {
                         values.avatar ? <Avatar fallback="SB" shape="round" size={24} /> : undefined
                     }
                     badge={author === 'badge' ? <Badge tone="primary">AI</Badge> : undefined}
+                    stats={values.stats ? <AnswerStats /> : undefined}
                     pending={pending !== 'off'}
                     time={pending === 'off' ? '2:48 PM' : undefined}
                 >
@@ -144,7 +163,7 @@ const ChatMessagePreview = ({ knobs: values }: PreviewProps) => {
 export const entry: Entry = {
     id: 'chat-message',
     name: 'Chat message',
-    category: 'ai',
+    category: 'chat',
     description:
         'One message: one’s own on the tint with its delivery tick, others’ as a card with who wrote it.',
     knobs,
@@ -225,7 +244,7 @@ const HelpPanel = () => {
                 ))}
             </ChatThread>
             <div className="px-3 pb-3">
-                <ChatComposer onSend={send} placeholder="Reply to Ines" />
+                <MessageComposer onSend={send} placeholder="Reply to Ines" />
             </div>
         </Card>
     );

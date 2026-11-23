@@ -6,14 +6,14 @@ import {
     Card,
     ChatAttachment,
     ChatAttachments,
-    ChatComposer,
-    ChatComposerAttachItem,
     ChatMessage,
     ChatSuggestion,
     ChatSuggestions,
     ChatThread,
     ChatToken,
     DropdownMenuItem,
+    MessageComposer,
+    MessageComposerAttachItem,
     Sheet,
     SheetContent,
     SheetHeader,
@@ -199,12 +199,12 @@ const Composer = ({ plus, preset, live }: { plus: string; preset: string; live: 
                     ])}
                 </ChatThread>
             )}
-            <ChatComposer
+            <MessageComposer
                 accept="image/*,.pdf,.csv,.xlsx,.docx,.txt"
                 attachMenu={
                     plus === 'menu' ? (
                         <>
-                            <ChatComposerAttachItem />
+                            <MessageComposerAttachItem />
                             <DropdownMenuItem onClick={() => link(records.invoice)}>
                                 <ReceiptText {...icon} /> Link invoice
                             </DropdownMenuItem>
@@ -279,7 +279,7 @@ const Composer = ({ plus, preset, live }: { plus: string; preset: string; live: 
     );
 };
 
-const ChatComposerPreview = ({ knobs: values }: PreviewProps) => {
+const MessageComposerPreview = ({ knobs: values }: PreviewProps) => {
     const plus = String(values.plus);
     const preset = String(values.attachments);
     const live = values.suggestions === 'live';
@@ -288,13 +288,13 @@ const ChatComposerPreview = ({ knobs: values }: PreviewProps) => {
 };
 
 export const entry: Entry = {
-    id: 'chat-composer',
-    name: 'Chat composer',
-    category: 'ai',
+    id: 'message-composer',
+    name: 'Message composer',
+    category: 'chat',
     description:
         'A box that grows with the draft; the “+” opens a menu, what is picked waits above it, “#” suggests records.',
     knobs,
-    Preview: ChatComposerPreview,
+    Preview: MessageComposerPreview,
 };
 
 // The assistant's answer to whatever is asked: the demo has one, written after a short think.
@@ -424,7 +424,7 @@ const AskSheet = () => {
                 </ChatThread>
                 {/* The composer's own row at the foot, ruled off the thread edge to edge. */}
                 <div className="shrink-0 border-neutral-200 border-t p-3">
-                    <ChatComposer
+                    <MessageComposer
                         accept="image/*,.pdf,.csv,.xlsx,.docx,.txt"
                         attachments={
                             waiting.length > 0 ? (

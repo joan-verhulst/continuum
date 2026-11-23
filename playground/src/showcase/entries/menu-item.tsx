@@ -2,11 +2,11 @@ import {
     Avatar,
     Badge,
     Button,
+    MenuItem,
+    MenuItemIndicator,
+    MenuItemShortcut,
     Popover,
     PopoverContent,
-    PopoverItem,
-    PopoverItemIndicator,
-    PopoverItemShortcut,
     PopoverTrigger,
 } from 'continuum';
 import { Check, ChevronRight, Mail, Star, Trash2, UserRound, Users } from 'lucide-react';
@@ -23,7 +23,7 @@ import {
     previewIcon,
 } from '../kit';
 
-const popoverItemKnobs: Knob[] = [
+const menuItemKnobs: Knob[] = [
     {
         id: 'leading',
         label: 'Leading',
@@ -71,7 +71,7 @@ const popoverItemKnobs: Knob[] = [
     },
 ];
 
-const popoverItemRows = [
+const menuItemRows = [
     {
         label: 'Anna de Vries',
         email: 'anna@northwind.com',
@@ -108,7 +108,7 @@ const popoverItemRows = [
  * The rows on their own, in a popup's panel: the states are set by hand, as Base UI would set them,
  * and the highlight follows the pointer as it does in a real list.
  */
-const PopoverItemPreview = ({ knobs }: PreviewProps) => {
+const MenuItemPreview = ({ knobs }: PreviewProps) => {
     const [pointed, setPointed] = useState<number>();
 
     return (
@@ -116,7 +116,7 @@ const PopoverItemPreview = ({ knobs }: PreviewProps) => {
             onPointerLeave={() => setPointed(undefined)}
             className="flex w-80 flex-col gap-1 rounded-item border border-neutral-200 bg-neutral-50 p-1 shadow-float"
         >
-            {popoverItemRows.map((row, index) => {
+            {menuItemRows.map((row, index) => {
                 const middle = index === 1;
                 // The pointer takes the highlight, as Base UI moves it; the knob's state shows otherwise.
                 const state =
@@ -143,9 +143,9 @@ const PopoverItemPreview = ({ knobs }: PreviewProps) => {
                         size={knobs.description ? 32 : 24}
                     />
                 ) : knobs.leading === 'checkbox' ? (
-                    <PopoverItemIndicator />
+                    <MenuItemIndicator />
                 ) : knobs.leading === 'radio' ? (
-                    <PopoverItemIndicator kind="radio" />
+                    <MenuItemIndicator kind="radio" />
                 ) : knobs.leading === 'chip' ? (
                     <Badge>{row.region}</Badge>
                 ) : undefined;
@@ -154,7 +154,7 @@ const PopoverItemPreview = ({ knobs }: PreviewProps) => {
                     knobs.trailing === 'check' ? (
                         picked && <Check {...previewIcon} />
                     ) : knobs.trailing === 'shortcut' ? (
-                        <PopoverItemShortcut>{row.shortcut}</PopoverItemShortcut>
+                        <MenuItemShortcut>{row.shortcut}</MenuItemShortcut>
                     ) : knobs.trailing === 'count' ? (
                         <span className="tabular-nums">{row.count}</span>
                     ) : knobs.trailing === 'chevron' ? (
@@ -162,12 +162,12 @@ const PopoverItemPreview = ({ knobs }: PreviewProps) => {
                     ) : knobs.trailing === 'several' ? (
                         <>
                             {index === 0 && <Star {...previewIcon} />}
-                            <PopoverItemShortcut>{row.shortcut}</PopoverItemShortcut>
+                            <MenuItemShortcut>{row.shortcut}</MenuItemShortcut>
                         </>
                     ) : undefined;
 
                 return (
-                    <PopoverItem
+                    <MenuItem
                         // A checkbox or radio list marks its picked row checked, as a menu would.
                         data-checked={
                             (knobs.leading === 'checkbox' || knobs.leading === 'radio') &&
@@ -204,7 +204,7 @@ const PopoverItemPreview = ({ knobs }: PreviewProps) => {
                         variant={danger ? 'danger' : 'default'}
                     >
                         {danger ? 'Remove member' : row.label}
-                    </PopoverItem>
+                    </MenuItem>
                 );
             })}
         </div>
@@ -212,12 +212,12 @@ const PopoverItemPreview = ({ knobs }: PreviewProps) => {
 };
 
 export const entry: Entry = {
-    id: 'popover-item',
-    name: 'Popover item',
+    id: 'menu-item',
+    name: 'Menu item',
     category: 'overlays',
     description: 'The row every popup list is made of: options, actions, filters and commands.',
-    knobs: popoverItemKnobs,
-    Preview: PopoverItemPreview,
+    knobs: menuItemKnobs,
+    Preview: MenuItemPreview,
 };
 
 const members = [
@@ -251,7 +251,7 @@ const AssignOwner = () => {
                 </p>
                 <div className="flex flex-col gap-1" onPointerLeave={() => setPointed(undefined)}>
                     {members.map(member => (
-                        <PopoverItem
+                        <MenuItem
                             aria-pressed={member.name === owner}
                             data-highlighted={member.name === pointed || undefined}
                             description={member.email}
@@ -273,7 +273,7 @@ const AssignOwner = () => {
                             }
                         >
                             {member.name}
-                        </PopoverItem>
+                        </MenuItem>
                     ))}
                 </div>
             </PopoverContent>

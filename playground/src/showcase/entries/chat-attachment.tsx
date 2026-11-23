@@ -4,9 +4,9 @@ import {
     Card,
     ChatAttachment,
     ChatAttachments,
-    ChatComposer,
     ChatMessage,
     ChatThread,
+    MessageComposer,
 } from 'continuum';
 import { useRef, useState } from 'react';
 import {
@@ -85,7 +85,7 @@ const ChatAttachmentPreview = ({ knobs: values }: PreviewProps) => {
 export const entry: Entry = {
     id: 'chat-attachment',
     name: 'Chat attachment',
-    category: 'ai',
+    category: 'chat',
     description:
         'A file, image or linked record going with a message: waiting above the composer, then under what was sent.',
     knobs,
@@ -136,12 +136,18 @@ const RefundThread = () => {
                 >
                     Could you send the statement that shows the second charge?
                 </ChatMessage>
-                <ChatMessage status="read" time="11:24 AM" variant="own">
+                <ChatMessage
+                    attached={
+                        <ChatAttachments variant="own">
+                            <ChatAttachment name="Card statement October.pdf" />
+                        </ChatAttachments>
+                    }
+                    status="read"
+                    time="11:24 AM"
+                    variant="own"
+                >
                     Here is last month’s, the charge is on page 2.
                 </ChatMessage>
-                <ChatAttachments variant="own">
-                    <ChatAttachment name="Card statement October.pdf" />
-                </ChatAttachments>
                 {sent.flatMap(message => [
                     message.text ? (
                         <ChatMessage key={message.id} status="sent" time="now" variant="own">
@@ -158,7 +164,7 @@ const RefundThread = () => {
                 ])}
             </ChatThread>
             <div className="px-3 pb-3">
-                <ChatComposer
+                <MessageComposer
                     attachments={
                         waiting.length > 0 ? (
                             <ChatAttachments>

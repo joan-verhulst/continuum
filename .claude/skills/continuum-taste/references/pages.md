@@ -35,12 +35,16 @@ button**: the page that creates owns its create action.
 
 The sidebar is the shell unless one of the two below fits better.
 
-**Top nav**, instead of a sidebar **when the app has a handful of sections and no groups or depth**: a 56 bar
-on the canvas above the panel,
-16 side padding, the brand (14 medium) left, links 34 high with 12 side padding, 13 `neutral-600` (`neutral-950`
-when current), the account right. Links that overflow scroll, with chevrons.
+**Top nav**, instead of a sidebar **when the app's sections fit along one bar and none needs a long index of
+its own**, so the page keeps the full width: the top of the page, not a bar over a panel. A 56 bar across the
+shell on the surface, a hairline under it, the page straight under it on the same surface (no canvas, no inset
+panel). The bar's row keeps to the page's column, so the brand (14 medium) starts over the page's title; then a
+workspace switcher if there is one, links 34 high with 12 side padding, 13 `neutral-600` (`neutral-950` when
+current), and the account at the right end. It holds what a sidebar holds: a place's count
+sits after its label, a section with pages of its own opens a menu of them (its groups headed inside it), and
+the section that holds the page takes the current look. Links that overflow scroll, with chevrons.
 
-**Rail**, **when the app wants the navigation out of the way and its places need not be read at a glance**: a
+**NavRail**, **when the app wants the navigation out of the way and its places need not be read at a glance**: a
 floating pill 52 wide (208 expanded), 8 padding, icon-only items of 34 named in tooltips; the current item sits
 on one action-coloured pill that slides between items. Not for an app that must work on a phone.
 
@@ -321,8 +325,8 @@ square with the panel icon) opens the sidebar as a **drawer**: the same anatomy,
 shell less 48), on the canvas colour, sliding in from the left over the panel in 200ms, the `sheet` shadow, a
 40% black scrim over the rest. Esc, the scrim, the toggle in the drawer's header or choosing a place closes it,
 and focus goes back to the toggle. The header bar keeps the breadcrumb; its back and forward and its actions
-hide, and a notice still hangs from it. A **top nav** does the same: its links and actions hide, and a toggle
-before the brand opens the drawer with the links as nav items. One narrow shell for both. **No rail**: the rail
+hide, and a notice still hangs from it. A **top nav** keeps its sections here, scrolling along the bar, since
+they take no width from the panel; it turns into the drawer only below 640 (below). **No rail**: the rail
 is a choice for a wide screen, and an app that must work on a phone takes the sidebar or the top nav.
 
 **Below 640: compact.** The panel stays the panel, 8 from the canvas on every side with its corners and

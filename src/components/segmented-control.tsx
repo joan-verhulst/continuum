@@ -147,7 +147,7 @@ export const SegmentedControl = ({
         <ToggleGroup
             className={cn(
                 // Hugs its items even in a stretching flex column, and never outgrows its parent.
-                'relative isolate flex h-control max-w-full items-center rounded-item border border-neutral-200 bg-segment-track p-[2px] shadow-control',
+                'relative isolate flex h-control max-w-full items-center rounded-control border border-neutral-200 bg-segment-track p-[2px] shadow-control',
                 fill ? 'w-full [&>[data-slot=segmented-control-item]]:flex-1' : 'w-fit',
                 overflows && 'scrollbar-none overflow-x-auto',
                 className,
@@ -171,7 +171,7 @@ export const SegmentedControl = ({
                     className={cn(
                         // The item's own corner and raise: an inset ring, so its outline adds no width.
                         // The 2px inset is fixed, as h-segment (control − 5px) assumes, at every spacing unit.
-                        'absolute top-[2px] left-0 -z-10 h-segment rounded-[calc(var(--radius-item)-3px)] bg-segment [box-shadow:inset_0_0_0_1px_var(--color-segment-border),var(--shadow-segment)]',
+                        'absolute top-[2px] left-0 -z-10 h-segment rounded-[calc(var(--radius-control)-3px)] bg-segment [box-shadow:inset_0_0_0_1px_var(--color-segment-border),var(--shadow-segment)]',
                         thumb.moved &&
                             'transition-[translate,width] duration-200 ease-out-strong motion-reduce:transition-none',
                     )}
@@ -190,7 +190,7 @@ export const SegmentedControlItem = ({ className, ...props }: SegmentedControlIt
     <Toggle
         className={cn(
             // The track's radius minus its 2px inset and 1px border, so the curves stay concentric in every theme.
-            'inline-flex h-segment shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-[calc(var(--radius-item)-3px)] px-2.5 font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150',
+            'inline-flex h-segment shrink-0 cursor-pointer select-none items-center justify-center gap-2 whitespace-nowrap rounded-[calc(var(--radius-control)-3px)] px-2.5 font-medium text-neutral-600 text-xs transition-[background-color,color] duration-150',
             'hover:bg-neutral-950/5 hover:text-neutral-800',
             // The thumb under it is the fill; the item only takes the thumb's text colour.
             'data-pressed:text-segment-fg data-pressed:hover:bg-transparent data-pressed:hover:text-segment-fg',

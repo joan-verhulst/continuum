@@ -19,7 +19,7 @@ import { Button } from './button';
 import { AttachContext, assignRef, focusTextOnPress, hasContent } from './chat-shared';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from './dropdown-menu';
 
-export const chatPromptVariants = cva(
+export const assistantPromptVariants = cva(
     [
         'flex min-w-0 cursor-text flex-col border border-neutral-200 bg-neutral-50 transition-[border-color] duration-150',
         'has-[textarea:focus-visible]:outline-2 has-[textarea:focus-visible]:outline-focus has-[textarea:focus-visible]:outline-solid has-[textarea:focus-visible]:outline-offset-2',
@@ -52,8 +52,8 @@ const inputSizes = {
 // Both sizes write at 16px on a touch screen: anything smaller and iOS zooms the page in on focus.
 const touchText = 'pointer-coarse:text-base';
 
-export type ChatPromptProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'children'> &
-    VariantProps<typeof chatPromptVariants> & {
+export type AssistantPromptProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'children'> &
+    VariantProps<typeof assistantPromptVariants> & {
         /** Controlled draft. */
         value?: string;
         defaultValue?: string;
@@ -70,7 +70,7 @@ export type ChatPromptProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'childre
         /**
          * Draws a quiet attach button before send, which opens the file picker and calls this with
          * the files chosen; show them in `attachments`. The same prop, meaning the same, as on
-         * `ChatComposer`. Leave it, `onAdd` and `attach` out for no attach button.
+         * `MessageComposer`. Leave it, `onAdd` and `attach` out for no attach button.
          */
         onAttach?: (files: File[]) => void;
         /** The picker's file types, as the input's `accept`: "image/*,.pdf". */
@@ -79,10 +79,10 @@ export type ChatPromptProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'childre
         onAdd?: () => void;
         /**
          * Makes the attach button open a menu above it of what can go with a question:
-         * `DropdownMenuItem`s with a 16 icon, and `ChatComposerAttachItem` for files (needs `onAttach`).
+         * `DropdownMenuItem`s with a 16 icon, and `MessageComposerAttachItem` for files (needs `onAttach`).
          */
         attachMenu?: ReactNode;
-        /** Replaces the attach button entirely, as `attach` does on `ChatComposer`. */
+        /** Replaces the attach button entirely, as `attach` does on `MessageComposer`. */
         attach?: ReactNode;
         /**
          * What waits to go with the question: a `ChatAttachments` row, each with `onRemove`. It sits
@@ -111,7 +111,7 @@ export type ChatPromptProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'childre
  * a conversation. Enter sends, Shift+Enter starts a new line; while a reply streams, send becomes
  * Stop. Clicking anywhere on the box that is not a button puts the caret in the text.
  */
-export const ChatPrompt = ({
+export const AssistantPrompt = ({
     size,
     value: valueProp,
     defaultValue = '',
@@ -139,7 +139,7 @@ export const ChatPrompt = ({
     className,
     onMouseDown,
     ...props
-}: ChatPromptProps) => {
+}: AssistantPromptProps) => {
     const [uncontrolled, setUncontrolled] = useState(defaultValue);
     const controlled = valueProp !== undefined;
     const value = controlled ? valueProp : uncontrolled;
@@ -198,7 +198,7 @@ export const ChatPrompt = ({
     const attachButton = (
         <Button
             aria-label={attachLabel}
-            data-slot="chat-prompt-attach"
+            data-slot="assistant-prompt-attach"
             disabled={disabled}
             onClick={attachMenu ? undefined : onAttachPress}
             size="icon-sm"
@@ -238,7 +238,7 @@ export const ChatPrompt = ({
         <AttachContext.Provider value={{ openFiles }}>
             <form
                 className={cn(
-                    chatPromptVariants({ size }),
+                    assistantPromptVariants({ size }),
                     // The buttons dim themselves when disabled; dimming the frame too would halve them again.
                     disabled
                         ? 'cursor-not-allowed'
@@ -247,7 +247,7 @@ export const ChatPrompt = ({
                 )}
                 data-disabled={disabled || undefined}
                 data-size={resolved}
-                data-slot="chat-prompt"
+                data-slot="assistant-prompt"
                 data-streaming={streaming || undefined}
                 onMouseDown={focusText}
                 onSubmit={event => {
@@ -260,7 +260,7 @@ export const ChatPrompt = ({
                     <input
                         accept={accept}
                         className="hidden"
-                        data-slot="chat-prompt-file"
+                        data-slot="assistant-prompt-file"
                         disabled={disabled}
                         multiple
                         onChange={event => {
@@ -277,7 +277,7 @@ export const ChatPrompt = ({
                 )}
                 {attached && (
                     // What waits to go, inside the box above the text, so the question and its files read as one.
-                    <div className="min-w-0 px-1 pt-1" data-slot="chat-prompt-attachments">
+                    <div className="min-w-0 px-1 pt-1" data-slot="assistant-prompt-attachments">
                         {attachments}
                     </div>
                 )}
@@ -291,7 +291,7 @@ export const ChatPrompt = ({
                         inputSizes[resolved],
                         touchText,
                     )}
-                    data-slot="chat-prompt-input"
+                    data-slot="assistant-prompt-input"
                     disabled={disabled}
                     maxLength={maxLength}
                     name={name}
@@ -302,11 +302,11 @@ export const ChatPrompt = ({
                     rows={1}
                     value={value}
                 />
-                <div className="flex min-w-0 items-center gap-1" data-slot="chat-prompt-foot">
+                <div className="flex min-w-0 items-center gap-1" data-slot="assistant-prompt-foot">
                     {start != null && (
                         <div
                             className="flex min-w-0 items-center gap-1"
-                            data-slot="chat-prompt-start"
+                            data-slot="assistant-prompt-start"
                         >
                             {start}
                         </div>
@@ -316,7 +316,7 @@ export const ChatPrompt = ({
                         {streaming ? (
                             <Button
                                 aria-label={stopLabel}
-                                data-slot="chat-prompt-stop"
+                                data-slot="assistant-prompt-stop"
                                 // Stop gives way to send, so the press would leave focus on nothing: it returns to the text.
                                 onClick={() => {
                                     onStop?.();
@@ -335,7 +335,7 @@ export const ChatPrompt = ({
                         ) : (
                             <Button
                                 aria-label={sendLabel}
-                                data-slot="chat-prompt-send"
+                                data-slot="assistant-prompt-send"
                                 disabled={!canSend}
                                 size="icon-sm"
                                 type="submit"

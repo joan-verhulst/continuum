@@ -3,6 +3,8 @@ import type { Entry, InUse } from '../kit';
 import * as accordion from './accordion';
 import * as activity from './activity';
 import * as alert from './alert';
+import * as assistantAnswer from './assistant-answer';
+import * as assistantPrompt from './assistant-prompt';
 import * as avatar from './avatar';
 import * as badge from './badge';
 import * as barList from './bar-list';
@@ -25,9 +27,7 @@ import * as roseChart from './charts/rose-chart';
 import * as treemap from './charts/treemap';
 import * as uptimeStrip from './charts/uptime-strip';
 import * as chatAttachment from './chat-attachment';
-import * as chatComposer from './chat-composer';
 import * as chatMessage from './chat-message';
-import * as chatPrompt from './chat-prompt';
 import * as chatReference from './chat-reference';
 import * as chatSuggestions from './chat-suggestions';
 import * as chatThread from './chat-thread';
@@ -39,11 +39,13 @@ import * as codeInput from './code-input';
 import * as colorPicker from './color-picker';
 import * as combobox from './combobox';
 import * as commandMenu from './command-menu';
+import * as dataGrid from './data-grid';
 import * as datePicker from './date-picker';
 import * as dateRangePicker from './date-range-picker';
 import * as descriptionList from './description-list';
 import * as dialog from './dialog';
 import * as dropZone from './drop-zone';
+import * as editableCell from './editable-cell';
 import * as emptyState from './empty-state';
 import * as field from './field';
 import * as filterCondition from './filter-condition';
@@ -55,15 +57,17 @@ import * as infoTip from './info-tip';
 import * as input from './input';
 import * as kbd from './kbd';
 import * as menu from './menu';
+import * as menuItem from './menu-item';
+import * as messageComposer from './message-composer';
 import * as meter from './meter';
+import * as navRail from './nav-rail';
 import * as notice from './notice';
 import * as optionRow from './option-row';
 import * as pagination from './pagination';
 import * as popover from './popover';
-import * as popoverItem from './popover-item';
 import * as progress from './progress';
 import * as radio from './radio';
-import * as rail from './rail';
+import * as readonlyField from './readonly-field';
 import * as segmented from './segmented';
 import * as select from './select';
 import * as settingRow from './setting-row';
@@ -78,9 +82,9 @@ import * as stepper from './stepper';
 import * as switchEntry from './switch';
 import * as table from './table';
 import * as tableCell from './table-cell';
-import * as tableEditCell from './table-edit-cell';
-import * as tableFold from './table-fold';
+import * as tableDragCell from './table-drag-cell';
 import * as tableHead from './table-head';
+import * as tableTree from './table-tree';
 import * as tabs from './tabs';
 import * as thinking from './thinking';
 import * as toast from './toast';
@@ -88,13 +92,12 @@ import * as toolbar from './toolbar';
 import * as tooltip from './tooltip';
 import * as topNav from './top-nav';
 import * as truncate from './truncate';
-import * as valueField from './value-field';
 
 /** Every component, in the order the grid shows them. */
 export const entries: Entry[] = [
     sidebar.entry,
     topNav.entry,
-    rail.entry,
+    navRail.entry,
     headerBar.entry,
     bottomBar.entry,
     tabs.entry,
@@ -124,14 +127,14 @@ export const entries: Entry[] = [
     dropZone.entry,
     optionRow.entry,
     settingRow.entry,
-    valueField.entry,
+    readonlyField.entry,
     filterCondition.entry,
     filterMenu.entry,
     chip.entry,
     dialog.entry,
     sheet.entry,
     popover.entry,
-    popoverItem.entry,
+    menuItem.entry,
     tooltip.entry,
     infoTip.entry,
     card.entry,
@@ -139,8 +142,10 @@ export const entries: Entry[] = [
     table.entry,
     tableHead.entry,
     tableCell.entry,
-    tableEditCell.entry,
-    tableFold.entry,
+    editableCell.entry,
+    tableTree.entry,
+    tableDragCell.entry,
+    dataGrid.entry,
     descriptionList.entry,
     accordion.entry,
     activity.entry,
@@ -177,10 +182,11 @@ export const entries: Entry[] = [
     chatReference.entry,
     chatAttachment.entry,
     chatTyping.entry,
-    thinking.entry,
-    chatComposer.entry,
+    messageComposer.entry,
     chatSuggestions.entry,
-    chatPrompt.entry,
+    thinking.entry,
+    assistantAnswer.entry,
+    assistantPrompt.entry,
     // Last: the interaction patterns, which are behaviour rather than parts.
     ...interactionEntries,
 ];
@@ -210,13 +216,13 @@ export const inUse: Record<string, InUse> = {
     'date-range-picker': dateRangePicker.inUse,
     'code-input': codeInput.inUse,
     'color-picker': colorPicker.inUse,
-    'value-field': valueField.inUse,
+    'readonly-field': readonlyField.inUse,
     'drop-zone': dropZone.inUse,
     'stepper': stepper.inUse,
     'filter-condition': filterCondition.inUse,
     'filter-menu': filterMenu.inUse,
     'sidebar': sidebar.inUse,
-    'rail': rail.inUse,
+    'nav-rail': navRail.inUse,
     'top-nav': topNav.inUse,
     'tabs': tabs.inUse,
     'breadcrumb': breadcrumb.inUse,
@@ -227,7 +233,7 @@ export const inUse: Record<string, InUse> = {
     'sheet': sheet.inUse,
     'menu': menu.inUse,
     'popover': popover.inUse,
-    'popover-item': popoverItem.inUse,
+    'menu-item': menuItem.inUse,
     'tooltip': tooltip.inUse,
     'info-tip': infoTip.inUse,
     'stat-card': statCard.inUse,
@@ -235,8 +241,10 @@ export const inUse: Record<string, InUse> = {
     'table': table.inUse,
     'table-head': tableHead.inUse,
     'table-cell': tableCell.inUse,
-    'table-edit-cell': tableEditCell.inUse,
-    'table-fold': tableFold.inUse,
+    'editable-cell': editableCell.inUse,
+    'table-tree': tableTree.inUse,
+    'table-drag-cell': tableDragCell.inUse,
+    'data-grid': dataGrid.inUse,
     'description-list': descriptionList.inUse,
     'accordion': accordion.inUse,
     'activity': activity.inUse,
@@ -274,8 +282,9 @@ export const inUse: Record<string, InUse> = {
     'chat-suggestions': chatSuggestions.inUse,
     'chat-typing': chatTyping.inUse,
     'thinking': thinking.inUse,
-    'chat-composer': chatComposer.inUse,
-    'chat-prompt': chatPrompt.inUse,
+    'assistant-answer': assistantAnswer.inUse,
+    'message-composer': messageComposer.inUse,
+    'assistant-prompt': assistantPrompt.inUse,
 };
 
 export const inUseOf = (id: string): InUse | undefined => inUse[id];

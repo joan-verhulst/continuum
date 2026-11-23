@@ -19,7 +19,7 @@ export type Gap = {
 export const gaps: Gap[] = [
     {
         name: 'Data table',
-        category: 'content',
+        category: 'tables',
         description:
             'Sorting, column choice, a selection bar and a sticky header on the ruled table.',
         start: 'new',

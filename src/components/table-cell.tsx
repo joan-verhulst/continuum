@@ -1,11 +1,16 @@
 'use client';
 
-import { type ComponentProps, useContext } from 'react';
+import { GripVertical } from 'lucide-react';
+import { type ComponentProps, type KeyboardEvent, type PointerEvent, useContext } from 'react';
+import { flushSync } from 'react-dom';
 import { cn } from '../lib/cn';
+import { pressToDrag, startReorder } from '../lib/reorder';
+import { focusRing } from './button';
 import { CopyButton } from './copy-button';
 import {
     alignClass,
     type CellAlignProps,
+    RowMoveContext,
     TableContext,
     TreeContext,
     tableCellVariants,
@@ -130,7 +135,7 @@ const CellContent = ({
 /**
  * The selection column's cell: the row's box, on the row's middle. A row nested under a fold leaves
  * it empty, since its box moves into the fold column under its parent's chevron (pass the same box
- * to that row's `TableFoldCell` as `select`).
+ * to that row's `TableTreeCell` as `select`).
  */
 export const TableSelectCell = ({ children, ...props }: TableCellProps) => {
     const { depth } = useContext(TreeContext);
@@ -138,6 +143,97 @@ export const TableSelectCell = ({ children, ...props }: TableCellProps) => {
     return (
         <TableCell data-slot="table-select-cell" {...props}>
             {depth === 0 ? children : null}
+        </TableCell>
+    );
+};
+
+export type TableDragCellProps = Omit<TableCellProps, 'children'> & {
+    /** The grip's name: "Move" and the row's name, so a screen reader knows which row it moves. */
+    label?: string;
+};
+
+/** The rows of a body that can be moved, in order: the ones with a grip. */
+const gripRows = (body: HTMLTableSectionElement) =>
+    Array.from(body.rows).filter(row => row.querySelector('[data-slot=table-drag]'));
+
+/**
+ * The grip column's cell: a 14 grip in `neutral-500` that shows under the pointer or focus (always on
+ * touch), so a list that can be reordered reads as plain as one that cannot. Pressed, the row lifts
+ * and follows the pointer, and the rows it passes step aside; ↑ ↓ with focus on the grip move it a
+ * place. Needs `onRowMove` on the `TableBody`. A row nested under a fold has none: it moves with
+ * its parent.
+ */
+export const TableDragCell = ({ label = 'Move row', className, ...props }: TableDragCellProps) => {
+    const onRowMove = useContext(RowMoveContext);
+    const { depth } = useContext(TreeContext);
+
+    const placeOf = (grip: HTMLElement) => {
+        const row = grip.closest('tr');
+        const body = row?.parentElement;
+        if (!row || !(body instanceof HTMLTableSectionElement)) return null;
+        const rows = gripRows(body);
+        return { row, rows, index: rows.indexOf(row) };
+    };
+
+    const down = (event: PointerEvent<HTMLButtonElement>) => {
+        if (!onRowMove || event.button !== 0) return;
+        const place = placeOf(event.currentTarget);
+        if (!place) return;
+        event.preventDefault();
+        // The row lifts once the pointer has moved, so a press that stays put lifts nothing.
+        pressToDrag(
+            event,
+            'y',
+            from =>
+                startReorder({
+                    axis: 'y',
+                    items: place.rows.map(row => {
+                        const box = row.getBoundingClientRect();
+                        return { nodes: [row], start: box.top, size: box.height };
+                    }),
+                    index: place.index,
+                    from,
+                    onMove: onRowMove,
+                }),
+            3,
+        );
+    };
+
+    const key = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (!onRowMove || (event.key !== 'ArrowUp' && event.key !== 'ArrowDown')) return;
+        const place = placeOf(event.currentTarget);
+        if (!place) return;
+        const to = place.index + (event.key === 'ArrowUp' ? -1 : 1);
+        if (to < 0 || to >= place.rows.length) return;
+        event.preventDefault();
+        const grip = event.currentTarget;
+        flushSync(() => onRowMove(place.index, to));
+        // The row may have been taken out and put back, which drops focus: it stays on the grip.
+        grip.focus();
+    };
+
+    return (
+        <TableCell className={cn('w-11', className)} data-slot="table-drag-cell" {...props}>
+            {depth === 0 && onRowMove && (
+                <button
+                    aria-label={label}
+                    className={cn(
+                        // A 20 by 28 target, lending 6 of the padding above and below like the row's
+                        // ellipsis, so the row stays 41.
+                        '-my-1.5 -ml-1 flex h-7 w-5 cursor-grab touch-none items-center justify-center rounded-chip text-neutral-500 transition-[opacity,color,background-color] duration-150',
+                        'opacity-0 pointer-coarse:opacity-100 focus-visible:opacity-100 [tr:hover_&]:opacity-100 [tr[data-dragging]_&]:opacity-100',
+                        'hover:bg-neutral-950/5 hover:text-neutral-900 [tr[data-dragging]_&]:cursor-grabbing [tr[data-dragging]_&]:text-neutral-900',
+                        focusRing,
+                    )}
+                    data-slot="table-drag"
+                    onKeyDown={key}
+                    onPointerDown={down}
+                    title="Drag, or ↑ ↓ to move"
+                    type="button"
+                >
+                    <GripVertical className="size-3.5" strokeWidth={2} />
+                </button>
+            )}
         </TableCell>
     );
 };

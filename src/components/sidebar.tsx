@@ -83,22 +83,32 @@ const focusable =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 /**
- * The navigation on a shell narrower than the sidebar's width: it leaves the canvas and slides in
- * over the panel from the left, on the canvas's colour with the sheet's shadow, 256px and never
- * closer than 48px to the far edge, so the page still shows beside it. Closed, it is hidden, which
- * also takes it out of the tab order; under reduced motion it appears without sliding. On a wide
- * shell none of it applies.
+ * The navigation on a shell too narrow for it: it leaves the canvas and slides in over the panel
+ * from the left, on the canvas's colour with the sheet's shadow, 256px and never closer than 48px
+ * to the far edge, so the page still shows beside it. Closed, it is hidden, which also takes it out
+ * of the tab order; under reduced motion it appears without sliding. On a wide shell none of it
+ * applies. A sidebar goes under the sidebar's width (1024); a top nav, whose sections scroll along
+ * the bar rather than take width from the panel, only under the compact width (640).
  */
-export const navDrawerClasses = (open: boolean) =>
-    cn(
-        '@max-shell-sidebar/shell:absolute @max-shell-sidebar/shell:inset-y-0 @max-shell-sidebar/shell:left-0 @max-shell-sidebar/shell:z-50 @max-shell-sidebar/shell:w-sidebar @max-shell-sidebar/shell:max-w-[calc(100%-48px)]',
-        '@max-shell-sidebar/shell:bg-neutral-100 @max-shell-sidebar/shell:shadow-sheet @max-shell-sidebar/shell:outline-none',
-        // Visibility switches at once on open, so focus can move in, and waits for the slide on close.
-        '@max-shell-sidebar/shell:duration-200 @max-shell-sidebar/shell:ease-out-strong @max-shell-sidebar/shell:motion-reduce:transition-none',
-        open
-            ? '@max-shell-sidebar/shell:transition-[translate]'
-            : '@max-shell-sidebar/shell:invisible @max-shell-sidebar/shell:-translate-x-full @max-shell-sidebar/shell:transition-[translate,visibility]',
-    );
+export const navDrawerClasses = (open: boolean, nav: 'side' | 'top' = 'side') =>
+    nav === 'top'
+        ? cn(
+              '@max-shell-compact/shell:absolute @max-shell-compact/shell:inset-y-0 @max-shell-compact/shell:left-0 @max-shell-compact/shell:z-50 @max-shell-compact/shell:w-sidebar @max-shell-compact/shell:max-w-[calc(100%-48px)]',
+              '@max-shell-compact/shell:bg-neutral-100 @max-shell-compact/shell:shadow-sheet @max-shell-compact/shell:outline-none',
+              '@max-shell-compact/shell:duration-200 @max-shell-compact/shell:ease-out-strong @max-shell-compact/shell:motion-reduce:transition-none',
+              open
+                  ? '@max-shell-compact/shell:transition-[translate]'
+                  : '@max-shell-compact/shell:invisible @max-shell-compact/shell:-translate-x-full @max-shell-compact/shell:transition-[translate,visibility]',
+          )
+        : cn(
+              '@max-shell-sidebar/shell:absolute @max-shell-sidebar/shell:inset-y-0 @max-shell-sidebar/shell:left-0 @max-shell-sidebar/shell:z-50 @max-shell-sidebar/shell:w-sidebar @max-shell-sidebar/shell:max-w-[calc(100%-48px)]',
+              '@max-shell-sidebar/shell:bg-neutral-100 @max-shell-sidebar/shell:shadow-sheet @max-shell-sidebar/shell:outline-none',
+              // Visibility switches at once on open, so focus can move in, and waits for the slide on close.
+              '@max-shell-sidebar/shell:duration-200 @max-shell-sidebar/shell:ease-out-strong @max-shell-sidebar/shell:motion-reduce:transition-none',
+              open
+                  ? '@max-shell-sidebar/shell:transition-[translate]'
+                  : '@max-shell-sidebar/shell:invisible @max-shell-sidebar/shell:-translate-x-full @max-shell-sidebar/shell:transition-[translate,visibility]',
+          );
 
 type AppShellProps = ComponentProps<'div'> & {
     /** Where the navigation sits on the canvas: a `Sidebar` beside the panel, or a `TopNav` over it. */
@@ -118,8 +128,8 @@ type AppShellProps = ComponentProps<'div'> & {
  *
  * It is the container its parts answer to, so they follow the shell's width rather than the
  * screen's, and a shell shown narrow inside a page or an embed behaves as it would on a phone.
- * Below the sidebar's width the navigation becomes a drawer, opened from a toggle at the start of
- * the header bar (or the top nav) over a 40% scrim. Escape, the scrim or choosing a page closes it,
+ * Below the sidebar's width the sidebar becomes a drawer, opened from a toggle at the start of the
+ * header bar, over a 40% scrim; a top nav's sections do the same below the compact width. Escape, the scrim or choosing a page closes it,
  * and focus goes back to the toggle. The panel keeps its gutter, corners and hairline at every
  * width, so a phone shows the same shell as a desktop, only without the sidebar beside it.
  */
@@ -156,15 +166,17 @@ export const AppShell = ({
         const measure = () => {
             const limit =
                 Number.parseFloat(
-                    getComputedStyle(shell).getPropertyValue('--container-shell-sidebar'),
-                ) || 1024;
+                    getComputedStyle(shell).getPropertyValue(
+                        nav === 'top' ? '--container-shell-compact' : '--container-shell-sidebar',
+                    ),
+                ) || (nav === 'top' ? 640 : 1024);
             setNarrow(shell.clientWidth < limit);
         };
         measure();
         const observer = new ResizeObserver(measure);
         observer.observe(shell);
         return () => observer.disconnect();
-    }, [shell]);
+    }, [shell, nav]);
 
     // A shell that grows wide enough for the sidebar shuts the drawer, so it doesn't spring open
     // again the next time the shell narrows.
@@ -239,7 +251,8 @@ export const AppShell = ({
                     className={cn(
                         // Positioned and isolated, so the drawer and its scrim lie over this shell alone.
                         '@container/shell relative isolate flex min-h-screen bg-neutral-100',
-                        nav === 'top' && 'flex-col',
+                        // Under a top nav the page is one surface from the bar down: no canvas round it.
+                        nav === 'top' && 'flex-col bg-neutral-50',
                         className,
                     )}
                     data-nav={nav}
@@ -253,7 +266,10 @@ export const AppShell = ({
                         <div
                             aria-hidden
                             className={cn(
-                                'absolute inset-0 z-40 @max-shell-sidebar/shell:block hidden bg-black/40 transition-[opacity,visibility] duration-200 ease-out-strong motion-reduce:transition-none',
+                                'absolute inset-0 z-40 hidden bg-black/40 transition-[opacity,visibility] duration-200 ease-out-strong motion-reduce:transition-none',
+                                nav === 'top'
+                                    ? '@max-shell-compact/shell:block'
+                                    : '@max-shell-sidebar/shell:block',
                                 !open && 'invisible opacity-0',
                             )}
                             data-slot="app-shell-scrim"
@@ -274,9 +290,11 @@ export const AppPanel = ({ className, ...props }: ComponentProps<'main'>) => {
             <main
                 className={cn(
                     // The gutter opens on every side but the navigation's.
-                    'relative m-2 ml-0 flex min-w-0 flex-1 flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 [[data-nav=top]>&]:mt-0 [[data-nav=top]>&]:ml-2',
+                    'relative m-2 ml-0 flex min-w-0 flex-1 flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50',
+                    // Under a top nav the page lies flat under the bar's hairline: no gutter, corners or frame.
+                    '[[data-nav=top]>&]:m-0 [[data-nav=top]>&]:rounded-none [[data-nav=top]>&]:border-0',
                     // With the sidebar gone to a drawer, the gutter opens on its side too.
-                    shell?.hasDrawer && '@max-shell-sidebar/shell:ml-2',
+                    shell?.hasDrawer && shell.nav === 'side' && '@max-shell-sidebar/shell:ml-2',
                     className,
                 )}
                 data-slot="app-panel"

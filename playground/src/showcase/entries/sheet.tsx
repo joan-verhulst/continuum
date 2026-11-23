@@ -4,6 +4,8 @@ import {
     Badge,
     Button,
     Card,
+    CardContent,
+    CardHeader,
     CardTitle,
     Sheet,
     SheetBody,
@@ -269,17 +271,21 @@ const InvoiceWithHistory = () => (
                 <>
                     {/* The invoice's facts, each label over its value, as a detail page's are. */}
                     <Card layout="list">
-                        <CardTitle>Details</CardTitle>
-                        <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
-                            {invoiceFacts.map(fact => (
-                                <div className="flex min-w-0 flex-col gap-1.5" key={fact.term}>
-                                    <dt className="text-neutral-600 text-xs">{fact.term}</dt>
-                                    <dd className="font-medium text-neutral-950 text-xs tabular-nums">
-                                        {fact.value}
-                                    </dd>
-                                </div>
-                            ))}
-                        </dl>
+                        <CardHeader>
+                            <CardTitle>Details</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
+                                {invoiceFacts.map(fact => (
+                                    <div className="flex min-w-0 flex-col gap-1.5" key={fact.term}>
+                                        <dt className="text-neutral-600 text-xs">{fact.term}</dt>
+                                        <dd className="font-medium text-neutral-950 text-xs tabular-nums">
+                                            {fact.value}
+                                        </dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        </CardContent>
                     </Card>
                     <Table>
                         <TableHeader>

@@ -59,7 +59,8 @@ type HeaderBarSidebarToggleProps = Omit<ComponentProps<'button'>, 'children'> & 
 /**
  * Opens the shell's navigation as a drawer. It is the sidebar's own toggle, the same icon in the
  * same quiet grey, so the narrow bar reads as the wide shell with its sidebar folded away. It only
- * shows while the shell is too narrow for the sidebar, and renders nothing outside an `AppShell`
+ * shows while the shell is too narrow for its navigation (a sidebar under 1024, a top nav under
+ * 640), and renders nothing outside an `AppShell`
  * with a drawer. The header bar starts with one of its own; put one in a bar of your own making.
  */
 export const HeaderBarSidebarToggle = ({
@@ -77,7 +78,14 @@ export const HeaderBarSidebarToggle = ({
             aria-controls={shell.drawerId}
             aria-label={shell.open ? closeLabel : openLabel}
             // 12 to the trail, as in a bar that draws its own toggle, not the bar's 16 between its ends.
-            className={cn('-mr-1 @max-shell-sidebar/shell:grid hidden shrink-0', className)}
+            // A top nav's drawer comes only on a compact shell, a sidebar's under the sidebar's width.
+            className={cn(
+                '-mr-1 hidden shrink-0',
+                shell.nav === 'top'
+                    ? '@max-shell-compact/shell:grid'
+                    : '@max-shell-sidebar/shell:grid',
+                className,
+            )}
             data-slot="header-bar-sidebar-toggle"
             expanded={shell.open}
             onClick={event => {

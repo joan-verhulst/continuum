@@ -35,7 +35,8 @@ export const buttonVariants = cva(
                     'hover:bg-action-hover hover:[background-image:none]',
                 ],
                 secondary:
-                    'border border-neutral-200 bg-transparent text-neutral-950 shadow-control hover:border-neutral-300 hover:bg-neutral-950/5',
+                    // Its hover is the 5% ink wash over whatever fill the theme gives controls.
+                    'border border-neutral-200 bg-control text-neutral-950 shadow-control hover:border-neutral-300 hover:bg-[color-mix(in_oklab,var(--color-neutral-950)_5%,var(--color-control-hover))]',
                 ghost: 'text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-800',
                 // For AI actions beside the primary one: the theme's wash, no shadow. Hover mixes the
                 // wash towards its own text colour, so it deepens in every theme and in dark mode.

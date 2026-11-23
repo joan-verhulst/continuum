@@ -524,6 +524,9 @@ export const themeChoices = () => ({
         action: `What fills the primary button and checked controls: accent or neutral (near-black). Default ${defaultThemeOptions.action}.`,
         actionStyle:
             'flat, lit (a top highlight and a ring) or glossy (with a gradient). Default flat.',
+        controls:
+            'outline (a hairline, no fill) or filled (a faint ink wash inside the hairline of fields, selects, secondary buttons and the segmented track). Default outline.',
+        cards: 'plain (one surface) or framed (a card with a head stands its head and foot on a frame a step off the page and its content on a stage inside it). Default plain.',
         tint: 'The selected wash: neutral (a translucent grey) or accent (its palest step). Default neutral.',
         nav: 'The current page in the sidebar: quiet, tinted or raised. Default quiet.',
         elevation:
@@ -678,6 +681,12 @@ export const readThemeOptions = (input: Record<string, unknown> = {}, preset?: s
                 break;
             case 'actionStyle':
                 set.actionStyle = oneOf(key, value, ['flat', 'lit', 'glossy']);
+                break;
+            case 'controls':
+                set.controls = oneOf(key, value, ['outline', 'filled']);
+                break;
+            case 'cards':
+                set.cards = oneOf(key, value, ['plain', 'framed']);
                 break;
             case 'tint':
                 set.tint = oneOf(key, value, ['neutral', 'accent']);

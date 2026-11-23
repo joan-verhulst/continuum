@@ -179,9 +179,11 @@ export const ChatThread = ({
             aria-relevant="additions"
             className={cn(
                 // Scroll anchoring is done by hand (see the effect), so the browser's own is off.
-                'flex min-h-0 flex-col gap-3 overflow-y-auto overscroll-contain p-4 [overflow-anchor:none]',
-                // A message's attachments hang 4 under it, not a message's 12 apart.
-                '*:data-[slot=chat-attachments]:-mt-2',
+                'flex min-h-0 flex-col gap-6 overflow-y-auto overscroll-contain p-4 [overflow-anchor:none]',
+                // What goes with a message hangs under it rather than a message's 24 apart: its
+                // attachments 4, a record linked under it 6. A system line keeps 16 either side, as its
+                // own 12 of padding already sets it apart.
+                '*:data-[slot=chat-event]:-my-2 *:data-[slot=chat-unread-divider]:-my-1 *:data-[slot=chat-attachments]:-mt-5 *:data-[slot=chat-reference]:-mt-4.5',
                 // A message added after load rises 8px into place as it fades in; reduced motion turns it off.
                 '*:data-enter:starting:translate-y-2 *:data-enter:starting:opacity-0 *:data-enter:transition-[opacity,translate,border-color] *:data-enter:duration-200 *:data-enter:ease-out-strong motion-reduce:*:data-enter:transition-none',
                 focusRing,
@@ -235,7 +237,7 @@ export const ChatThread = ({
                 // messages are announced themselves, so the button and its count are kept out of the log.
                 <div
                     aria-live="off"
-                    className="sticky bottom-0 -mt-3 h-0 shrink-0"
+                    className="sticky bottom-0 -mt-6 h-0 shrink-0"
                     data-slot="chat-thread-jump"
                 >
                     <Button
@@ -273,7 +275,7 @@ const skeletonRows = [
 export const ChatThreadSkeleton = ({ rows = 3, className, ...props }: ChatThreadSkeletonProps) => (
     <div
         aria-hidden
-        className={cn('mt-auto flex flex-col gap-3', className)}
+        className={cn('mt-auto flex flex-col gap-6', className)}
         data-slot="chat-thread-skeleton"
         {...props}
     >
@@ -332,14 +334,15 @@ export const ChatUnreadDivider = ({
 }: ComponentProps<'div'>) => (
     <div
         className={cn(
-            'flex shrink-0 items-center gap-3 font-medium text-neutral-950 text-xxs',
+            // Quiet: a place in the thread, not news of its own; the messages under it are the news.
+            'flex shrink-0 items-center gap-3 text-neutral-600 text-xxs',
             className,
         )}
         data-slot="chat-unread-divider"
         {...props}
     >
-        <span aria-hidden className="h-px flex-1 bg-neutral-300" />
+        <span aria-hidden className="h-px flex-1 bg-neutral-200" />
         <span className="shrink-0">{children}</span>
-        <span aria-hidden className="h-px flex-1 bg-neutral-300" />
+        <span aria-hidden className="h-px flex-1 bg-neutral-200" />
     </div>
 );

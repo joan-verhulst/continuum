@@ -5,7 +5,6 @@ import {
     Card,
     ChatAttachment,
     ChatAttachments,
-    ChatComposer,
     ChatEvent,
     ChatMessage,
     ChatReference,
@@ -13,6 +12,7 @@ import {
     ChatToken,
     ChatTyping,
     ChatUnreadDivider,
+    MessageComposer,
 } from 'continuum';
 import { Check, UserRound } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
@@ -122,13 +122,20 @@ const ChatThreadPreview = ({ knobs: values }: PreviewProps) => {
 
     // Loading earlier shows the head of the thread, where its row is: the last exchange under it.
     const latest = [
-        <ChatMessage key="m1" status="read" time="2:48 PM" variant="own">
+        <ChatMessage
+            attached={
+                <ChatAttachments variant="own">
+                    <ChatAttachment name="Application.pdf" />
+                    <ChatAttachment name="Bank statement.png" src={sampleImage} variant="image" />
+                </ChatAttachments>
+            }
+            key="m1"
+            status="read"
+            time="2:48 PM"
+            variant="own"
+        >
             Hey, I didn’t receive my payout for <ChatToken>#inv_1CU2KZuPR5</ChatToken>
         </ChatMessage>,
-        <ChatAttachments key="m1-files" variant="own">
-            <ChatAttachment name="Application.pdf" />
-            <ChatAttachment name="Bank statement.png" src={sampleImage} variant="image" />
-        </ChatAttachments>,
         values.divider ? <ChatUnreadDivider key="divider" /> : null,
         <ChatMessage key="m2" {...bot} time="2:48 PM">
             The payout is still processing; it should land within 24 hours.
@@ -167,7 +174,7 @@ const ChatThreadPreview = ({ knobs: values }: PreviewProps) => {
                 ))}
                 {values.writing && <ChatMessage key="writing" {...bot} pending />}
             </ChatThread>
-            <ChatComposer
+            <MessageComposer
                 disabled={state === 'loading'}
                 onSend={send}
                 placeholder="Write a message, Enter sends"
@@ -179,7 +186,7 @@ const ChatThreadPreview = ({ knobs: values }: PreviewProps) => {
 export const entry: Entry = {
     id: 'chat-thread',
     name: 'Chat thread',
-    category: 'ai',
+    category: 'chat',
     description:
         'The scrolling column of a conversation: it loads, fetches earlier messages and follows new ones.',
     span: 2,
@@ -223,15 +230,20 @@ const SupportThread = () => {
     return (
         <Card className="gap-0 p-0">
             <ChatThread className="h-80 w-full">
-                <ChatMessage {...eva} time="2:48 PM">
+                <ChatMessage
+                    {...eva}
+                    attached={
+                        <ChatReference
+                            status={<Badge tone="warning">Pending</Badge>}
+                            token="#inv_1CU2KZuPR5"
+                        >
+                            Payout of €340.00
+                        </ChatReference>
+                    }
+                    time="2:48 PM"
+                >
                     Hey, I didn’t receive my payout for <ChatToken>#inv_1CU2KZuPR5</ChatToken>
                 </ChatMessage>
-                <ChatReference
-                    status={<Badge tone="warning">Pending</Badge>}
-                    token="#inv_1CU2KZuPR5"
-                >
-                    Payout of €340.00
-                </ChatReference>
                 <ChatMessage
                     author="Support Bot"
                     avatar={<Avatar fallback="SB" shape="round" size={24} />}
@@ -264,7 +276,7 @@ const SupportThread = () => {
             </ChatThread>
             {/* The agent's reply box at the card's foot; Eva typing shows just above it. */}
             <div className="px-3 pb-3">
-                <ChatComposer
+                <MessageComposer
                     onSend={send}
                     placeholder="Reply to Eva"
                     typing={<ChatTyping avatars names={typing ? ['Eva Tyrell'] : []} />}

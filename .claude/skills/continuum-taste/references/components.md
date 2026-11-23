@@ -1,6 +1,6 @@
 # Components
 
-Every part of the system, grouped by what it does, in the playground's thirteen categories. Each entry says what the part is **for**, what it is **not
+Every part of the system, grouped by what it does, in the playground's fifteen categories. Each entry says what the part is **for**, what it is **not
 for** (and what to use instead), what it sits **with**, its parts, its values in units, and its states. The
 values are the React library's, read from its source; a canvas or a stylesheet draws the same numbers. The
 shared values (the hairline, the washes, the focus ring, the corners, the motion) are in `foundations.md` and
@@ -20,22 +20,23 @@ The words a part draws or announces on its own ("Clear all", "Back", "Previous",
 ## App frame
 
 **AppShell → Sidebar (or TopNav) + AppPanel.** The shell is the canvas (`neutral-100`, min 100vh); the sidebar
-sits straight on it; the panel is `main`, inset 8 on every side but the navigation's (top nav: 0 top, 8
-elsewhere), `panel` corners (20), hairline, surface, clipped. Everything styled sits inside a `Theme`
+sits straight on it; the panel is `main`, inset 8 on every side but the navigation's, `panel` corners (20),
+hairline, surface, clipped. Under a TopNav there is no canvas: the shell is the surface and the panel lies flat
+under the bar's hairline, no gutter, corners or frame. Everything styled sits inside a `Theme`
 (the `.continuum` scope with `data-mode` and `data-theme`; 13px Geist, line height 1.25, tracking 0.32px, text
 `neutral-950`; `radius` sets the corner scale); `ThemeScope` re-opens it inside a portal (menus, tooltips,
 dialogs render at the end of the body). `PortalContainer` points every overlay inside it at another element
 than the body, a box that holds fixed descendants and stands for the screen (a phone drawn in a preview): its
 sheets, dialogs and menus then keep to that box and size by it.
 
-**Narrow:** the shell is the width the page answers to, not the screen. Under 1024 of it the sidebar (or a top
-nav's links) goes into a drawer the shell holds open or shut (open by the header bar's toggle; Esc, the scrim, a
+**Narrow:** the shell is the width the page answers to, not the screen. Under 1024 of it the sidebar (under
+640, a top nav's sections) goes into a drawer the shell holds open or shut (open by the header bar's toggle; Esc, the scrim, a
 chosen place or the drawer's own toggle shut it, focus going back to the toggle), and the panel is inset 8 on
 every side. The panel keeps its gutter, corners and hairline at every width: a phone shows the same shell.
 
 ### Sidebar · SidebarHeader · SidebarSwitcher · SidebarGroup · SidebarItem · SidebarSection · SidebarLevel · SidebarLevelHead · SidebarBack · SidebarFooter · SidebarAccount
-**For** the main navigation of an app with several places and groups. **Not for** an app with a handful of
-sections (TopNav) or one that wants the navigation out of the way (Rail). Its rows
+**For** the main navigation of an app with several places and groups. **Not for** an app whose sections fit
+along one bar (TopNav) or one that wants the navigation out of the way (NavRail). Its rows
 are sidebar items (`SidebarItem`), a section that folds open to its pages is a `SidebarSection`, a place with a
 long index drills into a `SidebarLevel`; all of them, with the header, the switcher and the footer, make one
 sidebar. (The old names `NavItem`, `NavGroup` and `navItemClasses` still work, as aliases.)
@@ -138,26 +139,47 @@ sidebar. (The old names `NavItem`, `NavGroup` and `navItemClasses` still work, a
   reduced motion; shut, it is neither seen nor focusable. Its SidebarToggle then shuts the drawer, and choosing
   an item shuts it too.
 
-### TopNav
-**For** an app with a handful of sections, the sidebar on its side. **Not for** deep or grouped navigation
-(Sidebar). **With** TopNavBrand, TopNavLinks, TopNavLink, TopNavActions.
-- 56 high on the canvas, 16 side padding, gap 24, no fill. Brand: a 26 mark and the name 14/500, gap 8 (the
-  name hides under 640). Links 2 apart; links that overflow scroll with a chevron (34 × 34) at the end that has
-  more. **TopNavLink**: 34 high, 12 side, 8 vertical, gap 8, `item` corners, 13/400 `neutral-600`; hover 5% wash
-  and `neutral-950`; current the selected wash and `neutral-950`. Actions pushed right, gap 8.
-- **Narrow:** under 1024 of shell the links and the actions hide, and a toggle before the brand opens the
-  shell's drawer, the links listed in it as sidebar items.
+### TopNav · TopNavBrand · TopNavSwitcher · TopNavLinks · TopNavLink · TopNavMenu · TopNavMenuGroup · TopNavMenuItem · TopNavActions
+**For** an app whose sections fit along one bar, the sidebar on its side: it holds what a sidebar holds, a
+switcher, places with counts, and sections with pages of their own. **Not for** a long index or navigation
+deeper than one level of pages (Sidebar, which drills into a level).
+- The top of the page: a bar across the shell on the surface (`neutral-50`), a 1px `neutral-200` hairline under
+  it, sticky at the top; the page straight under it. Its row is 56 high, gap 24, and keeps to the page's column
+  (`width`, the PageContent widths, with their side padding), so the brand starts where the page's title does.
+  In order: brand, switcher, links, the account. Search and a bell only when the product has them; the account
+  alone is the usual end.
+- **TopNavBrand**: a 26 mark and the name 14/500, gap 8 (the name hides under 640).
+- **TopNavSwitcher**, **when** the product has several workspaces, as the SidebarSwitcher: on the link's row (34
+  high, 8 side, gap 8, `item` corners), a 20 mark, the name 13/500 `neutral-950`, a 14 up-down chevron in
+  `neutral-500`; one line, the detail only in the drawer. Hover 5% wash, the selected wash while open. Its menu
+  is the SidebarSwitcher's, opening below.
+- **TopNavLinks**: 2 apart; links that overflow scroll with a chevron (34 × 34) at the end that has more.
+  **TopNavLink**: 34 high, 12 side, 8 vertical, gap 8, `item` corners, 13/400 `neutral-600`; hover 5% wash and
+  `neutral-950`; current the selected wash and `neutral-950`. A `count`, what waits there, is the sidebar
+  item's primary count Badge, after the label.
+- **TopNavMenu**, **for** a section with pages of its own (the SidebarSection on the bar): the link's row with a
+  14 chevron-down in `neutral-500` after the label, gap 6, turning 180° while open; open the 5% wash. Holding the
+  page you are on (found among its items, or set with `current`) it takes the current link's look, since the
+  page is not on the bar. Its menu opens below, aligned to the start, at least the wide menu minimum (192): the
+  pages as menu rows, the current one on the selected wash; **TopNavMenuGroup** heads a group of them (11/500
+  `neutral-600`), a group after another ruled off by a hairline.
+- **TopNavActions**: pushed right, gap 8.
+- **Narrow:** the links scroll down to 640 of shell, so the bar keeps its sections where a sidebar would
+  already be a drawer. Under 640 the switcher, the links and the actions hide, and a toggle before the brand
+  opens the shell's drawer: the switcher under its header as the SidebarSwitcher, the links as sidebar items, a
+  menu as a SidebarSection folding open to its pages (open when it holds the current one), a group's heading
+  over its rows.
 
-### Rail
+### NavRail
 **For** the main navigation as a floating island: icons only, labels on demand. **Not for** an app whose places
-need to be read at a glance (Sidebar). **With** RailToggle, RailItem, RailSeparator.
+need to be read at a glance (Sidebar). **With** NavRailToggle, NavRailItem, NavRailSeparator.
 - A pill (`dock` corners) 52 wide closed, 208 expanded; padding 8; rows 2 apart; hairline; surface. The current
   item sits on one action-coloured pill (34 high, `item` corners) that slides between items over 200ms; width
   changes over 300ms.
-- **RailItem**: 34 high, 9 side, gap 10, `item` corners; a 16 icon on a 16 column, the label 13/500
+- **NavRailItem**: 34 high, 9 side, gap 10, `item` corners; a 16 icon on a 16 column, the label 13/500
   `neutral-600` (opacity 0 closed, 1 open), a tooltip on the right while closed; hover 5% wash and
-  `neutral-800`; current `on-action` text on the pill. **RailSeparator**: a hairline with 6 vertical margin.
-  **RailToggle** is named "Collapse navigation" or "Expand navigation" (`collapseLabel`, `expandLabel`).
+  `neutral-800`; current `on-action` text on the pill. **NavRailSeparator**: a hairline with 6 vertical margin.
+  **NavRailToggle** is named "Collapse navigation" or "Expand navigation" (`collapseLabel`, `expandLabel`).
 - **Narrow:** none; the rail is a choice for a wide screen. An app that must work on a phone takes the Sidebar
   or the TopNav, whose places go into the drawer.
 
@@ -230,7 +252,7 @@ list, settings areas, or an editor with a commit action (the Dock); not for swit
 | variant | list                        | trigger                                                                    | active                               |
 | ------- | --------------------------- | -------------------------------------------------------------------------- | ------------------------------------ |
 | line (the default) | gap 0, hairline below (**a page's, a section's or a panel's facets, under its title**) | 44 high, 12 side, gap 8, 13/500 `neutral-600`, hanging 1 over the line | text `neutral-950`, a 2px underline in `neutral-950` (fading in over 150ms) |
-| pill    | gap 2, no line (a tight spot inside a card or a dialog) | 34 high, 12 side, gap 8, `item` corners, 13/500 `neutral-600` | the tint wash, text `tint-fg` |
+| pill    | gap 2, no line (a tight spot inside a card or a dialog) | 34 high, 12 side, gap 8, `control` corners, 13/500 `neutral-600` | the tint wash, text `tint-fg` |
 
 Hover `neutral-950` (pill: also the 5% wash); disabled 50%; arrow keys select as they move. A pill list nested
 in a line list keeps its own look. **TabsCount**: 16 high, min 16 wide, 4 side, round, the tab's
@@ -338,7 +360,7 @@ DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuSub, DropdownMenuSubTrigge
 DropdownMenuSearch, DropdownMenuEmpty, DropdownMenuShortcut.
 - Panel: min width 160, padding 4, rows 4 apart, `card` corners (16), so the rows inside keep `item` corners (10) and nest; hairline, surface, `float` shadow, 4 from
   its trigger; opens over 200ms from 95% and transparent.
-- Row (a PopoverItem): 36 high, 12 side, 8 vertical, gap 8, `item` corners (10, nested inside the 16 panel), 13/500
+- Row (a MenuItem): 36 high, 12 side, 8 vertical, gap 8, `item` corners (10, nested inside the 16 panel), 13/500
   `neutral-700`, icons 14 `neutral-600`; highlighted the 5% wash and `neutral-800`; `danger` rows in `error-600`,
   **last, after a separator**. A checkbox or radio item shows a 16 check at its end when checked; radio items
   sit in a **DropdownMenuRadioGroup** (one value), and a checked one takes the selected wash. A
@@ -364,7 +386,7 @@ to hint at.
 
 ### Field · FieldLabel · FieldHelper
 **For** a labelled control in a form: label, control, helper stacked. **Not for** a setting (SettingRow is the
-label there) or a read-only value (ValueField).
+label there) or a read-only value (ReadonlyField).
 - A column, gap 8. Label 13/500 `neutral-900`. Helper 13/400 `neutral-600` (the secondary step: a hint is told apart by its place, not a paler grey),
   `neutral-700` while the control's box (an Input, a Select, a Combobox, a DatePicker, a CodeInput) is hovered,
   `neutral-900` while it is focused, `error-600` when invalid, `neutral-400` when disabled. The field
@@ -385,7 +407,7 @@ at 50%, its colours and hairline kept, as every disabled control. `sm` in a tool
 form. The `plain` variant drops the box (no border, no side padding) for a search inside a container that
 already frames it (a table's bar, a menu); it keeps the ring. **On touch** the text is 16, so the phone does not
 zoom the page on focus; the box keeps its height. The same holds for every field that takes typing: Textarea,
-the Combobox's input, a menu's search, the command menu's, a filter's typed value, the chat composer and prompt.
+the Combobox's input, a menu's search, the command menu's, a filter's typed value, the message composer and prompt.
 
 ### Textarea
 A medium Input for several lines: min height 96, 12 side, 10 vertical, `control` corners, hairline, 13/500
@@ -448,9 +470,9 @@ a setting that is on or off (Switch).
 **For** one of a few values that reshapes the same content: a view (List · Grid), a range (7d · 30d), a filter
 on an index. **Not for** going to another place (Dock, Tabs), a yes/no (Switch), or more than five values
 (Select). Always holds one value: without one given, it starts on its first item.
-- Track 34 high, 2 padding, `item` corners (10), hairline, the surface (`segment-track`); `fill` makes it full
-  width with equal items. Items 29 high, 10 side, gap 8, corner 7, 13/500 `neutral-600`, icon 14; hover the 5%
-  wash and `neutral-800`. The pressed item sits on one thumb (29 high, corner 7, the action fill, `on-action`
+- Track 34 high, 2 padding, `control` corners (12), hairline, the surface (`segment-track`); `fill` makes it full
+  width with equal items. Items 29 high, 10 side, gap 8, corner 9, 13/500 `neutral-600`, icon 14; hover the 5%
+  wash and `neutral-800`. The pressed item sits on one thumb (29 high, corner 9, the action fill, `on-action`
   text; a theme may raise it as a chip with a hairline) that slides between items over 200ms. Inside a Field it
   is named by the FieldLabel, described by the helper and disabled with the field; elsewhere give it an
   `aria-label`.
@@ -540,7 +562,7 @@ per group on a settings page.
   over the description 13/400 `neutral-600`; the control (a Checkbox when several may be chosen, a
   RadioGroupItem when one) at the right, 12 from the text; about 48 high with a tile, 44 without. Hover border `neutral-300`; disabled 50%. Rows 8 apart in a list.
 
-### ValueField
+### ReadonlyField
 **For** a read-only fact in a form (an ID, an API key to copy) or a reading with its status (`vital`). **Not
 for** an editable value (Input) or an object's facts (DescriptionList).
 - `well`: the label 13/400 `neutral-600` 6 above a well (sm 34 · md 38, 12 side, `control` corners, the 4% wash,
@@ -605,21 +627,6 @@ slot, a search, selects; `filterOperators` for the operator sets.
   long); picking one adds the condition with its default operator and no value. The conditions, a ghost
   "Clear all" (once anything applies) and the add button sit in one wrapping row, in that order, 8 apart.
 
-### TableToolbar · TableSearch · TableToolbarEnd · TableConditions
-**For** what finds and narrows one table, on that table: passed to `Table`'s `toolbar`, drawn inside its frame
-above the column head. **Not for** page-wide controls (the period, Export: the page head) or the list's views
-(the dock).
-- **TableToolbar**, the bar: min 44 high, 6 padding all round, a hairline below; it wraps when
-  its contents outgrow one line, so the head never moves. **TableSearch** at its left: a small outlined `Input`
-  (the hairline box, a leading 16 search icon, 34 high, 256 wide, giving way before the filters).
-  **TableToolbarEnd** at its right, items 8 apart: the selects a table keeps visible, a FilterMenu, and, while
-  no condition applies, the **add button** of the conditions (a 34 secondary square with the filter icon).
-- **TableConditions**, under the bar, **only while a condition applies**: the same 44 row, same padding, with a
-  hairline below, holding the conditions (each field · operator · value · ×) and a ghost "Clear all", 8 apart,
-  wrapping, and the add button at its right end (a TableToolbarEnd). The conditions never share the search's
-  bar, so narrowing reads apart from finding.
-- **Narrow:** the search gives up its 256 and takes the rest of the bar, the end group beside it.
-
 ## Overlays
 
 ### Dialog
@@ -654,7 +661,7 @@ PopoverContent, PopoverHeader, PopoverTitle, PopoverDescription, PopoverClose.
   `neutral-700`; 4 below its trigger, centred; grows from 95% over 150ms, leaves in 100ms. Header: the title
   14/500 `neutral-950` over the description 13 `neutral-600`, 2 apart.
 
-### PopoverItem · PopoverItemIndicator · PopoverItemShortcut
+### MenuItem · MenuItemIndicator · MenuItemShortcut
 **For** the row every popup list is made of: a select's options, a combobox's, a menu's actions, a filter menu's
 values, the command menu's commands; each list renders its own item through it, so its keyboard and state stay
 the list's. **Not for** a row on a page (a table row, a setting row, a bar list row).
@@ -667,9 +674,9 @@ the list's. **Not for** a row on a page (a table row, a setting row, a bar list 
   `neutral-600`, 8 apart: a check, a shortcut, a count, a chevron to a submenu). What leads sets the rhythm: a 24
   avatar or a chip pads the row 10 vertical, a 32 or 36 avatar 12, and beside either one line of text sits 10
   from it.
-- **PopoverItemIndicator**: a 16 checkbox (corner `chip` − 2) or radio (round) at the row's head, a 1px
+- **MenuItemIndicator**: a 16 checkbox (corner `chip` − 2) or radio (round) at the row's head, a 1px
   `neutral-300` border (as a checkbox's); checked or selected, the action fill with a 12 check or a 6 dot in `on-action`.
-  **PopoverItemShortcut**: 11/500 `neutral-600`, slightly tracked ("⌘D", "G I"); hidden on a touch screen, as a
+  **MenuItemShortcut**: 11/500 `neutral-600`, slightly tracked ("⌘D", "G I"); hidden on a touch screen, as a
   Kbd.
 
 ### Tooltip
@@ -686,43 +693,14 @@ paragraph of help).
 - A 16 info icon in `neutral-500` (`neutral-800` on hover and open, a 24 target), opening a small popover on
   hover, focus and tap: 10 side, 6 vertical, `item` corners, max 256, 13 `neutral-700`, 6 above.
 
-## Content
-
-### Card · CardHeader · CardTitle · CardValue · CardFigure · CardDelta
-**For** a self-contained unit: a KPI, a chart, a group of settings, a block of facts. **Not for** a page
-section (space), a header (never in a card), a form (sections), or inside another card (the one exception is in
-`foundations.md`, Surfaces and depth).
-
-| layout  | padding                 | gap | for                                   |
-| ------- | ----------------------- | --- | ------------------------------------- |
-| default | 16                      | 16  | a stat card, a small unit              |
-| list    | 20                      | 16  | a list, a group of settings, facts     |
-| chart   | 20, 48 at the bottom    | 32  | a chart drawn by hand, with room under its x labels; the kit's charts bring their own card (`charts.md`) |
-
-`card` corners (16), hairline, surface, no shadow. Header: the title 13/400 `neutral-600` over the value (2
-apart); value `md` 18/500 in a stat card, `lg` 24/500 or `xl` 31/500 in a chart card's head, tabular; a figure
-row puts the value and its delta (13,
-`success-800` for good news, `error-600` for bad) on one baseline, 8 apart. The colour follows what the change
-means, not its direction: pass `trend` (`up` good, `down` bad) whenever a fall is good news (churn, costs,
-refunds). Without a `trend`, a delta whose text starts with a minus (a hyphen, the minus sign or an en dash)
-reads as bad, anything else as good.
-
-### StatCard
-**For** one key figure with its change, one of the two to four a reader comes to a page for. **Not for** the
-figure a chart already leads with, a lone figure (a line of text, or its chart card's head), a fact that
-happens to be a number (with the facts), or filling a row.
-- A default Card with gap 12: the label 13/400 `neutral-600`, the value 18/500 `neutral-950` 4 below, a pill
-  badge (22, success for good news, error for bad, neutral flat) 12 below, aligned left, only when the figure
-  has a change to show. A secondary figure that belongs to the value ("1 invoice, due 30 Nov", "of 418") is its
-  `note`: 13 `neutral-600`, 4 under the value; nothing sits inline after the value or is folded into the label.
-  `trend` as on a Card (above); `neutral` for a change that is neither good nor bad.
+## Tables
 
 ### Table
 **For** a list of objects (`ruled`, in its own frame on the page), or a short ranked breakdown inside a card
 (`rows`, frameless, since the card already frames it; when each row has one figure, a BarList). **Not for**
 key–value facts (DescriptionList) or a settings list. **With** TableHeader, TableBody, TableFooter, TableRow,
 TableHead, TableCell, TableGroupRow, TableCaption; Pagination under it; Checkbox for selection; a ghost
-`icon-sm` ellipsis (28) in the last column for the row's DropdownMenu, which the row's 41 holds without growing; TableHead, TableCell, TableEditCell and the fold parts in the sections below.
+`icon-sm` ellipsis (28) in the last column for the row's DropdownMenu, which the row's 41 holds without growing; TableHead, TableCell, TableDragCell, EditableCell and the fold parts in the sections below. Values worked on cell by cell are a DataGrid.
 
 | variant | frame                                           | head                                            | row / cell                                                      |
 | ------- | ----------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------- |
@@ -752,6 +730,23 @@ reads as plain as any other; sorted, an arrow in `neutral-900` (up ascending, tu
 or latest first, which is why they are sorted), text ascending. One column sorts at a time; the head carries
 `aria-sort`.
 
+**Resizing** (`width`, `onWidthChange`), only on a table the reader works in for long, where columns hold values
+of very different lengths: an 8 target inside the head's right edge. Under the pointer the head shows its edge as a
+hairline (`neutral-300`, 12 in from top and bottom); on the target, or dragging, the edge is the accent at 2 down
+the head's full height, and while dragging down every cell of the column, so the reader sees what is cut. The arrow
+keys move a focused edge 8 (32 with Shift); a double click fits the column to its widest value. A column never goes
+under its own label (or `minWidth`, 48). The table then lays out by its widths: every column given one but the
+name, which takes what is left until it is resized itself; once every column has a width the table is as wide as
+they add up to, scrolling sideways past its frame, or leaving room at its right with the head's band running on to
+the frame's edge. A value wider than its column ends in an ellipsis. **Moving** (`movable`, with `onColumnMove` on
+the TableHeader), only where readers arrange the columns to their own work: under the pointer a 14 grip in
+`neutral-500` shows in the head's left padding, 5 clear of the label (always on touch), the same grip a row's
+TableDragCell has. The head or its grip is picked up (the grab cursor; a press on a sortable label that does not
+move still sorts) and the column lifts as one strip on the surface, its sides ruled, the columns it passes stepping
+aside (150, ease-out); let go, it settles into its place the same way, and Escape puts it back. ← → on the focused
+grip move it a place. The selection, grip and menu columns never move. While a column or row is dragged or
+resized the cursor holds for the whole page, and nothing under the pointer hovers or gets its text selected.
+
 ### TableCell
 **For** one value in a row. Numbers tabular and right-aligned (`numeric`); the name 13/500 `neutral-900`, meta
 13/400 `neutral-700`. A long value that is told apart by its end (a key, a path, a hash) is cut in the middle with
@@ -763,7 +758,19 @@ keeps its room while hidden, so nothing moves; a copy turns the icon to a tick f
 names or amounts, which nobody copies on their own. A box alone in a cell (`TableSelectCell` for the selection
 column) sits on the row's middle and never grows the row.
 
-### TableEditCell
+### TableDragCell
+**For** a row whose place in the list is set by hand, where the order means something (a backlog's priority, the
+lines of an invoice as they print), with `onRowMove` on the TableBody. **Not for** an order that follows a value:
+that is sorting (TableHead). The first column (44, before the selection's box), its head empty: a 14 grip in
+`neutral-500` on a 20 × 28 target (`chip` corners, the 5% wash under the pointer), lending the row's padding like
+the ellipsis so the row stays 41, shown only under the pointer or focus (always on touch), so a list that can be
+reordered reads as plain as one that cannot. Moved 3 from where it was pressed, the row lifts (the surface, a
+hairline ring and the `float` shadow) and follows the pointer, held within the list; the rows it passes step aside
+by its height (150, ease-out), so the gap it will drop into is always open; let go, it settles into the gap the same
+way, and Escape puts it back. ↑ ↓ with the grip focused move the row a place, focus staying on
+it. A row nested under a fold has no grip: it moves with its parent.
+
+### EditableCell
 **For** a value worked on where it sits, only where the table is where the values are worked on (`patterns.md`).
 The cell reads as its value. Under the pointer or on focus a 14 mark in `neutral-500` shows at the cell's end: a
 pencil for a typed value, a chevron for a pick, the one hint that it can change (before the value on a
@@ -776,25 +783,25 @@ tap, not only a key; Enter or a click away saves too, Escape puts the value back
 left edge on the cell's; the pick saves. Focus on a cell rings the whole cell, inside its edges. A sum the table
 works out stays a plain cell and follows the edit.
 
-### TableFold · TableFoldCell · TableFoldRows · TableFoldHead · TableFoldPanel
+### TableTree · TableTreeCell · TableTreeRows · TableTreeHead · TableTreePanel
 **For** a row with more rows of the same kind under it, opened now and then: an invoice's instalments, a folder's
-files and folders. The rows a fold shows (`TableFoldRows`) are real rows of the table: the same columns filled
+files and folders. The rows a fold shows (`TableTreeRows`) are real rows of the table: the same columns filled
 the same way, the same height, each with its own box when rows are selected, and a nested row can fold in turn.
 Rows of the same kind (instalments under an invoice, files under a folder) **align with the columns**, because
 each value is a value of that column. Rows that are a **breakdown** of the row above (a payout by source, a
-source by plan: `TableFoldRows shift`) **step in a level (a step) in every column**: left-aligned values step right,
+source by plan: `TableTreeRows shift`) **step in a level (a step) in every column**: left-aligned values step right,
 right-aligned figures step left, in from the column's edge, and a column the breakdown has no value for (the
 date) stays empty. So no part sits under its parent's value and reads as a peer of it, while it stays in the
 column it belongs to; each level deeper steps again. Ticking a parent ticks all its children; with some ticked
 it shows mixed.
 
-Rows of **another kind** (an invoice's lines under the invoice) take a head of their own (`TableFoldHead`): the
+Rows of **another kind** (an invoice's lines under the invoice) take a head of their own (`TableTreeHead`): the
 table's head row again, the same fill, height and type, as the first row the fold shows, naming what each column
 holds for the rows under it (Item, Qty, Rate where the table says Invoice, Client, Status); its first label steps in
 with the rows, and a column they leave empty keeps an empty head. The rows then sit on the table's columns and
 read against those labels, so a quantity under the table's Status reads as a quantity, not a status.
 
-**Anything that is not rows** (a diff, a history, a form, a preview) goes in a panel (`TableFoldPanel`): one row,
+**Anything that is not rows** (a diff, a history, a form, a preview) goes in a panel (`TableTreePanel`): one row,
 its action cells empty and the parent's line running down beside it to 16 over its foot. It **splits on a
 column's edge, the way the table does**: what the content is (a title in 13/500 `neutral-900`, who and when in
 `neutral-600`, an action) in the leading columns (`aside`, `asideSpan`), starting a step in where a child's name
@@ -822,6 +829,125 @@ threads between the children's boxes (4 clear of each) to the last child. Withou
 through to the middle of the last child. It can be left off (`guides={false}`) when the moved boxes are enough to
 show the level; it is on by default, since it ties each box to the chevron it hangs from. Nested rows fade in over
 200 ms. The footer's label cell spans the action columns too.
+
+### TableToolbar · TableSearch · TableToolbarEnd · TableConditions
+**For** what finds and narrows one table, on that table: passed to `Table`'s `toolbar`, drawn inside its frame
+above the column head. **Not for** page-wide controls (the period, Export: the page head) or the list's views
+(the dock).
+- **TableToolbar**, the bar: min 44 high, 6 padding all round, a hairline below; it wraps when
+  its contents outgrow one line, so the head never moves. **TableSearch** at its left: a small outlined `Input`
+  (the hairline box, a leading 16 search icon, 34 high, 256 wide, giving way before the filters).
+  **TableToolbarEnd** at its right, items 8 apart: the selects a table keeps visible, a FilterMenu, and, while
+  no condition applies, the **add button** of the conditions (a 34 secondary square with the filter icon).
+- **TableConditions**, under the bar, **only while a condition applies**: the same 44 row, same padding, with a
+  hairline below, holding the conditions (each field · operator · value · ×) and a ghost "Clear all", 8 apart,
+  wrapping, and the add button at its right end (a TableToolbarEnd). The conditions never share the search's
+  bar, so narrowing reads apart from finding.
+- **Narrow:** the search gives up its 256 and takes the rest of the bar, the end group beside it.
+
+### DataGrid
+**For** values worked on cell by cell, as in a spreadsheet: a budget, a plan, a price list, where the reader
+selects a block of cells, types over them, pastes them in from elsewhere and fills them down, and every cell is a
+value of its own. **Not for** a list of objects (Table: a row is a thing, read and opened a row at a time) or a few
+values of a list edited where they sit (EditableCell).
+- **Frame:** the ruled table's frame (`control` corners, a hairline, the surface). Heads on the `neutral-100` fill,
+  13/400 `neutral-600`: a column head 32 over each column (its name, or a letter, centred, when the columns have
+  no names), a 44 row head with the row's number, centred and tabular; both stay in view as the grid scrolls.
+- **Width:** each column keeps its own width (112 by default, resized by the reader); when they end short of the
+  frame the last column takes the room that is left, so the grid always fills its frame and never stops short
+  of its right edge. Wider than the frame, it scrolls.
+- **Toolbar** (`toolbar`): what works on this grid (a scenario, a view, where it stands) on a TableToolbar inside
+  the frame over the column heads, as a table's; it stays put while the grid scrolls. The page's own actions
+  (Share, Publish) are the header bar's, never on it.
+- **Summary rows** (`summaryRows`): **when** the sheet sums itself (a total, a target, a gap), its last rows: a
+  `neutral-400` rule over the first of them and their cells in 13/500 `neutral-950`, as a spreadsheet writes its
+  totals, a negative one in `error-600` (a shortfall is the sheet's problem). Worked out from the rows above, so
+  what is typed over a total is put back.
+- **Cells:** 32 high, 8 side padding, hairlines on both axes (`neutral-200`, the one grid that rules both ways
+  with the schedule), 13/400 `neutral-900`; a number right-aligned and tabular, text left; one line, ending in an
+  ellipsis. The cell cursor over cells.
+- **Selection,** the grid's one accent: the cell it starts from is ringed 2 on its lines, a block dragged or
+  Shift-extended from it is outlined 1 on its lines and washed in the accent at 10%, the start cell left clear
+  inside its ring. Ctrl or ⌘ held, a click, a drag or a head adds another block and keeps the ones before, each
+  outlined and washed the same, the newest one's start cell ringed; a plain click starts over. The heads over the
+  selection darken (`neutral-200`, `neutral-900` text) and take the accent on their edge facing the cells, so the
+  blocks read from the heads as well. An 8 square on a lone block's corner (the
+  accent, a 1 surface rim) drags a fill: the cells it will write outlined dashed, then a run of numbers a constant
+  step apart carries on as a series and anything else repeats. While the grid does not have focus the accent turns
+  `neutral-500` and the wash neutral, so only the grid being worked in is in colour.
+- **Editing:** typing over a cell replaces its value; Enter, F2 or a double click opens it with its value. The open
+  cell is a borderless 13 input on the tint wash, the text where it was, ringed in the accent; Enter saves and moves
+  down, Tab right (Shift back), Escape puts the value back. Delete clears every selected block; Ctrl or ⌘ + C, X and V copy,
+  cut and paste it as tab-separated rows (one value pasted fills the whole block), Z undoes and Y redoes.
+- **Keyboard:** the arrows move the start cell (Shift extends the block, Ctrl or ⌘ runs to the edge), Home and End
+  to the row's ends, Ctrl or ⌘ + A everything, Escape back to one cell. A column head selects its column and a row
+  head its row (dragged along the heads, the ones it passes); the corner selects all. The footer sums every
+  selected block, a cell in two counted once.
+- **Sizing:** a column's edge and a row's foot are dragged from the heads (an 8 target, the accent at 2 under the
+  pointer); a double click returns it to its own size. A row never goes under 32.
+- **Footer** (`footer`), only when the reader needs what a selection adds up to: a 32 band under the grid on the
+  head's fill, ruled off, 13 `neutral-600` with the figures `neutral-900` 500: Sum, Average and Count of the
+  numbers selected, 16 apart.
+
+## Cards and lists
+
+### Card · CardHeader · CardTitle · CardValue
+**For** a self-contained unit: a chart drawn by hand, a group of settings, a list, a block of facts. **Not for** a
+key figure (StatCard: the one card a figure is drawn in), a page
+section (space), a header (never in a card), a form (sections), or inside another card (the one exception is in
+`foundations.md`, Surfaces and depth).
+
+| layout  | padding                 | gap | for                                   |
+| ------- | ----------------------- | --- | ------------------------------------- |
+| default | 16                      | 16  | a stat card, a small unit              |
+| list    | 20                      | 16  | a list, a group of settings, facts     |
+| chart   | 20, 48 at the bottom    | 32  | a chart drawn by hand, with room under its x labels; the kit's charts bring their own card (`charts.md`) |
+
+`card` corners (16), hairline, surface, no shadow. Header: the title 13/400 `neutral-600` over the value (2
+apart); value `md` 18/500 in a stat card (20/500 once it grows a chart or facts), `lg` 24/500 or `xl` 31/500 in a chart card's head, tabular; a figure
+row puts the value and its delta (13,
+`success-800` for good news, `error-600` for bad) on one baseline, 8 apart. The colour follows what the change
+means, not its direction: pass `trend` (`up` good, `down` bad) whenever a fall is good news (churn, costs,
+refunds). Without a `trend`, a delta whose text starts with a minus (a hyphen, the minus sign or an en dash)
+reads as bad, anything else as good.
+- **A card with a head puts the rest in `CardContent`**, and what closes it in `CardFooter`: plain they add
+  nothing, but a theme that frames its cards (`theming.md`, `cards`) stands the head and the foot on the frame
+  and stages the content. A card's padding and gap are its values, set on it, never a padding class, which would
+  also override the framed values. The library's titled parts (StatCard, the chart cards, a BarList with a
+  title, Checklist, a SettingGroup with a title) do it themselves; a table stays plain, its toolbar being part of
+  what it holds.
+
+### StatCard
+**For** one key figure with its change, one of the two to four a reader comes to a page for. **Not for** the
+figure a chart already leads with, a lone figure (a line of text, or its chart card's head), a fact that
+happens to be a number (with the facts), or filling a row.
+- A default Card with gap 12: the label 13/400 `neutral-600`, the value 18/500 `neutral-950` 4 below, a pill
+  badge (22, success for good news, error for bad, neutral flat) 12 below, aligned left, only when the figure
+  has a change to show. A secondary figure that belongs to the value ("1 invoice, due 30 Nov", "of 418") is its
+  `note`: 13 `neutral-600`, 4 under the value; nothing sits inline after the value or is folded into the label.
+  `trend` as on a Card (above); `neutral` for a change that is neither good nor bad.
+- It grows by parts, each **only when the reader needs that much more of the figure**, never to make a plain
+  row look full: `comparison`, what the change is measured against ("on last month"), 13 `neutral-600` 8
+  after the pill, **when the period is not named once for the whole row** (the page head's line or its range
+  control names it, and then no card repeats it); `chart`, a Sparkline (`charts.md`), **when which way the
+  figure has been going is part of the answer**; `facts`, two or three figures that stand beside the key one
+  (a plan, a target, the period before, a figure it is made of), each a 13 `neutral-600` label and a 13/500
+  `neutral-950` tabular value 6 after it, 20 apart; `icon` (16 `neutral-600`, 8 before the label) and
+  `actions` (a ghost `icon-sm` ⋯ on the label's line, pulled into the padding so the line keeps its height),
+  **on a dashboard of many cards**, where the icon finds a card and the menu holds what is done with that
+  figure (open its report, set a target). A fact is never the figure again in other words, and never a fourth:
+  past three it is a table.
+- **A card with a chart or facts reads in four zones, each parted from the next**, or it is a stack of grey
+  lines with nothing to land on: the label line; 14 under it the figure, now 20/500 (a step under the page title's 24, so the cards never read as loud as the head),
+  with the pill 8 beside it on its centre line and the comparison after that, the note 4 under; 14 under that
+  the sparkline; then the facts under a hairline across the card's full width, 16 above it and 16 under it.
+  The figure is the one large thing; every other line is 13 or 11 and stands back.
+- **Each zone keeps its height whatever it holds**, so cards side by side stay level line for line: the figure
+  is one line (the comparison truncates first), the note's line is held open in a card without one, the facts
+  are one line (a label truncates first) and stand at the card's foot.
+- **It pads by what it holds**: 24 for a card with a chart and facts (the formula, `foundations.md`), 16 at
+  the foot under the facts; the plain card stays at its drawn 16.
+- A row is all one kind of card, and every card in it holds the same parts, so the row ends level.
 
 ### DescriptionList · DescriptionItem
 **For** an object's key–value facts, term left and value right in two equal columns, in a bordered box (in the
@@ -893,6 +1019,8 @@ categories (a chart) or a data table.
   500. Empty: a 34 row "No data yet" in `neutral-600`. Narrow, the header's value label truncates rather than
   push the title out.
 - Labels that are paths or URLs cut in the middle (`truncate`, Truncate); names and places at the end.
+
+## Text and layout
 
 ### Truncate
 **For** one line of text that must fit the width it is given. **Not for** text that may wrap (a description,
@@ -1037,13 +1165,17 @@ need, the card every chart sits in (ChartFrame, ChartCard, ChartKey), the plot, 
 and an entry per chart: AreaChart, LineChart, BarChart, HorizontalBarChart, DonutChart, Treemap, FunnelChart,
 RadarChart, RoseChart, BulletChart, UptimeStrip, BubbleChart and CandlestickChart.
 
-## AI
+## Chat
 
-The chat family: a conversation is built from the parts below, each with its own entry. **For** a conversation:
-support, an assistant, comments. **Not for** a history (ActivityList) or a log (the step row pattern).
+A conversation between people, and the bots and AI agents that take part in it as people do: support, a help
+widget, comments, a team's chat. Built from the parts below, each with its own entry. An AI here is one more
+author: its message is the other side's card, told apart by an "AI" badge and, when the reader needs them, its
+stats, never by a shape of its own. **For** a conversation. **Not for** asking the product a question (the
+Assistant parts below), a history (ActivityList) or a log (the step row pattern).
 
 ### ChatThread · ChatUnreadDivider
-- **Thread**: a scrolling column, 16 padding, 12 between messages; opens at the latest and follows new ones
+- **Thread**: a scrolling column, 16 padding, 24 between messages, so each reads as its own turn; a system line
+  keeps 16 to its neighbours (its own 12 of padding sets it apart). Opens at the latest and follows new ones
   while the reader is at the end. Empty: 13 `neutral-600` centred, max 288 wide.
 - **Thread, own messages**: the thread tells one's own messages (for following the end and the reader's own
   send) by `variant="own"` or a `data-own` marker on each child; a wrapper round ChatMessage forwards both the
@@ -1062,13 +1194,14 @@ support, an assistant, comments. **Not for** a history (ActivityList) or a log (
   arrow-down, "N new messages") floats 12 above the foot of the thread, centred, with the `float` shadow. It
   fades in while rising 4 (fade only under reduced motion), is not announced itself (the messages are), and
   takes the reader back to the end, smoothly unless reduced motion is on.
-- **Unread divider**: a 1 `neutral-300` hairline either side of a centred 11/500 label in `neutral-950` ("New
-  messages"), gap 12, above the first unseen message. Neutral, never the action colour.
+- **Unread divider**: a 1 `neutral-200` hairline either side of a centred 11 label in `neutral-600` ("New
+  messages"), gap 12, 20 from the messages, above the first unseen message. Quiet, as a place in the thread
+  and not news itself; neutral, never the action colour.
 
 ### ChatMessage · ChatEvent
 - **Message**: `card` corners (16), 16 round the content, the body 13 keeping line breaks and wrapping anywhere
   (a run of emoji or a long id breaks inside, never widens it). Both variants share one layout: a header row
-  across the top when there is one (24 round avatar, the author 13/500, a badge, gap 8), then two columns side
+  across the top when there is one (24 round avatar, the author 13/500, a badge, gap 8, and its stats at the right), then two columns side
   by side, the words and the meta 8 apart, the meta at the foot of its column 12 from the right and 10 from the
   bottom, so the words never run under it however long they get; rows 8 apart. Only the time and its tick sit
   beside the words: a failed message's meta ("Not sent · Retry · time") takes its own row under the words, at
@@ -1080,10 +1213,19 @@ support, an assistant, comments. **Not for** a history (ActivityList) or a log (
   fades in from 80% scale, 200 `ease-out-strong`, while read darkens from `neutral-500` to `neutral-950` over
   150; reduced motion swaps them at once. A failed message says "Not sent" in `error-600` after its error icon,
   then " · Retry" as an 11/500 text button in `neutral-950` (underlined on hover), then " · " and the time.
-- **Pending reply**: an assistant reply still being written shows three 6 dots 4 apart in `neutral-600` in
+- **Stats** (`stats`, `ChatMessageStat`): **when** the reader should know what a message drew on, mostly an AI
+  participant's reply (how sure it is, how many files it read, whose profile it looked at): at the header's
+  right, each a 12 icon in `neutral-500` and a figure 11 `neutral-600` tabular, gap 4, a `neutral-400` "·" 6
+  either side between them; a figure needs a name, so each is named in its tooltip and read before it. Never
+  on one's own messages.
+- **Pending reply**: a reply still being written (a person or a bot in the chat) shows three 6 dots 4 apart in `neutral-600` in
   place of its words, or 6 after the words while they stream, and is busy (`aria-busy`).
 - `status` on a message is its delivery (sending, sent, delivered, read, failed); on ChatAttachment and
   ChatReference it is a node, usually a badge, at the end.
+- **Attached** (`attached`): what goes with a message (its files, a record it links, or both, files first) hangs
+  under it, 6 apart, and the two are one group: the same side, the same width (the wider of the words and what is
+  attached, up to 2/3 for one's own), a linked record taking the message's `card` corners. Never the thread's
+  next item, which would sit 24 away at the thread's width and read as a message of its own.
 - **Event**: a centred quiet line 13 `neutral-600` with 12 vertical padding ("Joan closed the ticket · 09:14").
 
 ### ChatTyping
@@ -1097,6 +1239,81 @@ support, an assistant, comments. **Not for** a history (ActivityList) or a log (
   the same way. Only its words are announced (polite, atomic), once per change of people. The line: one name "Maya
   is typing"; two "Maya and Liam are typing"; three "Maya, Liam and Noor are typing"; four "Maya, Liam and 2 others
   are typing"; five or more "5 people are typing".
+
+### ChatToken · ChatReference
+- **Token**: a mono 11 chip with `chip` corners, 6 side, 2 vertical, `neutral-500` at 20% behind `neutral-800`
+  by default (a reference is not a state), `primary` only to mark one the reader must act on, inline in a message. **Reference**: a record dropped in: min 48 high, `control` corners (`card` under its message), hairline,
+  surface, 12 side, gap 12: the token, a fact 13 tabular, a status at the end; hover border `neutral-300` when it
+  opens the record.
+
+### ChatAttachment · ChatAttachments
+- **Attachment** (`ChatAttachment` · `ChatAttachments`): a file going with a message. `file`: 48 high, `item`
+  corners, hairline, surface, 4 inset: a 40 well with `chip` corners and a 20 file icon, tinted by kind (a PDF the
+  error tone, others neutral: the ramp's 500 at 20%, its 800), gap 10, the name 13/500 over its extension 11
+  `neutral-600`, both truncated, max 288 wide (sized to sit with 13 messages); the name cuts in the middle (Truncate). `image`: a 48 square thumbnail, `item` corners, hairline. Both are
+  48 high round a row (40) well. While waiting in the composer each is removable: a ghost 28 × at the
+  file's end, a 20 round chip (surface, hairline, 12 ×) on the image's top right corner; each named "Remove
+  <name>". `record`, a linked record (an application, an invoice), drawn in ChatReference's shape so it keeps one
+  shape waiting and in the thread: a line of its own at the row's full width, min 48 high, `control` corners,
+  hairline, surface, 12 left, gap 12: a 16 icon in `neutral-600`, its kind 13/500 ("Application"), its token, the
+  status badge at the end, then the ghost 28 × (4 right). The row (`ChatAttachments`): 8 apart, wrapping; above
+  the composer's box while it waits, under a sent message in its `attached`, on the message's side, `variant` `own` (at
+  the right) or `other` (`align` end / start is the same).
+
+### MessageComposer · MessageComposerAttachItem
+- **Composer**: a box `control-xl` (48) high at one line, a cell row in 8 of room: corners `item` + 4 (14), not
+  the padding's full 8, so box and button read as one shape and square off together at corner scale 0; a
+  hairline in `neutral-100` (`neutral-200` on hover and focus, the focus ring round the box), the surface, the
+  `composer` shadow (a soft lift, deeper in dark), 8 left and vertical, 10 right. In it: the attach button, a cell
+  (32) square with `item` corners filled in the action colour with a 16 plus, named "Attach" (`attachLabel`;
+  `addLabel` is the old name), which opens the file picker (`onAttach(files)`, `accept`), calls `onAdd`, or, when
+  more than files can go, opens a menu (`attachMenu`, below); `attach` replaces the button outright (`start` is
+  the old name); gap 12; a borderless textarea (min 32, max 160 then scrolls, 13 `neutral-900`, placeholder
+  `neutral-600` for contrast, "Write a message"); the send, named "Send", a quiet cell (32) ghost button with a 20
+  arrow-up in `neutral-600`, dimmed until there is text or a file. The two emphases are on purpose: in a
+  person's chat, adding something is the box's one filled control and the send stays quiet beside it; an
+  assistant's question (AssistantPrompt) is the page's one action, so there the send is the filled one. A press
+  anywhere on the box that is not a button lands in the text. The box only ever holds the line of text:
+  what waits to go (files, images, linked records) sits in a row 8 above it, never inside. From the top: who else
+  is typing, then what waits, then the box, so the box never moves when someone starts typing. Enter sends,
+  Shift+Enter breaks a line. The box keeps 12 above it without a typing row and 24 under it at the page's foot.
+- **Composer menu**: the "+" opens a menu above it, its left edge on the button's, 8 clear, at least 192 wide, of
+  the menu's rows, each a 16 icon and a label ("Add attachments", "Link invoice", "Link application", "Ask the
+  assistant"); "Add attachments" opens the file picker. The button keeps its name "Attach"; Enter, Space and the
+  arrows open it, picking a row puts the caret back in the text, and Escape closes it back onto the "+".
+
+### ChatSuggestions · ChatSuggestion
+- **Suggestions**: while a reference is typed after "#" (or "@"), a panel
+  floats 8 above the box, over what is there, at the box's full width: the box's corners (14), hairline, surface,
+  the `float` shadow, 4 inset; a title 11/500 `neutral-600` ("Recent applications"), then popup rows (36, a 16
+  icon, the label, the meta in `neutral-600`; corners `item` − 1, concentric inside the panel), at most 240 then scrolling. It rises 4 as it fades in, 150
+  `ease-out-strong`. The caret stays in the text: the arrows move the active row (the 5% wash), Enter or Tab picks
+  it (the typed "#a" becomes the record's token and a space), Escape or leaving the text closes it until a new "#"
+  is typed. The text points at the list and its active row (a listbox of options). Sent, the token is a chip.
+
+## Assistant
+
+Asking the product a question, and its answers: the assistant page kind (`pages.md`), a sheet that asks about
+the record it opens over. The thread is ChatThread, as it scrolls and follows the same way; the question is
+one's own ChatMessage; the answer and the prompt are the assistant's own. **For** an assistant the reader asks.
+**Not for** a conversation with people, an AI agent among them (the Chat parts above).
+
+### AssistantAnswer · AssistantAnswerStep · AssistantAnswerAction
+- **Answer**: the assistant's answer to one question, never a message: no card, avatar, author or time, open
+  in the conversation column at its full width, starting on its text edge. So it can hold what the product
+  draws elsewhere (stat cards, a chart card, a table, a list) as well as words, each a block 16 apart; the
+  words 13 `neutral-950`, lists with their markers inside the text edge (20 indent, items 4 apart). From the
+  top: what it did, the answer, what can be done with it. The question before it is one's own ChatMessage.
+- **Work** (`work`): above the answer, 16 over it, lines 8 apart. While it works, Thinking (named for what it
+  is doing); once done, what it did as steps: a 16 icon in `neutral-500`, gap 8, the words 13 `neutral-600`,
+  truncated ("Read bounce rate by page", "12 sources used"). A step that opens what it names (the sources) is a
+  button: it darkens to `neutral-950`, icon and words, on hover. **When** the reader would ask how it knows;
+  a reply that only talks (a greeting) has none.
+- **Actions** (`actions`): 8 under the answer, the first icon on the text edge: 24 square ghost buttons with a
+  14 icon, 2 apart, each named in a tooltip: CopyButton, "Try again" (the last answer only), "Good answer" and
+  "Bad answer", toggles that stay `neutral-950` while pressed (one turns the other off). Held back while the
+  answer is pending, and on a greeting.
+- **Writing**: while the words arrive, the answer is busy and ThinkingCaret follows the last word.
 
 ### Thinking · ThinkingCaret · ThinkingRun · ThinkingMark · ThinkingText
 Which one goes by how long the wait is and what is already on screen. A person typing is ChatTyping; a button
@@ -1136,58 +1353,7 @@ that is busy is the Spinner; a page loading is skeletons.
   its words lit; the ones to come with a 4 square in `neutral-300` and words in `neutral-400`. **When** the run
   has three to six known steps; an open-ended one keeps the step line.
 
-### ChatToken · ChatReference
-- **Token**: a mono 11 chip with `chip` corners, 6 side, 2 vertical, `neutral-500` at 20% behind `neutral-800`
-  by default (a reference is not a state), `primary` only to mark one the reader must act on, inline in a message. **Reference**: a record dropped in: min 38 high, `control` corners, hairline,
-  surface, 12 side, gap 12: the token, a fact 13 tabular, a status at the end; hover border `neutral-300` when it
-  opens the record.
-
-### ChatAttachment · ChatAttachments
-- **Attachment** (`ChatAttachment` · `ChatAttachments`): a file going with a message. `file`: 40 high, `item`
-  corners, hairline, surface, 4 inset: a 32 well with `chip` corners and a 16 file icon, tinted by kind (a PDF the
-  error tone, others neutral: the ramp's 500 at 20%, its 800), gap 8, the name 11/500 over its extension 11
-  `neutral-600`, both truncated, max 240 wide; the name cuts in the middle (Truncate). `image`: a 40 square thumbnail, `item` corners, hairline. Both are a
-  row (40) high round a cell (32) well. While waiting in the composer each is removable: a ghost 28 × at the
-  file's end, a 20 round chip (surface, hairline, 12 ×) on the image's top right corner; each named "Remove
-  <name>". `record`, a linked record (an application, an invoice), drawn in ChatReference's shape so it keeps one
-  shape waiting and in the thread: a line of its own at the row's full width, min 38 high, `control` corners,
-  hairline, surface, 12 left, gap 12: a 16 icon in `neutral-600`, its kind 13/500 ("Application"), its token, the
-  status badge at the end, then the ghost 28 × (4 right). The row (`ChatAttachments`): 8 apart, wrapping; above
-  the composer's box while it waits, under a sent message 4 below it on the message's side, `variant` `own` (at
-  the right) or `other` (`align` end / start is the same).
-
-### ChatComposer · ChatComposerAttachItem
-- **Composer**: a box `control-xl` (48) high at one line, a cell row in 8 of room: corners `item` + 4 (14), not
-  the padding's full 8, so box and button read as one shape and square off together at corner scale 0; a
-  hairline in `neutral-100` (`neutral-200` on hover and focus, the focus ring round the box), the surface, the
-  `composer` shadow (a soft lift, deeper in dark), 8 left and vertical, 10 right. In it: the attach button, a cell
-  (32) square with `item` corners filled in the action colour with a 16 plus, named "Attach" (`attachLabel`;
-  `addLabel` is the old name), which opens the file picker (`onAttach(files)`, `accept`), calls `onAdd`, or, when
-  more than files can go, opens a menu (`attachMenu`, below); `attach` replaces the button outright (`start` is
-  the old name); gap 12; a borderless textarea (min 32, max 160 then scrolls, 13 `neutral-900`, placeholder
-  `neutral-600` for contrast, "Write a message"); the send, named "Send", a quiet cell (32) ghost button with a 20
-  arrow-up in `neutral-600`, dimmed until there is text or a file. The two emphases are on purpose: in a
-  person's chat, adding something is the box's one filled control and the send stays quiet beside it; an
-  assistant's question (ChatPrompt) is the page's one action, so there the send is the filled one. A press
-  anywhere on the box that is not a button lands in the text. The box only ever holds the line of text:
-  what waits to go (files, images, linked records) sits in a row 8 above it, never inside. From the top: who else
-  is typing, then what waits, then the box, so the box never moves when someone starts typing. Enter sends,
-  Shift+Enter breaks a line. The box keeps 12 above it without a typing row and 24 under it at the page's foot.
-- **Composer menu**: the "+" opens a menu above it, its left edge on the button's, 8 clear, at least 192 wide, of
-  the menu's rows, each a 16 icon and a label ("Add attachments", "Link invoice", "Link application", "Ask the
-  assistant"); "Add attachments" opens the file picker. The button keeps its name "Attach"; Enter, Space and the
-  arrows open it, picking a row puts the caret back in the text, and Escape closes it back onto the "+".
-
-### ChatSuggestions · ChatSuggestion
-- **Suggestions**: while a reference is typed after "#" (or "@"), a panel
-  floats 8 above the box, over what is there, at the box's full width: the box's corners (14), hairline, surface,
-  the `float` shadow, 4 inset; a title 11/500 `neutral-600` ("Recent applications"), then popup rows (36, a 16
-  icon, the label, the meta in `neutral-600`; corners `item` − 1, concentric inside the panel), at most 240 then scrolling. It rises 4 as it fades in, 150
-  `ease-out-strong`. The caret stays in the text: the arrows move the active row (the 5% wash), Enter or Tab picks
-  it (the typed "#a" becomes the record's token and a space), Escape or leaving the text closes it until a new "#"
-  is typed. The text points at the list and its active row (a listbox of options). Sent, the token is a chip.
-
-### ChatPrompt
+### AssistantPrompt
 - **Prompt**: where a question to an assistant is written. A box whose corner nests round the buttons
   (`chip` + the padding: 14 at `lg`, 12 at `md`), hairline, surface: the textarea on top (borderless, `neutral-900`, placeholder `neutral-600`, "Ask anything…"),
   a foot under it: an optional menu at the left (a mode or model, a ghost 28 button), at the right a ghost 28

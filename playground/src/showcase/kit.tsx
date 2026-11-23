@@ -20,9 +20,9 @@ import {
     Field,
     FieldLabel,
     HeaderBar,
-    Rail,
-    RailItem,
-    RailSeparator,
+    NavRail,
+    NavRailItem,
+    NavRailSeparator,
     TooltipProvider,
     TopNav,
     TopNavBrand,
@@ -46,12 +46,15 @@ export const categories = [
     { id: 'forms', label: 'Forms and settings' },
     { id: 'filtering', label: 'Filtering' },
     { id: 'overlays', label: 'Overlays' },
-    { id: 'content', label: 'Content' },
+    { id: 'tables', label: 'Tables' },
+    { id: 'content', label: 'Cards and lists' },
+    { id: 'text', label: 'Text and layout' },
     { id: 'labels', label: 'Labels and identity' },
     { id: 'status', label: 'Status' },
     { id: 'messages', label: 'Messages' },
     { id: 'charts', label: 'Charts' },
-    { id: 'ai', label: 'AI' },
+    { id: 'chat', label: 'Chat' },
+    { id: 'ai', label: 'Assistant' },
     // How things behave rather than what they look like: each a live demo of one pattern.
     { id: 'interaction', label: 'Interaction' },
 ] as const;
@@ -343,10 +346,10 @@ export const AppWindow = ({
 
     if (nav === 'top') {
         return (
-            // A shell, so the links give way to the toggle and its drawer below the sidebar width;
-            // the panel lies flat under the bar, as the window always drew it.
-            <AppShell className="h-full min-h-0 w-full bg-neutral-50" nav="top">
-                <TopNav className="border-neutral-200 border-b">
+            // A shell, so the links give way to the toggle and its drawer on a compact window; the
+            // page lies flat under the bar.
+            <AppShell className="h-full min-h-0 w-full" nav="top">
+                <TopNav width="full">
                     <TopNavBrand logo={<Boxes {...icon} />}>Acme</TopNavBrand>
                     <TopNavLinks aria-label="Sections">
                         {topPlaces.map(item => (
@@ -356,7 +359,7 @@ export const AppWindow = ({
                         ))}
                     </TopNavLinks>
                 </TopNav>
-                <AppPanel className="m-0 @max-shell-sidebar/shell:ml-0 rounded-none border-0 [[data-nav=top]>&]:ml-0">
+                <AppPanel>
                     <PageColumn {...page} />
                     {overlay}
                 </AppPanel>
@@ -371,20 +374,24 @@ export const AppWindow = ({
             {nav === 'rail' && (
                 // Floats over the page at its left edge, centred, as an island does.
                 <TooltipProvider>
-                    <Rail
+                    <NavRail
                         aria-label="Main"
                         className="absolute top-1/2 left-6 z-20 @max-shell-sidebar/shell:hidden -translate-y-1/2"
                     >
                         {places.map(item => (
-                            <RailItem active={item.id === place} key={item.id} label={item.label}>
+                            <NavRailItem
+                                active={item.id === place}
+                                key={item.id}
+                                label={item.label}
+                            >
                                 {item.icon}
-                            </RailItem>
+                            </NavRailItem>
                         ))}
-                        <RailSeparator />
-                        <RailItem active={place === 'settings'} label="Settings">
+                        <NavRailSeparator />
+                        <NavRailItem active={place === 'settings'} label="Settings">
                             <Settings {...icon} />
-                        </RailItem>
-                    </Rail>
+                        </NavRailItem>
+                    </NavRail>
                 </TooltipProvider>
             )}
             <PageColumn

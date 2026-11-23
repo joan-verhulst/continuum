@@ -1,13 +1,4 @@
-import {
-    Avatar,
-    Button,
-    Card,
-    CardDelta,
-    CardFigure,
-    CardHeader,
-    CardTitle,
-    CardValue,
-} from 'continuum';
+import { Avatar, Button, Card, CardContent, CardHeader, CardTitle, StatCard } from 'continuum';
 import { ArrowRight, CalendarDays, ChevronDown } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';
 
@@ -16,43 +7,37 @@ const cardKnobs: Knob[] = [
         id: 'layout',
         label: 'Layout',
         options: [o('default', 'Default · 16'), o('list', 'List · 20')],
-        default: 'default',
+        default: 'list',
     },
-    {
-        id: 'value',
-        label: 'Value',
-        options: [o('md', 'md · 18'), o('lg', 'lg · 24'), o('xl', 'xl · 31')],
-        default: 'xl',
-    },
-    { id: 'delta', label: 'Delta', switch: true, default: true },
+    { id: 'action', label: 'Action in the head', switch: true, default: true },
 ];
 
-const visitorsLastWeek = [
-    { day: 'Monday', share: '41%' },
-    { day: 'Tuesday', share: '39%' },
-    { day: 'Wednesday', share: '36%' },
+const team = [
+    { name: 'Maya Chen', initials: 'MC', role: 'Owner' },
+    { name: 'Liam Ortiz', initials: 'LO', role: 'Finance' },
+    { name: 'Sara Kim', initials: 'SK', role: 'Accountant' },
 ];
 
-// The list layout pads by 20 for the rows it holds, so it shows three of them under the figure.
+// A card is the unit, not a figure: a title over what it holds. A key figure is a StatCard.
 const CardPreview = ({ knobs }: PreviewProps) => (
-    <Card className="w-64" layout={knobs.layout as 'default' | 'list'}>
-        <CardHeader>
-            <CardTitle>Returning visitors</CardTitle>
-            <CardFigure>
-                <CardValue size={knobs.value as 'md' | 'lg' | 'xl'}>38%</CardValue>
-                {knobs.delta && <CardDelta trend="down">−2.4%</CardDelta>}
-            </CardFigure>
+    <Card className="w-80" layout={knobs.layout as 'default' | 'list'}>
+        <CardHeader className="flex-row items-center justify-between">
+            <CardTitle>Team</CardTitle>
+            {knobs.action && <Button variant="ghost">Invite</Button>}
         </CardHeader>
-        {knobs.layout === 'list' && (
-            <ul className="flex flex-col gap-2 text-xs">
-                {visitorsLastWeek.map(row => (
-                    <li className="flex justify-between gap-3" key={row.day}>
-                        <span className="text-neutral-600">{row.day}</span>
-                        <span className="text-neutral-950 tabular-nums">{row.share}</span>
+        <CardContent>
+            <ul className="flex flex-col gap-3">
+                {team.map(person => (
+                    <li className="flex items-center gap-3 text-xs" key={person.name}>
+                        <Avatar fallback={person.initials} size={24} />
+                        <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
+                            {person.name}
+                        </span>
+                        <span className="text-neutral-600">{person.role}</span>
                     </li>
                 ))}
             </ul>
-        )}
+        </CardContent>
     </Card>
 );
 
@@ -60,7 +45,8 @@ export const entry: Entry = {
     id: 'card',
     name: 'Card',
     category: 'content',
-    description: 'Title, figure and delta; told apart by the hairline alone.',
+    description:
+        'A self-contained unit: a title over what it holds, told apart by the hairline alone. A key figure is a Stat card.',
     knobs: cardKnobs,
     Preview: CardPreview,
 };
@@ -109,46 +95,46 @@ const Overview = () => (
     >
         <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
             {headline.map(card => (
-                <Card className="gap-6 p-5" key={card.title}>
-                    <CardHeader className="gap-1">
-                        <CardTitle>{card.title}</CardTitle>
-                        <CardFigure>
-                            <CardValue size="lg">{card.value}</CardValue>
-                            <CardDelta trend={card.trend}>{card.delta}</CardDelta>
-                        </CardFigure>
-                    </CardHeader>
-                    <p className="text-neutral-600 text-xs">{card.fact}</p>
-                </Card>
+                <StatCard
+                    delta={card.delta}
+                    key={card.title}
+                    label={card.title}
+                    note={card.fact}
+                    trend={card.trend}
+                    value={card.value}
+                />
             ))}
         </div>
-        <Card className="gap-4 p-5">
+        <Card layout="list">
             <CardHeader className="flex-row items-center justify-between">
                 <CardTitle>Largest customers this month</CardTitle>
                 <Button variant="ghost">
                     All customers <ArrowRight {...icon} />
                 </Button>
             </CardHeader>
-            <ul className="flex flex-col gap-3">
-                {largest.map(customer => (
-                    <li className="flex items-center gap-3 text-xs" key={customer.name}>
-                        <Avatar fallback={customer.initials} size={24} />
-                        <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
-                            {customer.name}
-                        </span>
-                        <span className="text-neutral-600">{customer.plan}</span>
-                        <span className="w-20 text-right text-neutral-950 tabular-nums">
-                            {customer.revenue}
-                        </span>
-                    </li>
-                ))}
-            </ul>
+            <CardContent>
+                <ul className="flex flex-col gap-3">
+                    {largest.map(customer => (
+                        <li className="flex items-center gap-3 text-xs" key={customer.name}>
+                            <Avatar fallback={customer.initials} size={24} />
+                            <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
+                                {customer.name}
+                            </span>
+                            <span className="text-neutral-600">{customer.plan}</span>
+                            <span className="w-20 text-right text-neutral-950 tabular-nums">
+                                {customer.revenue}
+                            </span>
+                        </li>
+                    ))}
+                </ul>
+            </CardContent>
         </Card>
     </AppWindow>
 );
 
 export const inUse: InUse = {
     title: 'Overview',
-    note: 'The month’s headline figures, each a card with its value, change and one fact, over a card of the largest customers.',
+    note: 'The month’s headline figures as stat cards, over a card holding the largest customers: the card is the unit, the figure is a stat card.',
     app: true,
     render: () => <Overview />,
 };

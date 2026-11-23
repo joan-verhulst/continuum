@@ -160,17 +160,31 @@ export const BarList = ({
                   </button>
               )));
 
+    const headed = Boolean(title || valueLabel);
+
     return (
         <div
-            className={cn('flex min-w-0 flex-col gap-2', className)}
+            className={cn(
+                'flex min-w-0 flex-col gap-[var(--bar-list-gap,calc(var(--spacing)*2))]',
+                /*
+                 * With a heading, the list is a titled card's head and stage (theme.css): framed, the
+                 * heading stands on the card's frame and the rows on its stage, with no gap between,
+                 * the stage filling the card when a row of cards stretches it. Only as a card's own
+                 * child, though: anywhere else the list is no card's content, so it turns the theme's
+                 * switch off for itself.
+                 */
+                headed &&
+                    '[--bar-list-gap:var(--cards-framed)_0px] [--cards-framed:initial] [.card-frame>&]:flex-1 [.card-frame>&]:[--cards-framed:inherit]',
+                className,
+            )}
             data-expanded={expanded || undefined}
             data-slot="bar-list"
             {...props}
         >
-            {(title || valueLabel) && (
+            {headed && (
                 // Same side padding as a row, so the heading sits over the labels and the values.
                 <div
-                    className="flex items-baseline justify-between gap-3 px-2.5 text-xs"
+                    className="card-head flex items-baseline justify-between gap-3 text-xs [--card-head-pad:0_calc(var(--spacing)*2.5)]"
                     data-slot="bar-list-header"
                 >
                     <span
@@ -191,30 +205,35 @@ export const BarList = ({
                     )}
                 </div>
             )}
-            {items.length === 0 ? (
-                <p
-                    className="flex h-control items-center rounded-item bg-neutral-950/3 px-2.5 text-neutral-600 text-xs"
-                    data-slot="bar-list-empty"
-                >
-                    {empty}
-                </p>
-            ) : (
-                <BarListContext.Provider value={{ max: scale, tone: tone ?? 'neutral' }}>
-                    <ul
-                        aria-labelledby={title ? titleId : undefined}
-                        className="flex flex-col gap-1.5"
-                        data-slot="bar-list-items"
-                        id={listId}
+            <div
+                className={cn('flex min-w-0 flex-col gap-2', headed && 'card-stage flex-1')}
+                data-slot="bar-list-body"
+            >
+                {items.length === 0 ? (
+                    <p
+                        className="flex h-control items-center rounded-item bg-neutral-950/3 px-2.5 text-neutral-600 text-xs"
+                        data-slot="bar-list-empty"
                     >
-                        {visible}
-                    </ul>
-                </BarListContext.Provider>
-            )}
-            {footerNode && (
-                <div className="flex flex-col" data-slot="bar-list-footer">
-                    {footerNode}
-                </div>
-            )}
+                        {empty}
+                    </p>
+                ) : (
+                    <BarListContext.Provider value={{ max: scale, tone: tone ?? 'neutral' }}>
+                        <ul
+                            aria-labelledby={title ? titleId : undefined}
+                            className="flex flex-col gap-1.5"
+                            data-slot="bar-list-items"
+                            id={listId}
+                        >
+                            {visible}
+                        </ul>
+                    </BarListContext.Provider>
+                )}
+                {footerNode && (
+                    <div className="flex flex-col" data-slot="bar-list-footer">
+                        {footerNode}
+                    </div>
+                )}
+            </div>
         </div>
     );
 };

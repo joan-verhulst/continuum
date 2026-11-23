@@ -7,9 +7,9 @@ import { cn } from '../lib/cn';
 import { Select, SelectContent, type SelectContentProps, SelectItem } from './select';
 import { TableCell, type TableCellProps } from './table-cell';
 
-export type TableEditOption = { value: string; label: ReactNode };
+export type EditableCellOption = { value: string; label: ReactNode };
 
-export type TableEditCellProps = Omit<
+export type EditableCellProps = Omit<
     TableCellProps,
     'children' | 'onChange' | 'copy' | 'copyLabel'
 > & {
@@ -21,7 +21,7 @@ export type TableEditCellProps = Omit<
     /** How the value reads while it is not being edited; the value itself by default. */
     children?: ReactNode;
     /** Picks from a set instead of typing: the cell opens a list under it. */
-    options?: readonly TableEditOption[];
+    options?: readonly EditableCellOption[];
     /** Where the list is portalled; the body by default. */
     container?: SelectContentProps['container'];
     placeholder?: string;
@@ -48,7 +48,7 @@ const hint =
  * pencil for a typed value and a chevron for a pick: the one hint that it can change, kept off until
  * asked for so the table still reads as values.
  */
-export const TableEditCell = ({
+export const EditableCell = ({
     value,
     onValueChange,
     label,
@@ -59,7 +59,7 @@ export const TableEditCell = ({
     inputMode,
     className,
     ...props
-}: TableEditCellProps) => {
+}: EditableCellProps) => {
     const [editing, setEditing] = useState(false);
     const [draft, setDraft] = useState(value);
     const input = useRef<HTMLInputElement>(null);
@@ -112,7 +112,7 @@ export const TableEditCell = ({
         return (
             <TableCell className={cn(cell, 'cursor-pointer')} data-editable="" {...props}>
                 <Select
-                    items={options as TableEditOption[]}
+                    items={options as EditableCellOption[]}
                     onValueChange={next => onValueChange(String(next))}
                     value={value}
                 >

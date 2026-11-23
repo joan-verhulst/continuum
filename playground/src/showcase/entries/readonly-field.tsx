@@ -6,8 +6,8 @@ import {
     FieldHelper,
     FieldLabel,
     Input,
+    ReadonlyField,
     StatCard,
-    ValueField,
 } from 'continuum';
 import { Plus } from 'lucide-react';
 import {
@@ -24,7 +24,7 @@ import {
 } from '../kit';
 
 // Both variants are drawn, the wells over a vital, so each knob has something to change.
-const valueFieldKnobs: Knob[] = [
+const readonlyFieldKnobs: Knob[] = [
     { id: 'size', label: 'Size of the wells', options: sizes, default: 'md' },
     {
         id: 'tone',
@@ -42,38 +42,38 @@ const vitals = {
     error: 'Failing',
 } as const;
 
-const ValueFieldPreview = ({ knobs }: PreviewProps) => {
+const ReadonlyFieldPreview = ({ knobs }: PreviewProps) => {
     const tone = knobs.tone === 'warning' || knobs.tone === 'error' ? knobs.tone : 'success';
     const size = knobs.size === 'sm' ? 'sm' : 'md';
 
     return (
         <div className="flex w-full max-w-80 flex-col gap-4">
             <div className="grid grid-cols-2 gap-3">
-                <ValueField
+                <ReadonlyField
                     copyable={Boolean(knobs.copyable)}
                     label="Endpoint ID"
                     size={size}
                     value="we_3k29f81ab"
                 />
-                <ValueField
+                <ReadonlyField
                     copyable={Boolean(knobs.copyable) && !knobs.empty}
                     label="Retries"
                     size={size}
                     value={knobs.empty ? null : '2'}
                 />
             </div>
-            <ValueField label="Last delivery" tone={tone} value={vitals[tone]} variant="vital" />
+            <ReadonlyField label="Last delivery" tone={tone} value={vitals[tone]} variant="vital" />
         </div>
     );
 };
 
 export const entry: Entry = {
-    id: 'value-field',
-    name: 'Value field',
+    id: 'readonly-field',
+    name: 'Read-only field',
     category: 'forms',
     description: 'A read-only value in a form, in a well with copy, or a reading with its status.',
-    knobs: valueFieldKnobs,
-    Preview: ValueFieldPreview,
+    knobs: readonlyFieldKnobs,
+    Preview: ReadonlyFieldPreview,
 };
 
 // The webhooks the dialog adds to, behind it.
@@ -116,14 +116,14 @@ const EditEndpoint = () => (
             <Input defaultValue="https://hooks.northwind.com/acme" />
             <FieldHelper>Must answer within 10 seconds.</FieldHelper>
         </Field>
-        <ValueField copyable label="Endpoint ID" value="we_3k29f81ab" />
-        <ValueField
+        <ReadonlyField copyable label="Endpoint ID" value="we_3k29f81ab" />
+        <ReadonlyField
             copyable
             label="Signing secret"
             truncate="middle"
             value="whsec_9f2c7b1e04d84a6f93c1e7ab5d02e6b8c4f1a71d"
         />
-        <ValueField label="Last delivery" tone="success" value="200 OK" variant="vital" />
+        <ReadonlyField label="Last delivery" tone="success" value="200 OK" variant="vital" />
     </OpenDialog>
 );
 

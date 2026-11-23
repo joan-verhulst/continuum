@@ -1,8 +1,8 @@
 import {
+    AssistantPrompt,
     Button,
     ChatAttachment,
     ChatAttachments,
-    ChatPrompt,
     ChatThread,
     DropdownMenu,
     DropdownMenuContent,
@@ -68,14 +68,14 @@ const ModeMenu = () => {
     );
 };
 
-const ChatPromptPreview = ({ knobs: values }: PreviewProps) => {
+const AssistantPromptPreview = ({ knobs: values }: PreviewProps) => {
     const [sent, setSent] = useState<string>();
     const [files, setFiles] = useState<{ id: number; name: string }[]>([]);
     const state = values.state as string;
 
     return (
         <div className="flex w-full max-w-120 flex-col gap-3">
-            <ChatPrompt
+            <AssistantPrompt
                 attachments={
                     values.attach && files.length > 0 ? (
                         <ChatAttachments>
@@ -123,13 +123,13 @@ const ChatPromptPreview = ({ knobs: values }: PreviewProps) => {
 };
 
 export const entry: Entry = {
-    id: 'chat-prompt',
-    name: 'Chat prompt',
+    id: 'assistant-prompt',
+    name: 'Assistant prompt',
     category: 'ai',
     description: 'Where a question to an assistant is written; Stop while it answers.',
     stageClassName: 'items-center',
     knobs,
-    Preview: ChatPromptPreview,
+    Preview: AssistantPromptPreview,
 };
 
 /* ---------- In use: asking about a customer, in a sheet beside its page ---------- */
@@ -141,6 +141,7 @@ const opening: Turn[] = [
     {
         id: 1,
         own: false,
+        greeting: true,
         text: 'I have Northwind’s plan, invoices and activity open. Ask what changed, what is due, or what to send them.',
     },
 ];
@@ -170,7 +171,7 @@ const AskSheet = () => {
                     ))}
                 </ChatThread>
                 <div className="shrink-0 p-3">
-                    <ChatPrompt
+                    <AssistantPrompt
                         defaultValue="Is the renewal at risk?"
                         onSend={text => ask(text, answer)}
                         onStop={stop}

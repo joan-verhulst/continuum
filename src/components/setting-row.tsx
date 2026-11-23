@@ -199,6 +199,11 @@ const boxes = (children: ReactNode) => {
  * dependents in a bordered box instead. Several dependents take
  * an eyebrow naming what they belong to; mark that eyebrow `data-dependent` too, so it stays with
  * the parent.
+ *
+ * In a card, a titled group is the card's head and stage (theme.css, card-frame): plain, nothing
+ * changes; in a theme that frames its cards, the title stands on the frame and the rows on the
+ * stage, and a second group in the same card stands a frame's padding below the first. An untitled
+ * group has no head, so its rows stay plain on the card; outside a card a group is never framed.
  */
 export const SettingGroup = ({
     title,
@@ -214,7 +219,17 @@ export const SettingGroup = ({
         // A fieldset is the native group: a screen reader names it by the title on entering a control.
         <fieldset
             aria-labelledby={title ? titleId : undefined}
-            className={cn('flex min-w-0 flex-col gap-3', className)}
+            className={cn(
+                'flex min-w-0 flex-col',
+                // Framed, the head's padding parts the title from the stage, and a group after another
+                // stands the frame's padding off it; plain, 12 and nothing, as ever.
+                '[--setting-group-gap:var(--cards-framed)_0px] [--setting-group-space:var(--cards-framed)_var(--spacing)]',
+                'gap-(--setting-group-gap,--spacing(3))',
+                '[[data-slot=setting-group]+&]:mt-(--setting-group-space,0px)',
+                // Only a card frames: outside one, the group is plain in every theme.
+                '[&:not(.card-frame_*)]:[--cards-framed:initial]',
+                className,
+            )}
             data-disabled={disabled || undefined}
             data-slot="setting-group"
             disabled={disabled}
@@ -222,7 +237,7 @@ export const SettingGroup = ({
         >
             {title && (
                 <p
-                    className="font-normal text-neutral-600 text-xs"
+                    className="card-head font-normal text-neutral-600 text-xs"
                     data-slot="setting-group-title"
                     id={titleId}
                 >
@@ -230,7 +245,10 @@ export const SettingGroup = ({
                 </p>
             )}
             {layout === 'boxed' ? (
-                <div className="flex flex-col gap-2" data-slot="setting-group-rows">
+                <div
+                    className={cn('flex flex-col gap-2', title && 'card-stage')}
+                    data-slot="setting-group-rows"
+                >
                     <SettingGroupDisabledContext.Provider value={disabled}>
                         {boxes(children)}
                     </SettingGroupDisabledContext.Provider>
@@ -239,6 +257,7 @@ export const SettingGroup = ({
                 <div
                     className={cn(
                         'flex flex-col gap-6',
+                        title && 'card-stage',
                         // 24, a hairline and 24 between settings; a row that depends on the one before has none.
                         '[&>*+*:not([data-dependent])]:border-neutral-200 [&>*+*:not([data-dependent])]:border-t [&>*+*:not([data-dependent])]:pt-6',
                         // A dependent sits 12 under its parent, stepped in behind a guide line 4 from the edge.

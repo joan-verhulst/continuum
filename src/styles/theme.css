@@ -208,6 +208,8 @@
     --color-segment-fg: var(--color-segment-fg);
     --color-segment-border: var(--color-segment-border);
     --color-segment-track: var(--color-segment-track);
+    --color-control: var(--color-control);
+    --color-control-hover: var(--color-control-hover);
     --color-focus: var(--color-focus);
     --color-chart-1: var(--color-chart-1);
     --color-chart-2: var(--color-chart-2);
@@ -426,6 +428,78 @@
     max-height: calc(4px * --value(number));
 }
 /* sizes: end */
+
+/*
+ * Framed cards, a theme's `cards: framed`. --cards-framed is `initial` unless the theme frames its
+ * cards, when it is empty. Each framed value is written `var(--cards-framed) <value>`: invalid while
+ * the switch is `initial`, so the var() falling back to the plain card's value holds; with the
+ * switch empty it is the value itself. CSS alone turns it, so a project's app.css needs no script.
+ *
+ * Framed, a card is a frame a step off the page (the canvas fill, panel corners, the spacing unit
+ * of padding) whose head and foot stand on the frame, and whose content stands on a stage: the
+ * surface with a hairline, on the panel's corner less that padding, so the two stay concentric.
+ * Plain, the frame is the card (the surface, card corners, the part's own padding and gap) and the
+ * head, stage and foot are boxes with nothing of their own.
+ *
+ * A part sets its plain values on the frame: --card-pad, --card-gap and --card-radius (card corners
+ * unless given); --card-stage-pad for its stage framed (20 unless given); --card-head-pad and
+ * --card-foot-pad for what its head and foot pad plain. A card with no stage inside it stays plain
+ * in every theme: there is nothing to set apart, and its content would stand on the frame.
+ */
+@utility card-frame {
+    --card-frame-fill: var(--cards-framed) var(--color-neutral-100);
+    --card-frame-radius: var(--cards-framed) var(--radius-panel);
+    --card-frame-pad: var(--cards-framed) var(--spacing);
+    --card-frame-gap: var(--cards-framed) 0px;
+    background-color: var(--card-frame-fill, var(--color-neutral-50));
+    border-radius: var(--card-frame-radius, var(--card-radius, var(--radius-card)));
+    padding: var(--card-frame-pad, var(--card-pad, 0px));
+    gap: var(--card-frame-gap, var(--card-gap, 0px));
+
+    &:not(:has(.card-stage)) {
+        --card-frame-fill: initial;
+        --card-frame-radius: initial;
+        --card-frame-pad: initial;
+        --card-frame-gap: initial;
+    }
+}
+/*
+ * Framed, the head and the foot line up with the stage's content: their sides are the stage's
+ * padding and its hairline, so a title stands over the first letter of what it heads. 12 above and
+ * below each, so the frame round them reads even.
+ */
+@utility card-head {
+    --card-head-framed: var(--cards-framed) calc(var(--spacing) * 3)
+        calc(var(--card-stage-pad, calc(var(--spacing) * 5)) + 1px);
+    padding: var(--card-head-framed, var(--card-head-pad, 0px));
+}
+@utility card-stage {
+    --card-stage-fill: var(--cards-framed) var(--color-neutral-50);
+    --card-stage-border: var(--cards-framed) 1px;
+    --card-stage-radius: var(--cards-framed) calc(var(--radius-panel) - var(--spacing));
+    --card-stage-framed: var(--cards-framed) var(--card-stage-pad, calc(var(--spacing) * 5));
+    background-color: var(--card-stage-fill, transparent);
+    border: var(--card-stage-border, 0px) solid var(--color-neutral-200);
+    border-radius: var(--card-stage-radius, 0px);
+    padding: var(--card-stage-framed, 0px);
+}
+/*
+ * A hairline that parts a card's foot from its content in a plain card, across the card's full
+ * width (--card-rule-bleed, the card's side padding) with --card-rule-space under it (12 unless
+ * given). Framed, the stage's own edge parts them, so it draws nothing.
+ */
+@utility card-rule {
+    --card-rule-framed: var(--cards-framed) 0px;
+    border-top: var(--card-rule-framed, 1px) solid var(--color-neutral-200);
+    margin-inline: calc(-1 * var(--card-rule-framed, var(--card-rule-bleed, 0px)));
+    padding-inline: var(--card-rule-framed, var(--card-rule-bleed, 0px));
+    padding-top: var(--card-rule-framed, var(--card-rule-space, calc(var(--spacing) * 3)));
+}
+@utility card-foot {
+    --card-foot-framed: var(--cards-framed) calc(var(--spacing) * 3)
+        calc(var(--card-stage-pad, calc(var(--spacing) * 5)) + 1px);
+    padding: var(--card-foot-framed, var(--card-foot-pad, 0px));
+}
 
 /*
  * What a skeleton is drawn with: the 5% wash, and under motion a band of light crossing it. The band

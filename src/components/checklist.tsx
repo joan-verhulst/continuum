@@ -25,15 +25,16 @@ export const Checklist = ({
     children,
     ...props
 }: ChecklistProps) => (
+    // A titled card (theme.css): framed, the title and the progress stand on the frame, the steps on its stage.
     <section
         className={cn(
-            'flex min-w-0 flex-col gap-4 rounded-card border border-neutral-200 bg-neutral-50 p-4',
+            'card-frame flex min-w-0 flex-col border border-neutral-200 [--card-gap:calc(var(--spacing)*4)] [--card-pad:calc(var(--spacing)*4)]',
             className,
         )}
         data-slot="checklist"
         {...props}
     >
-        <div className="flex flex-col gap-3" data-slot="checklist-header">
+        <div className="card-head flex flex-col gap-3" data-slot="checklist-header">
             <div className="flex min-h-control items-center gap-3">
                 <h3 className="min-w-0 flex-1 truncate font-medium text-neutral-950 text-sm">
                     {title}
@@ -53,10 +54,12 @@ export const Checklist = ({
                 value={completed}
             />
         </div>
-        {/* Pulled out by the rows' own padding, so a row's text lines up with the title above. */}
-        <ol className="-mx-2 flex flex-col gap-0.5" data-slot="checklist-items">
-            {children}
-        </ol>
+        <div className="card-stage">
+            {/* Pulled out by the rows' own padding, so a row's text lines up with the title above. */}
+            <ol className="-mx-2 flex flex-col gap-0.5" data-slot="checklist-items">
+                {children}
+            </ol>
+        </div>
     </section>
 );
 

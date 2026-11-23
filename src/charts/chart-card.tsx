@@ -44,11 +44,6 @@ export type ChartFrameProps = {
     loading?: boolean;
     /** Where the chart opens in full: a round button at the header's end. */
     onOpen?: () => void;
-    /**
-     * `card`, Continuum's own card, the header and the chart on one surface; `framed`, a frame
-     * a step off the page with the chart on a stage of its own inside it.
-     */
-    variant?: 'card' | 'framed';
     className?: string;
     children: ReactNode;
 };
@@ -82,8 +77,9 @@ const serialize = ({ columns, rows }: ChartTable, separator: ',' | '\t') =>
  *
  * The plot is the key and the chart, the key close over the chart it names.
  *
- * `framed` puts the plot on a stage of its own inside a frame a step off the page; the
- * stage's corners are the frame's less the gap between them, so the two stay concentric.
+ * In a theme that frames its cards (`cards: framed`), the head stands on a frame a step off the
+ * page and the plot on a stage of its own inside it, its corners the frame's less the gap between
+ * them, so the two stay concentric. The card-frame, card-head and card-stage utilities do it.
  */
 export const ChartFrame = ({
     title,
@@ -97,27 +93,21 @@ export const ChartFrame = ({
     table,
     filename,
     onOpen,
-    variant = 'card',
     loading = false,
     className,
     children,
 }: ChartFrameProps) => {
-    const framed = variant === 'framed';
-
     return (
         <section
             aria-label={title}
             className={cn(
-                'flex min-w-0 flex-col border border-neutral-200 shadow-card',
-                framed ? 'rounded-panel bg-neutral-100 p-1' : 'rounded-card bg-neutral-50 p-6',
+                // 24 round it and the plot 20 under the head, as plain; framed, the utilities move them.
+                'card-frame flex min-w-0 flex-col border border-neutral-200 shadow-card [--card-gap:calc(var(--spacing)*5)] [--card-pad:calc(var(--spacing)*6)]',
                 className,
             )}
             data-slot="chart-card"
         >
-            <header
-                className={cn('flex min-w-0 flex-col', framed && 'px-5 pt-4 pb-5')}
-                data-slot="chart-card-head"
-            >
+            <header className="card-head flex min-w-0 flex-col" data-slot="chart-card-head">
                 {/* The title stands level with the controls, so the two read as one line. */}
                 <div className="flex min-h-control min-w-0 items-center justify-between gap-4">
                     <h3 className="flex min-w-0 items-center gap-2 font-medium text-neutral-600 text-xs">
@@ -187,10 +177,7 @@ export const ChartFrame = ({
             <div
                 className={cn(
                     // The key names the chart's colours, so it stands with the chart, close over it.
-                    'flex min-w-0 flex-col gap-2.5',
-                    framed
-                        ? 'rounded-[calc(var(--radius-panel)-4px)] border border-neutral-200 bg-neutral-50 p-5'
-                        : 'mt-5',
+                    'card-stage flex min-w-0 flex-1 flex-col gap-2.5',
                 )}
                 data-slot="chart-card-plot"
             >
@@ -270,7 +257,6 @@ export const ChartCard = <Row extends ChartRow, X = unknown>({
     actions,
     filename,
     onOpen,
-    variant,
     figures = true,
     kind = 'area',
     className,
@@ -323,7 +309,6 @@ export const ChartCard = <Row extends ChartRow, X = unknown>({
             icon={icon}
             loading={chart.loading}
             onOpen={onOpen}
-            variant={variant}
             legend={
                 placed.length > 1 ? (
                     <ChartKey off={off} onToggle={toggle} series={placed} />

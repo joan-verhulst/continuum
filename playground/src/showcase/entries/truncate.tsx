@@ -1,4 +1,4 @@
-import { Button, Card, CardTitle, cn, Truncate } from 'continuum';
+import { Button, Card, CardContent, CardHeader, CardTitle, cn, Truncate } from 'continuum';
 import { Download, FileText, Upload } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';
 
@@ -50,7 +50,7 @@ const TruncatePreview = ({ knobs }: PreviewProps) => {
 export const entry: Entry = {
     id: 'truncate',
     name: 'Truncate',
-    category: 'content',
+    category: 'text',
     description: 'One line cut to its width, at the end or in the middle, whole on hover.',
     knobs: truncateKnobs,
     Preview: TruncatePreview,
@@ -88,46 +88,54 @@ const CustomerFiles = () => (
         trail={['Customers', 'Northwind Traders']}
     >
         <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-[minmax(0,3fr)_minmax(0,2fr)] items-start gap-4">
-            <Card className="gap-2" layout="list">
-                <CardTitle>Files</CardTitle>
-                <ul className="flex flex-col divide-y divide-neutral-200">
-                    {files.map(file => (
-                        <li className="flex h-10.25 items-center gap-3 text-xs" key={file.name}>
-                            <FileText {...icon} className="size-4 shrink-0 text-neutral-500" />
-                            <Truncate at="middle" className="flex-1 text-neutral-950">
-                                {file.name}
-                            </Truncate>
-                            <span className="shrink-0 text-neutral-600 tabular-nums">
-                                {file.size}
-                            </span>
-                            <Button
-                                aria-label={`Download ${file.name}`}
-                                size="icon-sm"
-                                variant="ghost"
-                            >
-                                <Download {...icon} />
-                            </Button>
-                        </li>
-                    ))}
-                </ul>
-            </Card>
-            <Card className="gap-2" layout="list">
-                <CardTitle>Details</CardTitle>
-                <dl className="flex flex-col divide-y divide-neutral-200 text-xs">
-                    {details.map(row => (
-                        <div className="flex h-10.25 items-center gap-4" key={row.label}>
-                            <dt className="w-28 shrink-0 text-neutral-600">{row.label}</dt>
-                            <dd className="flex min-w-0 flex-1">
-                                <Truncate
-                                    at={row.mono ? 'middle' : 'end'}
-                                    className={cn('text-neutral-950', row.mono && 'font-mono')}
-                                >
-                                    {row.value}
+            <Card className="[--card-gap:calc(var(--spacing)*2)]" layout="list">
+                <CardHeader>
+                    <CardTitle>Files</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ul className="flex flex-col divide-y divide-neutral-200">
+                        {files.map(file => (
+                            <li className="flex h-10.25 items-center gap-3 text-xs" key={file.name}>
+                                <FileText {...icon} className="size-4 shrink-0 text-neutral-500" />
+                                <Truncate at="middle" className="flex-1 text-neutral-950">
+                                    {file.name}
                                 </Truncate>
-                            </dd>
-                        </div>
-                    ))}
-                </dl>
+                                <span className="shrink-0 text-neutral-600 tabular-nums">
+                                    {file.size}
+                                </span>
+                                <Button
+                                    aria-label={`Download ${file.name}`}
+                                    size="icon-sm"
+                                    variant="ghost"
+                                >
+                                    <Download {...icon} />
+                                </Button>
+                            </li>
+                        ))}
+                    </ul>
+                </CardContent>
+            </Card>
+            <Card className="[--card-gap:calc(var(--spacing)*2)]" layout="list">
+                <CardHeader>
+                    <CardTitle>Details</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <dl className="flex flex-col divide-y divide-neutral-200 text-xs">
+                        {details.map(row => (
+                            <div className="flex h-10.25 items-center gap-4" key={row.label}>
+                                <dt className="w-28 shrink-0 text-neutral-600">{row.label}</dt>
+                                <dd className="flex min-w-0 flex-1">
+                                    <Truncate
+                                        at={row.mono ? 'middle' : 'end'}
+                                        className={cn('text-neutral-950', row.mono && 'font-mono')}
+                                    >
+                                        {row.value}
+                                    </Truncate>
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                </CardContent>
             </Card>
         </div>
     </AppWindow>

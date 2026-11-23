@@ -13,7 +13,7 @@ import {
     useRef,
 } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
-import { PopoverItem, popoverItemVariants } from './popover-item';
+import { MenuItem, menuItemVariants } from './menu-item';
 import { ThemeScope, usePortalContainer } from './theme';
 
 const contentClass = [
@@ -127,11 +127,11 @@ export const DropdownMenuSubContent = ({
 );
 
 export type DropdownMenuItemProps = WithClassName<MenuPrimitive.Item.Props> &
-    VariantProps<typeof popoverItemVariants>;
+    VariantProps<typeof menuItemVariants>;
 
 export const DropdownMenuItem = ({ variant, className, ...props }: DropdownMenuItemProps) => (
     <MenuPrimitive.Item
-        className={cn(popoverItemVariants({ variant }), className)}
+        className={cn(menuItemVariants({ variant }), className)}
         data-slot="dropdown-menu-item"
         data-variant={variant ?? 'default'}
         {...props}
@@ -147,7 +147,7 @@ export const DropdownMenuCheckboxItem = ({
     /** A 16px icon before the name, in the row's leading slot like a plain item's. */
     icon?: ReactNode;
 }) => (
-    <PopoverItem
+    <MenuItem
         className={className}
         data-slot="dropdown-menu-checkbox-item"
         leading={icon}
@@ -159,7 +159,7 @@ export const DropdownMenuCheckboxItem = ({
         }
     >
         {children}
-    </PopoverItem>
+    </MenuItem>
 );
 
 export const DropdownMenuRadioItem = ({
@@ -172,7 +172,7 @@ export const DropdownMenuRadioItem = ({
     icon?: ReactNode;
 }) => (
     // Checked takes the same selected wash as a select's picked option.
-    <PopoverItem
+    <MenuItem
         className={cn('data-checked:bg-selected data-checked:text-neutral-950', className)}
         data-slot="dropdown-menu-radio-item"
         leading={icon}
@@ -184,7 +184,7 @@ export const DropdownMenuRadioItem = ({
         }
     >
         {children}
-    </PopoverItem>
+    </MenuItem>
 );
 
 export const DropdownMenuSubTrigger = ({
@@ -196,7 +196,7 @@ export const DropdownMenuSubTrigger = ({
     /** A 16px icon before the name, in the row's leading slot; in the children it would sit over the name. */
     icon?: ReactNode;
 }) => (
-    <PopoverItem
+    <MenuItem
         className={cn('data-popup-open:bg-selected data-popup-open:text-neutral-800', className)}
         data-slot="dropdown-menu-sub-trigger"
         leading={icon}
@@ -204,7 +204,7 @@ export const DropdownMenuSubTrigger = ({
         trailing={<ChevronRight strokeWidth={2} />}
     >
         {children}
-    </PopoverItem>
+    </MenuItem>
 );
 
 const labelClass = 'px-3 pt-1.5 pb-1 font-medium text-neutral-600 text-xxs';

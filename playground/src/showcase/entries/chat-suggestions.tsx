@@ -1,12 +1,12 @@
 import {
     Avatar,
     Card,
-    ChatComposer,
     ChatMessage,
     ChatSuggestion,
     ChatSuggestions,
     ChatThread,
     ChatToken,
+    MessageComposer,
     useChatTrigger,
 } from 'continuum';
 import { FileText, UserRound } from 'lucide-react';
@@ -64,7 +64,7 @@ const SuggestingComposer = ({
     const options = matching(list.options, match.query);
 
     return (
-        <ChatComposer
+        <MessageComposer
             onSuggestionsClose={match.dismiss}
             onValueChange={setDraft}
             placeholder={placeholder}
@@ -146,7 +146,7 @@ const ChatSuggestionsPreview = ({ knobs: values }: PreviewProps) => {
 export const entry: Entry = {
     id: 'chat-suggestions',
     name: 'Chat suggestions',
-    category: 'ai',
+    category: 'chat',
     description:
         'What a “#” or “@” being typed could mean, in a panel over the composer; the arrows move, Enter picks.',
     stageClassName: 'items-end',

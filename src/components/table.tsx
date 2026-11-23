@@ -6,7 +6,14 @@ import { type ComponentProps, type ReactNode, useContext } from 'react';
 import { cn } from '../lib/cn';
 import { useOverflowScroll } from '../lib/overflow-scroll';
 import { Input, type InputProps } from './input';
-import { FoldContext, FoldedContext, TableContext } from './table-context';
+import {
+    ColumnMoveContext,
+    FoldContext,
+    FoldedContext,
+    RowMoveContext,
+    TableContext,
+    type TableMoveHandler,
+} from './table-context';
 
 // The frame is its own container, so a table answers the room it is given wherever it sits: under
 // 640 a column marked `optional` goes and the bar keeps to one line.
@@ -61,7 +68,13 @@ export const Table = ({ variant, className, wrapperClassName, toolbar, ...props 
                 {/* The bar stays put in the frame while a wide table scrolls sideways under it. */}
                 {toolbar}
                 <div
-                    className="w-full overflow-x-auto"
+                    className={cn(
+                        'w-full overflow-x-auto',
+                        // Columns resized to less than the frame leave room at its right: the head's
+                        // band and its rule run on to the frame's edge, so the head never stops short.
+                        value === 'ruled' &&
+                            '[&:has([data-slot=table-resize]):not(:has([data-flex]))]:bg-[linear-gradient(to_bottom,var(--color-neutral-100)_var(--spacing-table-row),var(--color-neutral-200)_var(--spacing-table-row),var(--color-neutral-200)_calc(var(--spacing-table-row)+1px),transparent_calc(var(--spacing-table-row)+1px))]',
+                    )}
                     data-slot="table-scroller"
                     ref={ref}
                     style={edges.overflows ? style : undefined}
@@ -71,6 +84,11 @@ export const Table = ({ variant, className, wrapperClassName, toolbar, ...props 
                             tableVariants({ variant: value }),
                             // With a selection column, a tree steps by its width: box to chevron.
                             '[&:has([data-slot=table-select-cell])]:[--tree-step:44px]',
+                            // A resizable column lays the table out by its columns' widths: as wide
+                            // as they add up to, never narrower than the frame, the column without a
+                            // width taking what is left. A value wider than its column ends in an ellipsis.
+                            'has-data-[slot=table-resize]:w-max has-data-flex:min-w-full has-data-[slot=table-resize]:table-fixed',
+                            '[&:has([data-slot=table-resize])_td:not([data-slot=table-tree-cell])]:overflow-hidden [&:has([data-slot=table-resize])_td]:text-ellipsis',
                             className,
                         )}
                         data-slot="table"
@@ -157,12 +175,34 @@ export const TableToolbarEnd = ({ className, ...props }: ComponentProps<'div'>) 
     />
 );
 
-export const TableHeader = ({ className, ...props }: ComponentProps<'thead'>) => (
-    <thead className={className} data-slot="table-header" {...props} />
+export type TableHeaderProps = ComponentProps<'thead'> & {
+    /**
+     * Lets the reader reorder the columns whose heads are `movable`: called at the drop with the
+     * column's place before and after, counted among the movable heads. Reorder your columns
+     * (`moveItem` does it for a list).
+     */
+    onColumnMove?: TableMoveHandler;
+};
+
+export const TableHeader = ({ onColumnMove, className, ...props }: TableHeaderProps) => (
+    <ColumnMoveContext.Provider value={onColumnMove ?? null}>
+        <thead className={className} data-slot="table-header" {...props} />
+    </ColumnMoveContext.Provider>
 );
 
-export const TableBody = ({ className, ...props }: ComponentProps<'tbody'>) => (
-    <tbody className={className} data-slot="table-body" {...props} />
+export type TableBodyProps = ComponentProps<'tbody'> & {
+    /**
+     * Lets the reader reorder the rows by the grip in each (`TableDragCell`): called at the drop
+     * with the row's place before and after, counted among the rows with a grip. Reorder your rows
+     * (`moveItem` does it for a list).
+     */
+    onRowMove?: TableMoveHandler;
+};
+
+export const TableBody = ({ onRowMove, className, ...props }: TableBodyProps) => (
+    <RowMoveContext.Provider value={onRowMove ?? null}>
+        <tbody className={className} data-slot="table-body" {...props} />
+    </RowMoveContext.Provider>
 );
 
 /**
@@ -188,7 +228,7 @@ const tableRowVariants = cva('', {
             // A plain <tr>, so the caller marks selection: data-selected, or data-state="selected" as
             // before the move to Base UI and in shadcn tables. Both keep working. Selection is the
             // selected wash, and hover leaves a selected row as it is rather than paling it.
-            ruled: 'transition-colors duration-150 data-selected:bg-selected data-[state=selected]:bg-selected [tbody>&]:not-data-selected:hover:bg-neutral-950/3',
+            ruled: 'transition-colors duration-150 data-selected:bg-selected data-[state=selected]:bg-selected [tbody>&]:not-data-selected:hover:bg-neutral-950/3 data-dragging:relative data-dragging:z-10 data-dragging:bg-neutral-50 data-dragging:shadow-[0_0_0_1px_var(--color-neutral-200),var(--shadow-float)]',
             rows: '',
         },
     },

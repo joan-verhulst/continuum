@@ -6,7 +6,7 @@ export const listComponentsTool = defineTool({
     name: 'list_components',
     title: 'List components',
     description:
-        "List every part of Continuum by group (App frame, Navigation, Actions, Inputs, Forms and settings, Filtering, Overlays, Content, Labels and identity, Status, Messages, AI, Charts), each with what it is for in one sentence. Call this first when composing a screen, to see the parts before drawing or writing any; then get_component for each part you use. Names joined by ' · ' are one entry (a part and its pieces).",
+        "List every part of Continuum by group (App frame, Navigation, Actions, Inputs, Forms and settings, Filtering, Overlays, Tables, Cards and lists, Text and layout, Labels and identity, Status, Messages, AI, Charts), each with what it is for in one sentence. Call this first when composing a screen, to see the parts before drawing or writing any; then get_component for each part you use. Names joined by ' · ' are one entry (a part and its pieces).",
     input: {
         group: z
             .string()

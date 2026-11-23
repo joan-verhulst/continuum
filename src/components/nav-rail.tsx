@@ -18,11 +18,11 @@ import { Tooltip, TooltipContent, TooltipTrigger } from './tooltip';
 
 type RailContextValue = { expanded: boolean; setExpanded: (expanded: boolean) => void };
 
-const RailContext = createContext<RailContextValue>({ expanded: false, setExpanded: () => {} });
+const NavRailContext = createContext<RailContextValue>({ expanded: false, setExpanded: () => {} });
 
 type Pill = { top: number; height: number; moved: boolean };
 
-export type RailProps = ComponentProps<'nav'> & {
+export type NavRailProps = ComponentProps<'nav'> & {
     /** Open with each item's label beside its icon; closed it is icons, named in tooltips. */
     expanded?: boolean;
     defaultExpanded?: boolean;
@@ -31,11 +31,11 @@ export type RailProps = ComponentProps<'nav'> & {
 
 /**
  * The app's main navigation as a floating island at the page's edge: 52px of icons, or 208px with
- * each item's label once expanded (a `RailToggle` opens and closes it). The current item sits on
+ * each item's label once expanded (a `NavRailToggle` opens and closes it). The current item sits on
  * one action pill that slides from the old item to the new one, and the icons keep their place
  * as the rail widens, so only the labels arrive.
  */
-export const Rail = ({
+export const NavRail = ({
     expanded: expandedProp,
     defaultExpanded = false,
     onExpandedChange,
@@ -43,7 +43,7 @@ export const Rail = ({
     style,
     children,
     ...props
-}: RailProps) => {
+}: NavRailProps) => {
     const [expandedState, setExpandedState] = useState(defaultExpanded);
     const expanded = expandedProp ?? expandedState;
     const setExpanded = (value: boolean) => {
@@ -69,7 +69,7 @@ export const Rail = ({
     });
 
     return (
-        <RailContext.Provider value={{ expanded, setExpanded }}>
+        <NavRailContext.Provider value={{ expanded, setExpanded }}>
             <nav
                 className={cn(
                     'group/rail relative isolate flex shrink-0 flex-col gap-0.5 overflow-hidden rounded-dock border border-neutral-200 bg-neutral-50 p-[8px]',
@@ -99,11 +99,11 @@ export const Rail = ({
                 )}
                 {children}
             </nav>
-        </RailContext.Provider>
+        </NavRailContext.Provider>
     );
 };
 
-export const RailSeparator = ({ className, ...props }: ComponentProps<'hr'>) => (
+export const NavRailSeparator = ({ className, ...props }: ComponentProps<'hr'>) => (
     <hr
         className={cn('my-1.5 h-px w-full shrink-0 border-0 bg-neutral-200', className)}
         data-slot="rail-separator"
@@ -120,7 +120,7 @@ const railRowClass =
     'flex h-control w-full shrink-0 cursor-pointer items-center gap-2.5 overflow-hidden rounded-item px-[calc((var(--spacing-control)-16px)/2)] text-neutral-600 transition-[background-color,color] duration-150 hover:bg-neutral-950/5 hover:text-neutral-800 [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0';
 
 // The label beside the icon: there while open, faded out and clipped while closed.
-const RailLabel = ({ children }: { children: string }) => (
+const NavRailLabel = ({ children }: { children: string }) => (
     <span
         className="min-w-0 truncate font-medium text-xs opacity-0 transition-opacity duration-200 group-data-expanded/rail:opacity-100"
         data-slot="rail-label"
@@ -137,7 +137,7 @@ type RailItemProps = useRender.ComponentProps<'button'> & {
 };
 
 /** One section: its 16px icon as children. Pass `render={<a href="…" />}` to make it a link. */
-export const RailItem = ({
+export const NavRailItem = ({
     label,
     active,
     render,
@@ -147,7 +147,7 @@ export const RailItem = ({
     type = 'button',
     ...props
 }: RailItemProps) => {
-    const { expanded } = useContext(RailContext);
+    const { expanded } = useContext(NavRailContext);
 
     // The item is built first and handed to the trigger, so the tooltip wires
     // itself onto the button or link rather than wrapping it in another one.
@@ -174,7 +174,7 @@ export const RailItem = ({
                         <span className="flex w-4 shrink-0 justify-center" data-slot="rail-icon">
                             {children}
                         </span>
-                        <RailLabel>{label}</RailLabel>
+                        <NavRailLabel>{label}</NavRailLabel>
                     </>
                 ),
                 type: render ? undefined : type,
@@ -193,7 +193,7 @@ export const RailItem = ({
 };
 
 /** Opens and closes the rail; usually its first row. */
-export const RailToggle = ({
+export const NavRailToggle = ({
     className,
     onClick,
     collapseLabel = 'Collapse navigation',
@@ -204,7 +204,7 @@ export const RailToggle = ({
     collapseLabel?: string;
     expandLabel?: string;
 }) => {
-    const { expanded, setExpanded } = useContext(RailContext);
+    const { expanded, setExpanded } = useContext(NavRailContext);
     // Named for what it holds, the app's navigation, since "rail" is the library's word, not the reader's.
     const label = expanded ? collapseLabel : expandLabel;
 
@@ -225,7 +225,7 @@ export const RailToggle = ({
                         {...props}
                     >
                         <PanelLeft aria-hidden strokeWidth={2} />
-                        <RailLabel>Collapse</RailLabel>
+                        <NavRailLabel>Collapse</NavRailLabel>
                     </button>
                 }
             />

@@ -17,7 +17,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from './dropdown-menu';
-import { PopoverItem, PopoverItemIndicator } from './popover-item';
+import { MenuItem, MenuItemIndicator } from './menu-item';
 
 /** Applied filters as a map of group to picked values, the shape the menu and its chips share. */
 export type FilterValues = Record<string, string[]>;
@@ -118,12 +118,12 @@ export const FilterMenuItem = ({
     closeOnClick = false,
     ...props
 }: FilterMenuItemProps) => (
-    <PopoverItem
+    <MenuItem
         className={className}
         data-slot="filter-menu-item"
         leading={
             <>
-                <PopoverItemIndicator />
+                <MenuItemIndicator />
                 {icon}
             </>
         }
@@ -133,7 +133,7 @@ export const FilterMenuItem = ({
         }
     >
         {children}
-    </PopoverItem>
+    </MenuItem>
 );
 
 export type FilterMenuClearProps = Omit<DropdownMenuItemProps, 'children'> & {

@@ -134,11 +134,11 @@ export const TabsList = ({
 };
 
 // A pill tab's 34px and corner, for both looks.
-const chevron = 'size-control rounded-item';
+const chevron = 'size-control rounded-control';
 
 const triggerVariants: Record<TabsVariant, string> = {
-    // A control row tall with the item radius, like a nav item: a pill tab sits on the page, not in a track.
-    pill: 'h-control rounded-item px-3 text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-950 data-active:bg-tint data-active:text-tint-fg',
+    // The control row's height and corner, so a pill tab sits level with the buttons and fields beside it.
+    pill: 'h-control rounded-control px-3 text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-950 data-active:bg-tint data-active:text-tint-fg',
     // Set edge to edge, so the underline spans the tab, and 44px tall, so the label has room above the line.
     // Its last pixel is the frame's hairline, so the 2px underline sits on the line, not above it.
     line: "relative h-tab rounded-chip px-3 text-neutral-600 after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-neutral-950 after:opacity-0 after:transition-opacity after:duration-150 after:content-[''] hover:text-neutral-950 data-active:text-neutral-950 data-active:after:opacity-100",

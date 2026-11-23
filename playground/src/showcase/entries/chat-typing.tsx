@@ -1,11 +1,11 @@
 import {
     Avatar,
     Card,
-    ChatComposer,
     ChatMessage,
     ChatThread,
     ChatTyping,
     chatTypingLabel,
+    MessageComposer,
 } from 'continuum';
 import { Hash } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -44,7 +44,7 @@ const ChatTypingPreview = ({ knobs: values }: PreviewProps) => {
                 Who can take the Northwind renewal?
             </ChatMessage>
             {/* Its place: the composer's typing slot, a row just above the box. */}
-            <ChatComposer
+            <MessageComposer
                 placeholder="Message #deals"
                 typing={
                     <ChatTyping
@@ -64,7 +64,7 @@ const ChatTypingPreview = ({ knobs: values }: PreviewProps) => {
 export const entry: Entry = {
     id: 'chat-typing',
     name: 'Chat typing',
-    category: 'ai',
+    category: 'chat',
     description: 'Who is typing: their faces and three dots in a pill, just above the composer.',
     knobs,
     Preview: ChatTypingPreview,
@@ -134,7 +134,7 @@ const ChannelPage = () => {
                 </ChatThread>
                 {/* The composer at the thread's foot; who is typing shows just above its box. */}
                 <div className="px-3 pb-3">
-                    <ChatComposer
+                    <MessageComposer
                         placeholder="Message #deals"
                         typing={<ChatTyping avatars names={typing} />}
                     />

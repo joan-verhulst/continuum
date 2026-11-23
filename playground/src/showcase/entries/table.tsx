@@ -3,6 +3,7 @@ import {
     Button,
     Checkbox,
     cn,
+    EditableCell,
     Select,
     SelectContent,
     SelectItem,
@@ -12,12 +13,6 @@ import {
     TableBody,
     TableCell,
     TableConditions,
-    TableEditCell,
-    TableFold,
-    TableFoldCell,
-    TableFoldHead,
-    TableFoldPanel,
-    TableFoldRows,
     TableFooter,
     TableGroupRow,
     TableHead,
@@ -28,6 +23,11 @@ import {
     type TableSort,
     TableToolbar,
     TableToolbarEnd,
+    TableTree,
+    TableTreeCell,
+    TableTreeHead,
+    TableTreePanel,
+    TableTreeRows,
 } from 'continuum';
 import { Mail, Plus, Send, Undo2 } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
@@ -53,11 +53,12 @@ const knobs: Knob[] = [
     { id: 'select', label: 'Owner filter', switch: true, default: true },
     { id: 'conditions', label: 'Conditions', switch: true, default: true },
     { id: 'sorting', label: 'Sorting', switch: true, default: true },
+    { id: 'resize', label: 'Resize columns', switch: true, default: false },
     { id: 'copy', label: 'Copy the number', switch: true, default: true },
     { id: 'editable', label: 'Editable client and owner', switch: true, default: false },
     {
         id: 'fold',
-        label: 'Fold-out rows',
+        label: 'Table tree',
         options: [
             o('off', 'Off'),
             o('same', 'Same kind'),
@@ -242,7 +243,7 @@ const compare: Record<SortKey, (a: Invoice, b: Invoice) => number> = {
 
 /**
  * The invoice list, every part of the table on it, set by knobs: the Table entry's stage, and the
- * Fold-out rows entry's with the bar off.
+ * Table tree entry's with the bar off.
  */
 export const InvoiceTable = ({ knobs }: PreviewProps) => {
     // Off a stage (an in-use piece) the menus portal to the page, not into nothing.
@@ -268,7 +269,18 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
     const kind = String(knobs.fold);
     const fold = kind !== 'off';
     const editable = Boolean(knobs.editable);
-    // Whether the line hangs from an open chevron; the Fold-out rows entry switches it.
+    const resize = Boolean(knobs.resize);
+    const [widths, setWidths] = useState<Record<string, number>>({});
+    // A resizable head's props: its width (none for Client, which takes the rest until resized).
+    const sized = (key: string, base?: number) =>
+        resize
+            ? {
+                  width: widths[key] ?? base,
+                  onWidthChange: (width: number) =>
+                      setWidths(current => ({ ...current, [key]: width })),
+              }
+            : {};
+    // Whether the line hangs from an open chevron; the Table tree entry switches it.
     const guides = knobs.guides === undefined ? true : Boolean(knobs.guides);
     const [edits, setEdits] = useState<Record<string, Partial<Invoice>>>({});
     const edit = (number: string, change: Partial<Invoice>) =>
@@ -337,13 +349,13 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
             <TableRow data-selected={(selection && all) || undefined} key={invoice.number}>
                 {/* A nested row's box moves into the fold column, under its parent's chevron. */}
                 {selection && <TableSelectCell>{box}</TableSelectCell>}
-                {foldColumn && <TableFoldCell select={box} />}
+                {foldColumn && <TableTreeCell select={box} />}
                 <TableCell copy={copy ? invoice.number : undefined} tree={foldColumn}>
                     {invoice.number}
                 </TableCell>
                 {/* An instalment's client is its invoice's: said again, quieter, as meta. */}
                 {editable ? (
-                    <TableEditCell
+                    <EditableCell
                         className={cn(nested && 'font-normal text-neutral-700')}
                         label={`Client of ${invoice.number}`}
                         onValueChange={client => edit(invoice.number, { client })}
@@ -358,7 +370,7 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
                     <Badge tone={tone[invoice.status]}>{invoice.status}</Badge>
                 </TableCell>
                 {editable ? (
-                    <TableEditCell
+                    <EditableCell
                         className="font-normal text-neutral-700"
                         container={stage}
                         label={`Owner of ${invoice.number}`}
@@ -378,16 +390,16 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
     // invoice and its first instalment start open, so two levels of chevrons show.
     // An invoice's lines: a head of their own, naming the columns for them, then a row a line.
     const lineRows = (invoice: Invoice, list: InvoiceLine[]) => (
-        <TableFoldRows>
-            <TableFoldHead>
+        <TableTreeRows>
+            <TableTreeHead>
                 {selection && <TableSelectCell />}
-                <TableFoldCell />
+                <TableTreeCell />
                 <TableHead tree>Item</TableHead>
                 <TableHead>Logged by</TableHead>
                 <TableHead numeric>Qty</TableHead>
                 <TableHead numeric>Rate</TableHead>
                 <TableHead numeric>Amount</TableHead>
-            </TableFoldHead>
+            </TableTreeHead>
             {list.map(line => {
                 const id = lineId(invoice, line);
                 const on = picked.includes(id);
@@ -401,7 +413,7 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
                 return (
                     <TableRow data-selected={(selection && on) || undefined} key={id}>
                         {selection && <TableSelectCell>{box}</TableSelectCell>}
-                        <TableFoldCell select={box} />
+                        <TableTreeCell select={box} />
                         <TableCell tree>{line.item}</TableCell>
                         <TableCell className="font-normal text-neutral-700">{line.by}</TableCell>
                         <TableCell className="font-normal text-neutral-700" numeric>
@@ -414,22 +426,22 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
                     </TableRow>
                 );
             })}
-        </TableFoldRows>
+        </TableTreeRows>
     );
 
     const folding = (invoice: Invoice, depth = 0): ReactNode => {
         const change = kind === 'panel' ? changeOf[invoice.number] : undefined;
         if (change)
             return (
-                <TableFold
+                <TableTree
                     defaultOpen={invoice.number === rows[0]?.number}
                     guides={guides}
                     key={invoice.number}
                     label={`Last change to ${invoice.number}`}
                 >
                     {row(invoice)}
-                    <TableFoldRows>
-                        <TableFoldPanel
+                    <TableTreeRows>
+                        <TableTreePanel
                             aside={
                                 <div className="flex flex-col items-start gap-1">
                                     <p className="font-medium text-neutral-900">{change.title}</p>
@@ -445,14 +457,14 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
                             selection={selection}
                         >
                             <Diff change={change} />
-                        </TableFoldPanel>
-                    </TableFoldRows>
-                </TableFold>
+                        </TableTreePanel>
+                    </TableTreeRows>
+                </TableTree>
             );
         const list = lines(invoice);
         if (list)
             return (
-                <TableFold
+                <TableTree
                     defaultOpen={invoice.number === rows[0]?.number}
                     guides={guides}
                     key={invoice.number}
@@ -460,14 +472,14 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
                 >
                     {row(invoice, { own: pickable(invoice) })}
                     {lineRows(invoice, list)}
-                </TableFold>
+                </TableTree>
             );
         const children = childrenOf(invoice);
         const nested = depth > 0;
         if (!children) return row(invoice, { nested });
 
         return (
-            <TableFold
+            <TableTree
                 defaultOpen={
                     depth === 0 ? invoice.number === rows[0]?.number : invoice.number.endsWith('-1')
                 }
@@ -476,8 +488,8 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
                 label={`${depth === 0 ? 'Instalments' : 'Parts'} of ${invoice.number}`}
             >
                 {row(invoice, { nested, own: pickable(invoice) })}
-                <TableFoldRows>{children.map(child => folding(child, depth + 1))}</TableFoldRows>
-            </TableFold>
+                <TableTreeRows>{children.map(child => folding(child, depth + 1))}</TableTreeRows>
+            </TableTree>
         );
     };
 
@@ -553,13 +565,24 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
                     {selection && <TableHead className="w-11">{selectAll}</TableHead>}
                     {/* The fold column: an action column after the boxes, its head empty. */}
                     {foldColumn && <TableHead className="w-11" />}
-                    <TableHead className="w-36" {...sortOf('number')}>
+                    <TableHead className="w-36" {...sortOf('number')} {...sized('number', 144)}>
                         Invoice
                     </TableHead>
-                    <TableHead {...sortOf('client')}>Client</TableHead>
-                    <TableHead className="w-28">Status</TableHead>
-                    <TableHead className="w-36">Owner</TableHead>
-                    <TableHead className="w-28" numeric {...sortOf('amount')}>
+                    <TableHead {...sortOf('client')} {...sized('client')}>
+                        Client
+                    </TableHead>
+                    <TableHead className="w-28" {...sized('status', 112)}>
+                        Status
+                    </TableHead>
+                    <TableHead className="w-36" {...sized('owner', 144)}>
+                        Owner
+                    </TableHead>
+                    <TableHead
+                        className="w-28"
+                        numeric
+                        {...sortOf('amount')}
+                        {...sized('amount', 112)}
+                    >
                         Amount
                     </TableHead>
                 </TableRow>
@@ -585,7 +608,7 @@ export const InvoiceTable = ({ knobs }: PreviewProps) => {
 export const entry: Entry = {
     id: 'table',
     name: 'Table',
-    category: 'content',
+    category: 'tables',
     description:
         'Ruled for data you work through: its own bar to search and pick, and the head, cell and fold parts together.',
     span: 2,

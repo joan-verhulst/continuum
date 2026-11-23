@@ -1,6 +1,8 @@
 export * from './components/accordion';
 export * from './components/activity-item';
 export * from './components/alert';
+export * from './components/assistant-answer';
+export * from './components/assistant-prompt';
 export * from './components/avatar';
 export * from './components/badge';
 export * from './components/bar-list';
@@ -11,10 +13,8 @@ export * from './components/button';
 export * from './components/calendar';
 export * from './components/card';
 export * from './components/chat-attachment';
-export * from './components/chat-composer';
 export * from './components/chat-event';
 export * from './components/chat-message';
-export * from './components/chat-prompt';
 export * from './components/chat-reference';
 export * from './components/chat-suggestions';
 export * from './components/chat-thread';
@@ -26,12 +26,14 @@ export * from './components/code-input';
 export * from './components/color-picker';
 export * from './components/combobox';
 export * from './components/command-menu';
+export * from './components/data-grid';
 export * from './components/date-picker';
 export * from './components/description-list';
 export * from './components/dialog';
 export * from './components/dock';
 export * from './components/drop-zone';
 export * from './components/dropdown-menu';
+export * from './components/editable-cell';
 export * from './components/empty-state';
 export * from './components/field';
 export * from './components/filter-condition';
@@ -42,16 +44,18 @@ export * from './components/icon-tile';
 export * from './components/info-tip';
 export * from './components/input';
 export * from './components/kbd';
+export * from './components/menu-item';
+export * from './components/message-composer';
+export * from './components/nav-rail';
 export * from './components/notice';
 export * from './components/optimistic-undo';
 export * from './components/option-row';
 export * from './components/page-content';
 export * from './components/pagination';
 export * from './components/popover';
-export * from './components/popover-item';
 export * from './components/progress';
 export * from './components/radio-group';
-export * from './components/rail';
+export * from './components/readonly-field';
 export * from './components/segmented-control';
 export * from './components/select';
 export * from './components/separator';
@@ -66,9 +70,8 @@ export * from './components/stepper';
 export * from './components/switch';
 export * from './components/table';
 export * from './components/table-cell';
-export * from './components/table-edit-cell';
-export * from './components/table-fold';
 export * from './components/table-head';
+export * from './components/table-tree';
 export * from './components/tabs';
 export * from './components/textarea';
 export * from './components/theme';
@@ -78,7 +81,7 @@ export * from './components/toolbar';
 export * from './components/tooltip';
 export * from './components/top-nav';
 export * from './components/truncate';
-export * from './components/value-field';
+export * from './deprecated';
 export { cn } from './lib/cn';
 export {
     applyRampSteps,
@@ -127,6 +130,7 @@ export {
     defaultThemeOptions,
     drawnType,
     drawnUnit,
+    greyShapeOf,
     isDefaultTheme,
     type ThemeCharts,
     type ThemeFont,
@@ -157,6 +161,7 @@ export {
     harmonyTurns,
 } from './lib/harmony';
 export { type ImportedTheme, parseCssColor, themeFromCss } from './lib/import-theme';
+export { moveItem } from './lib/reorder';
 export {
     blockGap,
     blockRoom,

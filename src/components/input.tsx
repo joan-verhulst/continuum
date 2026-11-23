@@ -11,7 +11,7 @@ import { useFieldControl } from './field';
  */
 export const inputVariants = cva(
     [
-        'group/input flex w-full min-w-0 items-center gap-2 border transition-[border-color] duration-150',
+        'group/input flex w-full min-w-0 items-center gap-2 border transition-[border-color,background-color] duration-150',
         'has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-focus has-[input:focus-visible]:outline-offset-2',
         '[&_svg:not([class*=size-])]:size-icon [&_svg]:shrink-0',
     ],
@@ -23,7 +23,7 @@ export const inputVariants = cva(
                 md: 'h-control-lg rounded-control px-3 [--spacing-icon:var(--spacing-icon-lg)]',
             },
             variant: {
-                outline: 'shadow-control',
+                outline: 'bg-control shadow-control',
                 /*
                  * No box: the search inside a container (a table's bar, a menu) is an icon and the
                  * text. It keeps the shared ring round where the box would be, so a keyboard still
@@ -47,7 +47,7 @@ export const inputVariants = cva(
                 invalid: false,
                 disabled: false,
                 className:
-                    'border-neutral-200 hover:border-neutral-300 has-[input:focus]:border-neutral-300 [&_svg]:text-neutral-600',
+                    'border-neutral-200 hover:border-neutral-300 hover:bg-control-hover has-[input:focus]:border-neutral-300 [&_svg]:text-neutral-600',
             },
             {
                 variant: 'outline',

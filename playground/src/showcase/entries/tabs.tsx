@@ -3,6 +3,8 @@ import {
     Badge,
     Button,
     Card,
+    CardContent,
+    CardHeader,
     CardTitle,
     StatCard,
     Table,
@@ -131,21 +133,25 @@ const CustomerDetail = () => (
                 </div>
                 {/* The facts as a detail page has them: each label over its value, in a list card. */}
                 <Card layout="list">
-                    <CardTitle>Details</CardTitle>
-                    <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
-                        {[
-                            ['Owner', 'Maya Chen'],
-                            ['Billing email', 'finance@northwind.com'],
-                            ['Renews', '1 March 2027'],
-                        ].map(([term, value]) => (
-                            <div className="flex min-w-0 flex-col gap-1.5" key={term}>
-                                <dt className="text-neutral-600 text-xs">{term}</dt>
-                                <dd className="truncate font-medium text-neutral-950 text-xs">
-                                    {value}
-                                </dd>
-                            </div>
-                        ))}
-                    </dl>
+                    <CardHeader>
+                        <CardTitle>Details</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
+                            {[
+                                ['Owner', 'Maya Chen'],
+                                ['Billing email', 'finance@northwind.com'],
+                                ['Renews', '1 March 2027'],
+                            ].map(([term, value]) => (
+                                <div className="flex min-w-0 flex-col gap-1.5" key={term}>
+                                    <dt className="text-neutral-600 text-xs">{term}</dt>
+                                    <dd className="truncate font-medium text-neutral-950 text-xs">
+                                        {value}
+                                    </dd>
+                                </div>
+                            ))}
+                        </dl>
+                    </CardContent>
                 </Card>
             </TabsContent>
             <TabsContent value="invoices">

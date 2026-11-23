@@ -19,7 +19,7 @@ import {
 import { cn } from '../lib/cn';
 import { Button } from './button';
 import { Dialog, DialogContent, type DialogContentProps } from './dialog';
-import { PopoverItem } from './popover-item';
+import { MenuItem } from './menu-item';
 
 type CommandMenuContextValue = {
     query: string;
@@ -349,7 +349,7 @@ export const CommandMenuItem = ({
 
     return (
         // Never focused itself: the search keeps focus and points at the highlighted option.
-        <PopoverItem
+        <MenuItem
             aria-disabled={disabled || undefined}
             aria-selected={highlighted}
             // A size up from a popup row and set on the search row's lines: its icon 16px in
@@ -370,7 +370,7 @@ export const CommandMenuItem = ({
             {...props}
         >
             {children ?? value}
-        </PopoverItem>
+        </MenuItem>
     );
 };
 

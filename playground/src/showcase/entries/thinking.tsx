@@ -1,6 +1,5 @@
 import {
-    Avatar,
-    Badge,
+    AssistantAnswer,
     Button,
     Card,
     ChatMessage,
@@ -43,12 +42,6 @@ const useCycle = <T,>(items: readonly T[], every: number) => {
 
     return items[index] as T;
 };
-
-const assistant = {
-    author: 'Agent',
-    avatar: <Avatar fallback="AG" shape="round" size={24} />,
-    badge: <Badge tone="primary">AI</Badge>,
-} as const;
 
 /* ---------- Preview: one kind of wait at a time ---------- */
 
@@ -117,10 +110,12 @@ const MessagePreview = () => {
     const { text, done } = useStream(reply);
 
     return (
-        <ChatMessage {...assistant} aria-busy={!done} className="w-full max-w-100">
-            {text}
-            {!done && <ThinkingCaret label={text ? false : 'Writing a reply'} />}
-        </ChatMessage>
+        <AssistantAnswer className="w-full max-w-100" pending={!done}>
+            <p>
+                {text}
+                {!done && <ThinkingCaret label={text ? false : 'Writing a reply'} />}
+            </p>
+        </AssistantAnswer>
     );
 };
 
@@ -251,9 +246,11 @@ const AgentPage = () => {
                         Remind the three overdue customers, and tell me who has paid late before.
                     </ChatMessage>
                     {phase.at === 'thinking' && (
-                        <ChatMessage {...assistant} aria-busy key="thinking">
-                            <Thinking>{phase.words}</Thinking>
-                        </ChatMessage>
+                        <AssistantAnswer
+                            key="thinking"
+                            pending
+                            work={<Thinking>{phase.words}</Thinking>}
+                        />
                     )}
                     {phase.at === 'run' && (
                         <ThinkingRun
@@ -277,10 +274,12 @@ const Answer = () => {
     const { text, done } = useStream(answer, { pace: 70, hold: 60_000 });
 
     return (
-        <ChatMessage {...assistant} aria-busy={!done} time={done ? '10:03 AM' : undefined}>
-            {text}
-            {!done && <ThinkingCaret label={text ? false : 'Writing a reply'} />}
-        </ChatMessage>
+        <AssistantAnswer pending={!done}>
+            <p>
+                {text}
+                {!done && <ThinkingCaret label={text ? false : 'Writing a reply'} />}
+            </p>
+        </AssistantAnswer>
     );
 };
 

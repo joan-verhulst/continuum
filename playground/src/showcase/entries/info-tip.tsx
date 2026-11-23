@@ -1,4 +1,15 @@
-import { BarList, BarListItem, Button, Card, CardTitle, cn, InfoTip, Meter } from 'continuum';
+import {
+    BarList,
+    BarListItem,
+    Button,
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    cn,
+    InfoTip,
+    Meter,
+} from 'continuum';
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { useStageContainer } from '../../layout';
 import { AppScene, type Entry, type InUse, icon } from '../kit';
@@ -43,23 +54,25 @@ const CreditsCard = () => {
     const stage = useStageContainer();
 
     return (
-        <Card className="gap-4">
-            <span className="flex items-center gap-1.5">
+        <Card>
+            <CardHeader className="flex-row items-center gap-1.5">
                 <CardTitle>Credits left</CardTitle>
                 <InfoTip
                     container={stage}
                     content="One credit is one AI summary or one export. Unused credits roll over for a month."
                     open
                 />
-            </span>
-            <p className="font-medium text-lg text-neutral-950 tabular-nums">7,550</p>
-            <Meter
-                caption="Resets 14 Nov"
-                label="2,450 used"
-                max={10000}
-                tone="chart"
-                value={2450}
-            />
+            </CardHeader>
+            <CardContent>
+                <p className="font-medium text-lg text-neutral-950 tabular-nums">7,550</p>
+                <Meter
+                    caption="Resets 14 Nov"
+                    label="2,450 used"
+                    max={10000}
+                    tone="chart"
+                    value={2450}
+                />
+            </CardContent>
         </Card>
     );
 };
@@ -85,26 +98,34 @@ const BillingPage = () => (
                 <>
                     {/* Room above the cards for the open tip, so it never sits on the page's description. */}
                     <div className="mt-10 grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 gap-4">
-                        <Card className="gap-4">
-                            <CardTitle>Plan</CardTitle>
-                            <p className="font-medium text-lg text-neutral-950">Pro</p>
-                            <p className="text-neutral-600 text-xs">
-                                €49 a month, billed yearly. Renews 2 March 2027.
-                            </p>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Plan</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="font-medium text-lg text-neutral-950">Pro</p>
+                                <p className="text-neutral-600 text-xs">
+                                    €49 a month, billed yearly. Renews 2 March 2027.
+                                </p>
+                            </CardContent>
                         </Card>
                         <CreditsCard />
-                        <Card className="gap-4">
-                            <CardTitle>Seats</CardTitle>
-                            <p className="font-medium text-lg text-neutral-950 tabular-nums">
-                                8 of 10
-                            </p>
-                            <Meter
-                                caption="2 free"
-                                label="In use"
-                                max={10}
-                                tone="chart"
-                                value={8}
-                            />
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Seats</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className="font-medium text-lg text-neutral-950 tabular-nums">
+                                    8 of 10
+                                </p>
+                                <Meter
+                                    caption="2 free"
+                                    label="In use"
+                                    max={10}
+                                    tone="chart"
+                                    value={8}
+                                />
+                            </CardContent>
                         </Card>
                     </div>
                     <Card layout="list">

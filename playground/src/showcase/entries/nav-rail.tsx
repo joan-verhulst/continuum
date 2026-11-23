@@ -4,10 +4,10 @@ import {
     Card,
     cn,
     IconTile,
-    Rail,
-    RailItem,
-    RailSeparator,
-    RailToggle,
+    NavRail,
+    NavRailItem,
+    NavRailSeparator,
+    NavRailToggle,
     TooltipProvider,
 } from 'continuum';
 import {
@@ -47,7 +47,7 @@ const railItems = [
     { id: 'ai', label: 'Ask AI', Icon: MessageSquare },
 ];
 
-const RailPreview = ({ knobs }: PreviewProps) => {
+const NavRailPreview = ({ knobs }: PreviewProps) => {
     const [active, setActive] = useState('analytics');
     const [expanded, setExpanded] = useState(Boolean(knobs.expanded));
 
@@ -55,35 +55,35 @@ const RailPreview = ({ knobs }: PreviewProps) => {
     useEffect(() => setExpanded(Boolean(knobs.expanded)), [knobs.expanded]);
 
     const item = (id: string, label: string, glyph: ReactNode) => (
-        <RailItem active={id === active} key={id} label={label} onClick={() => setActive(id)}>
+        <NavRailItem active={id === active} key={id} label={label} onClick={() => setActive(id)}>
             {glyph}
-        </RailItem>
+        </NavRailItem>
     );
 
     return (
         <TooltipProvider>
-            <Rail aria-label="Main" expanded={expanded} onExpandedChange={setExpanded}>
-                <RailToggle />
-                <RailSeparator />
+            <NavRail aria-label="Main" expanded={expanded} onExpandedChange={setExpanded}>
+                <NavRailToggle />
+                <NavRailSeparator />
                 {railItems.map(({ id, label, Icon }) => item(id, label, <Icon {...previewIcon} />))}
-                <RailSeparator />
-                <RailItem label="Anna de Vries">
+                <NavRailSeparator />
+                <NavRailItem label="Anna de Vries">
                     <Avatar alt="" fallback="AV" shape="round" size={24} />
-                </RailItem>
-            </Rail>
+                </NavRailItem>
+            </NavRail>
         </TooltipProvider>
     );
 };
 
 export const entry: Entry = {
-    id: 'rail',
-    name: 'Rail',
+    id: 'nav-rail',
+    name: 'Nav rail',
     category: 'frame',
     description:
         'The main navigation as a floating island: icons, or icons and labels when expanded.',
     hero: 'min-h-105',
     knobs: railKnobs,
-    Preview: RailPreview,
+    Preview: NavRailPreview,
 };
 
 const reportCards = [
@@ -145,36 +145,36 @@ const ReportsWithRail = () => {
             nav="none"
             overlay={
                 <TooltipProvider>
-                    <Rail
+                    <NavRail
                         aria-label="Main"
                         className="absolute top-1/2 left-6 z-20 -translate-y-1/2"
                         expanded={expanded}
                         onExpandedChange={setExpanded}
                     >
-                        <RailToggle />
-                        <RailSeparator />
+                        <NavRailToggle />
+                        <NavRailSeparator />
                         {places.map(place => (
-                            <RailItem
+                            <NavRailItem
                                 active={place.id === active}
                                 key={place.id}
                                 label={place.label}
                                 onClick={() => setActive(place.id)}
                             >
                                 {place.icon}
-                            </RailItem>
+                            </NavRailItem>
                         ))}
-                        <RailSeparator />
-                        <RailItem
+                        <NavRailSeparator />
+                        <NavRailItem
                             active={active === 'settings'}
                             label="Settings"
                             onClick={() => setActive('settings')}
                         >
                             <Settings {...icon} />
-                        </RailItem>
-                        <RailItem label="Maya Chen">
+                        </NavRailItem>
+                        <NavRailItem label="Maya Chen">
                             <Avatar alt="" fallback="MC" shape="round" size={24} />
-                        </RailItem>
-                    </Rail>
+                        </NavRailItem>
+                    </NavRail>
                 </TooltipProvider>
             }
             title="Reports"

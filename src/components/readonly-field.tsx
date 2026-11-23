@@ -13,7 +13,7 @@ import { Truncate } from './truncate';
  * The well is a read-only twin of Input: the same heights and radii, but filled with the 4% wash instead of
  * bordered, so a fact never looks like something to type into.
  */
-export const valueFieldWellVariants = cva(
+export const readonlyFieldWellVariants = cva(
     'flex w-full min-w-0 items-center gap-2 bg-neutral-950/4 font-normal text-neutral-900 text-xs',
     {
         variants: {
@@ -42,7 +42,7 @@ export const valueFieldWellVariants = cva(
 );
 
 /* A bordered pill row for a single reading, such as a web vital: label left, status and value right. */
-export const valueFieldVitalVariants = cva([
+export const readonlyFieldVitalVariants = cva([
     'flex h-segment w-full min-w-0 items-center justify-between gap-3 rounded-pill border border-neutral-200 px-3 text-xs',
 ]);
 
@@ -56,8 +56,8 @@ const isEmpty = (value: ReactNode) =>
     value === null || value === undefined || value === false || value === '';
 
 // onCopy is the copy button's callback here, not the div's clipboard event.
-export type ValueFieldProps = Omit<ComponentProps<'div'>, 'children' | 'onCopy'> &
-    Pick<VariantProps<typeof valueFieldWellVariants>, 'size'> & {
+export type ReadonlyFieldProps = Omit<ComponentProps<'div'>, 'children' | 'onCopy'> &
+    Pick<VariantProps<typeof readonlyFieldWellVariants>, 'size'> & {
         label: ReactNode;
         value?: ReactNode;
         /** `well` stacks the label over a filled box; `vital` is a compact bordered row for one reading. */
@@ -82,7 +82,7 @@ export type ValueFieldProps = Omit<ComponentProps<'div'>, 'children' | 'onCopy'>
     };
 
 /** A read-only fact in a form layout: a label over a filled well, or a compact vital row with a status dot. */
-export const ValueField = ({
+export const ReadonlyField = ({
     label,
     value,
     variant = 'well',
@@ -97,7 +97,7 @@ export const ValueField = ({
     truncate = 'end',
     className,
     ...props
-}: ValueFieldProps) => {
+}: ReadonlyFieldProps) => {
     const labelId = useId();
     const empty = isEmpty(value);
     const shown = empty ? <span className="text-neutral-600">{emptyText}</span> : value;
@@ -105,22 +105,22 @@ export const ValueField = ({
     if (variant === 'vital') {
         return (
             <div
-                className={cn(valueFieldVitalVariants(), className)}
+                className={cn(readonlyFieldVitalVariants(), className)}
                 data-empty={empty || undefined}
-                data-slot="value-field"
+                data-slot="readonly-field"
                 data-variant="vital"
                 {...props}
             >
                 <span
                     className="min-w-0 truncate font-normal text-neutral-600"
-                    data-slot="value-field-label"
+                    data-slot="readonly-field-label"
                     id={labelId}
                 >
                     {label}
                 </span>
                 <span
                     className="flex shrink-0 items-center gap-1.5 font-medium text-neutral-950 tabular-nums"
-                    data-slot="value-field-value"
+                    data-slot="readonly-field-value"
                 >
                     {tone && !empty && <StatusDot size="sm" tone={tone} />}
                     {shown}
@@ -138,24 +138,24 @@ export const ValueField = ({
         <div
             className={cn('flex min-w-0 flex-col gap-1.5', className)}
             data-empty={empty || undefined}
-            data-slot="value-field"
+            data-slot="readonly-field"
             data-variant="well"
             {...props}
         >
             <span
                 className="font-normal text-neutral-600 text-xs"
-                data-slot="value-field-label"
+                data-slot="readonly-field-label"
                 id={labelId}
             >
                 {label}
             </span>
             <div
-                className={valueFieldWellVariants({ size: resolvedSize, copyable: copyable })}
-                data-slot="value-field-well"
+                className={readonlyFieldWellVariants({ size: resolvedSize, copyable: copyable })}
+                data-slot="readonly-field-well"
             >
                 <span
                     className="min-w-0 flex-1 truncate tabular-nums"
-                    data-slot="value-field-value"
+                    data-slot="readonly-field-value"
                 >
                     {truncate === 'middle' && typeof value === 'string' && !empty ? (
                         <Truncate at="middle">{value}</Truncate>

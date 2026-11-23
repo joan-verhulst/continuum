@@ -60,7 +60,7 @@ export type ChatAttachmentProps = Omit<ComponentProps<'div'>, 'children'> & {
 
 /**
  * One file or record going with a message: above the composer while it waits, removable, and under
- * the message once sent. A file shows a 32 well tinted by its kind with its name and extension; an
+ * the message once sent. A file shows a 40 well tinted by its kind with its name and extension; an
  * image, a square thumbnail; a record, a full-width line with its kind, token and status.
  */
 export const ChatAttachment = ({
@@ -84,9 +84,9 @@ export const ChatAttachment = ({
         return (
             <div
                 className={cn(
-                    // A line of its own, drawn as a ChatReference is (control-lg high, the control's
+                    // A line of its own, drawn as a ChatReference is (control-xl high, the control's
                     // corner, 12 apart), so a record keeps one shape waiting and in the thread.
-                    'flex min-h-control-lg w-full min-w-0 shrink-0 basis-full items-center gap-3 rounded-control border border-neutral-200 bg-neutral-50 py-1 pl-3 text-neutral-950 text-xs [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
+                    'flex min-h-control-xl w-full min-w-0 shrink-0 basis-full items-center gap-3 rounded-control border border-neutral-200 bg-neutral-50 py-1 pl-3 text-neutral-950 text-xs [&_svg:not([class*=size-])]:size-4 [&_svg]:shrink-0',
                     onRemove ? 'pr-1' : 'pr-3',
                     className,
                 )}
@@ -133,7 +133,7 @@ export const ChatAttachment = ({
     if (variant === 'image') {
         return (
             <div
-                className={cn('relative size-row shrink-0', className)}
+                className={cn('relative size-control-xl shrink-0', className)}
                 data-slot="chat-attachment"
                 data-variant="image"
                 {...props}
@@ -168,8 +168,8 @@ export const ChatAttachment = ({
     return (
         <div
             className={cn(
-                // A row high (40), as the image beside it: the cell well (32) inset 4 within the hairline.
-                'flex h-row min-w-0 max-w-60 shrink-0 items-center gap-2 rounded-item border border-neutral-200 bg-neutral-50 p-[calc(--spacing(1)-1px)] text-neutral-950',
+                // 48 high, as the image beside it: a row-high well (40) inset 4 within the hairline.
+                'flex h-control-xl min-w-0 max-w-72 shrink-0 items-center gap-2.5 rounded-item border border-neutral-200 bg-neutral-50 p-[calc(--spacing(1)-1px)] text-neutral-950',
                 onRemove ? 'pr-1' : 'pr-3',
                 className,
             )}
@@ -180,7 +180,7 @@ export const ChatAttachment = ({
             <span
                 aria-hidden
                 className={cn(
-                    'inline-flex size-cell shrink-0 items-center justify-center rounded-chip [&_svg]:size-4',
+                    'inline-flex size-row shrink-0 items-center justify-center rounded-chip [&_svg]:size-5',
                     wellTones[tone],
                 )}
                 data-slot="chat-attachment-icon"
@@ -190,7 +190,7 @@ export const ChatAttachment = ({
             <span className="flex min-w-0 flex-col">
                 <Truncate
                     at={truncate}
-                    className="font-medium text-xxs"
+                    className="font-medium text-xs"
                     data-slot="chat-attachment-name"
                     // The extension has its own line, so the name keeps the end it would keep with it.
                     end={Math.max(

@@ -15,7 +15,7 @@ import { Badge } from './badge';
  * `rounded-card` (16) less its 4px padding and 1px border, within a pixel of `rounded-item` (10), the
  * corner every item takes, so the curves stay concentric and the item matches a nav item.
  */
-export const popoverItemVariants = cva(
+export const menuItemVariants = cva(
     [
         'relative flex h-option shrink-0 cursor-pointer select-none items-center gap-2 rounded-item px-3 py-2 font-medium text-xs outline-none',
         'data-disabled:pointer-events-none data-disabled:opacity-50',
@@ -51,10 +51,10 @@ const leads = {
     lg: 'h-auto min-h-option-lg gap-3 px-3 py-1.5',
 } as const;
 
-export type PopoverItemLead = keyof typeof leads;
+export type MenuItemLead = keyof typeof leads;
 
 /** The tier of what leads the row, read from the elements it knows: an avatar by its size, a badge as a chip. */
-const leadOf = (leading: ReactNode): PopoverItemLead => {
+const leadOf = (leading: ReactNode): MenuItemLead => {
     let size = 16;
     const visit = (node: ReactNode) =>
         Children.forEach(node, child => {
@@ -68,12 +68,12 @@ const leadOf = (leading: ReactNode): PopoverItemLead => {
     return size >= 32 ? 'lg' : size >= 22 ? 'md' : 'sm';
 };
 
-export type PopoverItemProps = Omit<ComponentProps<'div'>, 'children'> &
-    VariantProps<typeof popoverItemVariants> & {
+export type MenuItemProps = Omit<ComponentProps<'div'>, 'children'> &
+    VariantProps<typeof menuItemVariants> & {
         /** The list's own item, which keeps its behaviour: `render={<SelectPrimitive.Item value="a" />}`. */
         render?: useRender.RenderProp;
         /**
-         * Before the name: a 16px icon, an `Avatar`, a `PopoverItemIndicator` (checkbox or radio),
+         * Before the name: a 16px icon, an `Avatar`, a `MenuItemIndicator` (checkbox or radio),
          * a chip. The row spaces itself to what leads it (see `lead`).
          */
         leading?: ReactNode;
@@ -81,13 +81,13 @@ export type PopoverItemProps = Omit<ComponentProps<'div'>, 'children'> &
          * The row's spacing tier, from the size of what leads it. Worked out from an `Avatar` or a
          * `Badge` in `leading`; set it for anything else of 24px (`md`) or 32px and up (`lg`).
          */
-        lead?: PopoverItemLead;
+        lead?: MenuItemLead;
         /** Inline after the name: badges, chips, a label, a short muted note ("you"). */
         meta?: ReactNode;
         /** A second, quieter line under the name; the row grows to fit it. */
         description?: ReactNode;
         /**
-         * After everything, at the far end: a check, a `PopoverItemShortcut`, a count, a badge, an
+         * After everything, at the far end: a check, a `MenuItemShortcut`, a count, a badge, an
          * icon, a chevron to a submenu. More than one sits 8px apart.
          */
         trailing?: ReactNode;
@@ -102,7 +102,7 @@ export type PopoverItemProps = Omit<ComponentProps<'div'>, 'children'> &
  *     [leading]  name [meta]                [trailing]
  *                description
  */
-export const PopoverItem = ({
+export const MenuItem = ({
     render,
     variant,
     leading,
@@ -113,14 +113,14 @@ export const PopoverItem = ({
     className,
     children,
     ...props
-}: PopoverItemProps) =>
+}: MenuItemProps) =>
     useRender({
         defaultTagName: 'div',
         render,
         props: {
             className: cn(
-                'group/popover-item',
-                popoverItemVariants({ variant }),
+                'group/menu-item',
+                menuItemVariants({ variant }),
                 // Two lines: the row grows past 36px and keeps the same space above and below.
                 description !== undefined && 'h-auto min-h-option py-2.5',
                 leads[lead],
@@ -129,7 +129,7 @@ export const PopoverItem = ({
                 className,
             ),
             'data-lead': lead,
-            'data-slot': 'popover-item',
+            'data-slot': 'menu-item',
             ...props,
             children: (
                 <>
@@ -141,7 +141,7 @@ export const PopoverItem = ({
                             {meta && (
                                 <span
                                     className="flex shrink-0 items-center gap-1 font-normal text-neutral-600"
-                                    data-slot="popover-item-meta"
+                                    data-slot="menu-item-meta"
                                 >
                                     {meta}
                                 </span>
@@ -150,7 +150,7 @@ export const PopoverItem = ({
                         {description !== undefined && (
                             <span
                                 className="truncate font-normal text-neutral-600 text-xxs"
-                                data-slot="popover-item-description"
+                                data-slot="menu-item-description"
                             >
                                 {description}
                             </span>
@@ -159,7 +159,7 @@ export const PopoverItem = ({
                     {trailing && (
                         <span
                             className="ml-auto flex shrink-0 items-center gap-2 pl-2 font-normal text-neutral-600 text-xxs"
-                            data-slot="popover-item-trailing"
+                            data-slot="menu-item-trailing"
                         >
                             {trailing}
                         </span>
@@ -169,7 +169,7 @@ export const PopoverItem = ({
         },
     });
 
-export type PopoverItemIndicatorProps = Omit<ComponentProps<'span'>, 'children'> & {
+export type MenuItemIndicatorProps = Omit<ComponentProps<'span'>, 'children'> & {
     kind?: 'checkbox' | 'radio';
 };
 
@@ -177,26 +177,26 @@ export type PopoverItemIndicatorProps = Omit<ComponentProps<'span'>, 'children'>
  * A checkbox or radio drawn small at the head of a row. It reads the row's own state, checked in a
  * menu, selected in a select, so it needs no props of its own to follow along.
  */
-export const PopoverItemIndicator = ({
+export const MenuItemIndicator = ({
     kind = 'checkbox',
     className,
     ...props
-}: PopoverItemIndicatorProps) => (
+}: MenuItemIndicatorProps) => (
     <span
         className={cn(
             'inline-flex size-4 shrink-0 items-center justify-center border border-neutral-300 text-on-action transition-[background-color,border-color] duration-150',
             kind === 'radio' ? 'rounded-full' : 'rounded-[calc(var(--radius-chip)-2px)]',
-            'group-data-checked/popover-item:border-transparent group-data-checked/popover-item:bg-action group-data-checked/popover-item:[background-image:var(--action-gradient)]',
-            'group-data-selected/popover-item:border-transparent group-data-selected/popover-item:bg-action group-data-selected/popover-item:[background-image:var(--action-gradient)]',
+            'group-data-checked/menu-item:border-transparent group-data-checked/menu-item:bg-action group-data-checked/menu-item:[background-image:var(--action-gradient)]',
+            'group-data-selected/menu-item:border-transparent group-data-selected/menu-item:bg-action group-data-selected/menu-item:[background-image:var(--action-gradient)]',
             // The row greys its icons; the mark keeps the action's foreground.
             '[&_svg]:text-on-action!',
             className,
         )}
         data-kind={kind}
-        data-slot="popover-item-indicator"
+        data-slot="menu-item-indicator"
         {...props}
     >
-        <span className="flex opacity-0 transition-opacity duration-150 group-data-checked/popover-item:opacity-100 group-data-selected/popover-item:opacity-100">
+        <span className="flex opacity-0 transition-opacity duration-150 group-data-checked/menu-item:opacity-100 group-data-selected/menu-item:opacity-100">
             {kind === 'radio' ? (
                 <span className="size-1.5 rounded-full bg-current" />
             ) : (
@@ -207,10 +207,10 @@ export const PopoverItemIndicator = ({
 );
 
 /** A shortcut at the end of a row, muted: "⌘D", "G I". Not drawn on a touch screen, which has no keys. */
-export const PopoverItemShortcut = ({ className, ...props }: ComponentProps<'span'>) => (
+export const MenuItemShortcut = ({ className, ...props }: ComponentProps<'span'>) => (
     <span
         className={cn('pointer-coarse:hidden font-medium text-neutral-600 text-xxs', className)}
-        data-slot="popover-item-shortcut"
+        data-slot="menu-item-shortcut"
         {...props}
     />
 );

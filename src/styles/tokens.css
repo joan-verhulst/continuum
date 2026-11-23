@@ -179,6 +179,19 @@
     --color-segment-track: var(--color-neutral-50);
 
     /*
+     * What a control holds inside its hairline: nothing as drawn (outline). A theme's filled controls
+     * set an ink wash here, the same mix in both modes, so it shows on any surface it sits on.
+     */
+    --color-control: transparent;
+    --color-control-hover: transparent;
+
+    /*
+     * Cards a theme frames (its `cards`): `initial` draws them plain; a framed theme sets it empty,
+     * and the card-frame, card-head, card-stage and card-foot utilities (theme.css) switch on it.
+     */
+    --cards-framed: initial;
+
+    /*
      * The active sidebar item: the selected wash unless a theme tints it, fills it with the action
      * colour or raises it as a card on the canvas.
      */
@@ -315,7 +328,7 @@
 
     --shadow-float: 1px 1px 4px 0 rgb(20 22 23 / 0.1);
     --shadow-sheet: 0 2px 4px 0 rgb(20 22 23 / 0.1);
-    /* The chat composer's soft lift off the thread it docks under */
+    /* The message composer's soft lift off the thread it docks under */
     --shadow-composer: 0 4px 8px 0 rgb(20 22 23 / 0.05);
     /*
      * The flat surfaces' lift, none unless a theme's shadows give them one: a card, a panel and a

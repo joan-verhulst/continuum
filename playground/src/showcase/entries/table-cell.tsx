@@ -78,7 +78,7 @@ const CellPreview = ({ knobs }: PreviewProps) => {
 export const entry: Entry = {
     id: 'table-cell',
     name: 'Table cell',
-    category: 'content',
+    category: 'tables',
     description:
         'A value in a row: figures tabular and right-aligned, a long ID cut in the middle, a copy button on the ones people paste.',
     span: 2,

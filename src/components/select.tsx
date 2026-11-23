@@ -7,7 +7,7 @@ import { Children, isValidElement, type ReactNode, useMemo } from 'react';
 import { cn, type WithClassName } from '../lib/cn';
 import { focusRing } from './button';
 import { useFieldControl } from './field';
-import { PopoverItem } from './popover-item';
+import { MenuItem } from './menu-item';
 import { ThemeScope, usePortalContainer } from './theme';
 
 type SelectItemEntry = { value: unknown; label: ReactNode };
@@ -78,7 +78,7 @@ export const SelectValue = (props: SelectPrimitive.Value.Props) => (
 
 export const selectTriggerVariants = cva(
     [
-        'inline-flex shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-control border font-medium text-neutral-950 text-xs shadow-control transition-[border-color,color] duration-150',
+        'inline-flex shrink-0 cursor-pointer select-none items-center gap-2 whitespace-nowrap rounded-control border bg-control font-medium text-neutral-950 text-xs shadow-control transition-[border-color,background-color,color] duration-150',
         // The placeholder answers the pointer as an Input's does: neutral-600, then neutral-700.
         'data-placeholder:text-neutral-600 not-data-disabled:data-placeholder:hover:text-neutral-700',
         // Base UI may keep a disabled trigger focusable, so the attribute is the reliable hook.
@@ -97,7 +97,7 @@ export const selectTriggerVariants = cva(
                 // Its icons turn with the border, as an Input's do.
                 true: 'border-error-500 [&_svg]:text-error-500',
                 // Open, it stays outlined like an Input with focus or an open DatePicker.
-                false: 'border-neutral-200 not-data-disabled:hover:border-neutral-300 data-popup-open:border-neutral-300',
+                false: 'border-neutral-200 not-data-disabled:hover:border-neutral-300 not-data-disabled:hover:bg-control-hover data-popup-open:border-neutral-300',
             },
         },
         defaultVariants: {
@@ -226,13 +226,13 @@ export const SelectLabel = ({
     />
 );
 
-/** An option: a `PopoverItem` row, with a check on the picked one. */
+/** An option: a `MenuItem` row, with a check on the picked one. */
 export const SelectItem = ({
     className,
     children,
     ...props
 }: WithClassName<SelectPrimitive.Item.Props>) => (
-    <PopoverItem
+    <MenuItem
         className={className}
         data-slot="select-item"
         render={<SelectPrimitive.Item {...props} />}
@@ -244,7 +244,7 @@ export const SelectItem = ({
     >
         {/* A span: rich labels (icon, name, muted year) flow inline in the list and the trigger. */}
         <SelectPrimitive.ItemText render={<span />}>{children}</SelectPrimitive.ItemText>
-    </PopoverItem>
+    </MenuItem>
 );
 
 export const SelectSeparator = ({

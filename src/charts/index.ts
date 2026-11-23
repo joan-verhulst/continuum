@@ -63,6 +63,7 @@ export {
 export { LineChart, type LineChartProps } from './line-chart';
 export { RadarChart, type RadarChartProps } from './radar-chart';
 export { RoseChart, type RoseChartProps } from './rose-chart';
+export { Sparkline, type SparklineLabel, type SparklineProps } from './sparkline';
 /** `ChartTooltipRow` is both the row component and the shape it takes. */
 export { ChartTooltip, type ChartTooltipProps, ChartTooltipRow } from './tooltip';
 export { Treemap, type TreemapItem, type TreemapProps } from './treemap';

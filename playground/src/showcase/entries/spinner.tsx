@@ -1,4 +1,4 @@
-import { Button, DialogClose, DialogDescription, StatCard, ValueField } from 'continuum';
+import { Button, DialogClose, DialogDescription, ReadonlyField, StatCard } from 'continuum';
 import { CircleCheck, History } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
@@ -144,7 +144,7 @@ const PublishReport = () => {
                 Everyone with the link sees the numbers as they are now; later changes wait for the
                 next publish.
             </DialogDescription>
-            <ValueField copyable label="Link" value="acme.app/r/northwind-q3" />
+            <ReadonlyField copyable label="Link" value="acme.app/r/northwind-q3" />
             {state === 'done' && (
                 <p className="flex items-center gap-1.5 text-neutral-600 text-xs">
                     <CircleCheck className="size-4 text-success-700" {...icon} /> Published just now

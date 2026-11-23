@@ -70,7 +70,7 @@ const guidePart = ({ depth, rails }: Tree, level: number): 'full' | 'top' | null
 
 /* ---------- The fold ---------- */
 
-export type TableFoldProps = {
+export type TableTreeProps = {
     open?: boolean;
     defaultOpen?: boolean;
     onOpenChange?: (open: boolean) => void;
@@ -81,7 +81,7 @@ export type TableFoldProps = {
      * boxes. On by default; off, the boxes moved under the chevron show the level alone.
      */
     guides?: boolean;
-    /** The row it hangs from (with a `TableFoldCell`), then a `TableFoldRows`. */
+    /** The row it hangs from (with a `TableTreeCell`), then a `TableTreeRows`. */
     children: ReactNode;
 };
 
@@ -89,14 +89,14 @@ export type TableFoldProps = {
  * A row that opens to what is under it. Wraps the row and what it shows, adding nothing to the
  * table itself: put it in a `TableBody` in place of the row.
  */
-export const TableFold = ({
+export const TableTree = ({
     open,
     defaultOpen = false,
     onOpenChange,
     label,
     guides = true,
     children,
-}: TableFoldProps) => {
+}: TableTreeProps) => {
     const [own, setOwn] = useState(defaultOpen);
     const isOpen = open ?? own;
     const setOpen = (next: boolean) => {
@@ -110,16 +110,16 @@ export const TableFold = ({
     );
 };
 
-export type TableFoldTriggerProps = Omit<ComponentProps<'button'>, 'children'> & {
+export type TableTreeTriggerProps = Omit<ComponentProps<'button'>, 'children'> & {
     /** What it opens, for its name; the fold's `label` by default. */
     label?: string;
 };
 
 /**
- * The fold's chevron: a 20 ghost button, right closed and down open. `TableFoldCell` places it; use
- * it alone only in a layout of your own. Outside a `TableFold` it renders nothing.
+ * The fold's chevron: a 20 ghost button, right closed and down open. `TableTreeCell` places it; use
+ * it alone only in a layout of your own. Outside a `TableTree` it renders nothing.
  */
-export const TableFoldTrigger = ({ label, className, ...props }: TableFoldTriggerProps) => {
+export const TableTreeTrigger = ({ label, className, ...props }: TableTreeTriggerProps) => {
     const fold = useContext(FoldContext);
     if (!fold) return null;
 
@@ -134,7 +134,7 @@ export const TableFoldTrigger = ({ label, className, ...props }: TableFoldTrigge
                 className,
             )}
             data-open={fold.open || undefined}
-            data-slot="table-fold-trigger"
+            data-slot="table-tree-trigger"
             onClick={() => fold.setOpen(!fold.open)}
             type="button"
             {...props}
@@ -150,7 +150,7 @@ export const TableFoldTrigger = ({ label, className, ...props }: TableFoldTrigge
     );
 };
 
-export type TableFoldRowsProps = {
+export type TableTreeRowsProps = {
     /**
      * The rows are a breakdown of the row above (a payout by source, a source by plan), not more of
      * the same kind: their content steps in a level (28) in every column, so no value sits under its
@@ -167,7 +167,7 @@ export type TableFoldRowsProps = {
  * name (`tree` cell) steps in 28. Rows of the same kind as the row above keep every other value under
  * its head; a breakdown (`shift`) steps every column in. A nested row can fold in turn.
  */
-export const TableFoldRows = ({ shift, children }: TableFoldRowsProps) => {
+export const TableTreeRows = ({ shift, children }: TableTreeRowsProps) => {
     const fold = useContext(FoldContext);
     const parent = useContext(TreeContext);
     if (!fold?.open) return null;
@@ -196,17 +196,17 @@ export const TableFoldRows = ({ shift, children }: TableFoldRowsProps) => {
     );
 };
 
-export type TableFoldHeadProps = ComponentProps<'tr'>;
+export type TableTreeHeadProps = ComponentProps<'tr'>;
 
 /**
  * The head of rows that are not the same kind as the row above (an invoice's lines under the invoice):
  * the table's own head row again, as the first of the rows a fold shows, naming what each column
  * holds for the rows under it. The rows then sit on the table's columns and read against these
- * labels, not the table's. Put it first in a `TableFoldRows`, with the row's empty action cells
- * (`TableSelectCell`, `TableFoldCell`, which carries the guide line) and a `TableHead` per column, the
+ * labels, not the table's. Put it first in a `TableTreeRows`, with the row's empty action cells
+ * (`TableSelectCell`, `TableTreeCell`, which carries the guide line) and a `TableHead` per column, the
  * first one `tree`; a column the rows leave empty keeps an empty head.
  */
-export const TableFoldHead = ({ className, ...props }: TableFoldHeadProps) => (
+export const TableTreeHead = ({ className, ...props }: TableTreeHeadProps) => (
     <tr
         className={cn(
             // The table's head, again: its fill on every cell of the row, the action cells too.
@@ -215,18 +215,18 @@ export const TableFoldHead = ({ className, ...props }: TableFoldHeadProps) => (
             className,
         )}
         data-folded=""
-        data-slot="table-fold-head"
+        data-slot="table-tree-head"
         {...props}
     />
 );
 
-export type TableFoldCellProps = Omit<ComponentProps<'td'>, 'children'> & {
+export type TableTreeCellProps = Omit<ComponentProps<'td'>, 'children'> & {
     /**
      * The row's selection box. A top-level row's box stays in the selection column (`TableSelectCell`);
      * a nested row's sits here, under its parent's chevron.
      */
     select?: ReactNode;
-    /** Set by `TableFoldPanel`: the parent's line runs down beside the panel, not to its middle. */
+    /** Set by `TableTreePanel`: the parent's line runs down beside the panel, not to its middle. */
     panel?: boolean;
 };
 
@@ -238,7 +238,7 @@ export type TableFoldCellProps = Omit<ComponentProps<'td'>, 'children'> & {
  * middle. The guide line hangs from an open chevron at its centre, threads between the boxes under it
  * (4 clear of each) and ends at the last child.
  */
-export const TableFoldCell = ({ select, panel, className, ...props }: TableFoldCellProps) => {
+export const TableTreeCell = ({ select, panel, className, ...props }: TableTreeCellProps) => {
     const variant = useContext(TableContext);
     const place = useContext(TreeContext);
     const fold = useContext(FoldContext);
@@ -251,7 +251,7 @@ export const TableFoldCell = ({ select, panel, className, ...props }: TableFoldC
     return (
         <td
             className={cn(tableCellVariants({ variant }), 'relative w-11', className)}
-            data-slot="table-fold-cell"
+            data-slot="table-tree-cell"
             {...props}
         >
             {place.guides &&
@@ -281,7 +281,7 @@ export const TableFoldCell = ({ select, panel, className, ...props }: TableFoldC
                 }}
             >
                 {box && select}
-                {fold ? <TableFoldTrigger /> : depth === 0 && <span className="size-5 shrink-0" />}
+                {fold ? <TableTreeTrigger /> : depth === 0 && <span className="size-5 shrink-0" />}
             </span>
         </td>
     );
@@ -289,7 +289,7 @@ export const TableFoldCell = ({ select, panel, className, ...props }: TableFoldC
 
 /* ---------- Anything else: a panel ---------- */
 
-export type TableFoldPanelProps = Omit<ComponentProps<'td'>, 'colSpan'> & {
+export type TableTreePanelProps = Omit<ComponentProps<'td'>, 'colSpan'> & {
     /** The table has a selection column: the panel leaves its cell empty, as a nested row does. */
     selection?: boolean;
     /**
@@ -305,13 +305,13 @@ export type TableFoldPanelProps = Omit<ComponentProps<'td'>, 'colSpan'> & {
 
 /**
  * What folds out when it is not rows at all: a history, a diff, a form, any component. One row under
- * the open one, in a `TableFoldRows` like any other: its action cells empty and the parent's line
+ * the open one, in a `TableTreeRows` like any other: its action cells empty and the parent's line
  * running down beside it. With an `aside`, it splits on a column's edge like the table it sits in:
  * what the content is in the leading columns, starting a step in where a child's name would, and the
  * content itself in the columns after, on their edge. Without one, the content takes every data column,
  * a step in. It grows to what it holds, 16 above and below, both sides from the top; text wraps.
  */
-export const TableFoldPanel = ({
+export const TableTreePanel = ({
     selection,
     aside,
     asideSpan = 1,
@@ -319,7 +319,7 @@ export const TableFoldPanel = ({
     className,
     style,
     ...props
-}: TableFoldPanelProps) => {
+}: TableTreePanelProps) => {
     const variant = useContext(TableContext);
     const { depth } = useContext(TreeContext);
     const cell = cn(
@@ -332,15 +332,15 @@ export const TableFoldPanel = ({
         <tr
             className="starting:opacity-0 transition-opacity duration-200 ease-out-strong"
             data-folded=""
-            data-slot="table-fold-panel"
+            data-slot="table-tree-panel"
         >
             {selection && <td aria-hidden className={tableCellVariants({ variant })} />}
-            <TableFoldCell panel />
+            <TableTreeCell panel />
             {aside !== undefined && (
                 <td
                     className={cn(cell, 'text-neutral-600')}
                     colSpan={asideSpan}
-                    data-slot="table-fold-aside"
+                    data-slot="table-tree-aside"
                     style={indent}
                 >
                     {aside}

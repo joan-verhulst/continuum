@@ -19,7 +19,7 @@ type AttachContextValue = {
     openFiles: (() => void) | null;
 };
 
-/** Lets `ChatComposerAttachItem` open the file picker of the composer or prompt round it. */
+/** Lets `MessageComposerAttachItem` open the file picker of the composer or prompt round it. */
 export const AttachContext = createContext<AttachContextValue | null>(null);
 
 export const hasContent = (node: ReactNode) =>

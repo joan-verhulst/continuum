@@ -35,11 +35,11 @@ import {
 let warnedNoPicker = false;
 
 /**
- * The "Add attachments" row of an `attachMenu`, in `ChatComposer` or `ChatPrompt`: a paperclip and
+ * The "Add attachments" row of an `attachMenu`, in `MessageComposer` or `AssistantPrompt`: a paperclip and
  * the label, opening that part's own file picker, so the files arrive through `onAttach` as they do
  * without a menu. It needs `onAttach` on the part round it.
  */
-export const ChatComposerAttachItem = ({
+export const MessageComposerAttachItem = ({
     children = 'Add attachments',
     onClick,
     ...props
@@ -48,14 +48,14 @@ export const ChatComposerAttachItem = ({
 
     return (
         <DropdownMenuItem
-            data-slot="chat-composer-attach-item"
+            data-slot="message-composer-attach-item"
             onClick={event => {
                 onClick?.(event);
                 if (picker?.openFiles) picker.openFiles();
                 else if (!warnedNoPicker) {
                     warnedNoPicker = true;
                     console.warn(
-                        'ChatComposerAttachItem: pass `onAttach` to the ChatComposer or ChatPrompt round it, or this row opens no file picker.',
+                        'MessageComposerAttachItem: pass `onAttach` to the MessageComposer or AssistantPrompt round it, or this row opens no file picker.',
                     );
                 }
             }}
@@ -67,7 +67,7 @@ export const ChatComposerAttachItem = ({
     );
 };
 
-export type ChatComposerProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'children'> & {
+export type MessageComposerProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'children'> & {
     /** Controlled draft. */
     value?: string;
     defaultValue?: string;
@@ -80,7 +80,7 @@ export type ChatComposerProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'child
     onSend?: (text: string) => unknown;
     /**
      * Draws the leading attach button, which opens the file picker and calls this with the files
-     * chosen. Show them in `attachments`. The same prop, meaning the same, as on `ChatPrompt`.
+     * chosen. Show them in `attachments`. The same prop, meaning the same, as on `AssistantPrompt`.
      */
     onAttach?: (files: File[]) => void;
     /** The picker's file types, as the input's `accept`: "image/*,.pdf". */
@@ -89,12 +89,12 @@ export type ChatComposerProps = Omit<ComponentProps<'form'>, 'onSubmit' | 'child
     onAdd?: () => void;
     /**
      * Makes the attach button open a menu above it of what can go with a message: `DropdownMenuItem`s
-     * with a 16 icon, and `ChatComposerAttachItem` for files (it opens the picker; needs `onAttach`).
+     * with a 16 icon, and `MessageComposerAttachItem` for files (it opens the picker; needs `onAttach`).
      */
     attachMenu?: ReactNode;
-    /** Replaces the attach button entirely, as `attach` does on `ChatPrompt`. */
+    /** Replaces the attach button entirely, as `attach` does on `AssistantPrompt`. */
     attach?: ReactNode;
-    /** @deprecated Use `attach`; `start` is the foot's left slot on `ChatPrompt`. */
+    /** @deprecated Use `attach`; `start` is the foot's left slot on `AssistantPrompt`. */
     start?: ReactNode;
     /**
      * What waits to go: a `ChatAttachments` row of `ChatAttachment`s (files, images, linked
@@ -136,7 +136,7 @@ const optionSelector = '[role=option]:not([aria-disabled=true])';
  * sends; Shift+Enter starts a new line. Above the box, from the top: who else is typing, then what
  * waits to go with the message; suggestions for a reference being typed float just over the box.
  */
-export const ChatComposer = ({
+export const MessageComposer = ({
     value: valueProp,
     defaultValue = '',
     onValueChange,
@@ -162,7 +162,7 @@ export const ChatComposer = ({
     textareaRef,
     className,
     ...props
-}: ChatComposerProps) => {
+}: MessageComposerProps) => {
     const attachName = attachLabel ?? addLabel ?? 'Attach';
     const [uncontrolled, setUncontrolled] = useState(defaultValue);
     const controlled = valueProp !== undefined;
@@ -298,7 +298,7 @@ export const ChatComposer = ({
             aria-label={attachName}
             // The composer's one filled control: the send beside it stays a quiet arrow.
             className="size-cell rounded-item"
-            data-slot="chat-composer-add"
+            data-slot="message-composer-add"
             disabled={disabled}
             onClick={attachMenu ? undefined : attach}
             // No size variant: the cell square (32) and its corner are its own, not the 34 control row.
@@ -342,7 +342,7 @@ export const ChatComposer = ({
             <form
                 className={cn('flex min-w-0 flex-col', className)}
                 data-disabled={disabled || undefined}
-                data-slot="chat-composer"
+                data-slot="message-composer"
                 onSubmit={event => {
                     event.preventDefault();
                     send();
@@ -353,7 +353,7 @@ export const ChatComposer = ({
                     // Held at its 24 row (6 above it, 8 clear of what follows) while nobody types, so the box never moves.
                     <div
                         className="box-content flex h-6 min-w-0 items-center pt-1.5 pb-2"
-                        data-slot="chat-composer-typing"
+                        data-slot="message-composer-typing"
                     >
                         {typing}
                     </div>
@@ -362,7 +362,7 @@ export const ChatComposer = ({
                     <input
                         accept={accept}
                         className="hidden"
-                        data-slot="chat-composer-file"
+                        data-slot="message-composer-file"
                         disabled={disabled}
                         multiple
                         onChange={event => {
@@ -379,16 +379,16 @@ export const ChatComposer = ({
                 )}
                 {attached && (
                     // What waits to go, outside the box and 8 above it, so the box keeps its one-line look.
-                    <div className="min-w-0 pb-2" data-slot="chat-composer-attachments">
+                    <div className="min-w-0 pb-2" data-slot="message-composer-attachments">
                         {attachments}
                     </div>
                 )}
-                <div className="relative min-w-0" data-slot="chat-composer-field">
+                <div className="relative min-w-0" data-slot="message-composer-field">
                     {suggesting && (
                         // Over whatever is above the box, 8 clear of it and its full width.
                         <div
                             className="absolute inset-x-0 bottom-full z-10 pb-2"
-                            data-slot="chat-composer-suggestions"
+                            data-slot="message-composer-suggestions"
                             ref={listRef}
                         >
                             <SuggestionsContext.Provider value={{ listId, activeId, setActiveId }}>
@@ -408,7 +408,7 @@ export const ChatComposer = ({
                                 ? 'cursor-not-allowed'
                                 : 'hover:border-neutral-200 has-[textarea:focus]:border-neutral-200',
                         )}
-                        data-slot="chat-composer-box"
+                        data-slot="message-composer-box"
                         onMouseDown={event => focusTextOnPress(event, nodeRef.current, disabled)}
                     >
                         {leading}
@@ -424,7 +424,7 @@ export const ChatComposer = ({
                                 'disabled:cursor-not-allowed disabled:text-neutral-400 disabled:placeholder:text-neutral-300',
                                 !leading && 'pl-2',
                             )}
-                            data-slot="chat-composer-input"
+                            data-slot="message-composer-input"
                             disabled={disabled}
                             maxLength={maxLength}
                             name={name}
@@ -442,7 +442,7 @@ export const ChatComposer = ({
                             aria-label={sendLabel}
                             // Quiet: an arrow in the text's grey that darkens on hover, dimmed until there is something to send.
                             className="size-cell rounded-item [&_svg]:size-5"
-                            data-slot="chat-composer-send"
+                            data-slot="message-composer-send"
                             disabled={!canSend}
                             size={null}
                             type="submit"

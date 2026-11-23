@@ -253,7 +253,7 @@ Corners nest, each smaller than what holds it: **panel ⊃ card ⊃ control ⊃ 
 | --------- | ------- | ----------------------------------------------------------------------------- |
 | `chip`    | 6px     | badges, checkboxes, icon tiles, small chips, code blocks                       |
 | `item`    | 10px    | sidebar items, menu and list rows, cards inside a list, kanban cards, media tiles |
-| `control` | 12px    | buttons, inputs, selects, segmented tracks, the ruled table's frame           |
+| `control` | 12px    | buttons, inputs, selects, segmented tracks, pill tabs, the ruled table's frame |
 | `card`    | 16px    | cards, dialogs                                                                |
 | `panel`   | 20px    | the app panel, sheets                                                         |
 | `dock`    | 26px    | the dock, the rail, dock actions: a full pill on 38 or 52px                   |
@@ -479,8 +479,8 @@ itself, not the screen, so a shell shown narrow inside a box or embedded in anot
 | Shell width               | What changes                                                                                   |
 | ------------------------- | ---------------------------------------------------------------------------------------------- |
 | 1024 and up               | Nothing: everything as drawn.                                                                  |
-| under 1024 (`shell-sidebar`) | The sidebar no longer fits beside the panel. It becomes a drawer behind a toggle at the far left of the header bar; the header bar's back and forward and its actions hide; a top nav's links go into the same drawer. |
-| under 640 (`shell-compact`)  | Compact, a phone: the page's top offset is 40 and its side padding 16. The panel keeps its 8 gutter, its corners and its hairline, as on a wide screen. |
+| under 1024 (`shell-sidebar`) | The sidebar no longer fits beside the panel. It becomes a drawer behind a toggle at the far left of the header bar; the header bar's back and forward and its actions hide. A top nav stays, its links scrolling. |
+| under 640 (`shell-compact`)  | Compact, a phone: the page's top offset is 40 and its side padding 16. The panel keeps its 8 gutter, its corners and its hairline, as on a wide screen. A top nav's switcher, links and actions go into the drawer, behind a toggle before the brand. |
 
 **A part answers to the width it is given**, its container, never the screen: a table or a pager in a narrow
 card behaves as it would on a phone. Only overlays (dialogs, sheets, toasts, popovers, a date picker's panel)
@@ -523,7 +523,7 @@ pixels) stay on the spacing scale.
 | Width                                                       | Px                         |
 | ----------------------------------------------------------- | -------------------------- |
 | Sidebar (as a drawer, never wider than the shell − 48)      | 256                        |
-| Rail, closed · open                                         | 52 · 208                   |
+| NavRail, closed · open                                      | 52 · 208                   |
 | Toast                                                       | 360                        |
 | Popover                                                     | 288                        |
 | Dialog (never wider than the viewport − 32)                 | 480                        |

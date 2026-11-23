@@ -3,13 +3,13 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableFold,
-    TableFoldCell,
-    TableFoldRows,
     TableHead,
     TableHeader,
     TableRow,
     TableSelectCell,
+    TableTree,
+    TableTreeCell,
+    TableTreeRows,
 } from 'continuum';
 import { FileText, Folder } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
@@ -48,7 +48,7 @@ const leaves = <N extends Node>(node: N): string[] =>
 
 /**
  * A table whose rows fold out into rows of the same kind, as deep as the data goes: each level is
- * a `TableFold` holding its row and a `TableFoldRows` of the next level.
+ * a `TableTree` holding its row and a `TableTreeRows` of the next level.
  */
 const FoldTree = <N extends Node>({
     label,
@@ -85,7 +85,7 @@ const FoldTree = <N extends Node>({
         const line = (
             <TableRow data-selected={(selection && allOf(own)) || undefined} key={node.name}>
                 {selection && <TableSelectCell>{box}</TableSelectCell>}
-                <TableFoldCell select={box} />
+                <TableTreeCell select={box} />
                 <TableCell tree>{name.cell(node)}</TableCell>
                 {columns.map(column => (
                     <TableCell
@@ -101,17 +101,17 @@ const FoldTree = <N extends Node>({
         if (!node.items) return line;
 
         return (
-            <TableFold
+            <TableTree
                 defaultOpen={open(node, depth)}
                 guides={guides}
                 key={node.name}
                 label={`What is in ${node.name}`}
             >
                 {line}
-                <TableFoldRows shift={shift}>
+                <TableTreeRows shift={shift}>
                     {(node.items as N[]).map(child => row(child, depth + 1))}
-                </TableFoldRows>
-            </TableFold>
+                </TableTreeRows>
+            </TableTree>
         );
     };
 
@@ -356,9 +356,9 @@ const FoldPreview = ({ knobs }: PreviewProps) => {
 };
 
 export const entry: Entry = {
-    id: 'table-fold',
-    name: 'Fold-out rows',
-    category: 'content',
+    id: 'table-tree',
+    name: 'Table tree',
+    category: 'tables',
     description:
         'A row that opens to more rows under it, which can open in turn: rows of the same kind on the same columns (folders in folders), or a breakdown stepped in a level (a payout by source, by plan).',
     span: 2,

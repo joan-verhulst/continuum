@@ -64,7 +64,7 @@ export const ChatReference = ({
             {
                 className: cn(
                     // The field row's 38px, with the control's corner to match.
-                    'flex min-h-control-lg min-w-0 items-center gap-3 rounded-control border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-neutral-950 text-xs transition-[border-color] duration-150',
+                    'flex min-h-control-xl min-w-0 items-center gap-3 rounded-control border border-neutral-200 bg-neutral-50 px-3 py-1.5 text-neutral-950 text-xs transition-[border-color] duration-150',
                     // Only a link or button reacts; a plain record stays still under the pointer.
                     '[a&]:hover:border-neutral-300 [button&]:hover:border-neutral-300',
                     focusRing,

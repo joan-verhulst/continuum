@@ -28,6 +28,7 @@ A chart takes its rows and its series as props, and an `aria-label` that says wh
 | Things with three measures (across, up, size), maybe a group      | BubbleChart                              |
 | A price over time, as a line or as candles                        | CandlestickChart                         |
 | One figure and its change                                         | StatCard (`components.md`), not a chart  |
+| Which way one figure has been going, inside its stat card         | Sparkline                                |
 
 In doubt, the plainer chart: a bar before a rose, a line before a radar.
 
@@ -60,9 +61,8 @@ key and the figures for it.
   moment). A ChartCard builds the table from its data and offers it unless `figures={false}`. `filename` names
   the download; the title unless given.
 - `onOpen` adds a ghost arrow icon button at the head's end, where the chart opens in full.
-- `variant="framed"` sets the plot on a stage of its own: the card on `panel` corners (20), the canvas fill
-  (`neutral-100`), 4 padding; the head 20 from the sides, 16 from the top, 20 above the stage; the stage the
-  surface with a hairline, 20 padding, its corner the panel's less the 4, so the two stay concentric.
+- In a theme that frames its cards (`theming.md`, `cards`), the head stands on the frame and the plot on the
+  stage, 20 padding; the card's own values are the plain ones above.
 - A card never repeats a stat card's figure, and a stat card never repeats the card's.
 
 **The key**, ChartKey: an item per series, 24 high, `chip` corners, 6 side padding, 4 apart, wrapping: a
@@ -348,6 +348,25 @@ ink), and a group that may colour them. **Not for** two measures alone, or many 
 - A rise is a tint with a solid edge, a fall solid, so the two are told by form as well as by tone (`success`,
   `error`). Prices are read on the right; the latest close is tagged on a dashed rule. Drag pans, ctrl or ⌘ with
   the wheel (or a pinch) zooms about the pointer, shift-drag marks a stretch, a double click shows it all.
+
+### Sparkline
+
+**For** the recent shape of one figure, inside its stat card (`chart`), read at a glance: which way it has
+been going, and where now sits in it. **Not for** a figure read over time for its own sake (an AreaChart in its
+card), a value the reader must read off the line, or more than one series.
+
+- `data` (numbers, oldest first), `kind` (`area` unless given, `line`, or `bar`), `current` (the reading that is
+  now; the last unless given), `color` (`series-1`), `height` (40, the marks alone), `labels` (`at`, `label`).
+- No axes, no grid, no frame and no pointer: the card's figure says how much, the line says which way. A
+  line stands on its own range, but never on less than a fifth of its level, so a figure that held steady
+  reads steady. It is held 4 in from each edge so the dot at now keeps its round.
+- An area is the 2 line over its wash (20% to 4%) up to now, a 3 dot ringed 2 in the surface at now, and
+  after it the forecast as a 1.5 line dashed 6 on, 4 off at half strength, with no wash. Bars stand on zero,
+  2 to 12 wide at 62% of their slot, rounded 3 at the head: before now at 45%, now full, the forecast at 18%.
+- Labels under the marks, 8 below, 11 `neutral-600` tabular: the first held to the left edge, the last to the
+  right, any between centred on its reading. Name the start, now and (with a forecast) the end, nothing more.
+  A label between that would come within 8 of a neighbour is left out, measured in the theme's font.
+- It wipes in with the rest of the kit, once.
 
 ## On a canvas
 
