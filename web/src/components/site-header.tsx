@@ -2,8 +2,32 @@
 
 import { ContinuumLogo } from '@playground/brand';
 import { Button, cn, focusRing } from 'continuum';
-import { LogIn, Menu, X } from 'lucide-react';
 import {
+    ArrowRight,
+    ChartArea,
+    Contrast,
+    Eye,
+    FileText,
+    Layers,
+    LogIn,
+    type LucideIcon,
+    Menu,
+    MousePointerClick,
+    Paintbrush,
+    Palette,
+    Pipette,
+    Ruler,
+    ScanSearch,
+    Server,
+    Shapes,
+    Sparkles,
+    Table2,
+    TextCursorInput,
+    Type,
+    X,
+} from 'lucide-react';
+import {
+    AnimatePresence,
     animate,
     motion,
     useMotionTemplate,
@@ -11,9 +35,19 @@ import {
     useTransform,
     useVelocity,
 } from 'motion/react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { type ComponentProps, type RefObject, useEffect, useId, useRef, useState } from 'react';
+import {
+    type ComponentProps,
+    type KeyboardEvent as ReactKeyboardEvent,
+    type RefObject,
+    useEffect,
+    useId,
+    useRef,
+    useState,
+} from 'react';
+import type { HeaderMenu } from '@/lib/header-menus';
 import { inSection, inShell, sections } from '@/lib/nav';
 import { appLink } from '@/lib/site';
 import { ModeSwitch } from './mode';
@@ -252,13 +286,228 @@ const ActivePill = ({
     );
 };
 
+/**
+ * Every foldout is this size, whichever section: a well at 16:10-ish for the light or a pick's
+ * preview, and beside it the picks and the section's link, rows as high as the island's links.
+ */
+const FOLDOUT_WIDTH = 600;
+const FOLDOUT_HEIGHT = 226;
+const WELL_WIDTH = 336;
+
+/** A row of the foldout: the island's link, 34 high on the control corner, the pill's grey on hover. */
+const rowClass = cn(
+    'group/row flex h-control items-center gap-2.5 rounded-control px-3 text-sm transition-[background-color,color] duration-150',
+    'hover:bg-selected hover:text-neutral-950',
+    focusRing,
+);
+
+/** The live previews, loaded apart from the header (they bring the playground's entries). */
+const HeaderPreview = dynamic(
+    () => import('./header-preview').then(module => module.HeaderPreview),
+    {
+        ssr: false,
+    },
+);
+/** The least room the foldout keeps from the window's edges. */
+const FOLDOUT_GUTTER = 16;
+/** A pointer passing over the links on its way elsewhere opens nothing; once open, a move is instant. */
+const OPEN_DELAY = 90;
+/** Time to cross from a link to the foldout, or back, without it closing. */
+const CLOSE_DELAY = 140;
+
+/** The picks' icons, by the key the menu gives (an icon can't cross from the server). */
+const menuIcons: Record<string, LucideIcon> = {
+    actions: MousePointerClick,
+    inputs: TextCursorInput,
+    tables: Table2,
+    charts: ChartArea,
+    colour: Palette,
+    type: Type,
+    spacing: Ruler,
+    'surfaces-and-depth': Layers,
+    '/ai/skills': Sparkles,
+    '/ai/mcp-server': Server,
+    '/ai/audit': ScanSearch,
+    '/ai/design-md': FileText,
+    'theme-builder': Paintbrush,
+    'color-builder': Pipette,
+    'contrast-checker': Contrast,
+    'color-blindness-simulator': Eye,
+};
+
+/** The cross-fade of the contents when the pointer moves to another section. */
+const swap = {
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    initial: { opacity: 0 },
+    transition: { duration: 0.14 },
+} as const;
+
+/**
+ * The menu a section folds out under its link on hover, one size for every section: at its left a
+ * tile in the site's light naming the section and leading to all of it, beside it four of its pages
+ * to start from, each an icon and its name. It stands centred under the links' island whichever
+ * section is open: moving to another link cross-fades the contents, and the light stays lit.
+ */
+const Foldout = ({
+    id,
+    menu,
+    x,
+    onNavigate,
+    panel,
+}: {
+    id: string;
+    menu: HeaderMenu;
+    x: number;
+    onNavigate: () => void;
+    panel: RefObject<HTMLDivElement | null>;
+}) => {
+    // The visual of the pick under the pointer; none shows the section's light.
+    const [visual, setVisual] = useState<string>();
+    // biome-ignore lint/correctness/useExhaustiveDependencies: a new section starts on its light
+    useEffect(() => setVisual(undefined), [id]);
+    // The previews' module starts loading as the foldout opens, so a pick shows at once.
+    useEffect(() => {
+        void import('./header-preview');
+    }, []);
+
+    return (
+        <motion.div
+            animate={{ opacity: 1, y: 0, scale: 1, x }}
+            className="absolute top-full left-0 pt-[18px]"
+            exit={{
+                opacity: 0,
+                y: -4,
+                scale: 0.98,
+                transition: { duration: 0.12, ease: 'easeIn' },
+            }}
+            initial={{ opacity: 0, y: -4, scale: 0.98, x }}
+            style={{ width: FOLDOUT_WIDTH, transformOrigin: 'top center' }}
+            transition={{
+                default: { duration: 0.18, ease: [0.23, 1, 0.32, 1] },
+                x: { type: 'spring', bounce: 0.15, duration: 0.35 },
+            }}
+        >
+            {/* The island's own wash, hairline, padding and corner, so the two read as one thing. */}
+            <div
+                className="flex gap-1 overflow-hidden rounded-[calc(var(--radius-control)+4px)] border border-neutral-200 bg-neutral-100 p-1 shadow-float"
+                ref={panel}
+                style={{ height: FOLDOUT_HEIGHT }}
+            >
+                {/* The well: the light under the section's name, or the pick under the pointer, live. */}
+                <Link
+                    className={cn(
+                        'group relative isolate flex shrink-0 overflow-hidden rounded-control border border-neutral-200',
+                        focusRing,
+                    )}
+                    href={menu.feature.href}
+                    onClick={onNavigate}
+                    style={{ width: WELL_WIDTH }}
+                >
+                    {/* The light, baked: one image for each mode, as the html's mode picks. */}
+                    <div
+                        aria-hidden
+                        className="pointer-events-none absolute inset-0 -z-10 bg-neutral-50"
+                    >
+                        <img
+                            alt=""
+                            className="absolute inset-0 size-full object-cover [html[data-mode=dark]_&]:hidden"
+                            src="/header/menu-light-light.jpg"
+                        />
+                        <img
+                            alt=""
+                            className="absolute inset-0 hidden size-full object-cover [html[data-mode=dark]_&]:block"
+                            src="/header/menu-light-dark.jpg"
+                        />
+                    </div>
+                    <AnimatePresence initial={false} mode="popLayout">
+                        <motion.div
+                            className="flex w-full flex-col justify-between p-5"
+                            key={id}
+                            {...swap}
+                        >
+                            <div className="flex flex-col gap-1">
+                                <span className="font-medium text-base text-neutral-950">
+                                    {menu.feature.title}
+                                </span>
+                                <span className="text-pretty text-neutral-600 text-sm">
+                                    {menu.feature.text}
+                                </span>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
+                    {/* The pick under the pointer, over the light: a picture, not a control. */}
+                    <AnimatePresence initial={false}>
+                        {visual && (
+                            <motion.div
+                                aria-hidden
+                                className="absolute inset-0 bg-neutral-100"
+                                key={visual}
+                                {...swap}
+                            >
+                                <HeaderPreview visual={visual} />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </Link>
+                {/* The picks, as the island's links: a row each, then the whole section at the foot. */}
+                <div className="relative min-w-0 flex-1">
+                    <AnimatePresence initial={false} mode="popLayout">
+                        <motion.div
+                            className="flex h-full flex-col gap-0.5"
+                            key={id}
+                            onPointerLeave={() => setVisual(undefined)}
+                            {...swap}
+                        >
+                            <ul className="flex flex-col gap-0.5">
+                                {menu.items.map(item => {
+                                    const Icon = menuIcons[item.icon] ?? Shapes;
+                                    return (
+                                        <li key={item.href}>
+                                            <Link
+                                                className={cn(rowClass, 'text-neutral-700')}
+                                                href={item.href}
+                                                onClick={onNavigate}
+                                                onFocus={() => setVisual(item.visual)}
+                                                onPointerEnter={() => setVisual(item.visual)}
+                                            >
+                                                <Icon
+                                                    className="size-4 shrink-0 text-neutral-500 transition-colors duration-150 group-hover/row:text-neutral-950"
+                                                    strokeWidth={2}
+                                                />
+                                                <span className="truncate">{item.label}</span>
+                                            </Link>
+                                        </li>
+                                    );
+                                })}
+                            </ul>
+                            <Link
+                                className={cn(rowClass, 'mt-auto justify-between text-neutral-950')}
+                                href={menu.feature.href}
+                                onClick={onNavigate}
+                                onPointerEnter={() => setVisual(undefined)}
+                            >
+                                {menu.feature.action}
+                                <ArrowRight
+                                    className="size-4 shrink-0 text-neutral-500 transition-[color,translate] duration-150 group-hover/row:translate-x-0.5 group-hover/row:text-neutral-950"
+                                    strokeWidth={2}
+                                />
+                            </Link>
+                        </motion.div>
+                    </AnimatePresence>
+                </div>
+            </div>
+        </motion.div>
+    );
+};
+
 /** Beside the action: light or dark, where the page can switch (the landing is dark whatever the choice). */
 const IconLinks = ({ mode }: { mode: boolean }) => (mode ? <ModeSwitch /> : null);
 
 const linkClass = cn(
     // 34 high, on the control corner.
     'flex h-control items-center gap-2 rounded-control px-3 text-neutral-600 text-sm transition-[background-color,color] duration-150',
-    'hover:text-neutral-950 aria-[current]:text-neutral-950',
+    'hover:text-neutral-950 aria-[current]:text-neutral-950 data-[open]:text-neutral-950',
     focusRing,
 );
 
@@ -269,7 +518,68 @@ const menuLinkClass = cn(
     'outline-none focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-solid focus-visible:-outline-offset-2',
 );
 
-export const SiteHeader = () => {
+/**
+ * Which section's foldout is open, and where its card stands: centred under the link, kept inside the
+ * window. A link opens after a short pause, and at once while another is open; leaving the links and
+ * the card closes it after a pause, so the pointer can cross between them.
+ */
+const useFoldout = (group: RefObject<HTMLDivElement | null>) => {
+    const [open, setOpen] = useState<{ id: string; x: number }>();
+    const openRef = useRef(open);
+    openRef.current = open;
+    const timer = useRef<number>(undefined);
+
+    // One place for every section: centred under the links' island, kept inside the window.
+    const place = (id: string) => {
+        const box = group.current;
+        if (!box) return undefined;
+        const rect = box.getBoundingClientRect();
+        const centred = rect.left + rect.width / 2 - FOLDOUT_WIDTH / 2;
+        const max = window.innerWidth - FOLDOUT_GUTTER - FOLDOUT_WIDTH;
+        return { id, x: Math.max(FOLDOUT_GUTTER, Math.min(centred, max)) - rect.left };
+    };
+
+    const show = (id: string, now = false) => {
+        window.clearTimeout(timer.current);
+        if (openRef.current || now) setOpen(place(id));
+        else timer.current = window.setTimeout(() => setOpen(place(id)), OPEN_DELAY);
+    };
+    const hide = () => {
+        window.clearTimeout(timer.current);
+        timer.current = window.setTimeout(() => setOpen(undefined), CLOSE_DELAY);
+    };
+    const keep = () => window.clearTimeout(timer.current);
+    const close = () => {
+        window.clearTimeout(timer.current);
+        setOpen(undefined);
+    };
+
+    useEffect(() => () => window.clearTimeout(timer.current), []);
+
+    // Escape closes it; a resize would leave it off its link, so it closes then too.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: close only clears state
+    useEffect(() => {
+        if (!open) return;
+        const onKey = (event: KeyboardEvent) => {
+            if (event.key !== 'Escape') return;
+            const trigger = group.current?.querySelector<HTMLElement>(
+                `[data-foldout="${open.id}"] a`,
+            );
+            if (group.current?.contains(document.activeElement)) trigger?.focus();
+            close();
+        };
+        window.addEventListener('keydown', onKey);
+        window.addEventListener('resize', close);
+        return () => {
+            window.removeEventListener('keydown', onKey);
+            window.removeEventListener('resize', close);
+        };
+    }, [open, group]);
+
+    return { open, show, hide, keep, close };
+};
+
+export const SiteHeader = ({ menus = {} }: { menus?: Record<string, HeaderMenu> }) => {
     const pathname = usePathname() ?? '/';
     const home = pathname === '/';
     const docs = inShell(pathname);
@@ -279,10 +589,27 @@ export const SiteHeader = () => {
     const menuId = useId();
     const nav = useRef<HTMLElement>(null);
     const row = useRef<HTMLUListElement>(null);
+    const group = useRef<HTMLDivElement>(null);
+    const panel = useRef<HTMLDivElement>(null);
+    const foldout = useFoldout(group);
+    const foldoutMenu = foldout.open && menus[foldout.open.id];
 
-    // A new page closes the menu.
+    // A new page closes the menu and the foldout.
     // biome-ignore lint/correctness/useExhaustiveDependencies: runs on each new path
-    useEffect(() => setOpen(false), [pathname]);
+    useEffect(() => {
+        setOpen(false);
+        foldout.close();
+    }, [pathname]);
+
+    /** ArrowDown on a link opens its foldout and moves into it. */
+    const onLinkKey = (id: string) => (event: ReactKeyboardEvent) => {
+        if (event.key !== 'ArrowDown' || !menus[id]) return;
+        event.preventDefault();
+        foldout.show(id, true);
+        requestAnimationFrame(() =>
+            requestAnimationFrame(() => panel.current?.querySelector<HTMLElement>('a')?.focus()),
+        );
+    };
 
     // The menu closes on Escape, on a press outside the bar, and once the links fit the bar.
     useEffect(() => {
@@ -332,25 +659,63 @@ export const SiteHeader = () => {
                             </Link>
                         )}
                     </div>
-                    {/* The links held together in one rounded group, its corner the control's plus its padding. */}
-                    <div className="hidden rounded-[calc(var(--radius-control)+4px)] border border-neutral-200 bg-neutral-100 p-1 lg:flex">
-                        <ul className="relative flex items-center gap-0.5" ref={row}>
-                            <ActivePill
-                                index={links.findIndex(link => link.id === current)}
-                                list={row}
-                            />
-                            {links.map(link => (
-                                <li className="relative" key={link.id}>
-                                    <Link
-                                        aria-current={current === link.id ? 'true' : undefined}
-                                        className={linkClass}
-                                        href={link.href}
+                    {/* The links and their foldout are one hover area, so the pointer can cross between them. */}
+                    <div
+                        className="relative hidden lg:block"
+                        onBlur={event => {
+                            if (!event.currentTarget.contains(event.relatedTarget as Node | null))
+                                foldout.close();
+                        }}
+                        onPointerEnter={foldout.keep}
+                        onPointerLeave={foldout.hide}
+                        ref={group}
+                    >
+                        {/* The links held together in one rounded group, its corner the control's plus its padding. */}
+                        <div className="flex rounded-[calc(var(--radius-control)+4px)] border border-neutral-200 bg-neutral-100 p-1">
+                            <ul className="relative flex items-center gap-0.5" ref={row}>
+                                <ActivePill
+                                    index={links.findIndex(link => link.id === current)}
+                                    list={row}
+                                />
+                                {links.map(link => (
+                                    <li
+                                        className="relative"
+                                        data-foldout={link.id}
+                                        key={link.id}
+                                        onPointerEnter={event => {
+                                            if (event.pointerType !== 'mouse') return;
+                                            if (menus[link.id]) foldout.show(link.id);
+                                            else foldout.hide();
+                                        }}
                                     >
-                                        {link.label}
-                                    </Link>
-                                </li>
-                            ))}
-                        </ul>
+                                        <Link
+                                            aria-current={current === link.id ? 'true' : undefined}
+                                            className={linkClass}
+                                            data-open={
+                                                foldout.open?.id === link.id ? '' : undefined
+                                            }
+                                            href={link.href}
+                                            onClick={foldout.close}
+                                            onKeyDown={onLinkKey(link.id)}
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <AnimatePresence>
+                            {foldout.open && foldoutMenu && (
+                                <Foldout
+                                    id={foldout.open.id}
+                                    key="foldout"
+                                    menu={foldoutMenu}
+                                    onNavigate={foldout.close}
+                                    panel={panel}
+                                    x={foldout.open.x}
+                                />
+                            )}
+                        </AnimatePresence>
                     </div>
                     <div className="flex flex-1 items-center justify-end gap-1">
                         {/* No search button here for now: ⌘K still opens it, and the docs keep their field. */}

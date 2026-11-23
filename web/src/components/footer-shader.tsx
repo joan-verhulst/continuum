@@ -1,7 +1,7 @@
 'use client';
 
 import { cn } from 'continuum';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { fullScreenProgram, isPale, toRgb, WAVE } from '@/lib/gl';
 import { type Tunable, tunable } from '@/lib/tunable';
 
@@ -414,13 +414,22 @@ export const GlassLight = <T extends Light>({
     fadeIn?: number;
 }) => {
     const canvas = useRef<HTMLCanvasElement>(null);
+    // A canvas keeps the context it first gave, lost or not: when the effect runs again on the same
+    // canvas after its cleanup lost the context (React's double run in development, for a light
+    // mounted after hydration), a fresh canvas is drawn in its place.
+    const [generation, setGeneration] = useState(0);
 
+    // biome-ignore lint/correctness/useExhaustiveDependencies: a new generation is a new canvas
     useEffect(() => {
         const element = canvas.current;
         const panel = element?.parentElement;
         const scope = element?.closest<HTMLElement>('[data-light-scope]') ?? panel;
         const name = typeof glass === 'string' ? scope?.querySelector<HTMLElement>(glass) : null;
         const gl = element?.getContext('webgl', { antialias: false, premultipliedAlpha: true });
+        if (gl?.isContextLost()) {
+            setGeneration(value => value + 1);
+            return;
+        }
         // Without WebGL, the panel says so (`data-unlit`), so a stand-in for the light shows only then.
         if (panel && !gl) panel.dataset.unlit = '';
         if (!element || !panel || !scope || !gl) return;
@@ -613,9 +622,16 @@ export const GlassLight = <T extends Light>({
             delete panel.dataset.lit;
             gl.getExtension('WEBGL_lose_context')?.loseContext();
         };
-    }, [glass, store, letters, margin, bake, fadeIn]);
+    }, [glass, store, letters, margin, bake, fadeIn, generation]);
 
-    return <canvas aria-hidden className={cn('block size-full', className)} ref={canvas} />;
+    return (
+        <canvas
+            aria-hidden
+            className={cn('block size-full', className)}
+            key={generation}
+            ref={canvas}
+        />
+    );
 };
 
 /** The footer's: the name, drawn by the shader in its light. */

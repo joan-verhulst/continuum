@@ -42,7 +42,7 @@ const WIDEST: Record<1 | 2 | 3, number> = { 1: 560, 2: 680, 3: 760 };
 const ROOM = 24;
 
 /** Scales a box drawn `width` wide (at the stage's shape) to the width it is given. */
-const Scaled = ({
+export const Scaled = ({
     width,
     children,
     inner,
@@ -129,7 +129,12 @@ const NameOnly = ({ name }: { name: string }) => (
  * its shape, never past WIDEST) until the preview and its open popups fit with room round them;
  * what still does not fit is cropped as the playground's own tiles crop it.
  */
-const Preview = ({ entry }: { entry: Entry }) => {
+export const Preview = ({
+    entry,
+}: {
+    /** What draws it: a showcase entry, or anything with a preview and its knobs (a foundation's stage). */
+    entry: Pick<Entry, 'Preview' | 'knobs' | 'span' | 'stageClassName'>;
+}) => {
     const { Preview: Draw, knobs, stageClassName, span } = entry;
     const base = DRAWN[span ?? 1];
     const widest = WIDEST[span ?? 1];

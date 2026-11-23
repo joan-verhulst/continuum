@@ -4,6 +4,7 @@ import { FaqSection } from '@/components/faq-section';
 import { Article, CardGrid, FrameSection, LinkCard, PageHero } from '@/components/page-frame';
 import { mcpManifest, skills } from '@/lib/content';
 import { type Faq, JsonLd, pageMetadata, techArticleLd } from '@/lib/seo';
+import { aiWayLines } from './_lib/nav';
 
 /*
  * The AI section's front page, for a person or an answer engine asking what Continuum gives an
@@ -23,32 +24,15 @@ export const metadata = pageMetadata({
     path: '/ai',
 });
 
-const ways = (): { href: string; name: string; text: string; icon: LucideIcon }[] => [
-    {
-        href: '/ai/skills',
-        name: 'Skills',
-        icon: Sparkles,
-        text: `${skills().length} skills for Claude Code: the system's values, page anatomy, parts and recipes, and the spacing formula, installed once and used in every project.`,
-    },
-    {
-        href: '/ai/mcp-server',
-        name: 'MCP server',
-        icon: Server,
-        text: `The same system as ${toolCount()} read-only tools, for any agent in any editor: Claude Code, Cursor, VS Code, and the agents in Paper and Figma.`,
-    },
-    {
-        href: '/ai/audit',
-        name: 'Audit',
-        icon: ScanSearch,
-        text: 'Reads existing UI in any stack, source or rendered, and says what is off in units, what Continuum wants, why, and the fix written for the file.',
-    },
-    {
-        href: '/ai/design-md',
-        name: 'DESIGN.md',
-        icon: FileText,
-        text: "The brief the theme builder writes beside a project's app.css: its theme and the rules in short, for an agent that reads the project.",
-    },
-];
+/** Each way's icon on its card; the lines themselves are shared with the header's menu. */
+const icons: Record<string, LucideIcon> = {
+    '/ai/skills': Sparkles,
+    '/ai/mcp-server': Server,
+    '/ai/audit': ScanSearch,
+    '/ai/design-md': FileText,
+};
+
+const ways = () => aiWayLines().map(way => ({ ...way, icon: icons[way.href] ?? Sparkles }));
 
 const faqs = (): Faq[] => [
     {

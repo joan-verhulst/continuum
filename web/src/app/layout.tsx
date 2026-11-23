@@ -16,6 +16,7 @@ import { ModeScript } from '@/components/mode-script';
 import { SiteFooter } from '@/components/site-footer';
 import { SiteHeader } from '@/components/site-header';
 import { SiteSearch } from '@/components/site-search';
+import { headerMenus } from '@/lib/header-menus';
 import { rootMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = rootMetadata;
@@ -42,7 +43,7 @@ const RootLayout = ({ children }: { children: ReactNode }) => (
         <body>
             <SiteTheme>
                 <ModeScript />
-                <SiteHeader />
+                <SiteHeader menus={headerMenus()} />
                 <FooterPeel footer={<SiteFooter />}>{children}</FooterPeel>
                 {/* The site's one search, ⌘K from any page. */}
                 <SiteSearch />
