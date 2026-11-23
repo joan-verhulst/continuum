@@ -5,6 +5,8 @@ import {
     Badge,
     Button,
     Card,
+    CardContent,
+    CardHeader,
     CardTitle,
     DropdownMenu,
     DropdownMenuContent,
@@ -326,42 +328,56 @@ export const CustomerDetail = () => {
 
                     {/* Each fact's label over its value, so the two read together at this width. */}
                     <Card layout="list">
-                        <CardTitle>Details</CardTitle>
-                        <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
-                            {facts.map(fact => (
-                                <div className="flex min-w-0 flex-col gap-1.5" key={fact.term}>
-                                    <dt className="text-neutral-600 text-xs">{fact.term}</dt>
-                                    <dd className="flex min-h-6 min-w-0 items-center gap-2 font-medium text-neutral-950 text-xs">
-                                        {fact.value}
-                                    </dd>
-                                </div>
-                            ))}
-                        </dl>
+                        <CardHeader>
+                            <CardTitle>Details</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <dl className="grid @max-shell-compact/shell:grid-cols-2 grid-cols-3 gap-x-6 gap-y-5">
+                                {facts.map(fact => (
+                                    <div className="flex min-w-0 flex-col gap-1.5" key={fact.term}>
+                                        <dt className="text-neutral-600 text-xs">{fact.term}</dt>
+                                        <dd className="flex min-h-6 min-w-0 items-center gap-2 font-medium text-neutral-950 text-xs">
+                                            {fact.value}
+                                        </dd>
+                                    </div>
+                                ))}
+                            </dl>
+                        </CardContent>
                     </Card>
 
                     <Card layout="list">
-                        <CardTitle>Usage this month</CardTitle>
-                        <div className="flex flex-col gap-5">
-                            <Progress caption="72,000 of 100,000" label="API calls" value={72} />
-                            {customer.seats > 0 && (
+                        <CardHeader>
+                            <CardTitle>Usage this month</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="flex flex-col gap-5">
                                 <Progress
-                                    caption={`${used} of ${customer.seats}`}
-                                    label="Seats"
-                                    value={(used / customer.seats) * 100}
+                                    caption="72,000 of 100,000"
+                                    label="API calls"
+                                    value={72}
                                 />
-                            )}
-                            <Progress caption="41 of 100 GB" label="Storage" value={41} />
-                        </div>
+                                {customer.seats > 0 && (
+                                    <Progress
+                                        caption={`${used} of ${customer.seats}`}
+                                        label="Seats"
+                                        value={(used / customer.seats) * 100}
+                                    />
+                                )}
+                                <Progress caption="41 of 100 GB" label="Storage" value={41} />
+                            </div>
+                        </CardContent>
                     </Card>
 
                     <Card layout="list">
-                        <div className="flex items-center justify-between gap-4">
+                        <CardHeader className="flex-row items-center justify-between gap-4">
                             <CardTitle>Recent activity</CardTitle>
                             <Button onClick={() => setHistory(true)} variant="ghost">
                                 Full history
                             </Button>
-                        </div>
-                        <Events events={events.slice(0, 4)} />
+                        </CardHeader>
+                        <CardContent>
+                            <Events events={events.slice(0, 4)} />
+                        </CardContent>
                     </Card>
                 </TabsContent>
 

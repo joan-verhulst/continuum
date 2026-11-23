@@ -2,8 +2,10 @@ import { themeFontFamilies } from 'continuum';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app';
+import { AvatarsStandalone, isAvatarsStandalone } from './lab/avatars';
 import { GroupingStandalone, isGroupingStandalone } from './lab/grouping';
 import { isSidebarStandalone, SidebarStandalone } from './lab/sidebar';
+import { isTopNavStandalone, TopNavStandalone } from './lab/top-nav';
 import { isRasterStandalone, RasterStandalone } from './raster/lab';
 // Imported here rather than in styles.css so Vite resolves the font files.
 import '@fontsource-variable/geist';
@@ -36,10 +38,14 @@ if (root) {
             {/* The sidebar demo, on a plain page outside the playground */}
             {isRasterStandalone() ? (
                 <RasterStandalone />
+            ) : isAvatarsStandalone() ? (
+                <AvatarsStandalone />
             ) : isGroupingStandalone() ? (
                 <GroupingStandalone />
             ) : isSidebarStandalone() ? (
                 <SidebarStandalone />
+            ) : isTopNavStandalone() ? (
+                <TopNavStandalone />
             ) : (
                 <App />
             )}

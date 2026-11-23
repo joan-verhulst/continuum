@@ -2,6 +2,8 @@ import {
     BottomBar,
     Button,
     Card,
+    CardContent,
+    CardHeader,
     CardTitle,
     Chip,
     ChipAction,
@@ -149,8 +151,8 @@ const TopPagesCard = () => {
     const [view, setView] = useState<keyof typeof pages>('pages');
 
     return (
-        <Card className="gap-4 p-5">
-            <div className="flex items-center justify-between gap-4">
+        <Card layout="list">
+            <CardHeader className="flex-row items-center justify-between gap-4">
                 <CardTitle>Top pages</CardTitle>
                 <SegmentedControl
                     aria-label="Page list"
@@ -161,29 +163,31 @@ const TopPagesCard = () => {
                     <SegmentedControlItem value="entry">Entry</SegmentedControlItem>
                     <SegmentedControlItem value="exit">Exit</SegmentedControlItem>
                 </SegmentedControl>
-            </div>
-            <Table variant="rows">
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Page</TableHead>
-                        <TableHead className="w-16" numeric>
-                            Visitors
-                        </TableHead>
-                        <TableHead className="w-16" numeric>
-                            Views
-                        </TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {pages[view].map(([page, visitors, views]) => (
-                        <TableRow key={page}>
-                            <TableCell>{page}</TableCell>
-                            <TableCell numeric>{visitors}</TableCell>
-                            <TableCell numeric>{views}</TableCell>
+            </CardHeader>
+            <CardContent>
+                <Table variant="rows">
+                    <TableHeader>
+                        <TableRow>
+                            <TableHead>Page</TableHead>
+                            <TableHead className="w-16" numeric>
+                                Visitors
+                            </TableHead>
+                            <TableHead className="w-16" numeric>
+                                Views
+                            </TableHead>
                         </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+                    </TableHeader>
+                    <TableBody>
+                        {pages[view].map(([page, visitors, views]) => (
+                            <TableRow key={page}>
+                                <TableCell>{page}</TableCell>
+                                <TableCell numeric>{visitors}</TableCell>
+                                <TableCell numeric>{views}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </CardContent>
         </Card>
     );
 };

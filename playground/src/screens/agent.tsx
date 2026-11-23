@@ -1,7 +1,11 @@
 import {
     AppPanel,
     AppShell,
-    Badge,
+    AssistantAnswer,
+    AssistantAnswerAction,
+    AssistantAnswerCopy,
+    AssistantAnswerStep,
+    AssistantPrompt,
     Breadcrumb,
     BreadcrumbHome,
     BreadcrumbItem,
@@ -12,16 +16,17 @@ import {
     Button,
     ChatMessage,
     type ChatMessageProps,
-    ChatPrompt,
     ChatThread,
     DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
     HeaderBar,
+    Thinking,
+    ThinkingCaret,
 } from 'continuum';
-import { Plus } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Plus, RotateCcw, Search, ThumbsDown, ThumbsUp } from 'lucide-react';
+import { type ComponentProps, useEffect, useRef, useState } from 'react';
 import { useScreenNav } from './shared';
 import { WorkspaceSidebar } from './workspace';
 
@@ -29,7 +34,14 @@ const icon = { strokeWidth: 2 } as const;
 
 /* ---------- The assistant: a question in, a reply written out word by word ---------- */
 
-export type Turn = { id: number; own: boolean; text: string; pending?: boolean };
+// `greeting`: the assistant's opening words, an answer to nothing, so nothing to show it did or to act on.
+export type Turn = {
+    id: number;
+    own: boolean;
+    text: string;
+    pending?: boolean;
+    greeting?: boolean;
+};
 
 // Before the first words: long enough to read as thinking, short enough not to wait on.
 const THINK = 900;
@@ -123,31 +135,86 @@ export const useAssistant = (initial: Turn[] = []) => {
     return { turns, streaming, ask, stop, load };
 };
 
+/** The answer's good / bad, held per answer; one cancels the other. */
+const Verdict = () => {
+    const [verdict, setVerdict] = useState<'good' | 'bad' | null>(null);
+    const toggle = (next: 'good' | 'bad') =>
+        setVerdict(current => (current === next ? null : next));
+    return (
+        <>
+            <AssistantAnswerAction
+                icon={<ThumbsUp {...icon} />}
+                label="Good answer"
+                onClick={() => toggle('good')}
+                pressed={verdict === 'good'}
+            />
+            <AssistantAnswerAction
+                icon={<ThumbsDown {...icon} />}
+                label="Bad answer"
+                onClick={() => toggle('bad')}
+                pressed={verdict === 'bad'}
+            />
+        </>
+    );
+};
+
 /**
- * One turn of the conversation: the question on the tint, the assistant's reply as a card. Pass
- * `variant` as the turn's side, so the thread knows one's own question from the element alone; the
- * rest (the thread's `data-enter`) goes on to the message.
+ * One turn of the conversation: the question on the tint, the assistant's answer open in the
+ * column. Pass `variant` as the turn's side, so the thread knows one's own question from the element
+ * alone; the rest (the thread's `data-enter`) goes on to the part.
  */
 export const AssistantTurn = ({
     turn,
     variant: _variant,
+    onRetry,
     ...props
-}: Omit<ChatMessageProps, 'children'> & { turn: Turn }) =>
-    turn.own ? (
-        <ChatMessage {...props} variant="own">
-            {turn.text}
-        </ChatMessage>
-    ) : (
-        <ChatMessage
-            {...props}
-            author="Assistant"
-            badge={<Badge tone="primary">AI</Badge>}
+}: Omit<ChatMessageProps, 'children' | 'onRetry'> & { turn: Turn; onRetry?: () => void }) => {
+    if (turn.own) {
+        return (
+            <ChatMessage {...props} variant="own">
+                {turn.text}
+            </ChatMessage>
+        );
+    }
+    const thinking = turn.pending && turn.text === '';
+    return (
+        <AssistantAnswer
+            {...(props as ComponentProps<typeof AssistantAnswer>)}
+            actions={
+                turn.greeting ? undefined : (
+                    <>
+                        <AssistantAnswerCopy text={turn.text} />
+                        {onRetry && (
+                            <AssistantAnswerAction
+                                icon={<RotateCcw {...icon} />}
+                                label="Try again"
+                                onClick={onRetry}
+                            />
+                        )}
+                        <Verdict />
+                    </>
+                )
+            }
             pending={turn.pending}
-            variant="other"
+            work={
+                turn.greeting ? undefined : thinking ? (
+                    <Thinking>Searching the workspace</Thinking>
+                ) : (
+                    <AssistantAnswerStep icon={<Search {...icon} />}>
+                        Searched the workspace
+                    </AssistantAnswerStep>
+                )
+            }
         >
-            {turn.text}
-        </ChatMessage>
+            {!thinking && (
+                <p className="whitespace-pre-wrap">
+                    {turn.text}
+                    {turn.pending && <ThinkingCaret />}
+                </p>
+            )}
+        </AssistantAnswer>
     );
+};
 
 /* ---------- The workspace's chats ---------- */
 
@@ -304,7 +371,7 @@ export const Agent = () => {
                         {/* The prompt a third of the way down, the chats under it at its width; on
                             a phone it starts where a page does, clear of the keyboard. */}
                         <div className="mx-auto flex w-full max-w-conversation flex-col gap-6 @max-shell-compact/shell:pt-10 pt-40 pb-24">
-                            <ChatPrompt onSend={send} placeholder="Ask the workspace…" />
+                            <AssistantPrompt onSend={send} placeholder="Ask the workspace…" />
                             {/* The recent chats as quiet rows: the title, its age at the right, a
                                 dot in the side padding for an unread one, so titles stay on one line. */}
                             <ul aria-label="Recent chats" className="flex min-w-0 flex-col">
@@ -342,18 +409,30 @@ export const Agent = () => {
                 ) : (
                     <>
                         <ChatThread className="flex-1 px-[max(--spacing(4),calc((100%-var(--spacing-conversation))/2))] pt-10">
-                            {turns.map(turn => (
-                                <AssistantTurn
-                                    key={turn.id}
-                                    turn={turn}
-                                    variant={turn.own ? 'own' : 'other'}
-                                />
-                            ))}
+                            {turns.map((turn, i) => {
+                                // The last answer can be asked again: its question goes in once more.
+                                const question = turns[i - 1];
+                                const retry =
+                                    !turn.own &&
+                                    i === turns.length - 1 &&
+                                    !streaming &&
+                                    question?.own
+                                        ? () => ask(question.text, answer)
+                                        : undefined;
+                                return (
+                                    <AssistantTurn
+                                        key={turn.id}
+                                        onRetry={retry}
+                                        turn={turn}
+                                        variant={turn.own ? 'own' : 'other'}
+                                    />
+                                );
+                            })}
                         </ChatThread>
                         <div className="shrink-0 px-4 pb-4">
                             {/* It mounts on a send or an opened chat, which unmount what had focus: the
                                 caret moves here, so the next question can be typed straight away. */}
-                            <ChatPrompt
+                            <AssistantPrompt
                                 autoFocus
                                 className="mx-auto w-full max-w-conversation"
                                 onSend={send}

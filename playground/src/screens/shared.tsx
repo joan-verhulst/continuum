@@ -9,11 +9,11 @@ import {
     BreadcrumbSeparator,
     Button,
     cn,
+    NavRail,
+    NavRailItem,
+    NavRailSeparator,
+    NavRailToggle,
     pageContentVariants,
-    Rail,
-    RailItem,
-    RailSeparator,
-    RailToggle,
     SidebarAccount,
     SidebarFooter,
 } from 'continuum';
@@ -53,11 +53,11 @@ const AnalyticsRail = ({ initial }: { initial: string }) => {
     const [active, setActive] = useState(initial);
 
     return (
-        <Rail aria-label="Main" className="absolute top-1/2 left-8 z-20 -translate-y-1/2">
-            <RailToggle />
-            <RailSeparator />
+        <NavRail aria-label="Main" className="absolute top-1/2 left-8 z-20 -translate-y-1/2">
+            <NavRailToggle />
+            <NavRailSeparator />
             {railItems.map(item => (
-                <RailItem
+                <NavRailItem
                     active={active === item.id}
                     aria-current={active === item.id ? 'page' : undefined}
                     key={item.id}
@@ -65,14 +65,14 @@ const AnalyticsRail = ({ initial }: { initial: string }) => {
                     onClick={() => setActive(item.id)}
                 >
                     {item.icon}
-                </RailItem>
+                </NavRailItem>
             ))}
-            <RailSeparator />
-            <RailItem label="Notifications">
+            <NavRailSeparator />
+            <NavRailItem label="Notifications">
                 <Bell strokeWidth={2} />
-            </RailItem>
+            </NavRailItem>
             <Avatar alt="Northwind" className="mt-1" fallback="N" />
-        </Rail>
+        </NavRail>
     );
 };
 

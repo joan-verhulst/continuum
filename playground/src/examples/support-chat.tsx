@@ -5,8 +5,6 @@ import {
     Button,
     ChatAttachment,
     ChatAttachments,
-    ChatComposer,
-    ChatComposerAttachItem,
     ChatEvent,
     ChatMessage,
     type ChatMessageStatus,
@@ -16,6 +14,8 @@ import {
     ChatThread,
     ChatToken,
     DropdownMenuItem,
+    MessageComposer,
+    MessageComposerAttachItem,
     useChatTrigger,
 } from 'continuum';
 import {
@@ -407,13 +407,13 @@ const SupportChat = () => {
             </ChatThread>
 
             <div className="shrink-0 px-3 pb-3">
-                <ChatComposer
+                <MessageComposer
                     accept="image/*,.pdf"
                     // What a payout ticket needs is the invoice, the application or the audit: the "+"
                     // links one, and it waits above the box until the message goes.
                     attachMenu={
                         <>
-                            <ChatComposerAttachItem />
+                            <MessageComposerAttachItem />
                             <DropdownMenuItem onClick={() => wait({ record: records.invoice })}>
                                 <ReceiptText {...icon} /> Link invoice
                             </DropdownMenuItem>

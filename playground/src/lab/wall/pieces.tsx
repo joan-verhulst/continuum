@@ -17,8 +17,8 @@ import {
     DateRangePicker,
     Input,
     Kbd,
+    MenuItem,
     Pagination,
-    PopoverItem,
     RadioGroup,
     RadioGroupItem,
     Select,
@@ -30,8 +30,8 @@ import {
     SidebarItem,
     StatusDot,
     Switch,
-    TableFold,
-    TableFoldTrigger,
+    TableTree,
+    TableTreeTrigger,
     Tabs,
     TabsList,
     TabsTrigger,
@@ -136,7 +136,7 @@ export const meant: Record<string, number> = {
     pagination: 34,
     'nav-active': 34,
     nav: 34,
-    'popover-item': 34,
+    'menu-item': 34,
     'button-lg': 38,
     'button-lg-secondary': 38,
     'input-md': 38,
@@ -170,9 +170,9 @@ const SettingSwitch = () => {
 
 /** The fold's chevron alone, as a layout of one's own would place it. */
 const Chevron = ({ open }: { open?: boolean }) => (
-    <TableFold defaultOpen={open} label="What is in Website">
-        <TableFoldTrigger />
-    </TableFold>
+    <TableTree defaultOpen={open} label="What is in Website">
+        <TableTreeTrigger />
+    </TableTree>
 );
 
 /**
@@ -569,12 +569,12 @@ export const pieces: Piece[] = [
         ),
     },
     {
-        id: 'popover-item',
+        id: 'menu-item',
         family: 'menu',
         node: (
-            <PopoverItem className="w-60" leading={<FileText {...icon} />} trailing={<Kbd>⌘O</Kbd>}>
+            <MenuItem className="w-60" leading={<FileText {...icon} />} trailing={<Kbd>⌘O</Kbd>}>
                 Open report
-            </PopoverItem>
+            </MenuItem>
         ),
     },
     { id: 'setting-row', family: 'setting', node: <SettingSwitch /> },

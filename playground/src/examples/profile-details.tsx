@@ -4,6 +4,7 @@ import {
     Button,
     DialogFooter,
     InfoTip,
+    ReadonlyField,
     Sheet,
     SheetBody,
     SheetContent,
@@ -14,7 +15,6 @@ import {
     StatusDot,
     type StatusDotTone,
     TooltipProvider,
-    ValueField,
 } from 'continuum';
 import {
     Globe,
@@ -327,14 +327,14 @@ const SessionReplay = ({ summary, onGenerate }: ProfileBodyProps) => (
         <div className="mt-2 grid @lg:grid-cols-3 grid-cols-1 gap-x-4 gap-y-6">
             {/* The visitor is still on the site, so the visit has no exit yet. */}
             <ReplayColumn title="Entry">
-                <ValueField copyable label="Entry page" size="sm" value="/home" />
-                <ValueField label="Referrer" size="sm" value="x.com" />
+                <ReadonlyField copyable label="Entry page" size="sm" value="/home" />
+                <ReadonlyField label="Referrer" size="sm" value="x.com" />
             </ReplayColumn>
             <ReplayColumn title="UTM">
                 {/* A shared post carries no campaign tags, so these stay empty. */}
-                <ValueField label="Source" size="sm" value={null} />
-                <ValueField label="Medium" size="sm" value={null} />
-                <ValueField label="Campaign" size="sm" value={null} />
+                <ReadonlyField label="Source" size="sm" value={null} />
+                <ReadonlyField label="Medium" size="sm" value={null} />
+                <ReadonlyField label="Campaign" size="sm" value={null} />
             </ReplayColumn>
             <ReplayColumn
                 gap="tight"
@@ -342,7 +342,7 @@ const SessionReplay = ({ summary, onGenerate }: ProfileBodyProps) => (
                 title="Web vitals"
             >
                 {vitals.map(vital => (
-                    <ValueField
+                    <ReadonlyField
                         key={vital.label}
                         label={vital.label}
                         tone={vital.tone}
