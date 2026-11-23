@@ -16,7 +16,10 @@ import {
     BreadcrumbSeparator,
     Button,
     Card,
+    CardContent,
+    CardHeader,
     CardTitle,
+    cn,
     HeaderBar,
     LiveCount,
     PageContent,
@@ -60,6 +63,7 @@ import {
     Users,
 } from 'lucide-react';
 import { type ReactNode, useLayoutEffect, useState } from 'react';
+import { compact } from './shell';
 
 /*
  * Vigil, an observability tool, on the page of an incident while it is still open: checkout-api's
@@ -76,6 +80,10 @@ import { type ReactNode, useLayoutEffect, useState } from 'react';
  * under the header bar. The title row stands 96 below the bar at every size, the charts take a share
  * of a larger window's room, and the log and the timeline run on past the panel's foot, as a live
  * log scrolls. Nothing in it opens a portal, and every colour is a token.
+ *
+ * On a phone (a compact shell) it is the same page in one column that scrolls: the head stacks with
+ * Resolve alone under it, the log keeps its route, status and duration, and the side column's
+ * cards follow the log.
  */
 
 const icon = { strokeWidth: 2 } as const;
@@ -227,11 +235,14 @@ const Threshold = () => {
 const ErrorRate = () => (
     <>
         from the 14:14 peak
-        <span aria-hidden className="px-2">
+        <span aria-hidden className={cn('px-2', compact.hidden)}>
             ·
         </span>
-        <span className="font-medium text-neutral-950 tabular-nums">1.9%</span> 5xx{' '}
-        <span className={`font-medium tabular-nums ${goodInk}`}>−4.3 pts</span>
+        {/* On a phone the second figure takes its own line rather than breaking in two. */}
+        <span className="@max-shell-compact/shell:block whitespace-nowrap">
+            <span className="font-medium text-neutral-950 tabular-nums">1.9%</span> 5xx{' '}
+            <span className={`font-medium tabular-nums ${goodInk}`}>−4.3 pts</span>
+        </span>
     </>
 );
 
@@ -252,58 +263,66 @@ const responders = [
 /** The responders, a short list: a 24 avatar and the name, the role at the row's end. */
 const RespondersCard = () => (
     <Card layout="list">
-        <CardTitle>Responders</CardTitle>
-        <Table variant="rows">
-            <TableBody>
-                {responders.map(person => (
-                    <TableRow key={person.name}>
-                        {/* The 24 avatar sits in the row's 34 without the cell's own padding. */}
-                        <TableCell className="py-0">
-                            <span className="flex min-w-0 items-center gap-2">
-                                <Avatar
-                                    alt={person.name}
-                                    fallback={person.initials}
-                                    shape="round"
-                                    size={24}
-                                />
-                                <span className="truncate">{person.name}</span>
-                            </span>
-                        </TableCell>
-                        <TableCell align="right" className="text-neutral-600">
-                            {person.role}
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+        <CardHeader>
+            <CardTitle>Responders</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <Table variant="rows">
+                <TableBody>
+                    {responders.map(person => (
+                        <TableRow key={person.name}>
+                            {/* The 24 avatar sits in the row's 34 without the cell's own padding. */}
+                            <TableCell className="py-0">
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <Avatar
+                                        alt={person.name}
+                                        fallback={person.initials}
+                                        shape="round"
+                                        size={24}
+                                    />
+                                    <span className="truncate">{person.name}</span>
+                                </span>
+                            </TableCell>
+                            <TableCell align="right" className="text-neutral-600">
+                                {person.role}
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
     </Card>
 );
 
 const ServicesCard = () => (
     <Card layout="list">
-        <CardTitle>Affected services</CardTitle>
-        <Table variant="rows">
-            <TableBody>
-                {services.map(service => (
-                    <TableRow key={service.name}>
-                        {/* A second line of meta under the name: the row's 54 rather than 34. */}
-                        <TableCell>
-                            <span className="flex flex-col gap-1">
-                                <span className="font-mono">{service.name}</span>
-                                <span className="text-neutral-600 tabular-nums">
-                                    {service.reading}
+        <CardHeader>
+            <CardTitle>Affected services</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <Table variant="rows">
+                <TableBody>
+                    {services.map(service => (
+                        <TableRow key={service.name}>
+                            {/* A second line of meta under the name: the row's 54 rather than 34. */}
+                            <TableCell>
+                                <span className="flex flex-col gap-1">
+                                    <span className="font-mono">{service.name}</span>
+                                    <span className="text-neutral-600 tabular-nums">
+                                        {service.reading}
+                                    </span>
                                 </span>
-                            </span>
-                        </TableCell>
-                        <TableCell align="right" className="py-0">
-                            <Badge tone={service.tone} variant="dot">
-                                {service.health}
-                            </Badge>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </TableBody>
-        </Table>
+                            </TableCell>
+                            <TableCell align="right" className="py-0">
+                                <Badge tone={service.tone} variant="dot">
+                                    {service.health}
+                                </Badge>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+        </CardContent>
     </Card>
 );
 
@@ -360,18 +379,22 @@ const timeline: {
 /** What has been done so far, the latest first; it runs on past the panel's foot as the log does. */
 const TimelineCard = () => (
     <Card layout="list">
-        <CardTitle>Timeline</CardTitle>
-        <ActivityList>
-            {timeline.map(item => (
-                <ActivityItem
-                    icon={item.icon}
-                    key={item.title}
-                    time={item.time}
-                    title={item.title}
-                    tone={item.tone}
-                />
-            ))}
-        </ActivityList>
+        <CardHeader>
+            <CardTitle>Timeline</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <ActivityList>
+                {timeline.map(item => (
+                    <ActivityItem
+                        icon={item.icon}
+                        key={item.title}
+                        time={item.time}
+                        title={item.title}
+                        tone={item.tone}
+                    />
+                ))}
+            </ActivityList>
+        </CardContent>
     </Card>
 );
 
@@ -491,7 +514,11 @@ const RequestLog = () => {
                 <TableToolbar>
                     <TableSearch aria-label="Search requests" placeholder="Request ID or route" />
                     <TableToolbarEnd>
-                        <LiveCount className="mr-2" count={412} label="a minute" />
+                        <LiveCount
+                            className={cn('mr-2', compact.hidden)}
+                            count={412}
+                            label="a minute"
+                        />
                         <SegmentedControl
                             aria-label="Requests"
                             onValueChange={next => setView(next as string)}
@@ -504,15 +531,17 @@ const RequestLog = () => {
                     </TableToolbarEnd>
                 </TableToolbar>
             }
-            wrapperClassName="col-span-2"
+            wrapperClassName="col-span-2 @max-shell-compact/shell:col-span-1"
         >
             <TableHeader>
                 <TableRow>
-                    <TableHead className="w-32">Time</TableHead>
-                    <TableHead className="w-32">Request</TableHead>
+                    {/* On a phone the route, status and duration are the log; time and ID go. */}
+                    <TableHead className={cn('w-32', compact.hidden)}>Time</TableHead>
+                    <TableHead className={cn('w-32', compact.hidden)}>Request</TableHead>
                     <TableHead>Route</TableHead>
-                    <TableHead className="w-20">Status</TableHead>
-                    <TableHead className="w-24" numeric>
+                    {/* And there the two short columns take only their content, the route the rest. */}
+                    <TableHead className="@max-shell-compact/shell:w-px w-20">Status</TableHead>
+                    <TableHead className="@max-shell-compact/shell:w-px w-24" numeric>
                         Duration
                     </TableHead>
                 </TableRow>
@@ -520,10 +549,17 @@ const RequestLog = () => {
             <TableBody>
                 {shown.map(request => (
                     <TableRow key={request.id}>
-                        <TableCell className="font-normal text-neutral-700 tabular-nums">
+                        <TableCell
+                            className={cn(
+                                'font-normal text-neutral-700 tabular-nums',
+                                compact.hidden,
+                            )}
+                        >
                             {request.time}
                         </TableCell>
-                        <TableCell className="font-mono font-normal">{request.id}</TableCell>
+                        <TableCell className={cn('font-mono font-normal', compact.hidden)}>
+                            {request.id}
+                        </TableCell>
                         <TableCell className="max-w-0 truncate font-normal text-neutral-700">
                             {request.route}
                         </TableCell>
@@ -548,23 +584,26 @@ const RequestLog = () => {
 
 /**
  * The incident's page head, plain: the title and its severity, one line of what state it is in and
- * who leads it, and its two actions at the right, bottom-aligned with the line.
+ * who leads it, and its two actions at the right, bottom-aligned with the line. On a phone it
+ * stacks, the title wraps, and only the primary stays.
  */
 const TitleRow = () => (
-    <div className="flex items-end justify-between gap-6">
+    <div className={cn('flex items-end justify-between gap-6', compact.stack)}>
         <div className="flex min-w-0 flex-col gap-1.5">
-            <div className="flex min-w-0 items-center gap-2">
-                <h1 className="truncate font-medium text-2xl text-neutral-950">
+            <div className="flex min-w-0 @max-shell-compact/shell:items-start items-center gap-2">
+                <h1 className={cn('truncate font-medium text-2xl text-neutral-950', compact.wrap)}>
                     Checkout API p95 latency above 2s
                 </h1>
-                <Badge tone="error">SEV-2</Badge>
+                <Badge className="@max-shell-compact/shell:mt-1.5 shrink-0" tone="error">
+                    SEV-2
+                </Badge>
             </div>
-            <p className="truncate text-neutral-600 text-sm">
+            <p className={cn('truncate text-neutral-600 text-sm', compact.wrap)}>
                 INC-2318 · Mitigating · opened 14:02, 23 min ago
             </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-            <Button variant="secondary">
+            <Button className={compact.hidden} variant="secondary">
                 <Megaphone {...icon} />
                 Post update
             </Button>
@@ -589,7 +628,8 @@ const Incident = ({ room }: { room: number }) => {
     const plot = Math.min(360, Math.max(180, Math.round((room - TOP - TITLE - TITLE_GAP) * 0.3)));
     return (
         <PageContent
-            className="flex flex-col gap-11 px-6"
+            // On a phone, the compact shell's 40 down and 16 a side, and room at the foot to scroll to.
+            className="flex flex-col gap-11 @max-shell-compact/shell:px-4 px-6 @max-shell-compact/shell:pt-10! @max-shell-compact/shell:pb-10"
             style={{ paddingTop: TOP }}
             width="dense"
         >
@@ -616,8 +656,8 @@ const Incident = ({ room }: { room: number }) => {
                 >
                     <Threshold />
                 </ChartCard>
-                {/* The main column and one side column, on the lead card's edges. */}
-                <div className="grid grid-cols-3 items-start gap-4">
+                {/* The main column and one side column, on the lead card's edges; one on a phone. */}
+                <div className="grid @max-shell-compact/shell:grid-cols-1 grid-cols-3 items-start gap-4">
                     <RequestLog />
                     <div className="flex flex-col gap-4">
                         <RespondersCard />
@@ -650,7 +690,10 @@ export const IncidentScreen = () => {
                 <HeaderBar>
                     <Trail />
                 </HeaderBar>
-                <div className="relative min-h-0 flex-1 overflow-hidden" ref={setPage}>
+                <div
+                    className="relative min-h-0 flex-1 overflow-hidden @max-shell-compact/shell:overflow-y-auto"
+                    ref={setPage}
+                >
                     <Incident room={room} />
                 </div>
             </AppPanel>

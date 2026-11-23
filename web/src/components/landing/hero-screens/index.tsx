@@ -1,16 +1,18 @@
 'use client';
 
-import { CalendarDays, CircleDot, Inbox, type LucideIcon, Siren } from 'lucide-react';
+import { CalendarDays, CircleDot, Inbox, type LucideIcon, Sheet, Siren } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { ForecastScreen } from './forecast';
 import { IncidentScreen } from './incident';
 import { IssuesScreen } from './issues';
 import { PlannerScreen } from './planner';
 import { SupportScreen } from './support';
 
 /*
- * The hero's screens: four kinds of tool built with Continuum (an incident, a support conversation,
- * a week planner, an issue cycle), each a different page kind, in the same window. Each fills its parent and is drawn as a still
- * picture: nothing in it opens a portal.
+ * The hero's screens: five kinds of tool built with Continuum (an incident, a support conversation,
+ * a week planner, an issue cycle, a forecast sheet), each a different page kind,
+ * in the same window. Each fills its parent and works as the app does: it can be clicked, typed in
+ * and scrolled, and its menus open in the hero's theme.
  */
 
 export type HeroScreen = {
@@ -49,5 +51,12 @@ export const heroScreens: HeroScreen[] = [
         product: 'Issues',
         icon: CircleDot,
         render: () => <IssuesScreen />,
+    },
+    {
+        id: 'forecast',
+        title: 'Forecast',
+        product: 'Sales',
+        icon: Sheet,
+        render: () => <ForecastScreen />,
     },
 ];

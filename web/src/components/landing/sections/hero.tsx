@@ -22,7 +22,7 @@ import {
 } from 'continuum';
 import { Moon, RotateCcw, SlidersHorizontal, Sun } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
-import { type ReactNode, useDeferredValue, useMemo, useState } from 'react';
+import { type CSSProperties, type ReactNode, useDeferredValue, useMemo, useState } from 'react';
 import { compact, load, store } from '@/app/tools/theme-builder/state';
 import { themeBuilderLink } from '@/lib/site';
 import { heroScreens } from '../hero-screens';
@@ -191,7 +191,7 @@ const TitleBar = ({
     children: ReactNode;
 }) => (
     <div className="flex shrink-0 items-center gap-3 border-neutral-200 border-b bg-neutral-50 py-1.5 pr-1.5 pl-4">
-        <div aria-hidden className="flex shrink-0 gap-1.5">
+        <div aria-hidden className="flex shrink-0 gap-1.5 max-sm:hidden">
             <span className="size-2.5 rounded-full bg-neutral-300" />
             <span className="size-2.5 rounded-full bg-neutral-300" />
             <span className="size-2.5 rounded-full bg-neutral-300" />
@@ -208,7 +208,8 @@ const TitleBar = ({
                     <button
                         aria-selected={on}
                         className={cn(
-                            'relative flex h-control w-40 shrink-0 items-center gap-2 overflow-hidden rounded-control px-3 text-xs transition-[background-color,color] duration-150',
+                            // On a phone the tabs keep only their icon; the page's trail names it.
+                            'relative flex h-control w-40 shrink-0 items-center gap-2 overflow-hidden rounded-control px-3 text-xs transition-[background-color,color] duration-150 max-sm:w-control max-sm:justify-center max-sm:px-0',
                             on
                                 ? 'bg-selected font-medium text-neutral-950'
                                 : 'text-neutral-600 hover:bg-neutral-950/5 hover:text-neutral-950',
@@ -220,7 +221,7 @@ const TitleBar = ({
                         type="button"
                     >
                         <Icon className="size-3.5 shrink-0" strokeWidth={2} />
-                        <span className="truncate">{screen.title}</span>
+                        <span className="truncate max-sm:sr-only">{screen.title}</span>
                         {on && playing && (
                             <motion.span
                                 animate={{ scaleX: 1 }}
@@ -285,23 +286,29 @@ const HeroWindow = () => {
                     />
                 </TitleBar>
                 <Theme
-                    className="relative h-120 overflow-hidden bg-neutral-100 md:aspect-video md:h-auto"
+                    className="relative h-[min(680px,calc(100svh-136px))] overflow-hidden bg-neutral-100 md:aspect-video md:h-auto"
                     mode={mode}
                     role="tabpanel"
                     theme={customized ? HERO_THEME : PRODUCT_THEME}
                 >
-                    {/* A picture of the app, not a second app on the page: out of the outline and tab order.
-                        At its real size, never scaled: it fills a larger window as the app would, and
-                        a smaller one crops it, first the sidebar from the left, then the page's far
-                        side and its foot. */}
+                    {/* The app itself, live: it can be clicked, sorted, typed in and scrolled, and the
+                        first press or key in it stops the screens moving on, so it stays while it is
+                        used. At its real size, never scaled: it fills a larger window as the app would,
+                        and a smaller one crops it, first the sidebar from the left, then the page's
+                        far side and its foot. On a phone it is drawn at the phone's width instead,
+                        so the shell folds its sidebar into a drawer and each page lays itself out
+                        in the narrow column, as the app does on a phone. */}
                     <div
-                        className="absolute top-0"
-                        inert
-                        style={{
-                            left: `clamp(-${SIDEBAR}px, calc(100% - ${DRAWN.width}px), 0px)`,
-                            width: `max(100%, ${DRAWN.width}px)`,
-                            height: `max(100%, ${DRAWN.height}px)`,
-                        }}
+                        className="absolute inset-0 md:right-auto md:bottom-auto md:left-(--drawn-left) md:h-(--drawn-height) md:w-(--drawn-width)"
+                        onKeyDownCapture={() => setPicked(true)}
+                        onPointerDownCapture={() => setPicked(true)}
+                        style={
+                            {
+                                '--drawn-left': `clamp(-${SIDEBAR}px, calc(100% - ${DRAWN.width}px), 0px)`,
+                                '--drawn-width': `max(100%, ${DRAWN.width}px)`,
+                                '--drawn-height': `max(100%, ${DRAWN.height}px)`,
+                            } as CSSProperties
+                        }
                     >
                         <motion.div
                             animate={{ opacity: 1 }}

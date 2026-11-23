@@ -18,6 +18,8 @@ import {
     HeaderBar,
     Meter,
     PageContent,
+    SegmentedControl,
+    SegmentedControlItem,
     Sidebar,
     SidebarAccount,
     SidebarFooter,
@@ -49,6 +51,7 @@ import {
     Users,
 } from 'lucide-react';
 import { type ReactNode, useLayoutEffect, useState } from 'react';
+import { compact } from './shell';
 
 /*
  * Slate, the planner Halftone Studios runs its rental studios from: next week, week 48. A grid of
@@ -60,6 +63,9 @@ import { type ReactNode, useLayoutEffect, useState } from 'react';
  * Its own product, not the Northwind suite: its own shell, drawn at its real size and never scaled,
  * filling the hero's least window (1408 × 792) and taking more studios on a taller one. Nothing opens
  * a portal: the popover is drawn in place. Every colour is a token.
+ *
+ * On a phone the week is one day at a time: the days in a segmented control, the same grid under it
+ * with the studios by the chosen day, and the page scrolls.
  */
 
 const icon = { strokeWidth: 2 } as const;
@@ -482,14 +488,20 @@ const hoursByDay = (lane: Lane) => {
  * A booking as the planner draws it, the schedule pattern's block: item corners, a hairline, 8 in;
  * a 6 dot in its state's tone, the title 13 medium, the time and the person 11 under it.
  */
-const Block = ({ booking }: { booking: Booking }) => {
+const Block = ({
+    booking,
+    selected = booking.selected,
+}: {
+    booking: Booking;
+    selected?: boolean;
+}) => {
     const kind = kinds[booking.kind];
     return (
         <div
             className={cn(
                 'flex h-12 min-w-0 shrink-0 flex-col justify-center rounded-item border px-2',
                 kind.block,
-                booking.selected && 'outline-2 outline-action outline-offset-1',
+                selected && 'outline-2 outline-action outline-offset-1',
             )}
             data-slot="planner-block"
         >
@@ -545,10 +557,22 @@ const Fact = ({ figure, children }: { figure: ReactNode; children: ReactNode }) 
 );
 
 /** The selected booking's details: the popover's anatomy, drawn in place rather than portalled. */
-const BookingPopover = ({ top, left }: { top: number; left: string }) => (
+const BookingPopover = ({
+    top,
+    left,
+    className = 'w-popover',
+}: {
+    top?: number;
+    left?: string;
+    /** Its width; on a phone its edges and its top instead, under the selected booking's row. */
+    className?: string;
+}) => (
     <div
         aria-label="Nova Records"
-        className="absolute z-20 flex w-popover flex-col gap-3 rounded-card border border-neutral-200 bg-neutral-50 p-3 text-neutral-700 text-xs shadow-float"
+        className={cn(
+            'absolute z-20 flex flex-col gap-3 rounded-card border border-neutral-200 bg-neutral-50 p-3 text-neutral-700 text-xs shadow-float',
+            className,
+        )}
         data-slot="popover-content"
         role="dialog"
         style={{ top, left }}
@@ -607,7 +631,7 @@ const Planner = ({ room }: { room: number }) => {
 
     return (
         <div
-            className="relative shrink-0 rounded-card border border-neutral-200 bg-neutral-50"
+            className="relative @max-shell-compact/shell:hidden shrink-0 rounded-card border border-neutral-200 bg-neutral-50"
             data-slot="planner"
         >
             <div className="grid h-row grid-cols-7 rounded-t-[calc(var(--radius-card)-1px)] bg-neutral-100 text-neutral-600 text-xs">
@@ -653,6 +677,128 @@ const Planner = ({ room }: { room: number }) => {
                 })}
             </div>
             <BookingPopover left="calc(200% / 7 + 4px)" top={popoverTop} />
+        </div>
+    );
+};
+
+/** The cell a lane has on a day: the one the day falls in, a span's on each day it covers. */
+const cellOn = (lane: Lane, day: number): Cell => {
+    let at = 0;
+    for (const cell of lane.cells) {
+        const span = cell?.span ?? 1;
+        if (day < at + span) return cell;
+        at += span;
+    }
+    return null;
+};
+
+const DayRow = ({
+    lane,
+    day,
+    open,
+    onToggle,
+}: {
+    lane: Lane;
+    day: number;
+    open: boolean;
+    onToggle: () => void;
+}) => (
+    <div className="relative grid grid-cols-5 border-neutral-200 border-t" data-slot="planner-lane">
+        <div className="col-span-2 flex min-w-0 flex-col justify-center px-3">
+            <span className="truncate font-medium text-neutral-950 text-xs">{lane.name}</span>
+            <span className="truncate text-neutral-600 text-xs">{lane.meta}</span>
+        </div>
+        <div className="col-span-3 flex min-w-0 flex-col gap-1 border-neutral-200 border-l p-1">
+            {cellOn(lane, day)?.bookings.map(booking =>
+                booking.selected ? (
+                    <button
+                        aria-expanded={open}
+                        className="flex min-w-0 cursor-pointer flex-col rounded-item text-left"
+                        key={booking.title}
+                        onClick={onToggle}
+                        type="button"
+                    >
+                        <Block booking={booking} selected={open} />
+                    </button>
+                ) : (
+                    <Block booking={booking} key={booking.title} />
+                ),
+            )}
+        </div>
+        {open && cellOn(lane, day)?.bookings.some(booking => booking.selected) && (
+            <BookingPopover className="inset-x-1 top-full" />
+        )}
+    </div>
+);
+
+/**
+ * The planner on a phone: one day of the week at a time, picked in a segmented control over the
+ * grid; the studios by that day, every room listed since the page scrolls, and the day's booked
+ * hours at its foot. Tapping the Nova Records shoot opens or closes its details under it.
+ */
+const DayPlanner = () => {
+    const [day, setDay] = useState(1);
+    const [open, setOpen] = useState(true);
+    const lanes = [...studios, ...spare];
+    const capacity = lanes.length * OPEN_HOURS;
+    const hours = lanes.reduce((sum, lane) => sum + (hoursByDay(lane)[day] ?? 0), 0);
+    const share = Math.round((hours / capacity) * 100);
+
+    return (
+        <div className="@max-shell-compact/shell:flex hidden flex-col gap-4">
+            <SegmentedControl
+                aria-label="Day"
+                fill
+                onValueChange={value => setDay(Number(value))}
+                value={String(day)}
+            >
+                {days.map((label, i) => (
+                    <SegmentedControlItem key={label} value={String(i)}>
+                        {label.slice(0, 3)}
+                    </SegmentedControlItem>
+                ))}
+            </SegmentedControl>
+            <div
+                className="relative rounded-card border border-neutral-200 bg-neutral-50"
+                data-slot="planner"
+            >
+                <div className="grid h-row grid-cols-5 rounded-t-[calc(var(--radius-card)-1px)] bg-neutral-100 text-neutral-600 text-xs">
+                    <span className="col-span-2 flex items-center px-3">Studio</span>
+                    <span className="col-span-3 flex items-center border-neutral-200 border-l px-3 tabular-nums">
+                        {days[day]}
+                    </span>
+                </div>
+                {[requests, ...lanes].map(lane => (
+                    <DayRow
+                        day={day}
+                        key={lane.name}
+                        lane={lane}
+                        onToggle={() => setOpen(was => !was)}
+                        open={open}
+                    />
+                ))}
+                <div
+                    className="grid grid-cols-5 rounded-b-[calc(var(--radius-card)-1px)] border-neutral-200 border-t"
+                    data-slot="planner-footer"
+                >
+                    <div className="col-span-2 flex min-w-0 flex-col justify-center px-3">
+                        <span className="truncate font-medium text-neutral-950 text-xs">
+                            Booked
+                        </span>
+                        <span className="truncate text-neutral-600 text-xs">
+                            Of {capacity} h open
+                        </span>
+                    </div>
+                    <div className="col-span-3 min-w-0 border-neutral-200 border-l p-3">
+                        <Meter
+                            caption={`${share}%`}
+                            label={`${hours} h`}
+                            tone={share >= 85 ? 'warning' : undefined}
+                            value={share}
+                        />
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
@@ -751,28 +897,49 @@ export const PlannerScreen = () => {
                     </Breadcrumb>
                 </HeaderBar>
                 <div
-                    className="relative flex min-h-0 flex-1 flex-col overflow-hidden"
+                    className="relative flex min-h-0 flex-1 flex-col overflow-hidden @max-shell-compact/shell:overflow-y-auto"
                     ref={setPage}
                 >
                     <PageContent
-                        className="flex w-[calc(100%-3rem)] flex-col gap-12 pb-6"
+                        // On a phone: the panel less 16 a side, 40 down over the inline start.
+                        className="flex @max-shell-compact/shell:w-[calc(100%-32px)] w-[calc(100%-3rem)] flex-col @max-shell-compact/shell:gap-8 gap-12 @max-shell-compact/shell:pt-10! pb-6"
                         style={{ paddingTop: PAGE_TOP }}
                         width="dense"
                     >
-                        <div className="flex items-end justify-between gap-6">
+                        <div className={cn('flex items-end justify-between gap-6', compact.stack)}>
                             <div className="flex min-w-0 flex-col gap-1.5">
-                                <h1 className="truncate font-medium text-2xl text-neutral-950">
+                                <h1
+                                    className={cn(
+                                        'truncate font-medium text-2xl text-neutral-950',
+                                        compact.wrap,
+                                    )}
+                                >
                                     Week 48
                                 </h1>
-                                <p className="truncate text-neutral-600 text-sm">
+                                <p
+                                    className={cn(
+                                        'truncate text-neutral-600 text-sm',
+                                        compact.wrap,
+                                    )}
+                                >
                                     23 to 28 November, the studios open 08:00 to 20:00
                                 </p>
                             </div>
                             <div className="flex shrink-0 items-center gap-2">
-                                <Button aria-label="Previous week" size="icon" variant="secondary">
+                                <Button
+                                    aria-label="Previous week"
+                                    className={compact.hidden}
+                                    size="icon"
+                                    variant="secondary"
+                                >
                                     <ChevronLeft {...icon} />
                                 </Button>
-                                <Button aria-label="Next week" size="icon" variant="secondary">
+                                <Button
+                                    aria-label="Next week"
+                                    className={compact.hidden}
+                                    size="icon"
+                                    variant="secondary"
+                                >
                                     <ChevronRight {...icon} />
                                 </Button>
                                 <Button variant="primary">
@@ -782,6 +949,7 @@ export const PlannerScreen = () => {
                             </div>
                         </div>
                         <Planner room={room} />
+                        <DayPlanner />
                     </PageContent>
                 </div>
             </AppPanel>

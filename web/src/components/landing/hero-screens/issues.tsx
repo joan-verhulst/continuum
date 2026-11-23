@@ -10,9 +10,9 @@ import {
     DockItem,
     FilterMenu,
     FilterMenuTrigger,
+    MenuItem,
+    MenuItemShortcut,
     PageContent,
-    PopoverItem,
-    PopoverItemShortcut,
     Progress,
     Select,
     SelectTrigger,
@@ -53,7 +53,7 @@ import {
     TriangleAlert,
 } from 'lucide-react';
 import { Fragment } from 'react';
-import { Frame, type Initials, icon, PageHead, PersonName } from './shell';
+import { compact, Frame, type Initials, icon, PageHead, Person, people } from './shell';
 
 /** The page's start: the system's 96 below the header bar's hairline, at every size. */
 const TOP = 96;
@@ -297,45 +297,50 @@ const POINTED = 'NW-1290';
 
 /**
  * The pointed row's menu, drawn where it opens rather than portalled: a DropdownMenu's panel and
- * rows, the states set by hand as Base UI would set them.
+ * rows, the states set by hand as Base UI would set them. A phone has no pointer, so there the row
+ * rests like the others and the menu stays shut.
  */
+const pointedRest = '@max-shell-compact/shell:bg-transparent';
+
 const RowMenu = () => (
-    <div className="absolute top-full right-1 z-20 mt-1 flex w-56 flex-col gap-1 rounded-item border border-neutral-200 bg-neutral-50 p-1 text-left shadow-float">
-        <PopoverItem
+    <div
+        className={`absolute top-full right-1 z-20 mt-1 flex w-56 flex-col gap-1 rounded-item border border-neutral-200 bg-neutral-50 p-1 text-left shadow-float ${compact.hidden}`}
+    >
+        <MenuItem
             leading={<Contrast {...icon} />}
             meta="In progress"
             trailing={<ChevronRight {...icon} />}
         >
             Status
-        </PopoverItem>
-        <PopoverItem
+        </MenuItem>
+        <MenuItem
             data-highlighted=""
             leading={<CircleUserRound {...icon} />}
             meta="Sara Kim"
             trailing={<ChevronRight {...icon} />}
         >
             Assignee
-        </PopoverItem>
-        <PopoverItem
+        </MenuItem>
+        <MenuItem
             leading={<SignalHigh {...icon} />}
             meta="High"
             trailing={<ChevronRight {...icon} />}
         >
             Priority
-        </PopoverItem>
-        <PopoverItem leading={<Tag {...icon} />} trailing={<ChevronRight {...icon} />}>
+        </MenuItem>
+        <MenuItem leading={<Tag {...icon} />} trailing={<ChevronRight {...icon} />}>
             Labels
-        </PopoverItem>
-        <PopoverItem
+        </MenuItem>
+        <MenuItem
             leading={<Link {...icon} />}
-            trailing={<PopoverItemShortcut>⌘ ⇧ C</PopoverItemShortcut>}
+            trailing={<MenuItemShortcut>⌘ ⇧ C</MenuItemShortcut>}
         >
             Copy link
-        </PopoverItem>
+        </MenuItem>
         <Separator className="-mx-1 w-auto" />
-        <PopoverItem leading={<Trash2 {...icon} />} variant="danger">
+        <MenuItem leading={<Trash2 {...icon} />} variant="danger">
             Delete issue
-        </PopoverItem>
+        </MenuItem>
     </div>
 );
 
@@ -346,8 +351,11 @@ const IssueRow = ({ issue }: { issue: Issue }) => {
     const pointed = issue.id === POINTED;
 
     // The avatar, the chips and the menu button sit inside the row's 41 rather than padding it out.
+    // On a phone the title takes a second line of meta, the ID and the due date, and the row its 54.
     return (
-        <TableRow className={`[&>td]:py-0 ${pointed ? 'bg-neutral-950/3' : ''}`}>
+        <TableRow
+            className={`@max-shell-compact/shell:[&>td]:py-2 [&>td]:py-0 ${pointed ? `bg-neutral-950/3 ${pointedRest}` : ''}`}
+        >
             <TableCell className="pr-0">
                 <PriorityIcon
                     aria-label={priority.label}
@@ -355,18 +363,31 @@ const IssueRow = ({ issue }: { issue: Issue }) => {
                     {...icon}
                 />
             </TableCell>
-            <TableCell className="font-normal text-neutral-600 tabular-nums">{issue.id}</TableCell>
+            <TableCell className={`font-normal text-neutral-600 tabular-nums ${compact.hidden}`}>
+                {issue.id}
+            </TableCell>
             <TableCell className="max-w-0">
-                <span className="flex min-w-0 items-center gap-3">
+                <span className="flex min-w-0 @max-shell-compact/shell:flex-col items-center @max-shell-compact/shell:items-stretch @max-shell-compact/shell:gap-1 gap-3">
                     <span className="min-w-0 truncate">{issue.title}</span>
-                    <span className="flex shrink-0 items-center gap-1">
+                    <span className={`flex shrink-0 items-center gap-1 ${compact.hidden}`}>
                         {issue.labels.map(label => (
                             <Chip key={label}>{label}</Chip>
                         ))}
                     </span>
+                    <span className="@max-shell-compact/shell:block hidden truncate font-normal text-neutral-600 tabular-nums">
+                        {issue.id}
+                        {issue.due && (
+                            <>
+                                {' · '}
+                                <span className={issue.late ? 'text-error-600' : undefined}>
+                                    Due {issue.due}
+                                </span>
+                            </>
+                        )}
+                    </span>
                 </span>
             </TableCell>
-            <TableCell className="font-normal text-neutral-700 tabular-nums">
+            <TableCell className={`font-normal text-neutral-700 tabular-nums ${compact.hidden}`}>
                 {issue.pull ? (
                     <span className="flex items-center gap-1.5">
                         <PullIcon className="size-4 text-neutral-600" {...icon} />#
@@ -377,20 +398,28 @@ const IssueRow = ({ issue }: { issue: Issue }) => {
                 )}
             </TableCell>
             <TableCell>
-                <PersonName initials={issue.assignee} />
+                {/* A person as the table shows one; on a phone the avatar alone. */}
+                <span className="flex min-w-0 items-center gap-2 font-normal text-neutral-700">
+                    <Person initials={issue.assignee} />
+                    <span className={`truncate ${compact.hidden}`}>{people[issue.assignee]}</span>
+                </span>
             </TableCell>
-            <TableCell className="font-normal text-neutral-700" numeric>
+            <TableCell className={`font-normal text-neutral-700 ${compact.hidden}`} numeric>
                 {issue.points}
             </TableCell>
             <TableCell
-                className={`font-normal tabular-nums ${issue.late ? 'text-error-600' : 'text-neutral-700'}`}
+                className={`font-normal tabular-nums ${issue.late ? 'text-error-600' : 'text-neutral-700'} ${compact.hidden}`}
             >
                 {issue.due ?? '—'}
             </TableCell>
             <TableCell className="relative px-1">
                 <Button
                     aria-label={`Actions for ${issue.id}`}
-                    className={pointed ? 'bg-neutral-950/5 text-neutral-800' : undefined}
+                    className={
+                        pointed
+                            ? `bg-neutral-950/5 text-neutral-800 ${pointedRest} @max-shell-compact/shell:text-neutral-600`
+                            : undefined
+                    }
                     size="icon-sm"
                     variant="ghost"
                 >
@@ -407,8 +436,9 @@ const toolbar = (
     <TableToolbar>
         <TableSearch aria-label="Search issues" placeholder="Search issues" />
         <TableToolbarEnd>
+            {/* On a phone the select folds into the one Filter button. */}
             <Select defaultValue="anyone" items={[{ value: 'anyone', label: 'Any assignee' }]}>
-                <SelectTrigger aria-label="Assignee" size="sm">
+                <SelectTrigger aria-label="Assignee" className={compact.hidden} size="sm">
                     <SelectValue />
                 </SelectTrigger>
             </Select>
@@ -431,14 +461,16 @@ const CycleIssues = () => {
                     <TableHead className="w-10 pr-0">
                         <span className="sr-only">Priority</span>
                     </TableHead>
-                    <TableHead className="w-24">ID</TableHead>
+                    <TableHead className={`w-24 ${compact.hidden}`}>ID</TableHead>
                     <TableHead>Title</TableHead>
-                    <TableHead className="w-24">PR</TableHead>
-                    <TableHead className="w-40">Assignee</TableHead>
-                    <TableHead className="w-16" numeric>
+                    <TableHead className={`w-24 ${compact.hidden}`}>PR</TableHead>
+                    <TableHead className="@max-shell-compact/shell:w-12 w-40">
+                        <span className="@max-shell-compact/shell:sr-only">Assignee</span>
+                    </TableHead>
+                    <TableHead className={`w-16 ${compact.hidden}`} numeric>
                         Est.
                     </TableHead>
-                    <TableHead className="w-20">Due</TableHead>
+                    <TableHead className={`w-20 ${compact.hidden}`}>Due</TableHead>
                     <TableHead className="w-11 px-1">
                         <span className="sr-only">Actions</span>
                     </TableHead>
@@ -500,9 +532,10 @@ export const IssuesScreen = () => {
             {/* The dense column: seven columns of meta beside a title and its labels. A block of its
                 own around it, as the app's scrolling page is, so the column takes the room less its
                 side padding rather than the flex row's full width plus it. */}
-            <div>
+            <div className="@max-shell-compact/shell:min-h-0 @max-shell-compact/shell:flex-1 @max-shell-compact/shell:overflow-y-auto @max-shell-compact/shell:pb-24">
                 <PageContent
-                    className="flex flex-col gap-16 px-6"
+                    // On a phone, the compact shell's 40 down and 16 a side.
+                    className="flex flex-col gap-16 @max-shell-compact/shell:px-4 px-6 @max-shell-compact/shell:pt-10!"
                     style={{ paddingTop: TOP }}
                     width="dense"
                 >
@@ -511,12 +544,14 @@ export const IssuesScreen = () => {
                         title="Cycle 24"
                     >
                         <Progress
-                            className="mr-4 w-56"
+                            className="@max-shell-compact/shell:mr-0 mr-4 @max-shell-compact/shell:w-full w-56"
                             label="25 of 68 points done"
                             showValue
                             value={37}
                         />
-                        <Button variant="secondary">Cycle report</Button>
+                        <Button className={compact.hidden} variant="secondary">
+                            Cycle report
+                        </Button>
                     </PageHead>
                     <CycleIssues />
                 </PageContent>

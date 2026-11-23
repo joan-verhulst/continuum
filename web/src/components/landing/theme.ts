@@ -29,3 +29,19 @@ export const PRODUCT_THEME = 'product';
 export const productTheme: ThemeOptions = { ...siteTheme, action: 'accent' };
 
 export const productThemeCss = createThemeCss({ ...productTheme, name: PRODUCT_THEME });
+
+/**
+ * What the hero's before and after wears on the Continuum side: the product theme, set small (12px
+ * type, a 3px unit, compact heights) the way a dense work app would be, so the window shows the
+ * whole app at a glance, as the plain build fills its own.
+ */
+export const COMPARE_THEME = 'compare';
+
+export const compareTheme: ThemeOptions = {
+    ...productTheme,
+    type: 12,
+    unit: 3,
+    size: 0.9,
+};
+
+export const compareThemeCss = createThemeCss({ ...compareTheme, name: COMPARE_THEME });

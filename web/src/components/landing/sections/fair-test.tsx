@@ -1,21 +1,25 @@
 'use client';
 
-import { Overview } from '@screens/overview';
-import { BottomBar, Dock, DockItem } from 'continuum';
+import { BottomBar, Dock, DockItem, Theme } from 'continuum';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useMemo, useState } from 'react';
-import { PlainOverview } from '../films/plain-overview';
+import { ContinuumScreen } from '../compare/continuum-screen';
+import { PlainScreen } from '../compare/plain-screen';
+import { COMPARE_THEME, compareThemeCss } from '../theme';
 import { ease, Shot } from '../web';
 
 /*
- * Before and after, as a switch: one page shown as it is with Continuum (the playground's own
- * Overview screen, live in the page's theme), and at the press of the switch as an agent builds it
- * without the system (a hand-built stand-in: the default shadcn look, a purple primary, a gradient
- * header, cards on cards, mixed weights, loose 16px everything). One screen at a time, so the frame
- * never holds two busy pages at once.
+ * Before and after, as a switch: one workspace overview with the same frozen content
+ * (compare/data.ts) built two ways. With Continuum (compare/continuum-screen.tsx): the library's
+ * parts composed by the skill, in the product theme set small as a dense work app would be: the
+ * shell in full, the figures with their trends, the revenue chart, and a side panel of what waits on
+ * the reader. As a default AI build (compare/plain-screen.tsx, a hand-built stand-in): a purple
+ * primary, a gradient banner, icon tiles, a zoomed axis, a card grid. One screen at a time, so the
+ * frame never holds two busy pages at once.
  *
- * Both are drawn at the width they are laid out for and cropped by the frame, never scaled, so 13px
- * stays 13px. The switch is the system's floating bottom bar, over the screen at the frame's foot.
+ * Both are drawn at the width they are laid out for and cropped by the frame, never scaled: 1040 from
+ * md up, and under it the frame's own width, so a phone sees each page as it is on a phone. The
+ * switch is the system's floating bottom bar, over the screen at the frame's foot.
  */
 
 type Side = 'continuum' | 'plain';
@@ -26,24 +30,28 @@ export const Comparison = () => {
     // The screens are heavy and never change: made once, so switching only swaps which one shows.
     const screens = useMemo(
         () => ({
+            // The Continuum side wears the product theme set small, as a dense work app would.
             continuum: (
-                <Shot>
-                    <Overview />
-                </Shot>
+                <Theme className="size-full" theme={COMPARE_THEME}>
+                    <Shot className="size-full">
+                        <ContinuumScreen />
+                    </Shot>
+                </Theme>
             ),
-            plain: <PlainOverview />,
+            plain: <PlainScreen />,
         }),
         [],
     );
 
     return (
         <div className="relative h-152 overflow-hidden rounded-panel border border-neutral-200 bg-neutral-100 shadow-float md:aspect-video md:h-auto">
+            <style>{compareThemeCss}</style>
             {/* A picture of each page: nothing inside takes focus or a click. */}
             <AnimatePresence initial={false}>
                 <motion.div
                     animate={{ opacity: 1 }}
                     aria-hidden
-                    className="absolute inset-y-0 left-0 w-full min-w-260 *:w-full max-sm:-translate-x-[264px]"
+                    className="absolute inset-y-0 left-0 w-full *:w-full md:min-w-260"
                     exit={{ opacity: 0 }}
                     inert
                     initial={{ opacity: 0 }}

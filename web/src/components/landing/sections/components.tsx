@@ -30,7 +30,7 @@ export type ComponentIndex = {
 const featured = [
     ['command-menu', 'Find actions and jump between pages from the keyboard.'],
     ['menu', 'Keep less common actions out of the main toolbar.'],
-    ['popover-item', 'Build selectable rows for menus and pickers.'],
+    ['menu-item', 'Build selectable rows for menus and pickers.'],
     ['chat-typing', 'Show when someone is typing a reply.'],
     ['uptime-strip', 'Show service outages in a day-by-day timeline.'],
     ['bullet-chart', 'See how far a metric is from its target.'],

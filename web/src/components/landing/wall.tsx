@@ -11,6 +11,8 @@ import {
     BlockSlider,
     Button,
     Card,
+    CardContent,
+    CardHeader,
     CardTitle,
     Checklist,
     ChecklistItem,
@@ -37,6 +39,7 @@ import {
     Pagination,
     RadioGroup,
     RadioGroupItem,
+    ReadonlyField,
     SegmentedControl,
     SegmentedControlItem,
     Select,
@@ -65,7 +68,6 @@ import {
     TabsTrigger,
     ToastProvider,
     useToast,
-    ValueField,
 } from 'continuum';
 import { ChartCard } from 'continuum/charts';
 import {
@@ -388,26 +390,30 @@ const PaidBy = () => (
 /** A history: the activity list in a list card, each event in its tone. */
 const Activity = () => (
     <Card layout="list">
-        <CardTitle>Activity</CardTitle>
-        <ActivityList>
-            <ActivityItem
-                icon={<Send {...icon} />}
-                time="Today, 10:24"
-                title="INV-0142 sent to Harbour & Co"
-            />
-            <ActivityItem
-                icon={<CircleCheck {...icon} />}
-                time="Today, 09:12"
-                title="Atlas Freight paid INV-0139"
-                tone="success"
-            />
-            <ActivityItem
-                icon={<Clock {...icon} />}
-                time="Yesterday"
-                title="Reminder sent to Lumen Labs"
-                tone="warning"
-            />
-        </ActivityList>
+        <CardHeader>
+            <CardTitle>Activity</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <ActivityList>
+                <ActivityItem
+                    icon={<Send {...icon} />}
+                    time="Today, 10:24"
+                    title="INV-0142 sent to Harbour & Co"
+                />
+                <ActivityItem
+                    icon={<CircleCheck {...icon} />}
+                    time="Today, 09:12"
+                    title="Atlas Freight paid INV-0139"
+                    tone="success"
+                />
+                <ActivityItem
+                    icon={<Clock {...icon} />}
+                    time="Yesterday"
+                    title="Reminder sent to Lumen Labs"
+                    tone="warning"
+                />
+            </ActivityList>
+        </CardContent>
     </Card>
 );
 
@@ -419,22 +425,26 @@ const team = [
 
 /** People: a 24 avatar and the name, a divided list in a list card. */
 const Team = () => (
-    <Card className="gap-2" layout="list">
-        <CardTitle>Team</CardTitle>
-        <ul className="flex flex-col">
-            {team.map(person => (
-                <li
-                    className="flex h-table-row items-center gap-2 border-neutral-200 border-b text-xs last:border-b-0"
-                    key={person.name}
-                >
-                    <Avatar fallback={person.initials} shape="round" size={24} />
-                    <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
-                        {person.name}
-                    </span>
-                    <span className="text-neutral-600">{person.role}</span>
-                </li>
-            ))}
-        </ul>
+    <Card className="[--card-gap:calc(var(--spacing)*2)]" layout="list">
+        <CardHeader>
+            <CardTitle>Team</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <ul className="flex flex-col">
+                {team.map(person => (
+                    <li
+                        className="flex h-table-row items-center gap-2 border-neutral-200 border-b text-xs last:border-b-0"
+                        key={person.name}
+                    >
+                        <Avatar fallback={person.initials} shape="round" size={24} />
+                        <span className="min-w-0 flex-1 truncate font-medium text-neutral-950">
+                            {person.name}
+                        </span>
+                        <span className="text-neutral-600">{person.role}</span>
+                    </li>
+                ))}
+            </ul>
+        </CardContent>
     </Card>
 );
 
@@ -447,23 +457,27 @@ const shortcuts = [
 
 /** Shortcut keys: each command beside its Kbd, as the shortcut list draws them. */
 const Shortcuts = () => (
-    <Card className="gap-2">
-        <CardTitle>Keyboard shortcuts</CardTitle>
-        <div className="flex flex-col">
-            {shortcuts.map(([label, keys]) => (
-                <p
-                    className="flex h-8 items-center justify-between gap-3 text-neutral-700 text-xs"
-                    key={label}
-                >
-                    {label}
-                    <span className="flex items-center gap-1">
-                        {keys.map(key => (
-                            <Kbd key={key}>{key}</Kbd>
-                        ))}
-                    </span>
-                </p>
-            ))}
-        </div>
+    <Card className="[--card-gap:calc(var(--spacing)*2)]">
+        <CardHeader>
+            <CardTitle>Keyboard shortcuts</CardTitle>
+        </CardHeader>
+        <CardContent>
+            <div className="flex flex-col">
+                {shortcuts.map(([label, keys]) => (
+                    <p
+                        className="flex h-8 items-center justify-between gap-3 text-neutral-700 text-xs"
+                        key={label}
+                    >
+                        {label}
+                        <span className="flex items-center gap-1">
+                            {keys.map(key => (
+                                <Kbd key={key}>{key}</Kbd>
+                            ))}
+                        </span>
+                    </p>
+                ))}
+            </div>
+        </CardContent>
     </Card>
 );
 
@@ -550,11 +564,11 @@ const Client = () => {
 
 /* ---------- Forms and settings ---------- */
 
-/** A read-only value to copy: value fields, the well and its copy button. */
+/** A read-only value to copy: read-only fields, the well and its copy button. */
 const PaymentDetails = () => (
     <Card>
-        <ValueField copyable label="IBAN" value="NL91 INGB 0004 8217 63" />
-        <ValueField copyable label="Payment link" value="pay.kestrel.studio/inv-0142" />
+        <ReadonlyField copyable label="IBAN" value="NL91 INGB 0004 8217 63" />
+        <ReadonlyField copyable label="Payment link" value="pay.kestrel.studio/inv-0142" />
     </Card>
 );
 
@@ -585,15 +599,19 @@ const Terms = () => {
     const days = useStep('terms') % 2 === 1 ? '30' : '14';
     return (
         <Card>
-            <CardTitle>Payment terms</CardTitle>
-            <RadioGroup aria-label="Payment terms" value={days}>
-                {['7', '14', '30'].map(days => (
-                    <Field className="flex-row items-center gap-2.5" key={days}>
-                        <RadioGroupItem value={days} />
-                        <FieldLabel>Net {days} days</FieldLabel>
-                    </Field>
-                ))}
-            </RadioGroup>
+            <CardHeader>
+                <CardTitle>Payment terms</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <RadioGroup aria-label="Payment terms" value={days}>
+                    {['7', '14', '30'].map(days => (
+                        <Field className="flex-row items-center gap-2.5" key={days}>
+                            <RadioGroupItem value={days} />
+                            <FieldLabel>Net {days} days</FieldLabel>
+                        </Field>
+                    ))}
+                </RadioGroup>
+            </CardContent>
         </Card>
     );
 };
@@ -680,7 +698,7 @@ const Filters = () => {
 
 /** The page's actions: secondary before the one primary, a ghost menu last. */
 const Actions = () => (
-    <Card className="flex-row items-center gap-2">
+    <Card className="flex-row items-center [--card-gap:calc(var(--spacing)*2)]">
         <Button variant="secondary">
             <Upload {...icon} /> Import
         </Button>
@@ -697,7 +715,7 @@ const Actions = () => (
 
 /** Live state: the connection's tile, what it is, and a dot badge saying it is live. */
 const BankFeed = () => (
-    <Card className="flex-row items-center gap-3">
+    <Card className="flex-row items-center [--card-gap:calc(var(--spacing)*3)]">
         <IconTile>
             <Landmark {...icon} />
         </IconTile>
@@ -713,7 +731,7 @@ const BankFeed = () => (
 
 /** Usage within a known range (a meter, no tone until it is near the limit) and a task under way. */
 const Usage = () => (
-    <Card className="gap-5">
+    <Card className="[--card-gap:calc(var(--spacing)*5)]">
         <Meter caption="38 of 50" label="Invoices this month" max={50} value={38} />
         <Meter caption="24 of 25" label="Clients on your plan" max={25} tone="warning" value={24} />
     </Card>

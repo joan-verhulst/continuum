@@ -274,9 +274,10 @@ export const Included = (_props: { kit: Kit }) => (
         data-included
     >
         <Count value={families.reduce((sum, family) => sum + family.components, 0)} /> React
-        components, including <Count value={sizeOf('content')} /> for tables and content,{' '}
-        <Count value={sizeOf('navigation')} /> for navigation, <Count value={sizeOf('ai')} /> for
-        chat and <Count value={sizeOf('charts')} /> charts.
+        components, including <Count value={sizeOf('tables') + sizeOf('content')} /> for tables and
+        lists, <Count value={sizeOf('navigation')} /> for navigation,{' '}
+        <Count value={sizeOf('chat') + sizeOf('ai')} /> for chat and assistants, and{' '}
+        <Count value={sizeOf('charts')} /> charts.
     </p>
 );
 

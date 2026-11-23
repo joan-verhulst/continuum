@@ -8,8 +8,8 @@ import {
     cn,
     Dock,
     DockItem,
+    MenuItem,
     PageContent,
-    PopoverItem,
     Select,
     SelectTrigger,
     SelectValue,
@@ -112,19 +112,19 @@ const RowMenu = ({ on }: { on: boolean }) => (
         initial={false}
         transition={{ duration: 0.3, ease }}
     >
-        <PopoverItem
+        <MenuItem
             data-highlighted=""
             leading={<UserCog {...icon} />}
             meta="Member"
             trailing={<ChevronRight {...icon} />}
         >
             Change role
-        </PopoverItem>
-        <PopoverItem leading={<Mail {...icon} />}>Copy email</PopoverItem>
+        </MenuItem>
+        <MenuItem leading={<Mail {...icon} />}>Copy email</MenuItem>
         <Separator className="-mx-1 w-auto" />
-        <PopoverItem leading={<Trash2 {...icon} />} variant="danger">
+        <MenuItem leading={<Trash2 {...icon} />} variant="danger">
             Remove from workspace
-        </PopoverItem>
+        </MenuItem>
     </motion.div>
 );
 

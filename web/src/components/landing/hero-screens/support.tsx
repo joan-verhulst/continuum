@@ -5,15 +5,17 @@ import {
     Button,
     ChatAttachment,
     ChatAttachments,
-    ChatComposer,
     ChatEvent,
     ChatMessage,
+    ChatMessageStat,
     ChatReference,
     ChatThread,
     ChatToken,
     ChatTyping,
     ChatUnreadDivider,
     Chip,
+    cn,
+    MessageComposer,
     SheetBody,
     SheetSection,
     Table,
@@ -26,6 +28,8 @@ import {
 import {
     CircleCheck,
     Clock,
+    FileText,
+    Gauge,
     Mail,
     MapPin,
     PanelRight,
@@ -36,13 +40,14 @@ import {
     X,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { Frame, icon, Person, useRoom } from './shell';
+import { compact, Frame, icon, Person, useRoom } from './shell';
 
 /*
  * Inbox, one conversation. Elena Brandt, who runs finance at Umbrella Health, was charged twice for
- * October. The workspace's assistant finds why (the retry bug the platform team has in this cycle,
- * PLT-1284), Liam approves the refund in an internal note, and Maya's reply waits in the composer
- * with the refund linked, while Elena types again. The customer is read beside the thread in a
+ * October. The assistant answers her first, as one more author in the chat: the AI badge and its
+ * stats (how sure it is, the files it read, her account), the invoice linked under it. Then it is
+ * Maya's: Liam approves the refund in an internal note (the retry bug, PLT-1284, stays internal),
+ * and Maya's reply waits in the composer with the refund linked, while Elena types again. The customer is read beside the thread in a
  * sheet (non-modal, the page still usable), drawn in place so the picture holds still: who she is,
  * her account's facts, the invoices the question is about and what she asked before.
  *
@@ -103,7 +108,11 @@ const CustomerSheet = () => {
     return (
         <aside
             aria-label="Customer"
-            className="absolute top-4 right-4 bottom-4 flex w-sheet flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 shadow-sheet"
+            // On a phone the conversation is the page: the sheet read beside it is not drawn.
+            className={cn(
+                'absolute top-4 right-4 bottom-4 flex w-sheet flex-col overflow-hidden rounded-panel border border-neutral-200 bg-neutral-50 shadow-sheet',
+                compact.hidden,
+            )}
             data-slot="sheet-content"
         >
             {/* SheetHeader's close is a Dialog part, which needs the open sheet: its anatomy, drawn here. */}
@@ -243,29 +252,47 @@ const Thread = () => (
         </ChatMessage>
         <ChatEvent time="2 Sep">Maya Chen resolved the conversation</ChatEvent>
         <ChatEvent time="14:02">Elena Brandt wrote in by email</ChatEvent>
-        <ChatMessage author="Elena Brandt" avatar={<Person initials="EB" />} time="14:02">
+        <ChatMessage
+            attached={
+                <ChatAttachments variant="other">
+                    <ChatAttachment name="Card statement October.pdf" />
+                    <ChatAttachment name="Charges 1–2 Oct.png" />
+                </ChatAttachments>
+            }
+            author="Elena Brandt"
+            avatar={<Person initials="EB" />}
+            time="14:02"
+        >
             Hi, we were charged €4,800 twice for October. Could you refund the second?
         </ChatMessage>
-        <ChatAttachments variant="other">
-            <ChatAttachment name="Card statement October.pdf" />
-            <ChatAttachment name="Charges 1–2 Oct.png" />
-        </ChatAttachments>
         <ChatMessage
+            attached={
+                <ChatReference
+                    status={<Badge tone="error">Paid twice</Badge>}
+                    token="INV-2026-1043"
+                >
+                    €4,800.00 × 2
+                </ChatReference>
+            }
             author="Assistant"
             avatar={<AssistantMark />}
-            badge={<Badge tone="neutral">AI · only you see this</Badge>}
+            badge={<Badge tone="primary">AI</Badge>}
+            // What the answer drew on: how sure it is, Elena's two files, and her account.
+            stats={
+                <>
+                    <ChatMessageStat icon={<Gauge {...icon} />} label="Confidence" value="94%" />
+                    <ChatMessageStat icon={<FileText {...icon} />} label="Files read" value="2" />
+                    <ChatMessageStat
+                        icon={<UserRound {...icon} />}
+                        label="Looked at Elena Brandt’s account"
+                    />
+                </>
+            }
             time="14:03"
         >
-            Both charges are on <ChatToken tone="neutral">INV-2026-1043</ChatToken>: the retry job
-            ran after the first payment had settled, a known bug,{' '}
-            <ChatToken tone="neutral">PLT-1284</ChatToken>. Reply drafted.
-        </ChatMessage>
-        <ChatReference status={<Badge tone="error">Paid twice</Badge>} token="INV-2026-1043">
-            €4,800.00 × 2
-        </ChatReference>
-        <ChatEvent time="14:05">Maya Chen took the conversation</ChatEvent>
-        <ChatMessage status="read" time="14:06" variant="own">
-            Thanks Elena, I’m on it with billing now.
+            Hi Elena, I’ve checked: both charges are on{' '}
+            <ChatToken tone="neutral">INV-2026-1043</ChatToken>. A payment retry ran after the first
+            had settled, so the second is ours to refund. I’ve passed it to billing.
         </ChatMessage>
         <ChatMessage
             author="Liam Ortiz"
@@ -273,8 +300,8 @@ const Thread = () => (
             badge={<Badge tone="neutral">Internal note</Badge>}
             time="14:31"
         >
-            Refund <ChatToken tone="neutral">RF-88213</ChatToken> is approved on our side. The fix
-            ships tomorrow.
+            Refund <ChatToken tone="neutral">RF-88213</ChatToken> is approved. The retry bug is{' '}
+            <ChatToken tone="neutral">PLT-1284</ChatToken>; the fix ships tomorrow.
         </ChatMessage>
         <ChatUnreadDivider />
         <ChatMessage author="Elena Brandt" avatar={<Person initials="EB" />} time="14:37">
@@ -288,8 +315,8 @@ const draft =
 
 /** Maya's reply, drafted, with the refund linked to go with it; Elena typing above it. */
 const Composer = () => (
-    <div className="shrink-0 pb-6">
-        <ChatComposer
+    <div className="shrink-0 @max-shell-compact/shell:pb-4 pb-6">
+        <MessageComposer
             attachments={
                 <ChatAttachments>
                     <ChatAttachment
@@ -321,25 +348,37 @@ export const SupportScreen = () => (
         trail={['Inbox', 'Billing', '#4821']}
     >
         {/* The thread keeps to the room left of the sheet: 16 + 512 + 16 at the right, and the
-            page's own 24 beside it. */}
-        <div className="flex min-h-0 flex-1 flex-col pr-[calc(var(--spacing-sheet)+(--spacing(10)))] pl-6">
-            <div className="mx-auto flex min-h-0 w-full max-w-conversation flex-1 flex-col pt-24">
-                <div className="flex items-end justify-between gap-6 pb-10">
+            page's own 24 beside it. On a phone there is no sheet: 16 a side, 40 under the bar. */}
+        <div className="flex min-h-0 flex-1 flex-col @max-shell-compact/shell:px-4 pr-[calc(var(--spacing-sheet)+(--spacing(10)))] pl-6">
+            <div className="mx-auto flex min-h-0 w-full max-w-conversation flex-1 flex-col @max-shell-compact/shell:pt-10 pt-24">
+                <div className={cn('flex items-end justify-between gap-6 pb-10', compact.stack)}>
                     <div className="flex min-w-0 flex-col gap-1">
-                        <div className="flex min-w-0 items-center gap-2">
-                            <h1 className="truncate font-medium text-2xl text-neutral-950">
+                        {/* On a phone the title wraps and its badge follows the last word, a space after it. */}
+                        <div className="@max-shell-compact/shell:block flex min-w-0 items-center gap-2 @max-shell-compact/shell:text-2xl">
+                            <h1
+                                className={cn(
+                                    '@max-shell-compact/shell:inline truncate font-medium text-2xl text-neutral-950',
+                                    compact.wrap,
+                                )}
+                            >
                                 Charged twice for October
-                            </h1>
-                            <Badge tone="warning">Open</Badge>
+                            </h1>{' '}
+                            <Badge className="@max-shell-compact/shell:align-middle" tone="warning">
+                                Open
+                            </Badge>
                         </div>
-                        <p className="flex min-w-0 items-center gap-1.5 text-neutral-600 text-sm">
+                        <p className="flex min-w-0 @max-shell-compact/shell:flex-wrap items-center gap-1.5 @max-shell-compact/shell:gap-x-3 @max-shell-compact/shell:gap-y-1 text-neutral-600 text-sm">
                             <span className="truncate">#4821 · Umbrella Health</span>
-                            <Clock className="ml-1.5 size-4 shrink-0" {...icon} />
-                            <span className="shrink-0 tabular-nums">Reply due in 42m</span>
+                            <span className="@max-shell-compact/shell:ml-0 ml-1.5 flex shrink-0 items-center gap-1.5">
+                                <Clock className="size-4 shrink-0" {...icon} />
+                                <span className="tabular-nums">Reply due in 42m</span>
+                            </span>
                         </p>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
-                        <Button variant="secondary">Snooze</Button>
+                        <Button className={compact.hidden} variant="secondary">
+                            Snooze
+                        </Button>
                         <Button>
                             <CircleCheck {...icon} />
                             Resolve

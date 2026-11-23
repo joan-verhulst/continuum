@@ -235,7 +235,22 @@ export const Column = ({
     );
 };
 
-/** A page's title and its line, with its own actions at the right, bottom-aligned with the line. */
+/**
+ * Classes for a part that changes in a compact shell (a phone), where the page is one narrow
+ * column. The shell is the container, so the screens follow its width, not the site's.
+ */
+export const compact = {
+    /** A head row that stacks: the words, then the actions under them. */
+    stack: '@max-shell-compact/shell:flex-col @max-shell-compact/shell:items-stretch @max-shell-compact/shell:gap-4',
+    /** A line that truncates on a wide screen and wraps on a phone, so nothing is cut. */
+    wrap: '@max-shell-compact/shell:whitespace-normal @max-shell-compact/shell:text-pretty',
+    hidden: '@max-shell-compact/shell:hidden',
+} as const;
+
+/**
+ * A page's title and its line, with its own actions at the right, bottom-aligned with the line;
+ * in a compact shell the actions go under the words, and the title wraps rather than truncates.
+ */
 export const PageHead = ({
     title,
     description,
@@ -245,10 +260,12 @@ export const PageHead = ({
     description: ReactNode;
     children?: ReactNode;
 }) => (
-    <div className="flex items-end justify-between gap-6">
+    <div className={cn('flex items-end justify-between gap-6', compact.stack)}>
         <div className="flex min-w-0 flex-col gap-1.5">
-            <h1 className="truncate font-medium text-2xl text-neutral-950">{title}</h1>
-            <p className="truncate text-neutral-600 text-sm">{description}</p>
+            <h1 className={cn('truncate font-medium text-2xl text-neutral-950', compact.wrap)}>
+                {title}
+            </h1>
+            <p className={cn('truncate text-neutral-600 text-sm', compact.wrap)}>{description}</p>
         </div>
         {children && <div className="flex shrink-0 items-center gap-2">{children}</div>}
     </div>

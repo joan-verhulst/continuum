@@ -7,6 +7,8 @@ import {
     BarList,
     BarListItem,
     Card,
+    CardContent,
+    CardHeader,
     CardTitle,
     Select,
     SelectContent,
@@ -518,32 +520,36 @@ export const FaultyOverview = ({
         ),
         activity: (
             <Card layout="list">
-                <CardTitle>What moved</CardTitle>
-                <ActivityList>
-                    <ActivityItem
-                        icon={<UserPlus {...icon} />}
-                        time="12 minutes ago"
-                        title="Tyrell & Co started on the Starter plan"
-                        tone="success"
-                    />
-                    <ActivityItem
-                        icon={<Sparkles {...icon} />}
-                        time="2 hours ago"
-                        title="Riverbend Media started a trial of Pro"
-                        tone="primary"
-                    />
-                    <ActivityItem
-                        icon={<CircleAlert {...icon} />}
-                        time="3 hours ago"
-                        title="A payment from Initech failed"
-                        tone="warning"
-                    />
-                    <ActivityItem
-                        icon={<UserRoundX {...icon} />}
-                        time="2 weeks ago"
-                        title="Cyberdyne cancelled their plan"
-                    />
-                </ActivityList>
+                <CardHeader>
+                    <CardTitle>What moved</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <ActivityList>
+                        <ActivityItem
+                            icon={<UserPlus {...icon} />}
+                            time="12 minutes ago"
+                            title="Tyrell & Co started on the Starter plan"
+                            tone="success"
+                        />
+                        <ActivityItem
+                            icon={<Sparkles {...icon} />}
+                            time="2 hours ago"
+                            title="Riverbend Media started a trial of Pro"
+                            tone="primary"
+                        />
+                        <ActivityItem
+                            icon={<CircleAlert {...icon} />}
+                            time="3 hours ago"
+                            title="A payment from Initech failed"
+                            tone="warning"
+                        />
+                        <ActivityItem
+                            icon={<UserRoundX {...icon} />}
+                            time="2 weeks ago"
+                            title="Cyberdyne cancelled their plan"
+                        />
+                    </ActivityList>
+                </CardContent>
             </Card>
         ),
     };

@@ -323,9 +323,16 @@ export const FilmCamera = ({
         const current = shotRef.current;
         if (current === 'start') {
             const scale = scaleFor(room);
+            // A stage narrower than the composed one opens on the page rather than the sidebar
+            // beside it, the first thing a narrow window gives up.
+            const panel = scale < 1 ? screen.querySelector('[data-slot="app-panel"]') : null;
+            const left = panel
+                ? (panel.getBoundingClientRect().left - screen.getBoundingClientRect().left) /
+                  (screen.getBoundingClientRect().width / size.width)
+                : 0;
             setCamera(
                 frameBox(
-                    { x: 0, y: 0, width: room.width / scale, height: room.height / scale },
+                    { x: left, y: 0, width: room.width / scale, height: room.height / scale },
                     size,
                     room,
                 ),
