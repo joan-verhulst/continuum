@@ -1144,8 +1144,9 @@ needs an action.
   200ms; leaves by itself after 1.8s.
 
 ### Alert
-**For** an inline notice on a page or in a form that must stay: info, success, warning, error. **Not for**
-feedback that passes (Toast) or an empty list (EmptyState).
+**For** an inline notice on a page or in a form that must stay: info, success, warning, error. **Not for** feedback that passes (Toast), an empty
+list (EmptyState), or problems that are what the page is about (failing checks, open incidents): those are the
+page's content, rows in a list (`patterns.md`, Problems to act on).
 - A row: `item` corners (10), hairline, surface, 16 side, 12 vertical (8 with a title only), gap 12: a 32 icon
   well (24 when slim; chip corners; neutral the 5% wash with a `neutral-600` glyph, else the tone's 500 at 20%
   with a glyph that reaches 3:1 on it: the 600 for `error`, the 700 for `primary`, `success` and `warning`), the title 13/500 over the body 13 `neutral-600` (2 apart), the action buttons at the

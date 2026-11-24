@@ -87,7 +87,10 @@ For checking a value as you go, never instead of the references (Building someth
    is on, a label and its value, a title and its line, the filters and the chips they applied, a record's
    facts. Every level of the tree gets **one mark** that shows it (a container, a hairline around it, an
    eyebrow or a title over it), and its title is what a reader scans for, so it reads above the items it
-   holds. The gaps then follow the tree: never more room inside a group than between it and its neighbours.
+   holds. A single thing is a group too: an object shown with its facts or its
+   state (who is reviewing and what, a plan and its price) is a unit of them, and a unit standing on the page
+   takes its mark like any other, a card, never left as a bare row floating between blocks. The gaps then
+   follow the tree: never more room inside a group than between it and its neighbours.
    A screen whose spacing feels off almost always has a group nobody named.
 5. **Place the groups**, deciding in this order:
    - **Many at once, or one at a time:** how the reader goes through the content. Scanning, finding or
@@ -120,7 +123,15 @@ For checking a value as you go, never instead of the references (Building someth
      (zoom, the period) over what it views; the whole screen's in its head or the dock. One primary per view.
 6. **Choose the parts** for the content, piece by piece: the part in `components.md` (charts from `charts.md`) or
    the row in `patterns.md` whose **when** that content meets, and the variant or size for its spot. Content is
-   mapped to parts, never parts filled with content; take the simpler thing where it does the job. Write only
+   mapped to parts, never parts filled with content; take the simpler thing where it does the job. The tree
+   of step 4 says which kind of thing each piece is. **One item** (a notice, a figure, a status) takes the part
+   made for one. **A set of like items** the reader goes through (five problems, twelve deploys, forty
+   customers) takes one collection from `patterns.md` (a table, a list, a grid, a row of stat cards), every
+   item in it built alike: never a part made for one with the set inside it, and never a collection the
+   library lacks, made by hand. **A group of unlike items** takes no part, only its mark (step 4), its items
+   placed inside. What the content is to the reader chooses the part (what the page is about, or a remark on
+   it); its tone (failing, urgent, new) is shown on that part by a status icon or a badge and never chooses
+   it. Write only
    the layout between the parts, its gaps from the spacing formula. Where nothing fits, make a new part by the
    recipe in `method.md`, borrowing every value.
 7. **Write the plan down before any code**: a few lines each for steps 1, 3, 4, 5 and 6 (what the reader needs
@@ -160,7 +171,8 @@ The same rules, read the other way. Each of these was got wrong on a real review
 
 Every part earns its place (each control changes something the reader sees, each figure is one they came
 for, nothing is there because the anatomy or a reference screen had it) · components first where a part is the
-same thing, never a near one bent to fit · only roles, never
+same thing, never a near one bent to fit, and no part the library lacks built by hand where a pattern answers
+the need · a set of like items in one collection, never inside a part made for one · each control on what it changes · only roles, never
 a hex · hairline, not shadow · space, not dividers (full-width ones in
 floating containers only) · the column at its kind's width · one column on a form and settings · corners
 nested and concentric · controls on 34 or 38 · two weights, 13 base · icons at stroke 2 · one action colour and

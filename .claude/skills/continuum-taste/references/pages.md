@@ -374,8 +374,10 @@ notice).
   enough to keep them in sight; a long one, or one worked in like an editor, takes the dock too.
 - **A part earns its place.** An anatomy says what a page may hold and when; a control that changes nothing
   the reader sees, or a card for a number nobody came for, is left out.
-- **One column**, in reading order. A form and a settings page never split into two columns, and unlike cards
-  never sit side by side in a grid; what stays in view beside the work goes in the side panel.
+- **One column**, in reading order. A form and a settings page never split into two columns. Cards may share
+  one row, read across and ending level (stat cards; two sections of one weight read together, each a card),
+  but the page never becomes columns: never a stack of cards beside another stack. What stays in view beside
+  the work goes in the side panel.
 - **Space, not lines**, between sections and groups; a container only for a self-contained unit or a divided
   list.
 - **A group is marked, never implied**: a hairline, a container (never inside another), or an eyebrow. Not a
