@@ -326,7 +326,7 @@ export const Mcp = () => (
                     ))}
                 </ul>
                 <p className="text-neutral-500 text-xs leading-5">
-                    One connection per project, on Pro.
+                    One connection per project, set up by npx contui init.
                 </p>
             </Reveal>
         </div>

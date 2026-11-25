@@ -50,15 +50,15 @@ import {
 import type { HeaderMenu } from '@/lib/header-menus';
 import { inSection, inShell, sections } from '@/lib/nav';
 import { appLink } from '@/lib/site';
+import { InstallButton } from './install-button';
 import { ModeSwitch } from './mode';
-import { GetStartedPro } from './pro-button';
 
 /*
  * The site's one header, on every page: a bar across the full page, held at the top as you scroll,
  * a hairline under it and the page showing faintly through, its content on the page's 1152 column.
  * The logo left, the site's sections in the middle held in one rounded group, the current one on a
  * grey pill that travels between them, and at the right the mode switch, Sign in (an icon, straight
- * to the app) and the one action, Buy for €299 (GetStartedPro), leading to Pro's checkout. On the landing the pill follows the section in view (see `landing`); on every other page it
+ * to the app) and the one action, Install (InstallButton), leading to the install guide. On the landing the pill follows the section in view (see `landing`); on every other page it
  * marks the page's section. Under a laptop's width the links fold into a menu under the bar.
  */
 
@@ -734,7 +734,7 @@ export const SiteHeader = ({ menus = {} }: { menus?: Record<string, HeaderMenu> 
                             <LogIn strokeWidth={2} />
                         </Button>
                         {/* The page's one action, on every width: the hero holds none of its own. */}
-                        <GetStartedPro className="ml-1" />
+                        <InstallButton className="ml-1" />
                         <Button
                             aria-controls={menuId}
                             aria-expanded={open}

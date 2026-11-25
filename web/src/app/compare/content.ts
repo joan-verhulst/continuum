@@ -52,7 +52,7 @@ const shadcn: Comparison = {
                 '| Styling | Tailwind CSS v4 tokens | Tailwind CSS classes and CSS variables |',
                 '| The look | One finished look, made for tool UI | A neutral starting point you restyle |',
                 '| Composition | Written rules: page kinds, widths, one primary per view | Up to you |',
-                '| Licence | Public to read, all rights reserved | MIT |',
+                '| Licence | Free to use in any product, no resale | MIT |',
             ]),
         },
         {
@@ -71,7 +71,7 @@ const shadcn: Comparison = {
             body: [
                 '- **Ecosystem.** shadcn/ui is widely used, with a large community, third-party registries, blocks and examples, and AI models already know it well. Continuum is a young project by one person.',
                 '- **Maturity.** shadcn/ui runs in many production apps; Continuum is at version 0.1 and still changing.',
-                "- **Licence.** shadcn/ui is MIT: free to use, change and ship. Continuum's code is public to read, with all rights reserved; ask before using it in a product.",
+                '- **Licence.** shadcn/ui is MIT: free to use, change, ship and redistribute. Continuum is free to use in any product, commercial or not, but not to resell or redistribute as a library of your own.',
                 "- **Ownership.** Because shadcn/ui's code sits in your repository, you can change anything in any component. Continuum is a dependency: you change it through its theme, not by editing its source.",
                 '- **Range.** shadcn/ui suits any kind of React product, from a marketing page to an app. Continuum is deliberately narrower.',
             ].join('\n'),
@@ -96,7 +96,7 @@ const shadcn: Comparison = {
         },
         {
             question: 'Is Continuum free?',
-            answer: "The theme builder is free in the browser. The library's code is public to read with all rights reserved, so ask before shipping it in a product. shadcn/ui is open source under the MIT licence.",
+            answer: 'Yes. Continuum is free to use in your own products and in client work, commercial or not; its licence only rules out reselling or redistributing it. The theme builder is free in the browser. shadcn/ui is open source under the MIT licence.',
         },
         {
             question: 'Which works better with AI coding agents?',
@@ -126,7 +126,7 @@ const tailwindUi: Comparison = {
                 '| What it covers | Tool UI: apps, dashboards, settings | Marketing sites, app screens, e-commerce |',
                 '| Theming | Tokens, set by a theme builder | Tailwind classes in each snippet |',
                 '| Composition | Written rules: page kinds, widths, one primary per view | Examples to adapt |',
-                '| Licence | Public to read, all rights reserved | Paid commercial licence |',
+                '| Licence | Free to use in any product, no resale | Paid commercial licence |',
             ]),
         },
         {
@@ -137,6 +137,7 @@ const tailwindUi: Comparison = {
                 '- **A theme builder.** Pick an accent, greys, a font, a type size, a spacing unit, control heights and corners; the builder makes oklch ramps for light and dark together, checks contrast, and exports an `app.css` for Tailwind v4 and a `DESIGN.md` brief for agents.',
                 '- **Rules as well as parts.** Continuum writes down how pages are composed, in units: seven page kinds with their widths, how sections are set apart, one primary action per view. Tailwind UI shows finished examples; the rules behind them are for you to infer.',
                 "- **Agent tooling.** Continuum's skill and MCP server give an agent each part's spec, each page kind's anatomy and recipes for common needs, and an audit that reads existing UI in any stack and says what to fix.",
+                '- **Licence.** Tailwind UI is bought, and the licence covers your projects. Continuum is free to use in any product, commercial or not; neither may be resold as a kit of your own.',
             ].join('\n'),
         },
         {
@@ -146,7 +147,6 @@ const tailwindUi: Comparison = {
                 '- **Range.** Marketing pages, landing pages, stores and app screens: Tailwind UI covers far more kinds of page than Continuum, which is made for tool UI alone.',
                 "- **Frameworks.** Its blocks come in HTML, React and Vue; Continuum's library is React only (its rules, through the skill and the MCP server, apply in any stack).",
                 '- **Maturity and polish.** It is made by the Tailwind CSS team and has been used in production for years. Continuum is at version 0.1, by one person, and still changing.',
-                "- **Licence.** Buying it grants a licence to use it in your projects. Continuum's code is public to read, with all rights reserved; ask before using it in a product.",
                 '- **Ownership.** As with any copied code, every line of a Tailwind UI block is yours to change. Continuum is a dependency you change through its theme.',
             ].join('\n'),
         },
@@ -154,7 +154,7 @@ const tailwindUi: Comparison = {
             id: 'which-to-choose',
             title: 'Which to choose',
             body: [
-                'Choose **Tailwind UI** when you need polished pages of many kinds, marketing as well as app, in HTML, React or Vue, under a licence you can buy today.',
+                'Choose **Tailwind UI** when you need polished pages of many kinds, marketing as well as app, in HTML, React or Vue.',
                 "Choose **Continuum** when you are building tool UI in React and want one look held in tokens, a theme builder for your product's own accent and type, written rules for how pages are put together, and an agent that follows them.",
             ].join('\n\n'),
         },
@@ -174,7 +174,7 @@ const tailwindUi: Comparison = {
         },
         {
             question: 'Is Continuum free?',
-            answer: "The theme builder is free in the browser. The library's code is public to read with all rights reserved, so ask before shipping it in a product. Tailwind UI is sold under a paid licence.",
+            answer: 'Yes. Continuum is free to use in your own products and in client work, commercial or not; its licence only rules out reselling or redistributing it. The theme builder is free in the browser. Tailwind UI is sold under a paid licence.',
         },
     ],
 };

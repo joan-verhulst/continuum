@@ -8,7 +8,7 @@ import {
     skills,
 } from '@/lib/content';
 import { JsonLd, pageMetadata, softwareApplicationLd } from '@/lib/seo';
-import { proLaunchPriceEUR, tagline } from '@/lib/site';
+import { tagline } from '@/lib/site';
 
 export const metadata = pageMetadata({
     title: 'Continuum — A design system for product teams and coding agents',
@@ -46,7 +46,7 @@ const HomePage = () => (
                 description: tagline,
                 path: '/',
                 category: 'DeveloperApplication',
-                priceEUR: proLaunchPriceEUR,
+                priceEUR: 0,
             })}
         />
         <Landing componentIndex={componentIndex()} />

@@ -4,13 +4,13 @@ export const installParts = [
         id: 'library',
         title: 'The React library',
         summary:
-            'Add Continuum from GitHub, load its styles through Tailwind v4 or the prebuilt sheet, and wrap the app in a Theme.',
+            'Install @contui/ui from npm, load its styles through Tailwind v4 or the prebuilt sheet, and wrap the app in a Theme.',
     },
     {
         id: 'skills-and-mcp',
         title: 'The skills and the MCP server',
         summary:
-            'One command from a clone copies the Claude skills and registers the MCP server for every project.',
+            'npx contui init adds the Claude skills and the MCP server to the project, kept on the installed version.',
     },
     {
         id: 'with-claude',

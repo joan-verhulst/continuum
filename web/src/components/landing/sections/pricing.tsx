@@ -6,28 +6,28 @@ import { motion, useInView, useReducedMotion, type Variants } from 'motion/react
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
 import { GlassLight, type GlassRect } from '@/components/footer-shader';
-import { proCheckout } from '@/components/pro-button';
-import { proLaunchPriceEUR } from '@/lib/site';
+import { installUrl } from '@/components/install-button';
 import { tunable } from '@/lib/tunable';
 import { PRO_LIGHT } from '../pro-light';
 import { ease, Reveal, Section } from '../web';
 
 /*
- * Pricing as one offer, played once it comes into view. The Pro card, the section's full width, holds the hero's light: it
- * opens dim and the light comes up from the card's foot while the offer sharpens in on it (Pro, the
- * price, the line, and the one action: Start building with Pro, the price being just above it). Under the card, on the
- * page, what comes with it as a plain checklist, item by item (the library's leads to it), and the
- * free way in as one quiet row: the tools, at no cost, with the secondary action.
+ * Pricing as one offer, played once it comes into view: Continuum is free to use. The card, the
+ * section's full width, holds the hero's light: it opens dim and the light comes up from the card's
+ * foot while the offer sharpens in on it (the name, Free, what the licence allows, the line, and the
+ * one action: Start building, to the install guide). Under the card, on the page, what comes with it
+ * as a plain checklist, item by item (the library's leads to it), and the tools in the browser as
+ * one quiet row with the secondary action.
  */
 
-/** What Pro is and does; the payment is said once, under the price. */
+/** What comes with Continuum; what the licence allows is said once, under the price. */
 const included = [
     'library',
     'Claude Code skills that build and refine UI',
     'MCP server: look up the rules, audit screens',
     'A good-looking screen from the first prompt',
     'Your own theme on every component and chart',
-    'Commercial licence for one developer',
+    'Use it in client work and your own products',
 ];
 
 /** The card's light: the hero's, from under its foot. */
@@ -105,9 +105,8 @@ export const Pricing = ({ families }: { families: Record<string, string> }) => {
             <div className="flex flex-col items-center gap-10 md:gap-12">
                 {/* The card: the light in it, the offer on the light. */}
                 <article
-                    aria-labelledby="plan-pro"
+                    aria-labelledby="plan-name"
                     className="relative isolate w-full scroll-mt-24 overflow-hidden rounded-panel border border-neutral-200"
-                    id="pro-early-access"
                     ref={card}
                 >
                     <div
@@ -131,24 +130,26 @@ export const Pricing = ({ families }: { families: Record<string, string> }) => {
                         initial="hidden"
                         variants={arrive}
                     >
-                        <h3 className="text-base text-neutral-700" id="plan-pro">
-                            Pro
+                        <h3 className="text-base text-neutral-700" id="plan-name">
+                            Continuum
                         </h3>
-                        <p className="mt-3 font-medium text-[64px] text-neutral-950 tabular-nums leading-none tracking-[-0.04em] md:text-[96px]">
-                            €{proLaunchPriceEUR}
+                        <p className="mt-3 font-medium text-[64px] text-neutral-950 leading-none tracking-[-0.04em] md:text-[96px]">
+                            Free
                         </p>
-                        <p className="mt-4 text-neutral-700 text-sm">One-time payment at launch</p>
+                        <p className="mt-4 text-neutral-700 text-sm">
+                            For any product, commercial or not
+                        </p>
                         <p className="mt-4 max-w-[520px] text-base text-neutral-800 leading-[1.6]">
                             Bring Continuum into the product you’re building and give your coding
                             agent the same design rules.
                         </p>
-                        {/* The price is just above, so the action says what comes next, not the sale. */}
+                        {/* What it costs is just above, so the action says what comes next. */}
                         <Button
                             className="mt-8"
-                            render={props => <a {...props} href={proCheckout} />}
+                            render={props => <a {...props} href={installUrl} />}
                             size="lg"
                         >
-                            Start building with Pro
+                            Start building
                             <ArrowRight strokeWidth={2} />
                         </Button>
                     </motion.div>
@@ -156,7 +157,7 @@ export const Pricing = ({ families }: { families: Record<string, string> }) => {
 
                 {/* What comes with it, on the page under the card, item by item. */}
                 <ul
-                    aria-label="Included in Pro"
+                    aria-label="Included in Continuum"
                     className="grid w-full gap-3 sm:grid-cols-2 lg:grid-cols-3"
                 >
                     {included.map((item, index) => (
@@ -190,7 +191,7 @@ export const Pricing = ({ families }: { families: Record<string, string> }) => {
                     ))}
                 </ul>
 
-                {/* The free way in: one quiet row under Pro, no light, the secondary action. */}
+                {/* The way in without installing: one quiet row under the card, no light, the secondary action. */}
                 <Reveal className="w-full">
                     <article
                         aria-labelledby="plan-free"
@@ -205,7 +206,7 @@ export const Pricing = ({ families }: { families: Record<string, string> }) => {
                                     Free tools
                                 </span>
                                 <span className="text-neutral-600 text-sm">
-                                    €0 · No account needed
+                                    In the browser · No account needed
                                 </span>
                             </p>
                             <p className="text-base text-neutral-600 leading-[1.6]">

@@ -14,7 +14,7 @@ import { installParts } from '../_parts/nav';
  */
 
 const description =
-    'Install Continuum: the React component library from GitHub with Tailwind v4 or a prebuilt stylesheet, the Claude skills, and the MCP server for Claude Code, Cursor and VS Code.';
+    'Install Continuum with npx contui init: the React component library from npm with Tailwind v4 or a prebuilt stylesheet, the Claude skills, and the MCP server for Claude Code, Cursor and VS Code.';
 
 export const metadata = pageMetadata({
     title: 'Install',
@@ -65,7 +65,7 @@ const InstallPage = () => {
                     </Button>
                 }
                 eyebrow="Docs"
-                lead="Continuum installs in three parts, the React library, the Claude skills and the MCP server: the library to build with its components, the skills and the server to have Claude and other agents build in it."
+                lead="One command installs Continuum in a project, as a dependency: the React library to build with its components, and the Claude skills and the MCP server to have Claude and other agents build in it."
                 title="Install"
             />
             <Article>
