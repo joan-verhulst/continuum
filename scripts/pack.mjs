@@ -99,7 +99,7 @@ await write(join(ui, 'package.json'), {
     sideEffects: manifest.sideEffects,
     types: compiledExports['.'].types,
     exports: { ...compiledExports, './package.json': './package.json' },
-    bin: { contui: './cli/contui.mjs' },
+    bin: { contui: 'cli/contui.mjs' },
     dependencies: manifest.dependencies,
     peerDependencies: manifest.peerDependencies,
     // A project outside React installs it for the skills, the server and the tokens alone.
@@ -119,7 +119,7 @@ await write(join(cli, 'package.json'), {
     name: 'contui',
     description: `Sets Continuum up in a project: installs ${manifest.name}, its Claude skills and its MCP server.`,
     ...shared,
-    bin: { contui: './cli/contui.mjs' },
+    bin: { contui: 'cli/contui.mjs' },
 });
 await writeFile(
     join(cli, 'README.md'),
