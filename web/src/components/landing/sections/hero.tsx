@@ -14,21 +14,33 @@ import {
     Theme,
     type ThemeMode,
     type ThemeOptions,
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
 } from '@contui/ui';
 import { ContinuumMark } from '@playground/brand';
 import { FooterSlotProvider } from '@playground/layout';
 import { sameTheme } from '@playground/projects';
 import { ProjectFlow } from '@playground/theme-editor/flow';
 import { ExportDialog } from '@playground/theme-editor/parts';
-import { Moon, RotateCcw, SlidersHorizontal, Sun } from 'lucide-react';
+import { Bot, Check, Copy, Moon, RotateCcw, SlidersHorizontal, Sun } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
-import { type CSSProperties, type ReactNode, useDeferredValue, useMemo, useState } from 'react';
+import {
+    type CSSProperties,
+    type ReactNode,
+    useDeferredValue,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react';
 import { compact, load, store } from '@/app/tools/theme-builder/state';
+import { installPrompt } from '@/lib/install-prompt';
 import { themeBuilderLink } from '@/lib/site';
 import { heroScreens } from '../hero-screens';
 import { RimLight } from '../rim-light';
 import { PRODUCT_THEME, productTheme } from '../theme';
-import { ease, Reveal, RuledFrame, Section, Shot } from '../web';
+import { ease, installCommand, Reveal, RuledFrame, Section, Shot } from '../web';
 import { Comparison } from './fair-test';
 
 /*
@@ -349,6 +361,84 @@ const MadeByBadge = () => (
     </div>
 );
 
+/* ---------- The way in ---------- */
+
+/** How long a copy says it was copied. */
+const COPIED_MS = 1600;
+
+/** Copies a text and says so for a moment; a second copy starts the moment again. */
+const useCopy = () => {
+    const [copied, setCopied] = useState(false);
+    const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
+    useEffect(() => () => clearTimeout(timer.current), []);
+
+    const copy = (text: string) => {
+        navigator.clipboard?.writeText(text).then(
+            () => {
+                setCopied(true);
+                clearTimeout(timer.current);
+                timer.current = setTimeout(() => setCopied(false), COPIED_MS);
+            },
+            () => {},
+        );
+    };
+    return [copied, copy] as const;
+};
+
+/**
+ * The way in, drawn as the header's island (its wash, hairline, padding and corner), so it reads
+ * as the same thing as the links above: the install command, a press anywhere on it copying it,
+ * then past a hairline the agent button, which copies a setup prompt for the visitor's own agent
+ * (lib/install-prompt) without showing it; its tooltip says what it copies.
+ */
+const InstallIsland = () => {
+    const [commandCopied, copyCommand] = useCopy();
+    const [promptCopied, copyPrompt] = useCopy();
+    const promptLabel = promptCopied ? 'Setup prompt copied' : 'Copy a setup prompt for your agent';
+
+    return (
+        <div className="flex w-full max-w-80 items-center gap-1 rounded-[calc(var(--radius-control)+4px)] border border-neutral-200 bg-neutral-100 p-1">
+            <button
+                aria-label={commandCopied ? 'Copied' : `Copy ${installCommand}`}
+                className={cn(
+                    'flex h-control min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-control pr-2.5 pl-3 font-mono text-xs transition-[background-color] duration-150 hover:bg-selected',
+                    focusRing,
+                )}
+                onClick={() => copyCommand(installCommand)}
+                type="button"
+            >
+                <span aria-hidden className="select-none text-neutral-500">
+                    $
+                </span>
+                <span className="min-w-0 flex-1 truncate text-left text-neutral-950">
+                    {installCommand}
+                </span>
+                {commandCopied ? (
+                    <Check className="size-icon text-neutral-950" {...icon} />
+                ) : (
+                    <Copy className="size-icon text-neutral-500" {...icon} />
+                )}
+            </button>
+            <span aria-hidden className="h-4 w-px shrink-0 bg-neutral-200" />
+            <Tooltip>
+                <TooltipTrigger
+                    render={
+                        <Button
+                            aria-label={promptLabel}
+                            onClick={() => copyPrompt(installPrompt)}
+                            size="icon"
+                            variant="ghost"
+                        />
+                    }
+                >
+                    {promptCopied ? <Check {...icon} /> : <Bot {...icon} />}
+                </TooltipTrigger>
+                <TooltipContent>{promptLabel}</TooltipContent>
+            </Tooltip>
+        </div>
+    );
+};
+
 // The board fills the first screen: the words centred in it, the before and after lying on its foot
 // and running out of it. The four screens follow as a section of their own (Screens, below).
 export const Hero = () => (
@@ -378,13 +468,16 @@ export const Hero = () => (
                         streamline your workflow.
                     </p>
                 </Reveal>
+                <Reveal className="flex w-full justify-center" delay={2}>
+                    <InstallIsland />
+                </Reveal>
             </div>
             {/* Before and after: the same page with Continuum and as a plain agent builds it. Its top
                 (200 on phones, 320 from md) lies on the board; a negative margin as large as the
                 rest lets that run out of the board's foot. */}
             <Reveal
                 className="relative z-10 mx-auto -mb-102 w-full md:mb-[calc(320px-min(1408px,100vw-146px)*9/16)] md:w-[min(1408px,calc(100vw-146px))]"
-                delay={2}
+                delay={3}
             >
                 <Comparison />
             </Reveal>
