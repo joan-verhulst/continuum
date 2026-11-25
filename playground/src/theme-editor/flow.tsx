@@ -11,6 +11,7 @@ import {
     DialogTitle,
     defaultAccentSeed,
     defaultThemeOptions,
+    drawnType,
     StatusDot,
     Stepper,
     StepperItem,
@@ -38,6 +39,42 @@ import {
 } from './controls';
 import { ImportThemeDialog, importPatch } from './import';
 import { Choice } from './parts';
+
+/** Letter spacing as drawn, in em of the base type: 0.32px at 13px. */
+const drawnTracking = 0.025;
+
+/** A theme font as the page's font stack: its variable family, then the installed one. */
+const fontStack = (font: string) => {
+    const known = themeFontFamilies[font as keyof typeof themeFontFamilies];
+    return known
+        ? `"${known.family} Variable", "${known.family}", ui-sans-serif, system-ui, sans-serif`
+        : font;
+};
+
+/**
+ * The step header in the theme's type, so what the Type step sets shows right above where it is
+ * set: its font, its spacing between letters (at the base size, as the theme sets it) and between
+ * lines. Only what the theme changes, and only the type: the header keeps the builder's colours.
+ * The title keeps its own tightening on top of the theme's spacing.
+ */
+const headerType = (theme: ThemeOptions) => {
+    const base = theme.type ?? drawnType;
+    const shift =
+        theme.tracking === undefined ? undefined : (theme.tracking - drawnTracking) * base;
+    const font =
+        theme.font && theme.font !== defaultThemeOptions.font ? fontStack(theme.font) : undefined;
+    return {
+        header: {
+            fontFamily: font,
+            letterSpacing: theme.tracking === undefined ? undefined : `${theme.tracking * base}px`,
+        },
+        title: {
+            letterSpacing: shift === undefined ? undefined : `calc(-0.02em + ${shift}px)`,
+            lineHeight: theme.leading,
+        },
+        line: { lineHeight: theme.leading },
+    };
+};
 
 /*
  * A project's theme as a short flow, one step at a time: the primary, the neutral, the chart
@@ -368,6 +405,7 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
         useAnyway: 'Use it anyway',
     };
     const Title = props.titleAs ?? 'h1';
+    const type = useMemo(() => headerType(theme), [theme]);
     const REVIEW = 4;
     const [current, setCurrent] = useState(() => Math.min(progress, REVIEW));
     // The Colour step shows one of its parts at a time, and Continue walks them before leaving it,
@@ -583,13 +621,18 @@ export const ProjectFlow = (props: FlowProps & { name: string }) => {
     return (
         <>
             <div className="flex flex-col gap-10" ref={top}>
-                {/* The step's own header: what this step is and what it asks. */}
-                <header className="flex flex-col gap-3">
+                {/* The step's own header: what this step is and what it asks, in the theme's type. */}
+                <header className="flex flex-col gap-3" style={type.header}>
                     <p className="text-neutral-600 text-xs tabular-nums">{name}</p>
-                    <Title className="font-medium text-3xl text-neutral-950 tracking-[-0.02em]">
+                    <Title
+                        className="font-medium text-3xl text-neutral-950 tracking-[-0.02em]"
+                        style={type.title}
+                    >
                         {open.title}
                     </Title>
-                    <p className="max-w-xl text-base text-neutral-600">{open.ask}</p>
+                    <p className="max-w-xl text-base text-neutral-600" style={type.line}>
+                        {open.ask}
+                    </p>
                     {/* The first step is where a theme the product already has comes in. */}
                     {current === COLOUR && part === 0 && (
                         <div className="-ml-3 flex items-center">
