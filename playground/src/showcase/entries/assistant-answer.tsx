@@ -8,7 +8,7 @@ import {
     StatCard,
     Thinking,
     ThinkingCaret,
-} from 'continuum';
+} from '@contui/ui';
 import { BookOpen, RotateCcw, Search, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';

@@ -6,7 +6,7 @@ import {
     type ThemeCharts,
     type ThemeOptions,
     themeAccentRamp,
-} from 'continuum';
+} from '@contui/ui';
 
 /** Whether a theme differs from the system's own baseline: its options or its corners. */
 export const isPreviewing = (theme: ThemeOptions) =>

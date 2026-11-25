@@ -1,4 +1,4 @@
-import { Button, cn, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from 'continuum';
+import { Button, cn, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@contui/ui';
 import { ChartColumn, Inbox, type LucideIcon, Settings, Users } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { useStageContainer } from '../../layout';

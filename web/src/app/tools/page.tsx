@@ -1,4 +1,4 @@
-import { Button, cn } from 'continuum';
+import { Button, cn } from '@contui/ui';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 import { FaqSection } from '@/components/faq-section';

@@ -8,7 +8,7 @@ import {
     FieldLabel,
     Slider,
     StatCard,
-} from 'continuum';
+} from '@contui/ui';
 import { BellRing } from 'lucide-react';
 import { useState } from 'react';
 import {

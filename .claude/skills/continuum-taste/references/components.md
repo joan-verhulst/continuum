@@ -1161,7 +1161,7 @@ error (Alert).
 
 ## Charts
 
-The chart kit, `continuum/charts`, has a reference of its own: `charts.md`. It holds which chart answers which
+The chart kit, `@contui/ui/charts`, has a reference of its own: `charts.md`. It holds which chart answers which
 need, the card every chart sits in (ChartFrame, ChartCard, ChartKey), the plot, the marks, colour, hover, motion,
 and an entry per chart: AreaChart, LineChart, BarChart, HorizontalBarChart, DonutChart, Treemap, FunnelChart,
 RadarChart, RoseChart, BulletChart, UptimeStrip, BubbleChart and CandlestickChart.

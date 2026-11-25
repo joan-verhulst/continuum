@@ -1,4 +1,4 @@
-import { Button, IconTile, Progress, StatCard } from 'continuum';
+import { Button, IconTile, Progress, StatCard } from '@contui/ui';
 import { CircleCheck, FileText, Paperclip, Send, X } from 'lucide-react';
 import {
     AppScene,

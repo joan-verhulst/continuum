@@ -8,7 +8,7 @@ import {
     Input,
     ReadonlyField,
     StatCard,
-} from 'continuum';
+} from '@contui/ui';
 import { Plus } from 'lucide-react';
 import {
     AppScene,

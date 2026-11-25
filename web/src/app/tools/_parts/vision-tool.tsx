@@ -12,7 +12,7 @@ import {
     seriesThresholds,
     simulateVision,
     type ThemeOptions,
-} from 'continuum';
+} from '@contui/ui';
 import { useMemo, useState } from 'react';
 import { useShareAccent } from './builder-link';
 import { capital, hexOf, readSource } from './colours';

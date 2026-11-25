@@ -1,23 +1,23 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from 'continuum';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@contui/ui';
 import { ArticleSection, C, CodeBlock, column, Figure, H, P } from '../article';
 import { Page, PageHeader } from '../layout';
-import { firstSentence, manifest, serverFromClone, serverPath } from './data';
+import { firstSentence, manifest, serverInWorkspace, serverPath } from './data';
 
 /*
  * The MCP server: how to connect it, what it offers and how its audit works. An article like
  * Foundations; the tools and prompts are read from the server's manifest, so the page lists
- * what the server serves. No command names a machine's path: one run in the clone's folder
- * reads it from the shell, and a config file shows where the reader's own path goes.
+ * what the server serves. The server comes with the project's @contui/ui and runs from its
+ * node_modules, so every command runs in the project.
  */
 
 const cursorConfig = JSON.stringify(
-    { mcpServers: { continuum: { command: 'node', args: [serverPath] } } },
+    { mcpServers: { continuum: { command: 'node', args: [serverInWorkspace] } } },
     null,
     2,
 );
 
 const vscodeConfig = JSON.stringify(
-    { servers: { continuum: { type: 'stdio', command: 'node', args: [serverPath] } } },
+    { servers: { continuum: { type: 'stdio', command: 'node', args: [serverInWorkspace] } } },
     null,
     2,
 );
@@ -42,18 +42,13 @@ const exampleFinding = JSON.stringify(
 
 const steps = [
     {
-        title: 'Clone and install',
-        text: 'Anywhere on the machine; the server runs from this clone.',
-        code: 'git clone git@github.com:joan-verhulst/continuum.git\ncd continuum\npnpm install',
-    },
-    {
-        title: 'Install the skills and the server',
-        text: 'Copies the skills to ~/.claude/skills and registers the server with Claude Code for every project. Without the Claude CLI it prints the command instead.',
-        code: 'pnpm install:skill',
+        title: 'Install it in the project',
+        text: 'In the project’s root. Installs @contui/ui as a dependency, adds the skills, and registers the server in .mcp.json, run from node_modules.',
+        code: 'npx contui init',
     },
     {
         title: 'Check it is connected',
-        text: 'In any project, continuum is listed as connected. Ask Claude which Continuum tools it has to see them in use.',
+        text: 'Restart Claude Code in the project and approve the continuum server; it is then listed as connected. Ask Claude which Continuum tools it has to see them in use.',
         code: 'claude mcp list',
     },
 ];
@@ -68,7 +63,7 @@ export const McpPage = () => (
         </div>
 
         <ArticleSection
-            description="Once per machine, from a clone of the repo."
+            description={`Once per project, in ${steps.length} steps.`}
             id="mcp-setup"
             title="Set it up"
         >
@@ -89,13 +84,13 @@ export const McpPage = () => (
             </ol>
             <H>By hand</H>
             <P>
-                The second step runs this. Run it yourself from the clone's folder, in bash or
-                PowerShell, to register the server under another name; leave out <C>--scope user</C>{' '}
-                to register it for the project you are in only.
+                The first step writes this into <C>.mcp.json</C>, which comes with the project for
+                everyone on it. Run it yourself in the project's folder to register the server under
+                another name; leave out <C>--scope project</C> to register it for you alone.
             </P>
             <CodeBlock
                 className={column}
-                code={`claude mcp add --scope user continuum -- node ${serverFromClone}`}
+                code={`claude mcp add --scope project continuum -- node ${serverPath}`}
             />
         </ArticleSection>
 
@@ -104,7 +99,7 @@ export const McpPage = () => (
             id="mcp-editors"
             title="In other editors"
         >
-            <Figure caption="Put the path to your own clone where /path/to/continuum is; pnpm install:skill prints it. Cursor reads ~/.cursor/mcp.json for every project, VS Code .vscode/mcp.json in the project.">
+            <Figure caption="After npx contui init, the server is in the project's node_modules. Cursor reads .cursor/mcp.json in the project, VS Code .vscode/mcp.json; both fill in ${workspaceFolder}. Any other client runs the command in the project's folder.">
                 <Tabs className={`${column} flex flex-col gap-4`} defaultValue="cursor">
                     <TabsList variant="pill">
                         <TabsTrigger value="cursor">Cursor</TabsTrigger>
@@ -217,8 +212,9 @@ export const McpPage = () => (
             title="Keeping it current"
         >
             <P>
-                <C>git pull</C> in the clone, and every new session uses the new server. The skills
-                are copies, so run <C>pnpm install:skill</C> again when they change.
+                The server runs from the installed <C>@contui/ui</C>, so it is the version in{' '}
+                <C>package.json</C>. Update the package like any dependency, and every new session
+                uses the new server; the install copies the new skills too.
             </P>
         </ArticleSection>
     </Page>

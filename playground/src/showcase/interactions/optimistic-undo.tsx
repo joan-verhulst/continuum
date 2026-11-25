@@ -9,7 +9,7 @@ import {
     TableRow,
     ToastProvider,
     useOptimisticUndo,
-} from 'continuum';
+} from '@contui/ui';
 import { Archive, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';

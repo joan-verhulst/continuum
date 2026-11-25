@@ -1,4 +1,4 @@
-import { Button, Toolbar, ToolbarButton, ToolbarChip } from 'continuum';
+import { Button, Toolbar, ToolbarButton, ToolbarChip } from '@contui/ui';
 import { Check, Minimize2, Share2, WandSparkles } from 'lucide-react';
 import { useState } from 'react';
 import {

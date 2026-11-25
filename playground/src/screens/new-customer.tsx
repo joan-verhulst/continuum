@@ -16,7 +16,7 @@ import {
     SettingRow,
     Switch,
     Textarea,
-} from 'continuum';
+} from '@contui/ui';
 import { Building2, Rocket, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { useScreenNav } from './shared';

@@ -1,4 +1,4 @@
-import { Button, cn } from 'continuum';
+import { Button, cn } from '@contui/ui';
 import { ArrowRight, Contrast, Eye, type LucideIcon, PaintBucket, Palette } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactNode } from 'react';

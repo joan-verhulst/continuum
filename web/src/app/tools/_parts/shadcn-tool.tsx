@@ -9,7 +9,7 @@ import {
     themeAccentRamp,
     themeFromCss,
     themeNeutralRamp,
-} from 'continuum';
+} from '@contui/ui';
 import { useMemo, useState } from 'react';
 import { ToolPanel } from './controls';
 import { RampStrip } from './ramp';

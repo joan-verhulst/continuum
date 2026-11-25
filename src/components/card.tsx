@@ -128,7 +128,7 @@ export type StatCardProps = Omit<ComponentProps<'div'>, 'children'> & {
     icon?: ReactNode;
     /** The card's own controls at the label's right: a ghost `icon-sm` menu button. */
     actions?: ReactNode;
-    /** The figure's recent shape under it: a `Sparkline` from `continuum/charts`. */
+    /** The figure's recent shape under it: a `Sparkline` from `@contui/ui/charts`. */
     chart?: ReactNode;
     /** Two or three figures that stand beside the key one, in a foot of their own. */
     facts?: readonly StatFact[];

@@ -10,7 +10,7 @@ import {
     type TypeRun,
     textGap,
     typeSize,
-} from 'continuum';
+} from '@contui/ui';
 import { z } from 'zod';
 import { defineTool, readOnly, structured, ToolError } from '../support/tool';
 

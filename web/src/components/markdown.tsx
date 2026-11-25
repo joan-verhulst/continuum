@@ -1,4 +1,4 @@
-import { cn } from 'continuum';
+import { cn } from '@contui/ui';
 import Link from 'next/link';
 import { Fragment, type ReactNode } from 'react';
 import { C, column } from './article';

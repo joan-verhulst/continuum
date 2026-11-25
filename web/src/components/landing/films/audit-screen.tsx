@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from 'continuum';
+import { cn } from '@contui/ui';
 import { useReducedMotion } from 'motion/react';
 import { useEffect, useState } from 'react';
 

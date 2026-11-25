@@ -17,7 +17,7 @@ import {
     themeNeutralRamp,
     toHex,
     wcagContrast,
-} from 'continuum';
+} from '@contui/ui';
 import { themeToken } from '../theme-export';
 
 /*

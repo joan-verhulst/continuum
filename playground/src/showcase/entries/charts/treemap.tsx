@@ -1,4 +1,4 @@
-import { ChartFrame, Treemap } from 'continuum/charts';
+import { ChartFrame, Treemap } from '@contui/ui/charts';
 import { ArrowLeftRight, Clapperboard, HeartPulse, Package, Repeat, Wallet } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

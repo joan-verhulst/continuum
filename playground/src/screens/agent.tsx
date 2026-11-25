@@ -24,7 +24,7 @@ import {
     HeaderBar,
     Thinking,
     ThinkingCaret,
-} from 'continuum';
+} from '@contui/ui';
 import { Plus, RotateCcw, Search, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { type ComponentProps, useEffect, useRef, useState } from 'react';
 import { useScreenNav } from './shared';

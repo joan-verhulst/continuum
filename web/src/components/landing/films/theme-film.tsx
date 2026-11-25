@@ -1,7 +1,7 @@
 'use client';
 
+import { createThemeCss, type ThemeOptions } from '@contui/ui';
 import { exportTheme, tailwindEntry } from '@playground/theme-export';
-import { createThemeCss, type ThemeOptions } from 'continuum';
 import { animate, useReducedMotion } from 'motion/react';
 import { useEffect, useMemo, useState } from 'react';
 import { FilmCamera, FilmFrame, Note, SCREEN, type Shot, seconds, useFilm } from './kit';

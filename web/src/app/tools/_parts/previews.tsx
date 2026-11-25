@@ -8,7 +8,7 @@ import {
     oklchToHex,
     simulateVision,
     wcagContrast,
-} from 'continuum';
+} from '@contui/ui';
 import type { ReactNode } from 'react';
 import type { ToolSlug } from './catalogue';
 import { RampStrip } from './ramp';

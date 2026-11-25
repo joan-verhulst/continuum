@@ -10,7 +10,7 @@ import {
     FieldLabel,
     StatCard,
     Switch,
-} from 'continuum';
+} from '@contui/ui';
 import { Copy, Download, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {

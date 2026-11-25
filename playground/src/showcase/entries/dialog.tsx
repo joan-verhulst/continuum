@@ -21,7 +21,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import {

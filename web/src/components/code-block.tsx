@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, cn } from 'continuum';
+import { Button, cn } from '@contui/ui';
 import { Check, Copy } from 'lucide-react';
 import { useEffect, useState } from 'react';
 

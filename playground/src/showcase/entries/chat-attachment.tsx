@@ -7,7 +7,7 @@ import {
     ChatMessage,
     ChatThread,
     MessageComposer,
-} from 'continuum';
+} from '@contui/ui';
 import { useRef, useState } from 'react';
 import {
     AppWindow,

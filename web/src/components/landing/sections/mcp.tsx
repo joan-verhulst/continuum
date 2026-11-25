@@ -1,6 +1,6 @@
 'use client';
 
-import { Badge, cn } from 'continuum';
+import { Badge, cn } from '@contui/ui';
 import { ArrowUp, CornerDownRight } from 'lucide-react';
 import { motion, useInView, useReducedMotion } from 'motion/react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';

@@ -1,4 +1,4 @@
-import { Button, Card, IconTile } from 'continuum';
+import { Button, Card, IconTile } from '@contui/ui';
 import { ArrowRight, FileText, Plus, Upload } from 'lucide-react';
 import {
     AppWindow,

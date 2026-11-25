@@ -1,4 +1,4 @@
-import { Button } from 'continuum';
+import { Button } from '@contui/ui';
 import Link from 'next/link';
 import { ArticleSection, C, column, DividedList, Figure, P } from '@/components/article';
 import { CodeBlock } from '@/components/code-block';

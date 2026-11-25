@@ -48,7 +48,7 @@ import {
     Tooltip,
     TooltipContent,
     TooltipTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import {
     ArrowRight,
     BellRing,

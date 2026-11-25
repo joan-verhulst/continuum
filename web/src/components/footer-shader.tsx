@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from 'continuum';
+import { cn } from '@contui/ui';
 import { useEffect, useRef, useState } from 'react';
 import { fullScreenProgram, isPale, toRgb, WAVE } from '@/lib/gl';
 import { type Tunable, tunable } from '@/lib/tunable';

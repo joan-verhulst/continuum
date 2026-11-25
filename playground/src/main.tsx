@@ -1,4 +1,4 @@
-import { themeFontFamilies } from 'continuum';
+import { themeFontFamilies } from '@contui/ui';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './app';

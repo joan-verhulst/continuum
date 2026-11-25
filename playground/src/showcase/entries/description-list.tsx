@@ -12,7 +12,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Download } from 'lucide-react';
 import { AppScene, DialogActions, type Entry, type InUse, icon, OpenDialog } from '../kit';
 

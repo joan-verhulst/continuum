@@ -65,7 +65,7 @@ import {
     Toolbar,
     ToolbarButton,
     useToast,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Ban,
     Bird,

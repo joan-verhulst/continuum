@@ -1,4 +1,4 @@
-import { cn } from 'continuum';
+import { cn } from '@contui/ui';
 import type { ComponentProps, ReactNode } from 'react';
 
 /*

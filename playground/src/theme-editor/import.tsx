@@ -16,7 +16,7 @@ import {
     type ThemeOptions,
     themeFontFamilies,
     themeFromCss,
-} from 'continuum';
+} from '@contui/ui';
 import { useMemo, useState } from 'react';
 
 /** What each choice is called where it is shown. */

@@ -27,7 +27,7 @@ import {
     TooltipContent,
     TooltipTrigger,
     wcagContrast,
-} from 'continuum';
+} from '@contui/ui';
 import { Check, Grid3x3, X } from 'lucide-react';
 import {
     createContext,

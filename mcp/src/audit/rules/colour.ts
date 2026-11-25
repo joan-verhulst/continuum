@@ -1,4 +1,4 @@
-import { deltaE, hexToOklch } from 'continuum';
+import { deltaE, hexToOklch } from '@contui/ui';
 import {
     type ColourToken,
     describeToken,

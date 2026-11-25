@@ -1,5 +1,5 @@
-import * as continuum from 'continuum';
-import * as charts from 'continuum/charts';
+import * as continuum from '@contui/ui';
+import * as charts from '@contui/ui/charts';
 import { Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';
 
 /*
@@ -11,21 +11,21 @@ import { Fragment, isValidElement, type ReactElement, type ReactNode } from 'rea
  * called for what they draw, or reduced to their children when they only frame something.
  */
 
-type Source = 'continuum' | 'continuum/charts' | 'lucide-react';
+type Source = '@contui/ui' | '@contui/ui/charts' | 'lucide-react';
 
 const names = new Map<unknown, { name: string; from: Source }>();
 for (const [name, value] of Object.entries(continuum)) {
-    if (/^[A-Z]/.test(name)) names.set(value, { name, from: 'continuum' });
+    if (/^[A-Z]/.test(name)) names.set(value, { name, from: '@contui/ui' });
 }
 for (const [name, value] of Object.entries(charts)) {
     if (/^[A-Z]/.test(name) && !names.has(value))
-        names.set(value, { name, from: 'continuum/charts' });
+        names.set(value, { name, from: '@contui/ui/charts' });
 }
 
 /** The parts of the library a name list holds, by where each is imported from. */
 export const exportedFrom = (name: string): Source | undefined => {
-    if (name in continuum) return 'continuum';
-    if (name in charts) return 'continuum/charts';
+    if (name in continuum) return '@contui/ui';
+    if (name in charts) return '@contui/ui/charts';
     return undefined;
 };
 
@@ -39,7 +39,7 @@ const note = (imports: Imports, from: Source, name: string) => {
 
 /** The import lines for what an example uses, the library first. */
 export const importLines = (imports: Imports) =>
-    (['continuum', 'continuum/charts', 'lucide-react'] as const)
+    (['@contui/ui', '@contui/ui/charts', 'lucide-react'] as const)
         .filter(from => imports.get(from)?.size)
         .map(from => {
             const list = [...(imports.get(from) ?? [])].sort((a, b) => a.localeCompare(b));
@@ -192,6 +192,6 @@ export const toJsx = (node: ReactNode) => {
     const jsx = writeNode(node, writer);
     const long = writer.budget < 0 || jsx.split('\n').length > 40;
     const library =
-        writer.imports.get('continuum')?.size || writer.imports.get('continuum/charts')?.size;
+        writer.imports.get('@contui/ui')?.size || writer.imports.get('@contui/ui/charts')?.size;
     return { imports: writer.imports, jsx: long || !library ? '' : jsx };
 };

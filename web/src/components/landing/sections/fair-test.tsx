@@ -1,6 +1,6 @@
 'use client';
 
-import { BottomBar, Dock, DockItem, Theme } from 'continuum';
+import { BottomBar, Dock, DockItem, Theme } from '@contui/ui';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { useMemo, useState } from 'react';
 import { ContinuumScreen } from '../compare/continuum-screen';

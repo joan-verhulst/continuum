@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, type ButtonProps, Theme, type ThemeMode } from 'continuum';
+import { Button, type ButtonProps, Theme, type ThemeMode } from '@contui/ui';
 import { Moon, Sun } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import { type ReactNode, useCallback, useLayoutEffect, useSyncExternalStore } from 'react';

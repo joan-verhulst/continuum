@@ -28,7 +28,7 @@ import {
     FieldLabel,
     FilterBar,
     formatDateRange,
-} from 'continuum';
+} from '@contui/ui';
 import { CalendarDays, Check, Earth, Globe, ListFilter } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 

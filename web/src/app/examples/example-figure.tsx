@@ -1,9 +1,9 @@
 'use client';
 
+import { ToastProvider } from '@contui/ui';
 import { exampleSections } from '@playground/examples';
 import { Frame, Stage } from '@playground/layout';
 import { screens } from '@screens/index';
-import { ToastProvider } from 'continuum';
 import { useInView } from 'motion/react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { DefaultTheme } from '@/components/default-theme';

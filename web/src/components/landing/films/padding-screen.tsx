@@ -10,8 +10,8 @@ import {
     Select,
     SelectTrigger,
     SelectValue,
-} from 'continuum';
-import { ChartCard } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard } from '@contui/ui/charts';
 import { Euro } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import type { ReactNode } from 'react';

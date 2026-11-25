@@ -1,4 +1,4 @@
-import { Button, LiveCount, StatusDot } from 'continuum';
+import { Button, LiveCount, StatusDot } from '@contui/ui';
 import { Bell } from 'lucide-react';
 import {
     AppWindow,

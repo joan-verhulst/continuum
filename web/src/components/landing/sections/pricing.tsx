@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from 'continuum';
+import { Button } from '@contui/ui';
 import { ArrowRight, Check } from 'lucide-react';
 import { motion, useInView, useReducedMotion, type Variants } from 'motion/react';
 import Link from 'next/link';

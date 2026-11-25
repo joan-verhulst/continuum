@@ -1,4 +1,4 @@
-import { createThemeCss, Theme, type ThemeMode, ToastProvider } from 'continuum';
+import { createThemeCss, Theme, type ThemeMode, ToastProvider } from '@contui/ui';
 import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Foundations } from './foundations';
 import { Home } from './home';

@@ -1,4 +1,4 @@
-import { Button } from 'continuum';
+import { Button } from '@contui/ui';
 import { ArrowRight } from 'lucide-react';
 import { proLaunchPriceEUR } from '@/lib/site';
 

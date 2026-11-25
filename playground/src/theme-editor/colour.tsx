@@ -32,7 +32,7 @@ import {
     themeNeutralRamp,
     toCss,
     useTheme,
-} from 'continuum';
+} from '@contui/ui';
 import { RotateCcw } from 'lucide-react';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { measureSeries } from './checks';

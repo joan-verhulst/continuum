@@ -1,10 +1,10 @@
 /*
- * Builds the generated half of the two skills from the one source, so they work in a project
- * that has never seen this repo:
+ * Builds the generated half of the two skills from the one source. The library itself is not in
+ * them: a project installs it as @contui/ui (`npx contui init`), which carries these skills too.
  *
- * - continuum-taste/assets/continuum: src/ (components, lib, charts, the index, the token and
- *   theme sheets) and the prebuilt dist/styles.css.
- * - continuum-taste/references/screens: the playground's screens, as examples.
+ * - continuum-taste/assets/tokens.css: the token sheet, for a stack without the package.
+ * - continuum-taste/references/screens: the playground's screens, as examples. They import from
+ *   '@contui/ui', the installed package.
  * - continuum-fix-padding/scripts/spacing.ts: the spacing formula, which its script runs with Node.
  *
  * These copies are gitignored; SKILL.md and the hand-written references are not. With --install
@@ -20,21 +20,14 @@ import { fileURLToPath } from 'node:url';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const skill = join(root, '.claude/skills/continuum-taste');
 const fixPadding = join(root, '.claude/skills/continuum-fix-padding');
-const assets = join(skill, 'assets/continuum');
+const assets = join(skill, 'assets');
 const screens = join(skill, 'references/screens');
 
 await rm(assets, { recursive: true, force: true });
 await rm(screens, { recursive: true, force: true });
 
 const copies = [
-    ['src/components', join(assets, 'components')],
-    ['src/lib', join(assets, 'lib')],
-    ['src/charts', join(assets, 'charts')],
-    ['src/index.ts', join(assets, 'index.ts')],
-    ['src/styles/tokens.css', join(assets, 'styles/tokens.css')],
-    ['src/styles/theme.css', join(assets, 'styles/theme.css')],
-    ['dist/styles.css', join(assets, 'styles.css')],
-    // The screens import from 'continuum'; SKILL.md says to point that at the copied folder.
+    ['src/styles/tokens.css', join(assets, 'tokens.css')],
     ['playground/src/screens', screens],
     ['src/lib/spacing.ts', join(fixPadding, 'scripts/spacing.ts')],
 ];

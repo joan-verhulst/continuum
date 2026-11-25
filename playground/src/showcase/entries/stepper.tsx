@@ -14,7 +14,7 @@ import {
     StepperItem,
     type StepperLayout,
     type StepperMarker,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowRight, CalendarClock, Eye, FileSpreadsheet, FileText, Users } from 'lucide-react';
 import { useState } from 'react';
 import {

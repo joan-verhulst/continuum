@@ -1,6 +1,6 @@
 'use client';
 
-import { Theme } from 'continuum';
+import { Theme } from '@contui/ui';
 import { PRODUCT_THEME } from '../theme';
 import { type App, AuditScreen, type Stage } from './audit-screen';
 import {

@@ -26,8 +26,8 @@ test('get_component gives the Button’s spec in React, with its height and its 
     has(body, /\b34\b/, `Expected the Button's 34 height in:\n${body.slice(0, 1500)}`);
     has(
         body,
-        /from ['"]continuum['"]/,
-        `Expected an import from 'continuum' in:\n${body.slice(0, 1500)}`,
+        /from ['"]@contui\/ui['"]/,
+        `Expected an import from '@contui/ui' in:\n${body.slice(0, 1500)}`,
     );
 });
 

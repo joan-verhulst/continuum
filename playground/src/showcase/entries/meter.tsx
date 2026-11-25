@@ -1,4 +1,4 @@
-import { BarList, BarListItem, Button, Card, Meter } from 'continuum';
+import { BarList, BarListItem, Button, Card, Meter } from '@contui/ui';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 
 const meterKnobs: Knob[] = [

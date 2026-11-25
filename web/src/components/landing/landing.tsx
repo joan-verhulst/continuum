@@ -1,6 +1,6 @@
 'use client';
 
-import { Theme, ToastProvider } from 'continuum';
+import { Theme, ToastProvider } from '@contui/ui';
 import { type ComponentIndex, Components } from './sections/components';
 import { Hero, Screens } from './sections/hero';
 import { HowItWorks } from './sections/how-it-works';

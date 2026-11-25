@@ -9,7 +9,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Plus } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, type PreviewProps } from '../kit';

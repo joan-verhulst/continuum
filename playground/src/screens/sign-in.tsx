@@ -7,7 +7,7 @@ import {
     Input,
     Separator,
     SidebarLogo,
-} from 'continuum';
+} from '@contui/ui';
 import { Boxes, KeyRound } from 'lucide-react';
 import { useScreenNav } from './shared';
 

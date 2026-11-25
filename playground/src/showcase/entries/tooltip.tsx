@@ -6,7 +6,7 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Bell,
     Bold,

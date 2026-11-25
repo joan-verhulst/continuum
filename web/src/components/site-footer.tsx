@@ -1,5 +1,5 @@
+import { cn } from '@contui/ui';
 import { ContinuumMark } from '@playground/brand';
-import { cn } from 'continuum';
 import Link from 'next/link';
 import { type FooterColumn, footerMap } from '@/lib/footer-links';
 import { githubUrl } from '@/lib/site';

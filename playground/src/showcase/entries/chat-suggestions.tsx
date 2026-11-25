@@ -8,7 +8,7 @@ import {
     ChatToken,
     MessageComposer,
     useChatTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import { FileText, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';

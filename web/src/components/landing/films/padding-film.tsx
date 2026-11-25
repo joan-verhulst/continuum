@@ -1,6 +1,6 @@
 'use client';
 
-import { cn, Theme } from 'continuum';
+import { cn, Theme } from '@contui/ui';
 import { motion } from 'motion/react';
 import { PRODUCT_THEME } from '../theme';
 import {

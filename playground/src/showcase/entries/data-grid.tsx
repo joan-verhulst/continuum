@@ -1,4 +1,4 @@
-import { Button, DataGrid, type DataGridColumn, type DataGridRange } from 'continuum';
+import { Button, DataGrid, type DataGridColumn, type DataGridRange } from '@contui/ui';
 import { Download } from 'lucide-react';
 import { useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';

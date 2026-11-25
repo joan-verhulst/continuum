@@ -34,7 +34,7 @@ import {
     SidebarToggle,
     Switch,
     useNotice,
-} from 'continuum';
+} from '@contui/ui';
 import { Bird, ChartColumn, House, Receipt, Settings, Users } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useState } from 'react';

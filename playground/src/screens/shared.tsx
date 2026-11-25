@@ -16,7 +16,7 @@ import {
     pageContentVariants,
     SidebarAccount,
     SidebarFooter,
-} from 'continuum';
+} from '@contui/ui';
 import { Bell, ChartColumn, Globe, LayoutGrid, MessagesSquare, Plus } from 'lucide-react';
 import { createContext, Fragment, type ReactNode, useContext, useState } from 'react';
 

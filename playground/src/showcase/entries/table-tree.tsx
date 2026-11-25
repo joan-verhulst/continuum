@@ -10,7 +10,7 @@ import {
     TableTree,
     TableTreeCell,
     TableTreeRows,
-} from 'continuum';
+} from '@contui/ui';
 import { FileText, Folder } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';

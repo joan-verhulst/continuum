@@ -17,7 +17,7 @@ import {
     MessageComposer,
     MessageComposerAttachItem,
     useChatTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import {
     CircleCheck,
     CircleDollarSign,

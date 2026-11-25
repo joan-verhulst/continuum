@@ -1,9 +1,9 @@
 'use client';
 
+import { cn } from '@contui/ui';
 import { KnobStage } from '@playground/showcase/detail';
 import { entries, inUseOf } from '@playground/showcase/entries';
 import { knobDefaults } from '@playground/showcase/kit';
-import { cn } from 'continuum';
 import { P } from '@/components/article';
 import { CodeBlock } from '@/components/code-block';
 import { DefaultTheme } from '@/components/default-theme';

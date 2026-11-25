@@ -18,7 +18,7 @@ import {
     hexToOklch,
     StatusDot,
     Textarea,
-} from 'continuum';
+} from '@contui/ui';
 import { Check, ChevronDown, ClipboardPaste, Eye, Palette, Plus, X } from 'lucide-react';
 import { type ReactNode, useMemo, useState } from 'react';
 import { type ColourSource, capital, hexOf, namesOf, readSource } from './colours';

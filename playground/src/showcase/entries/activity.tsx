@@ -9,7 +9,7 @@ import {
     TabsCount,
     TabsList,
     TabsTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowUpRight, CircleAlert, CircleCheck, Clock, FileText, Mail, Plus } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, icon, previewIcon } from '../kit';
 

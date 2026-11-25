@@ -1,4 +1,4 @@
-import { cn, Input, SegmentedControl, SegmentedControlItem, Theme } from 'continuum';
+import { cn, Input, SegmentedControl, SegmentedControlItem, Theme } from '@contui/ui';
 import { useState } from 'react';
 import {
     type AvatarSvgOptions,

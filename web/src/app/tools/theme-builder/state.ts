@@ -1,5 +1,5 @@
+import type { ThemeOptions } from '@contui/ui';
 import { sameTheme } from '@playground/projects';
-import type { ThemeOptions } from 'continuum';
 
 /*
  * Where the site keeps the theme a reader is making: this browser's storage, under the key the

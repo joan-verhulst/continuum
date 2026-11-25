@@ -1,4 +1,4 @@
-import { hexToOklch } from 'continuum';
+import { hexToOklch } from '@contui/ui';
 import { readColour } from '../../system/values';
 import type { Finding, UINode } from '../../types';
 

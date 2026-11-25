@@ -27,7 +27,7 @@ import {
     TabsCount,
     TabsList,
     TabsTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import { Download, ListFilter, Plus, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import {

@@ -26,7 +26,7 @@ import {
     TableSearch,
     TableToolbar,
     TableToolbarEnd,
-} from 'continuum';
+} from '@contui/ui';
 import { ChevronRight, EllipsisVertical, Mail, Trash2, UserCog, UserPlus } from 'lucide-react';
 import { motion } from 'motion/react';
 import type { ReactNode } from 'react';

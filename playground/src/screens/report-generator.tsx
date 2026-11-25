@@ -34,7 +34,7 @@ import {
     SidebarLogo,
     SidebarSection,
     SidebarToggle,
-} from 'continuum';
+} from '@contui/ui';
 import {
     ArrowRight,
     Calendar,

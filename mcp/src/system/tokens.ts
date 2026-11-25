@@ -9,7 +9,7 @@ import {
     tailwindGreys,
     tailwindHues,
     themeFontFamilies,
-} from 'continuum';
+} from '@contui/ui';
 import { heightChoices, presets, typeChoices, unitChoices } from '../../../playground/src/presets';
 import { parseColor } from '../../../playground/src/theme-editor/checks';
 import { ToolError } from '../support/tool';

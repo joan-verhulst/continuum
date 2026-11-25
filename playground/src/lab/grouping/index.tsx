@@ -13,7 +13,7 @@ import {
     SettingRow,
     Switch,
     Theme,
-} from 'continuum';
+} from '@contui/ui';
 import { type ReactNode, useState } from 'react';
 
 /*

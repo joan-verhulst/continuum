@@ -27,7 +27,7 @@ import {
     TopNavMenuGroup,
     TopNavMenuItem,
     TopNavSwitcher,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Bell,
     Boxes,

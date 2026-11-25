@@ -1,22 +1,5 @@
 'use client';
 
-import { ArticleSection, CodeBlock, column } from '@playground/article';
-import { ContinuumLogo } from '@playground/brand';
-import { Home } from '@playground/home';
-import {
-    AsidePanel,
-    AsideSlotProvider,
-    FooterSlotProvider,
-    HeaderSlotProvider,
-    OverlayLayer,
-    Page,
-    PageHeader,
-    PageIndexProvider,
-} from '@playground/layout';
-import type { AppState } from '@playground/meta';
-import { ProjectFlow } from '@playground/theme-editor/flow';
-import { PreviewPanel } from '@playground/theme-editor/preview';
-import { designBrief, exportTheme, tailwindEntry } from '@playground/theme-export';
 import {
     AppPanel,
     AppShell,
@@ -57,7 +40,24 @@ import {
     TabsTrigger,
     Theme,
     type ThemeOptions,
-} from 'continuum';
+} from '@contui/ui';
+import { ArticleSection, CodeBlock, column } from '@playground/article';
+import { ContinuumLogo } from '@playground/brand';
+import { Home } from '@playground/home';
+import {
+    AsidePanel,
+    AsideSlotProvider,
+    FooterSlotProvider,
+    HeaderSlotProvider,
+    OverlayLayer,
+    Page,
+    PageHeader,
+    PageIndexProvider,
+} from '@playground/layout';
+import type { AppState } from '@playground/meta';
+import { ProjectFlow } from '@playground/theme-editor/flow';
+import { PreviewPanel } from '@playground/theme-editor/preview';
+import { designBrief, exportTheme, tailwindEntry } from '@playground/theme-export';
 import {
     BookOpen,
     ChartLine,
@@ -339,18 +339,13 @@ const HOME_STATE = { mode: 'dark', view: 'home' } as AppState;
 
 const INSTALL = [
     {
-        title: 'Clone and install',
-        text: 'Anywhere on the machine; the server runs from this clone.',
-        code: 'git clone git@github.com:joan-verhulst/continuum.git\ncd continuum\npnpm install',
-    },
-    {
-        title: 'Install the skills and the server',
-        text: 'Copies the skills to ~/.claude/skills and registers the server with Claude Code for every project.',
-        code: 'pnpm install:skill',
+        title: 'Install it in the project',
+        text: 'In the project’s root. Installs @contui/ui as a dependency, adds the skills, and registers the server in .mcp.json, run from node_modules.',
+        code: 'npx contui init',
     },
     {
         title: 'Check it is connected',
-        text: 'In any project, continuum is listed as connected.',
+        text: 'Restart Claude Code in the project and approve the continuum server; it is then listed as connected.',
         code: 'claude mcp list',
     },
 ];
@@ -365,7 +360,7 @@ const McpPage = () => (
             />
         </div>
         <ArticleSection
-            description="Once per machine, from a clone of the repo."
+            description={`Once per project, in ${INSTALL.length} steps.`}
             id="hiw-mcp-setup"
             title="Set it up"
         >
@@ -373,7 +368,7 @@ const McpPage = () => (
                 {INSTALL.map((step, index) => (
                     <li
                         className="flex min-w-0 flex-col gap-3"
-                        data-hiw={index === 1 ? 'install' : undefined}
+                        data-hiw={index === 0 ? 'install' : undefined}
                         key={step.title}
                     >
                         <div className="flex flex-col gap-1">

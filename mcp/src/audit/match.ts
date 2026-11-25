@@ -105,7 +105,7 @@ const jsx = (match: PartMatch) => {
 /** The library's import for a part: its own exports, the part's name leading. */
 const importLine = (name: string) => {
     const part = findComponent(name);
-    const from = part?.from ?? 'continuum';
+    const from = part?.from ?? '@contui/ui';
     const exports = (part?.exports ?? [name]).filter(each => each.startsWith(name)).slice(0, 4);
     return `import { ${(exports.length ? exports : [name]).join(', ')} } from '${from}';`;
 };

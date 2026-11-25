@@ -1,5 +1,5 @@
 import 'server-only';
-import { Button } from 'continuum';
+import { Button } from '@contui/ui';
 import { ArrowUpRight } from 'lucide-react';
 import { examplesUsing } from '@/app/examples/content';
 import { ArticleSection, Figure, H, P } from '@/components/article';
@@ -206,7 +206,7 @@ export const ReferencePage = ({
                 ))}
 
                 <ArticleSection
-                    description={`Import it from ${kind === 'chart' ? 'continuum/charts' : 'continuum'}; the example draws the preview above at its defaults.`}
+                    description={`Import it from ${kind === 'chart' ? '@contui/ui/charts' : '@contui/ui'}; the example draws the preview above at its defaults.`}
                     id="usage"
                     tight
                     title="Usage"

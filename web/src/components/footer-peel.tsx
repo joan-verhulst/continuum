@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from 'continuum';
+import { cn } from '@contui/ui';
 import { type ReactNode, useEffect, useRef } from 'react';
 import { LIGHT, lightStore } from './footer-shader';
 

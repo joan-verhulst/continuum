@@ -1,6 +1,6 @@
 'use client';
 
-import { Theme } from 'continuum';
+import { Theme } from '@contui/ui';
 import type { ReactNode } from 'react';
 
 /*

@@ -30,7 +30,7 @@ import {
     TopNavMenuGroup,
     TopNavMenuItem,
     TopNavSwitcher,
-} from 'continuum';
+} from '@contui/ui';
 import { Bell, Boxes, Check, Plus, Search } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {

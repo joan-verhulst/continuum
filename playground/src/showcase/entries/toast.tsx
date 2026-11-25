@@ -8,7 +8,7 @@ import {
     TableRow,
     ToastProvider,
     useToast,
-} from 'continuum';
+} from '@contui/ui';
 import { Archive, ArrowUpRight, FileDown, FileText, Plus, RotateCw } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useStageContainer } from '../../layout';

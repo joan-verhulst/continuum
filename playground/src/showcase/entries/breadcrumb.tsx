@@ -19,7 +19,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Download, Folder } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';

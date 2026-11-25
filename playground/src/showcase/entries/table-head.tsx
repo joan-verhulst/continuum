@@ -6,7 +6,7 @@ import {
     TableHeader,
     TableRow,
     type TableSort,
-} from 'continuum';
+} from '@contui/ui';
 import { useState } from 'react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 import { useStageWidth } from './table';

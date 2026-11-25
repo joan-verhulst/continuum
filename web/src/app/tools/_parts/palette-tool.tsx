@@ -17,7 +17,7 @@ import {
     SelectValue,
     themeAccentCurves,
     toCss,
-} from 'continuum';
+} from '@contui/ui';
 import { useMemo, useState } from 'react';
 import { CodeBlock } from '@/components/code-block';
 import { useShareAccent } from './builder-link';

@@ -8,7 +8,7 @@ import {
     FieldLabel,
     Input,
     StatusDot,
-} from 'continuum';
+} from '@contui/ui';
 import { useState } from 'react';
 import { AppWindow, type Entry, type InUse, type Knob, type PreviewProps } from '../kit';
 

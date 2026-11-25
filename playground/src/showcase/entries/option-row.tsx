@@ -1,4 +1,4 @@
-import { Button, Checkbox, OptionList, OptionRow, RadioGroup, RadioGroupItem } from 'continuum';
+import { Button, Checkbox, OptionList, OptionRow, RadioGroup, RadioGroupItem } from '@contui/ui';
 import { FileText, PieChart, PieChart as PieIcon, Table2 } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { SectionHead } from '../../screens/workspace';

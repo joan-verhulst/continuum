@@ -1,5 +1,5 @@
+import { cn } from '@contui/ui';
 import { allCustomers, formatEuro, plans } from '@screens/workspace';
-import { cn } from 'continuum';
 import {
     ArrowRight,
     Bell,

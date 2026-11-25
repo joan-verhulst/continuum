@@ -28,7 +28,7 @@ import {
     TableTreeHead,
     TableTreePanel,
     TableTreeRows,
-} from 'continuum';
+} from '@contui/ui';
 import { Mail, Plus, Send, Undo2 } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import { useStageContainer } from '../../layout';

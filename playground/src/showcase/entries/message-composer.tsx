@@ -20,7 +20,7 @@ import {
     SheetTitle,
     StatCard,
     useChatTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import { FileClock, FileText, ReceiptText, Sparkles } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { useStageContainer } from '../../layout';

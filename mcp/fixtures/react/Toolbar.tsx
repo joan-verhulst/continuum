@@ -1,4 +1,4 @@
-import { Button, Table, TableBody, TableHeader } from 'continuum';
+import { Button, Table, TableBody, TableHeader } from '@contui/ui';
 import { useState } from 'react';
 
 type Invoice = { id: string; customer: string; amount: string; status: string };

@@ -1,4 +1,4 @@
-import { BulletChart, type BulletChartProps, ChartFrame } from 'continuum/charts';
+import { BulletChart, type BulletChartProps, ChartFrame } from '@contui/ui/charts';
 import { Target } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

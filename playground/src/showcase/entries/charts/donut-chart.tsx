@@ -1,5 +1,5 @@
-import { Skeleton } from 'continuum';
-import { ChartFrame, ChartLegend, DonutChart } from 'continuum/charts';
+import { Skeleton } from '@contui/ui';
+import { ChartFrame, ChartLegend, DonutChart } from '@contui/ui/charts';
 import { Globe, Monitor } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';

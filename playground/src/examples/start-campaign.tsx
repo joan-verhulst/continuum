@@ -30,7 +30,7 @@ import {
     SelectTrigger,
     SelectValue,
     StatusDot,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowRight, X } from 'lucide-react';
 import { type FormEvent, type ReactNode, useId, useRef, useState } from 'react';
 

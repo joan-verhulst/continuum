@@ -19,7 +19,7 @@ import {
     SettingGroup,
     SettingRow,
     Switch,
-} from 'continuum';
+} from '@contui/ui';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 

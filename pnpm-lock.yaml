@@ -79,6 +79,9 @@ importers:
 
   playground:
     dependencies:
+      '@contui/ui':
+        specifier: workspace:*
+        version: link:..
       '@fontsource-variable/figtree':
         specifier: ^5.3.0
         version: 5.3.0
@@ -94,9 +97,6 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0
-      continuum:
-        specifier: workspace:*
-        version: link:..
       lucide-react:
         specifier: ^1.60.0
         version: 1.60.0(@types/react@19.3.0)(react@19.3.1)
@@ -137,6 +137,9 @@ importers:
 
   web:
     dependencies:
+      '@contui/ui':
+        specifier: workspace:*
+        version: link:..
       '@fontsource-variable/figtree':
         specifier: ^5.3.0
         version: 5.3.0
@@ -155,9 +158,6 @@ importers:
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0
-      continuum:
-        specifier: workspace:*
-        version: link:..
       lucide-react:
         specifier: ^1.60.0
         version: 1.60.0(@types/react@19.3.0)(react@19.3.1)

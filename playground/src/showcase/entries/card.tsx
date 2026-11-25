@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, CardContent, CardHeader, CardTitle, StatCard } from 'continuum';
+import { Avatar, Button, Card, CardContent, CardHeader, CardTitle, StatCard } from '@contui/ui';
 import { ArrowRight, CalendarDays, ChevronDown } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';
 

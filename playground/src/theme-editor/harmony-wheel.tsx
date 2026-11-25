@@ -21,7 +21,7 @@ import {
     themeChartSeries,
     toCss,
     useTheme,
-} from 'continuum';
+} from '@contui/ui';
 import {
     type KeyboardEvent,
     type PointerEvent,

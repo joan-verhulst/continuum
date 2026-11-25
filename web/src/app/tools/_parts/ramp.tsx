@@ -1,4 +1,4 @@
-import { cn, rampSteps } from 'continuum';
+import { cn, rampSteps } from '@contui/ui';
 
 /*
  * A ramp drawn as eleven swatches, 50 to 950, each named under it. Plain markup, so it draws on

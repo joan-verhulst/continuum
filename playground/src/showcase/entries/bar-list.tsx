@@ -1,4 +1,4 @@
-import { BarList, BarListItem, Card, SegmentedControl, SegmentedControlItem } from 'continuum';
+import { BarList, BarListItem, Card, SegmentedControl, SegmentedControlItem } from '@contui/ui';
 import { AppWindow, type Entry, type InUse } from '../kit';
 
 const BarListPreview = () => (

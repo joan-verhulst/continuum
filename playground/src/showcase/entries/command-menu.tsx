@@ -13,7 +13,7 @@ import {
     CommandMenuList,
     Kbd,
     StatCard,
-} from 'continuum';
+} from '@contui/ui';
 import { FileText, Home, Mail, Plus, Settings, Upload, Users } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useStageContainer } from '../../layout';

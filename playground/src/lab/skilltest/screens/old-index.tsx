@@ -68,7 +68,7 @@ import {
     Toolbar,
     ToolbarButton,
     useToast,
-} from 'continuum';
+} from '@contui/ui';
 import {
     ArrowUpRight,
     Ban,

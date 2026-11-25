@@ -5,7 +5,6 @@ import { Markdown } from '@/components/markdown';
 import { Article, PageHero, PrevNext } from '@/components/page-frame';
 import { plainText, skills } from '@/lib/content';
 import { JsonLd, pageMetadata, techArticleLd } from '@/lib/seo';
-import { githubUrl } from '@/lib/site';
 import { Row, RowName, RowText } from '../_components/rows';
 import { aiWays } from '../_lib/nav';
 import { skillParts } from '../_lib/text';
@@ -53,28 +52,24 @@ const SkillsPage = () => {
             />
             <Article>
                 <ArticleSection
-                    description="One command from a clone of the repo, and again whenever the skills change."
+                    description="One command in the project; from then on the skills follow its version."
                     id="install"
                     tight
                     title="Install"
                 >
-                    <CodeBlock
-                        code={`git clone ${githubUrl}.git\ncd continuum\npnpm install\npnpm install:skill`}
-                    />
+                    <CodeBlock code="npx contui init" />
                     <P>
-                        It builds the skills from the library's own source (the components, the
-                        stylesheets and the reference screens go in as the skill's assets), copies
-                        every skill to <C>~/.claude/skills</C>, and registers the{' '}
+                        It installs <C>@contui/ui</C> as a dependency, copies every skill into the
+                        project's <C>.claude/skills</C> (kept out of git), and registers the{' '}
                         <Link className={linkClass} href="/ai/mcp-server">
                             MCP server
                         </Link>
-                        , so both reach every project on this machine. Inside the repo the skills
-                        already work from <C>.claude/skills</C>.
+                        . The package is the source: every install copies the skills of the version
+                        in <C>package.json</C> again, so everyone on the project has the same ones.
                     </P>
                     <P>
-                        The installed skills are copies: after a <C>git pull</C> that changes them,
-                        run it again. The MCP server reads from the clone, so it is current after
-                        the pull alone.
+                        To update, update <C>@contui/ui</C> like any dependency: the skills and the
+                        server come with it.
                     </P>
                 </ArticleSection>
 

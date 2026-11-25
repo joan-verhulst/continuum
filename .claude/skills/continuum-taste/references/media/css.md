@@ -5,7 +5,8 @@ in `components.md`, written as the project's own markup and styles.
 
 ## Setup
 
-1. Copy `styles/tokens.css` from `assets/continuum/` into the project and load it. It sets every value as a CSS
+1. Load the tokens: `@contui/ui/tokens.css` where the project has the package (`npx contui init` installs it),
+   otherwise a copy of this skill's `assets/tokens.css` in the project. It sets every value as a CSS
    variable under Tailwind's names on the `.continuum` element: the ramps (`--color-neutral-200`), the action
    (`--color-action`, `--color-on-action`), the washes (`--color-selected`, `--color-tint`), the radii
    (`--radius-item`), the shadows (`--shadow-float`), the content widths (`--container-content`), and the base

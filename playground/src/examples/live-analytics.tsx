@@ -21,7 +21,7 @@ import {
     DropdownMenuTrigger,
     FilterBar,
     LiveCount,
-} from 'continuum';
+} from '@contui/ui';
 import { History, ListFilter, Monitor, Smartphone, Tablet } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 

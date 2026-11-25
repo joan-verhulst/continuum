@@ -1,5 +1,12 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, StatCard } from 'continuum';
-import { ChartFrame, FunnelChart } from 'continuum/charts';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    StatCard,
+} from '@contui/ui';
+import { ChartFrame, FunnelChart } from '@contui/ui/charts';
 import { ShoppingCart } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

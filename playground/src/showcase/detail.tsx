@@ -13,7 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
     Switch,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowLeft, ArrowRight, PanelLeftClose, RotateCcw, SlidersHorizontal } from 'lucide-react';
 import { type ReactNode, useEffect, useState } from 'react';
 import { Stage } from '../layout';

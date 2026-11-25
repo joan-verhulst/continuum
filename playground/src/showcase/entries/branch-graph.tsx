@@ -6,7 +6,7 @@ import {
     Button,
     SegmentedControl,
     SegmentedControlItem,
-} from 'continuum';
+} from '@contui/ui';
 import { GitBranch } from 'lucide-react';
 import { useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o } from '../kit';

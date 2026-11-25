@@ -6,7 +6,7 @@
  * The landing's own light, so it reads apart from the product, whose action is plain white.
  */
 
-import { cn } from 'continuum';
+import { cn } from '@contui/ui';
 import {
     type PropsWithChildren,
     type Ref,

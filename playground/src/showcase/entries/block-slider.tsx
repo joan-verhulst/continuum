@@ -1,4 +1,4 @@
-import { BlockSlider, Button, Card } from 'continuum';
+import { BlockSlider, Button, Card } from '@contui/ui';
 import { Boxes } from 'lucide-react';
 import { useState } from 'react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';

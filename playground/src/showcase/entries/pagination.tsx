@@ -14,7 +14,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Plus } from 'lucide-react';
 import { useState } from 'react';
 import { customers, formatEuro } from '../../screens/workspace';

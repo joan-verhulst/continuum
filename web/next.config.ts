@@ -13,7 +13,7 @@ const dev = process.env.NODE_ENV !== 'production';
 
 const config: NextConfig = {
     // The library ships TypeScript source, as the personal website takes it.
-    transpilePackages: ['continuum'],
+    transpilePackages: ['@contui/ui'],
     /*
      * Every page's markdown twin is at its path plus .md (/components/button.md); the twins are
      * built under /md (src/app/md). Before files, so a dynamic page never takes 'button.md' as a slug.
@@ -81,8 +81,8 @@ const config: NextConfig = {
              * goes to a stand-in the raw-css loader turns into that text; the stylesheet itself is
              * imported by globals.css, through Tailwind's own resolver, which this never reaches.
              */
-            'continuum/theme.css': './raw/theme.css.txt',
-            'continuum/tokens.css': './raw/tokens.css.txt',
+            '@contui/ui/theme.css': './raw/theme.css.txt',
+            '@contui/ui/tokens.css': './raw/tokens.css.txt',
         },
         rules: {
             '*.css.txt': {

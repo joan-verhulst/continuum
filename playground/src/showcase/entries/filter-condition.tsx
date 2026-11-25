@@ -25,7 +25,7 @@ import {
     TableSearch,
     TableToolbar,
     TableToolbarEnd,
-} from 'continuum';
+} from '@contui/ui';
 import { CircleCheck, Tag, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';

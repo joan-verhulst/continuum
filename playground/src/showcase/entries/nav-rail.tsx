@@ -9,7 +9,7 @@ import {
     NavRailSeparator,
     NavRailToggle,
     TooltipProvider,
-} from 'continuum';
+} from '@contui/ui';
 import {
     BarChart3,
     ChartColumn,

@@ -1,6 +1,6 @@
 'use client';
 
-import type { ThemeOptions } from 'continuum';
+import type { ThemeOptions } from '@contui/ui';
 import { useEffect, useRef, useState } from 'react';
 import { load } from '../theme-builder/state';
 

@@ -1,9 +1,9 @@
 'use client';
 
+import { buttonVariants, cn, focusRing, Theme } from '@contui/ui';
 import { Stage } from '@playground/layout';
 import { entries } from '@playground/showcase/entries';
 import { type Entry, knobDefaults } from '@playground/showcase/kit';
-import { buttonVariants, cn, focusRing, Theme } from 'continuum';
 import { ArrowRight } from 'lucide-react';
 import { PRODUCT_THEME } from '../theme';
 import { KitchenSinkWall } from '../wall';

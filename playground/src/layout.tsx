@@ -11,7 +11,7 @@ import {
     Theme,
     type ThemeMode,
     ThemeScope,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowLeft, Maximize2, Minimize2 } from 'lucide-react';
 import {
     type ComponentProps,

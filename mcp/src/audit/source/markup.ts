@@ -24,9 +24,12 @@ const badgeClasses = (classes: string) =>
         /(^|\s)bg-/.test(classes) &&
         /(^|\s)px-(0\.5|1|1\.5|2|2\.5)(\s|$)/.test(classes));
 
-/** Whether the file imports the library (or a local copy of it), so its parts are one import away. */
+/**
+ * Whether the file imports the library (the @contui/ui package, or a local copy in a `continuum`
+ * folder from before it was one), so its parts are one import away.
+ */
 export const importsLibrary = (text: string) =>
-    /from\s+['"](?:[^'"]*\/)?continuum(?:\/[\w-]+)?['"]/.test(text);
+    /from\s+['"](?:@contui\/ui|(?:[^'"]*\/)?continuum)(?:\/[\w-]+)?['"]/.test(text);
 
 type Tag = {
     name: string;

@@ -8,36 +8,37 @@ them. Never restyle a component's internals from outside beyond spacing and widt
 
 **Route A: React + Tailwind v4** (preferred; required for building new screens)
 
-1. Copy `assets/continuum/` into the project, e.g. `src/components/continuum/`, keeping its inner structure
-   (the stylesheet finds the components through `@source "../components"`).
-2. Install `@base-ui/react class-variance-authority clsx tailwind-merge lucide-react react-day-picker`, and the
-   font: `@fontsource-variable/geist` (and the package of the theme's font if it picks another; import it in the
-   entry file). React 19. The charts need nothing more: the kit draws every mark itself.
+1. Run `npx contui init` in the project. It installs the library, `@contui/ui`, as a dependency with the
+   project's package manager (its own dependencies come with it), and keeps this skill and the MCP server on the
+   installed version. Never copy the library's files into the project: the package is the source.
+2. Install `lucide-react` for the icons a screen places, and the font: `@fontsource-variable/geist` (and the
+   package of the theme's font if it picks another; import it in the entry file). React 19. The charts need
+   nothing more: the kit draws every mark itself.
 3. In the Tailwind entry CSS:
    ```css
    @import "tailwindcss";
-   @import "./components/continuum/styles/theme.css"; /* path to the copied folder */
+   @import "@contui/ui/theme.css";
    ```
-   `theme.css` **replaces** Tailwind's colours, font sizes, weights, radii and shadows with Continuum's. If the
-   project has a Tailwind theme of its own that must survive, use route B.
+   `theme.css` **replaces** Tailwind's colours, font sizes, weights, radii and shadows with Continuum's, and
+   points Tailwind at the components' source. If the project has a Tailwind theme of its own that must survive,
+   use route B.
 
    **If the project has an `app.css` and a `DESIGN.md` exported from the theme builder**, that `app.css` is the
-   entry instead (the whole theme in Tailwind's names, light in `@theme`, dark under `[data-mode="dark"]`).
-   Leave out the copied `styles/` folder; `DESIGN.md` holds the project's theme.
+   entry instead of `theme.css` (the whole theme in Tailwind's names, light in `@theme`, dark under
+   `[data-mode="dark"]`, and an `@source` line for the package's components); `DESIGN.md` holds the project's
+   theme.
 4. Wrap the app in `<Theme mode="light">`; add `theme="name"` once a theme block exists. Everything styled sits
    inside a `Theme`; portalled parts re-open it themselves.
-5. Import from the copied folder's `index.ts`, and charts from `charts/index.ts`. The reference screens import
-   from `'continuum'` and `'continuum/charts'`: rewrite those to the local paths, or add a `continuum` path alias
-   that covers both.
+5. Import components from `'@contui/ui'` and charts from `'@contui/ui/charts'`, as the reference screens do.
 
-**Route B: React with a host Tailwind theme to keep, or no Tailwind.** Copy `assets/continuum/` and install the
-same dependencies, then import its prebuilt `styles.css` instead of `theme.css`. Components render correctly
-inside `<Theme>`. The prebuilt file holds only the utilities the components use, so write page layout with the
-host's own Tailwind and reach Continuum's values through variables: `bg-(--color-neutral-100)`,
+**Route B: React with a host Tailwind theme to keep, or no Tailwind.** Run `npx contui init` the same way, then
+import the prebuilt `@contui/ui/styles.css` instead of `theme.css`. Components render correctly inside
+`<Theme>`. The prebuilt file holds only the utilities the components use, so write page layout with the host's
+own Tailwind and reach Continuum's values through variables: `bg-(--color-neutral-100)`,
 `border-(--color-neutral-200)`, `rounded-(--radius-card)`.
 
 In an empty project, scaffold Vite + React + TypeScript + Tailwind v4 and use route A. If Continuum is already
-there (a `continuum` folder or a `.continuum` class), skip setup.
+there (`@contui/ui` in `package.json`, or a `.continuum` class), skip setup.
 
 ## The values, as Tailwind names
 

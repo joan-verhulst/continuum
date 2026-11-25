@@ -21,7 +21,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Plus, UserRound } from 'lucide-react';
 import {
     AppScene,

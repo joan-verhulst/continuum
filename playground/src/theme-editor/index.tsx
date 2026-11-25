@@ -33,7 +33,7 @@ import {
     themeFontFamilies,
     useNotice,
     useToast,
-} from 'continuum';
+} from '@contui/ui';
 import { Copy, Ellipsis, FileUp, FolderKanban, Pencil, Plus, Trash2 } from 'lucide-react';
 import { type FormEvent, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { AsidePanel, HeaderActions, Page, PageHeader } from '../layout';

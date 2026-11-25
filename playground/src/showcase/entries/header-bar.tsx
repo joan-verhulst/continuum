@@ -14,7 +14,7 @@ import {
     Spinner,
     useNotice,
     usePageHistory,
-} from 'continuum';
+} from '@contui/ui';
 import { FileText, Link2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { type Entry, type InUse, icon, type Knob, o, type PreviewProps, previewIcon } from '../kit';

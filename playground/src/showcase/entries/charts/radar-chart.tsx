@@ -1,4 +1,4 @@
-import { ChartFrame, ChartKey, RadarChart } from 'continuum/charts';
+import { ChartFrame, ChartKey, RadarChart } from '@contui/ui/charts';
 import { ClipboardList } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

@@ -1,4 +1,4 @@
-import { Badge } from 'continuum';
+import { Badge } from '@contui/ui';
 import Link from 'next/link';
 import { ArticleSection, C, DividedList, Figure, H, P } from '@/components/article';
 import { CodeBlock } from '@/components/code-block';

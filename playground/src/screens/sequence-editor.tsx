@@ -45,7 +45,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import {
     ChartLine,
     Copy,

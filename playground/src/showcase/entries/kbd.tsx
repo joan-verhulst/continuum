@@ -15,7 +15,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Plus } from 'lucide-react';
 import { useStageContainer } from '../../layout';
 import { AppScene, type Entry, type InUse, icon } from '../kit';

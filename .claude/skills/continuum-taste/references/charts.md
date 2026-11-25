@@ -1,6 +1,6 @@
 # Charts
 
-The chart kit, `continuum/charts`: which chart answers which need, the card every chart sits in, the plot, the
+The chart kit, `@contui/ui/charts`: which chart answers which need, the card every chart sits in, the plot, the
 marks, colour, hover, motion, and each chart's own entry. It is a separate entry from the library and draws every
 mark itself, with no chart library under it. A chart holds no colour or size of its own: it names the data
 colours and the chart chrome (both in `foundations.md`, Data colours), the corners and the type, so a theme or a

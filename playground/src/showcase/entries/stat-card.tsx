@@ -6,8 +6,8 @@ import {
     SegmentedControl,
     SegmentedControlItem,
     StatCard,
-} from 'continuum';
-import { Sparkline } from 'continuum/charts';
+} from '@contui/ui';
+import { Sparkline } from '@contui/ui/charts';
 import { Clock, Ellipsis, MousePointerClick, ShoppingBag, Undo2, Users } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 

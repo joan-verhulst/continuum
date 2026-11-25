@@ -1,8 +1,8 @@
 {
-    "name": "continuum",
+    "name": "@contui/ui",
     "version": "0.1.0",
     "description": "A quiet, dense design system for tool UI: one default look, a theme builder, Base UI primitives and Tailwind v4.",
-    "license": "UNLICENSED",
+    "license": "SEE LICENSE IN LICENSE",
     "private": true,
     "type": "module",
     "sideEffects": [
@@ -26,6 +26,7 @@
         "build:skill": "node scripts/build-css.mjs && node scripts/build-skill.mjs",
         "build:mcp": "pnpm --filter continuum-mcp build",
         "install:skill": "node scripts/build-css.mjs && pnpm build:mcp && node scripts/build-skill.mjs --install",
+        "build:package": "node scripts/build-css.mjs && pnpm build:mcp && node scripts/build-skill.mjs && node scripts/pack.mjs",
         "type-check": "tsc --noEmit && pnpm --filter playground type-check && pnpm --filter continuum-mcp type-check && pnpm --filter web type-check",
         "lint": "biome check",
         "lint:fix": "biome check --write",

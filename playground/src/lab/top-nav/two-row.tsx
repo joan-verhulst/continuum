@@ -8,7 +8,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
     SidebarSwitcherMark,
-} from 'continuum';
+} from '@contui/ui';
 import { Bell, Boxes, Check, ChevronsUpDown, Plus, Search } from 'lucide-react';
 import { Fragment, type ReactNode } from 'react';
 

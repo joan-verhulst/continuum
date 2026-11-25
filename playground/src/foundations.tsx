@@ -16,7 +16,7 @@ import {
     Theme,
     textGap,
     toSpacingStep,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Activity,
     ChevronDown,

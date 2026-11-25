@@ -1,6 +1,6 @@
 ---
 name: continuum-taste
-description: Use this skill whenever you build, design, restyle or review product UI that should look like Continuum — an app, page, dashboard, table, form, settings screen, card, widget, dialog, component or canvas design — in React, another framework, plain CSS, Paper or Figma. Use it when the user says "in Continuum", "in my style" or "like my design system", and also when nobody names it but the project uses Continuum (it imports `continuum`, or has a theme builder `app.css` or a DESIGN.md brief): then load it for any request that adds or changes something people see (a new page, a card on a dashboard, a sign-in screen, "make it look like the rest", "this feels cramped"), even when the request never mentions design. Continuum is quiet, dense tool UI: 13px type, hairline borders, one action colour, controls on two heights, light and dark, with a theme builder for a product's own look. Not for marketing or landing pages; for padding and gaps alone, continuum-fix-padding.
+description: Use this skill whenever you build, design, restyle or review product UI that should look like Continuum — an app, page, dashboard, table, form, settings screen, card, widget, dialog, component or canvas design — in React, another framework, plain CSS, Paper or Figma. Use it when the user says "in Continuum", "in my style" or "like my design system", and also when nobody names it but the project uses Continuum (it imports `@contui/ui`, or has a theme builder `app.css` or a DESIGN.md brief): then load it for any request that adds or changes something people see (a new page, a card on a dashboard, a sign-in screen, "make it look like the rest", "this feels cramped"), even when the request never mentions design. Continuum is quiet, dense tool UI: 13px type, hairline borders, one action colour, controls on two heights, light and dark, with a theme builder for a product's own look. Not for marketing or landing pages; for padding and gaps alone, continuum-fix-padding.
 ---
 
 # Continuum
@@ -60,7 +60,7 @@ For checking a value as you go, never instead of the references (Building someth
 | `references/method.md`       | The product is one the references never covered, or nothing in `components.md` fits: the recipe for a new part. |
 | `references/theming.md`      | A product needs its own accent, greys, font or corners.                                        |
 | `references/screens/*.tsx`   | You want a worked screen of the same kind to compare against: one generic app, then blocks from earlier products. |
-| `assets/continuum/`          | You install the React library in a project: components, lib, charts, styles and the prebuilt `styles.css`. |
+| `assets/tokens.css`          | You work outside React in a project without the `@contui/ui` package: every value as a CSS variable. |
 
 ## Building something
 

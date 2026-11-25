@@ -1,4 +1,4 @@
-import { Button, Card, Field, FieldHelper, FieldLabel, Input, Kbd } from 'continuum';
+import { Button, Card, Field, FieldHelper, FieldLabel, Input, Kbd } from '@contui/ui';
 import { AtSign, Globe, Hash, Search } from 'lucide-react';
 import { useState } from 'react';
 import {

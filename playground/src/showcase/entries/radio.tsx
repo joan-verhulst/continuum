@@ -12,7 +12,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Download, Plus } from 'lucide-react';
 import { type ReactNode, useState } from 'react';
 import {

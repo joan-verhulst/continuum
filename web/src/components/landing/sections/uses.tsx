@@ -1,6 +1,6 @@
 'use client';
 
-import { cn, focusRing } from 'continuum';
+import { cn, focusRing } from '@contui/ui';
 import { CornerDownRight } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { type ReactNode, useState } from 'react';

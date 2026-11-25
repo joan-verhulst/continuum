@@ -1,10 +1,5 @@
 'use client';
 
-import { ContinuumMark } from '@playground/brand';
-import { FooterSlotProvider } from '@playground/layout';
-import { sameTheme } from '@playground/projects';
-import { ProjectFlow } from '@playground/theme-editor/flow';
-import { ExportDialog } from '@playground/theme-editor/parts';
 import {
     Button,
     cn,
@@ -19,7 +14,12 @@ import {
     Theme,
     type ThemeMode,
     type ThemeOptions,
-} from 'continuum';
+} from '@contui/ui';
+import { ContinuumMark } from '@playground/brand';
+import { FooterSlotProvider } from '@playground/layout';
+import { sameTheme } from '@playground/projects';
+import { ProjectFlow } from '@playground/theme-editor/flow';
+import { ExportDialog } from '@playground/theme-editor/parts';
 import { Moon, RotateCcw, SlidersHorizontal, Sun } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import { type CSSProperties, type ReactNode, useDeferredValue, useMemo, useState } from 'react';

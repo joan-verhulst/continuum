@@ -5,8 +5,8 @@ import {
     SegmentedControl,
     SegmentedControlItem,
     StatCard,
-} from 'continuum';
-import { ChartCard, ChartFrame, FunnelChart, type FunnelStep } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard, ChartFrame, FunnelChart, type FunnelStep } from '@contui/ui/charts';
 import { CircleCheck, ShoppingCart, UserCheck, UserPlus, Users } from 'lucide-react';
 import { useState } from 'react';
 import { AnalyticsPage, AnalyticsTopBar, PageTitle } from './shared';

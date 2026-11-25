@@ -51,7 +51,7 @@ import {
     TableHeader,
     TableRow,
     useNotice,
-} from 'continuum';
+} from '@contui/ui';
 import {
     ArrowLeft,
     ArrowRight,

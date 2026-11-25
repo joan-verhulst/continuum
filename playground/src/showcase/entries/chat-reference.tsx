@@ -1,4 +1,4 @@
-import { Avatar, Badge, Card, ChatMessage, ChatReference, ChatThread, ChatToken } from 'continuum';
+import { Avatar, Badge, Card, ChatMessage, ChatReference, ChatThread, ChatToken } from '@contui/ui';
 import { AppWindow, type Entry, type InUse, type Knob, o, opts, type PreviewProps } from '../kit';
 
 /* ---------- Preview: a token in the words, and the record it names dropped in under them ---------- */

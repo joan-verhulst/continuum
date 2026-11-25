@@ -1,5 +1,5 @@
-import { SegmentedControl, SegmentedControlItem, StatCard } from 'continuum';
-import { ChartCard, type ChartSeries } from 'continuum/charts';
+import { SegmentedControl, SegmentedControlItem, StatCard } from '@contui/ui';
+import { ChartCard, type ChartSeries } from '@contui/ui/charts';
 import { Wallet } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

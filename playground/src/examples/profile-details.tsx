@@ -15,7 +15,7 @@ import {
     StatusDot,
     type StatusDotTone,
     TooltipProvider,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Globe,
     Laptop,

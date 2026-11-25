@@ -1,4 +1,4 @@
-import { AppPanel, AppShell, Button, Field, FieldLabel, Input, SheetArea } from 'continuum';
+import { AppPanel, AppShell, Button, Field, FieldLabel, Input, SheetArea } from '@contui/ui';
 import { ArrowRight } from 'lucide-react';
 import { type FormEvent, type ReactNode, useState } from 'react';
 import { ContinuumLogo } from './brand';

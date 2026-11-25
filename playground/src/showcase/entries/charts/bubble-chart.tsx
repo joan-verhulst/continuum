@@ -1,4 +1,4 @@
-import { BubbleChart, ChartFrame, ChartKey } from 'continuum/charts';
+import { BubbleChart, ChartFrame, ChartKey } from '@contui/ui/charts';
 import { Users } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

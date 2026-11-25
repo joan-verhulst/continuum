@@ -1,4 +1,4 @@
-import { Alert, Button, SettingGroup, SettingRow, Switch } from 'continuum';
+import { Alert, Button, SettingGroup, SettingRow, Switch } from '@contui/ui';
 import { useEffect, useState } from 'react';
 import {
     AppWindow,

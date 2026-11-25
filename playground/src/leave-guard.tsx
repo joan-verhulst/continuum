@@ -8,7 +8,7 @@ import {
     DialogFooter,
     DialogHeader,
     DialogTitle,
-} from 'continuum';
+} from '@contui/ui';
 import { createContext, type RefObject, useContext, useEffect, useRef } from 'react';
 
 /*

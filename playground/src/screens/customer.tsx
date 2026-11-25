@@ -31,7 +31,7 @@ import {
     TabsContent,
     TabsList,
     TabsTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import {
     ArrowLeftRight,
     CircleAlert,

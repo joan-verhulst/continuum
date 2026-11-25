@@ -1,4 +1,4 @@
-import { createThemeCss, type ThemeOptions } from 'continuum';
+import { createThemeCss, type ThemeOptions } from '@contui/ui';
 
 /*
  * The site's own theme, ContinuumUI (brand/continuum-ui/app.css), as the builder's options: the

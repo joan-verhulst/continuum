@@ -6,6 +6,7 @@
             "!dist",
             "!mcp/dist",
             "!mcp/fixtures",
+            "!pack",
             "!playground/dist",
             "!reference",
             "!.claude/skills/*/assets",

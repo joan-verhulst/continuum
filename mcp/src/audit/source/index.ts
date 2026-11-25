@@ -46,7 +46,7 @@ export const skippedPath = (path: string) => {
         /\.min\.(css|js)$|\.d\.ts$|\.(test|spec|stories)\.[jt]sx?$|\.lock$|-lock\.json$/.test(
             normal,
         ) ||
-        /(^|\/)continuum\/(components|charts|lib|styles)\//.test(normal)
+        /(^|\/)(continuum|@contui\/ui\/(src|dist))\/(components|charts|lib|styles)\//.test(normal)
     );
 };
 

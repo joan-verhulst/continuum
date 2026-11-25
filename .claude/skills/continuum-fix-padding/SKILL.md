@@ -9,7 +9,7 @@ Spacing here is derived, not picked. A box's padding follows its content: the si
 
 ## The formula
 
-Defaults are in `scripts/spacing.ts` (the same file as `src/lib/spacing.ts` in the Continuum repo, and exported from `continuum`):
+Defaults are in `scripts/spacing.ts` (the same file as `src/lib/spacing.ts` in the Continuum repo, and exported from `@contui/ui`):
 
 | Term | Rule | Default |
 | --- | --- | --- |

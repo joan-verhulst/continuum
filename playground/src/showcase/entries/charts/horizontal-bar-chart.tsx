@@ -1,4 +1,4 @@
-import { ChartFrame, ChartKey, type ChartSeries, HorizontalBarChart } from 'continuum/charts';
+import { ChartFrame, ChartKey, type ChartSeries, HorizontalBarChart } from '@contui/ui/charts';
 import { MousePointerClick } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

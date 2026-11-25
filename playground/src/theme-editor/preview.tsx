@@ -24,8 +24,8 @@ import {
     Theme,
     type ThemeMode,
     type ThemeOptions,
-} from 'continuum';
-import { ChartCard, ChartFrame, type ChartSeries, FunnelChart } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard, ChartFrame, type ChartSeries, FunnelChart } from '@contui/ui/charts';
 import { Contrast, Plus, Search, ShoppingCart, Wallet } from 'lucide-react';
 import { useId, useState } from 'react';
 import {

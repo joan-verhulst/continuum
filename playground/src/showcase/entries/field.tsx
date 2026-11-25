@@ -14,7 +14,7 @@ import {
     TableHeader,
     TableRow,
     Textarea,
-} from 'continuum';
+} from '@contui/ui';
 import { UserPlus } from 'lucide-react';
 import {
     AppScene,

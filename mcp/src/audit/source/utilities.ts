@@ -1,4 +1,4 @@
-import { oklchToHex, tailwindGreys, tailwindHues } from 'continuum';
+import { oklchToHex, tailwindGreys, tailwindHues } from '@contui/ui';
 import type { SystemValues } from '../../system/values';
 import type { Fact, Subject } from '../../types';
 import { type Pair, toCss } from './aliases';
@@ -481,7 +481,7 @@ export const readUtility = (base: string, negative: boolean, system: SystemValue
 export const libraryNames = (text: string) => {
     const names = new Set<string>();
     for (const match of text.matchAll(
-        /import\s*(?:type\s*)?\{([^}]*)\}\s*from\s*['"]((?:[^'"]*\/)?continuum(?:\/[\w-]+)?)['"]/g,
+        /import\s*(?:type\s*)?\{([^}]*)\}\s*from\s*['"]((?:@contui\/ui|(?:[^'"]*\/)?continuum)(?:\/[\w-]+)?)['"]/g,
     )) {
         for (const name of (match[1] ?? '').split(',')) {
             const local = name

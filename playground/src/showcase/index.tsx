@@ -15,7 +15,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Search } from 'lucide-react';
 import { type ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {

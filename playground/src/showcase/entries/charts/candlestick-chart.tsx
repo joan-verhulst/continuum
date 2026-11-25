@@ -1,5 +1,5 @@
-import { SegmentedControl, SegmentedControlItem } from 'continuum';
-import { CandlestickChart, ChartFrame } from 'continuum/charts';
+import { SegmentedControl, SegmentedControlItem } from '@contui/ui';
+import { CandlestickChart, ChartFrame } from '@contui/ui/charts';
 import { CandlestickChart as CandlesIcon } from 'lucide-react';
 import { useState } from 'react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';

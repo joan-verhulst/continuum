@@ -1,10 +1,5 @@
 'use client';
 
-import { FooterSlotProvider, HeaderActions, HeaderSlotProvider } from '@playground/layout';
-import { sameTheme, useProjects } from '@playground/projects';
-import { ProjectFlow } from '@playground/theme-editor/flow';
-import { ExportDialog } from '@playground/theme-editor/parts';
-import { PreviewPanel } from '@playground/theme-editor/preview';
 import {
     createThemeCss,
     HeaderBar,
@@ -14,7 +9,12 @@ import {
     ToastProvider,
     useNotice,
     useToast,
-} from 'continuum';
+} from '@contui/ui';
+import { FooterSlotProvider, HeaderActions, HeaderSlotProvider } from '@playground/layout';
+import { sameTheme, useProjects } from '@playground/projects';
+import { ProjectFlow } from '@playground/theme-editor/flow';
+import { ExportDialog } from '@playground/theme-editor/parts';
+import { PreviewPanel } from '@playground/theme-editor/preview';
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { useMode } from '@/components/mode';
 import { appLink } from '@/lib/site';

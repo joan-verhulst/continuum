@@ -1,7 +1,7 @@
 'use client';
 
+import { cn, createThemeCss, Spinner, Theme, type ThemeOptions } from '@contui/ui';
 import { screens } from '@screens/index';
-import { cn, createThemeCss, Spinner, Theme, type ThemeOptions } from 'continuum';
 import { Check, Lock, Pause, Play, Terminal } from 'lucide-react';
 import {
     AnimatePresence,
@@ -200,7 +200,7 @@ const captions = [
 /** Asks for what the screen shows: its columns, the search and the filters. */
 const PROMPT =
     'Build the customers page from @DESIGN.md: plan, status, revenue and owner, with search and filters.';
-const INSTALL = 'pnpm install:skill';
+const INSTALL = 'npx contui init';
 const LIST = 'claude mcp list';
 const HEX = '#0f9f6e';
 
@@ -802,17 +802,18 @@ const AppWindow = ({ state }: { state: FilmState }) => {
 
 /* ---------- 03 Connect: the terminal ---------- */
 
+/** What `npx contui init` reports, line by line. */
 const RAN = [
-    'Built continuum-taste and continuum-fix-padding',
-    'Installed to ~/.claude/skills/continuum-taste',
-    'Installed to ~/.claude/skills/continuum-fix-padding',
-    'Registered the MCP server with Claude Code: ~/continuum/mcp/dist/server.mjs',
+    '@contui/ui 0.1.0, a dependency in package.json',
+    'Skills continuum-taste and continuum-fix-padding in .claude/skills',
+    "MCP server 'continuum' in .mcp.json, run from node_modules",
+    'postinstall runs contui sync: the skills follow the version',
 ];
 
 const Prompt = ({ children }: { children: ReactNode }) => (
     <p className="flex h-7 items-center">
-        <span className="w-[124px] shrink-0 text-neutral-500">
-            ~/continuum <span className="text-neutral-950">$</span>
+        <span className="w-19 shrink-0 text-neutral-500">
+            ~/acme <span className="text-neutral-950">$</span>
         </span>
         {children}
     </p>
@@ -837,7 +838,7 @@ const TerminalWindow = () => {
             <Chrome
                 data-hiw="terminal"
                 icon={<Terminal className="size-3.5" strokeWidth={2} />}
-                title="continuum — zsh"
+                title="acme — zsh"
             >
                 <div className="absolute inset-0 flex flex-col gap-1 px-6 py-5 font-mono text-[13px] text-neutral-800">
                     <div data-hiw="prompt-1">
@@ -855,7 +856,7 @@ const TerminalWindow = () => {
                     {ran && lines === 0 && (
                         <p className="flex h-7 items-center gap-2 text-neutral-500">
                             <Spinner size="sm" />
-                            Building the skills
+                            Installing @contui/ui
                         </p>
                     )}
                     {RAN.map((line, index) => (
@@ -882,7 +883,7 @@ const TerminalWindow = () => {
                     </Appear>
                     <Appear className="mt-2" show={connected}>
                         <p className="rounded-item bg-success-500/10 px-3 py-2 text-neutral-950">
-                            continuum: node ~/continuum/mcp/dist/server.mjs -{' '}
+                            continuum: node node_modules/@contui/ui/mcp/server.mjs -{' '}
                             <span className="text-success-600">✓ Connected</span>
                         </p>
                     </Appear>

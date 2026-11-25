@@ -1,6 +1,6 @@
 'use client';
 
-import { ColorPicker, cn, Field, FieldLabel, Input, parseHex, toHex } from 'continuum';
+import { ColorPicker, cn, Field, FieldLabel, Input, parseHex, toHex } from '@contui/ui';
 import { type ReactNode, useEffect, useState } from 'react';
 import { hexOf, readColour } from './colours';
 

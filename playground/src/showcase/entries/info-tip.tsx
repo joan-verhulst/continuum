@@ -9,7 +9,7 @@ import {
     cn,
     InfoTip,
     Meter,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowUpRight, Plus } from 'lucide-react';
 import { useStageContainer } from '../../layout';
 import { AppScene, type Entry, type InUse, icon } from '../kit';

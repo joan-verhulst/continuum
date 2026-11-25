@@ -9,7 +9,7 @@ import {
     DropdownMenuSubContent,
     DropdownMenuSubTrigger,
     DropdownMenuTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Archive,
     Copy,

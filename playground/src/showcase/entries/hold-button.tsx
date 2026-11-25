@@ -8,7 +8,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { RotateCcw, Trash2, UserPlus } from 'lucide-react';
 import { useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';

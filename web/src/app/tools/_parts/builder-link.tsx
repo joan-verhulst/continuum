@@ -1,6 +1,6 @@
 'use client';
 
-import { Button } from 'continuum';
+import { Button } from '@contui/ui';
 import { useEffect, useSyncExternalStore } from 'react';
 import { themeBuilderLink } from '@/lib/site';
 

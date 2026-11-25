@@ -11,7 +11,7 @@ import {
     type RampStep,
     rampSteps,
     wcagContrast,
-} from 'continuum';
+} from '@contui/ui';
 import { RotateCcw } from 'lucide-react';
 import { useState } from 'react';
 import { RampChart } from './ramp-graph';

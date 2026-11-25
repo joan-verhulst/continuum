@@ -19,7 +19,7 @@ import {
     TabsList,
     TabsTrigger,
     type TabsVariant,
-} from 'continuum';
+} from '@contui/ui';
 import { FileText, LayoutList, ListChecks, Pencil, Plus } from 'lucide-react';
 import {
     AppWindow,

@@ -1,5 +1,30 @@
-Copyright (c) 2026 Joan Verhulst. All rights reserved.
+Continuum Licence
 
-This repository is published for reference only. No licence is granted to use,
-copy, modify, merge, publish, distribute, sublicense or sell any part of it,
-in whole or in part, without prior written permission from the copyright holder.
+Copyright (c) 2026 Joan Verhulst. All rights reserved, except as granted below.
+
+"The Software" means Continuum: the @contui/ui and contui packages and their source,
+including the components, charts, styles, themes, Claude skills, MCP server and
+documentation that come with them, in this repository or from a package registry.
+
+1. Use. You may use the Software free of charge to build, run and ship your own
+   products and products you make for others, commercial or not. You may modify
+   it for that purpose.
+
+2. No resale. You may not sell, sublicense, publish or otherwise distribute the
+   Software, or a modified copy of it, on its own or as part of anything whose
+   main purpose is to offer what the Software offers: a component library, design
+   system, UI kit, theme, template, Claude skill, MCP server or similar tool.
+   Shipping the Software inside a product of your own, as a dependency or as
+   compiled code, is allowed.
+
+3. Notice. Keep this licence and the copyright notice with any copy of the
+   Software's source.
+
+4. Later versions. This licence covers the versions it ships with. Later versions
+   may come under different terms.
+
+5. No warranty. The Software is provided "as is", without warranty of any kind,
+   express or implied, including the warranties of merchantability, fitness for a
+   particular purpose and non-infringement. In no event shall the copyright holder
+   be liable for any claim, damages or other liability arising from the Software
+   or its use.

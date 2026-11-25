@@ -1,4 +1,4 @@
-import { Button } from 'continuum';
+import { Button } from '@contui/ui';
 import { ArticleSection } from '@/components/article';
 import { Markdown } from '@/components/markdown';
 import { Article, PageHero } from '@/components/page-frame';

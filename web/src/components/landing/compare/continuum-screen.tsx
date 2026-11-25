@@ -36,8 +36,8 @@ import {
     SidebarSwitcherMark,
     SidebarToggle,
     StatCard,
-} from 'continuum';
-import { ChartCard, Sparkline } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard, Sparkline } from '@contui/ui/charts';
 import {
     ArrowRight,
     Bell,

@@ -33,7 +33,7 @@ import {
     SidebarToggle,
     type ThemeMode,
     useToast,
-} from 'continuum';
+} from '@contui/ui';
 import {
     BookOpen,
     ChartLine,

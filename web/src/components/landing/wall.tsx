@@ -68,8 +68,8 @@ import {
     TabsTrigger,
     ToastProvider,
     useToast,
-} from 'continuum';
-import { ChartCard } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard } from '@contui/ui/charts';
 import {
     CircleCheck,
     Clock,

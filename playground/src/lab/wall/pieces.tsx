@@ -35,7 +35,7 @@ import {
     Tabs,
     TabsList,
     TabsTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Archive,
     CalendarDays,

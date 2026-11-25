@@ -1,4 +1,4 @@
-import { cn, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from 'continuum';
+import { cn, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@contui/ui';
 import type { Measured } from './measure';
 import { scale } from './measure';
 import { meant, type Piece } from './pieces';

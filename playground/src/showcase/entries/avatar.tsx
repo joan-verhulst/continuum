@@ -9,7 +9,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { EllipsisVertical, UserPlus } from 'lucide-react';
 import {
     AppWindow,

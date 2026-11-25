@@ -1,4 +1,4 @@
-import type { ThemeMode } from 'continuum';
+import type { ThemeMode } from '@contui/ui';
 
 export const views = [
     'home',

@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { deltaE, hexToOklch, type Oklch, oklchToHex, toHex } from 'continuum';
+import { deltaE, hexToOklch, type Oklch, oklchToHex, toHex } from '@contui/ui';
 import { parseColor } from '../../../playground/src/theme-editor/checks';
 import { exportTheme, tailwindEntry } from '../../../playground/src/theme-export';
 import type { Mode } from '../types';

@@ -8,7 +8,7 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
-} from 'continuum';
+} from '@contui/ui';
 import { Check, ChevronRight, Mail, Star, Trash2, UserRound, Users } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';

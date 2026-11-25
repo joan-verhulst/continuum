@@ -4,7 +4,7 @@ import {
     chartColor,
     UptimeStrip,
     type UptimeStripProps,
-} from 'continuum/charts';
+} from '@contui/ui/charts';
 import { Activity } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

@@ -10,7 +10,7 @@ import {
     ChatToken,
     MessageComposer,
     StatCard,
-} from 'continuum';
+} from '@contui/ui';
 import { FileText, Gauge, UserRound } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {

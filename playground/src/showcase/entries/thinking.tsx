@@ -7,7 +7,7 @@ import {
     Thinking,
     ThinkingCaret,
     ThinkingRun,
-} from 'continuum';
+} from '@contui/ui';
 import { useEffect, useRef, useState } from 'react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 

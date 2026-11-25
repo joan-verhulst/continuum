@@ -13,7 +13,7 @@ import {
     Switch,
     type ThemeMode,
     themeAccentRamp,
-} from 'continuum';
+} from '@contui/ui';
 import { type CSSProperties, useId, useMemo, useState } from 'react';
 import { CodeBlock } from '@/components/code-block';
 import { useShareAccent } from './builder-link';

@@ -1,6 +1,5 @@
 'use client';
 
-import { allCustomers, formatEuro, PageHead, plans, Workspace } from '@screens/workspace';
 import {
     ActivityItem,
     ActivityList,
@@ -16,8 +15,9 @@ import {
     SelectTrigger,
     SelectValue,
     StatCard,
-} from 'continuum';
-import { ChartCard } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard } from '@contui/ui/charts';
+import { allCustomers, formatEuro, PageHead, plans, Workspace } from '@screens/workspace';
 import { CircleAlert, Euro, Sparkles, Ticket, UserPlus, UserRoundX, Users } from 'lucide-react';
 import { animate, motion, useMotionValue } from 'motion/react';
 import { type ReactNode, useEffect, useLayoutEffect, useRef, useState } from 'react';

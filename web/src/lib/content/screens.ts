@@ -20,13 +20,13 @@ export type ScreenInfo = {
     slug: string;
     /** 'screen' for one of the app's seven screens, 'block' for a part of an earlier product. */
     kind: 'screen' | 'block';
-    /** The names it imports from continuum and continuum/charts ('Table', 'ChartCard' …). */
+    /** The names it imports from @contui/ui and @contui/ui/charts ('Table', 'ChartCard' …). */
     uses: string[];
 };
 
-/** The names a file imports from 'continuum' or 'continuum/charts', types left out. */
+/** The names a file imports from '@contui/ui' or '@contui/ui/charts', types left out. */
 const libraryImports = (source: string) =>
-    [...source.matchAll(/import\s*(?:type\s*)?\{([^}]*)\}\s*from\s*'continuum(?:\/charts)?'/g)]
+    [...source.matchAll(/import\s*(?:type\s*)?\{([^}]*)\}\s*from\s*'@contui\/ui(?:\/charts)?'/g)]
         .flatMap(match => (match[1] ?? '').split(','))
         .map(name => name.trim())
         .filter(name => name && !name.startsWith('type '));

@@ -16,7 +16,7 @@ import {
     Spinner,
     Switch,
     useNotice,
-} from 'continuum';
+} from '@contui/ui';
 import { CircleAlert, Copy, Link2 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { PageHead } from '../../screens/workspace';

@@ -22,7 +22,7 @@ import {
     type ThemeMode,
     type ThemeOptions,
     themeFontFamilies,
-} from 'continuum';
+} from '@contui/ui';
 import { Check, Copy, Download } from 'lucide-react';
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState } from 'react';
 import { C } from '../article';

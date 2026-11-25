@@ -9,7 +9,7 @@ import {
     focusRing,
     IconTile,
     Input,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowRight, CircleCheck } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 

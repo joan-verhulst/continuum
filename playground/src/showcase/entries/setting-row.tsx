@@ -12,7 +12,7 @@ import {
     SettingGroup,
     SettingRow,
     Switch,
-} from 'continuum';
+} from '@contui/ui';
 import { Bell, CreditCard, Settings, Users } from 'lucide-react';
 import { useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';

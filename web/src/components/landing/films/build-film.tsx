@@ -1,6 +1,6 @@
 'use client';
 
-import { Theme } from 'continuum';
+import { Theme } from '@contui/ui';
 import { Check } from 'lucide-react';
 import { PRODUCT_THEME } from '../theme';
 import { BuildScreen, SCROLL } from './build-screen';

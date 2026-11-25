@@ -1,6 +1,6 @@
 'use client';
 
-import { cn } from 'continuum';
+import { cn } from '@contui/ui';
 import { ArrowUp } from 'lucide-react';
 import { AnimatePresence, animate, motion, useReducedMotion } from 'motion/react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';

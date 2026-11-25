@@ -11,7 +11,7 @@ import {
     SegmentedControlItem,
     StatCard,
     TableToolbar,
-} from 'continuum';
+} from '@contui/ui';
 import { CalendarRange, Check, Ellipsis, Layers, Send, Share2, Target } from 'lucide-react';
 import { useLayoutEffect, useState } from 'react';
 import { compact, Frame, icon } from './shell';

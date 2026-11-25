@@ -1,4 +1,4 @@
-import { Button, Card, CardContent, CardHeader, CardTitle, cn, Truncate } from 'continuum';
+import { Button, Card, CardContent, CardHeader, CardTitle, cn, Truncate } from '@contui/ui';
 import { Download, FileText, Upload } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';
 

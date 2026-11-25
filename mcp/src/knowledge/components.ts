@@ -19,7 +19,7 @@ export type ComponentMatch = {
     source?: string;
     /** What a React project imports for it. */
     exports: string[];
-    /** 'continuum', or 'continuum/charts' for the chart kit. */
+    /** '@contui/ui', or '@contui/ui/charts' for the chart kit. */
     from: string;
     /** The entry's own names, the first one leading. */
     names: string[];
@@ -39,7 +39,7 @@ const allParts = () => {
             names: section.heading.split('·').map(name => name.trim()),
             group: section.path[0] ?? '',
             section,
-            from: 'continuum',
+            from: '@contui/ui',
         }));
     const chartSections = sections('charts.md');
     const card = chartSections.find(section => section.heading === 'The card');
@@ -49,7 +49,7 @@ const allParts = () => {
             names: section.heading.split('·').map(name => name.trim()),
             group: chartGroup,
             section,
-            from: 'continuum/charts',
+            from: '@contui/ui/charts',
         }));
     const chartCard = card
         ? [
@@ -57,7 +57,7 @@ const allParts = () => {
                   names: ['ChartFrame', 'ChartCard', 'ChartKey'],
                   group: chartGroup,
                   section: card,
-                  from: 'continuum/charts',
+                  from: '@contui/ui/charts',
               },
           ]
         : [];
@@ -260,7 +260,7 @@ const entryFor = (names: string[], group: string) => {
             )
             .sort((a, b) => id(b[0]).length - id(a[0]).length)[0] ??
         pools.find(([, text]) =>
-            new RegExp(`import\\s*\\{[^}]*\\b${names[0]}\\b[^}]*\\}\\s*from\\s*'continuum`).test(
+            new RegExp(`import\\s*\\{[^}]*\\b${names[0]}\\b[^}]*\\}\\s*from\\s*'@contui/ui`).test(
                 text,
             ),
         ))?.[1];
@@ -289,7 +289,7 @@ export const findComponent = (name: string): ComponentMatch | undefined => {
     const part = partFor(name);
     if (!part) return undefined;
     const { source, exports } =
-        part.from === 'continuum' ? sourceFor(part.names) : { source: undefined, exports: [] };
+        part.from === '@contui/ui' ? sourceFor(part.names) : { source: undefined, exports: [] };
     return {
         name: part.names.join(' · '),
         group: part.group,

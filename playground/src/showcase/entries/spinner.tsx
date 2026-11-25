@@ -1,4 +1,4 @@
-import { Button, DialogClose, DialogDescription, ReadonlyField, StatCard } from 'continuum';
+import { Button, DialogClose, DialogDescription, ReadonlyField, StatCard } from '@contui/ui';
 import { CircleCheck, History } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {

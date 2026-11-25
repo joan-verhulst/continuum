@@ -1,4 +1,4 @@
-import { Badge, Button, Card, IconTile } from 'continuum';
+import { Badge, Button, Card, IconTile } from '@contui/ui';
 import {
     Calculator,
     CircleAlert,

@@ -13,7 +13,7 @@ import {
     ChatTyping,
     ChatUnreadDivider,
     MessageComposer,
-} from 'continuum';
+} from '@contui/ui';
 import { Check, UserRound } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import {

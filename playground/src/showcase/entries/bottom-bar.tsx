@@ -1,4 +1,4 @@
-import { BottomBar, Dock, DockAction, DockItem } from 'continuum';
+import { BottomBar, Dock, DockAction, DockItem } from '@contui/ui';
 import {
     CalendarDays,
     CircleCheck,

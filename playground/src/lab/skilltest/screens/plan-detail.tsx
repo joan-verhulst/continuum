@@ -66,7 +66,7 @@ import {
     TabsTrigger,
     useNotice,
     useToast,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Archive,
     Bird,

@@ -28,7 +28,7 @@ import {
     TableSearch,
     TableToolbar,
     TableToolbarEnd,
-} from 'continuum';
+} from '@contui/ui';
 import {
     ChevronDown,
     ChevronRight,

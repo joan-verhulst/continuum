@@ -9,7 +9,7 @@ import {
     type ThemeOptions,
     themeFonts,
     useTheme,
-} from 'continuum';
+} from '@contui/ui';
 import { ChevronRight } from 'lucide-react';
 import { type CSSProperties, type ReactNode, useId, useMemo, useState } from 'react';
 import { heightChoices, typeChoices, unitChoices } from '../presets';

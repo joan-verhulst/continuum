@@ -10,7 +10,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { CalendarDays, CircleAlert, CircleCheck, FileText, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import {

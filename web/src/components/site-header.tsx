@@ -1,7 +1,7 @@
 'use client';
 
+import { Button, cn, focusRing } from '@contui/ui';
 import { ContinuumLogo } from '@playground/brand';
-import { Button, cn, focusRing } from 'continuum';
 import {
     ArrowRight,
     ChartArea,

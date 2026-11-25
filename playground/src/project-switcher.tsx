@@ -5,7 +5,7 @@ import {
     SidebarSwitcher,
     SidebarSwitcherMark,
     type ThemeOptions,
-} from 'continuum';
+} from '@contui/ui';
 import { Check, LayoutGrid, Plus } from 'lucide-react';
 import type { AppState } from './meta';
 import { matchPreset, presetSwatch } from './presets';

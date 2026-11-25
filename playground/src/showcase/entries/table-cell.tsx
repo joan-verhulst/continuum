@@ -7,7 +7,7 @@ import {
     TableHeader,
     TableRow,
     Truncate,
-} from 'continuum';
+} from '@contui/ui';
 import type { ReactNode } from 'react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 import { useStageWidth } from './table';

@@ -1,5 +1,5 @@
+import type { ThemeOptions } from '@contui/ui';
 import { exportTheme, tailwindEntry } from '@playground/theme-export';
-import type { ThemeOptions } from 'continuum';
 
 /*
  * A few lines of what the builder exports, cut from the real file: the theme's whole app.css is

@@ -2,8 +2,8 @@
  * Bundles the server into one file, dist/server.mjs, that runs with plain Node anywhere: the
  * library's maths, the playground's theme export and the skill's markdown are all inside it.
  *
- * - 'continuum' resolves to src/continuum-lib.ts (the maths, no components).
- * - 'continuum/<name>.css?raw' and any '?raw' import is the file's text.
+ * - '@contui/ui' resolves to src/continuum-lib.ts (the maths, no components).
+ * - '@contui/ui/<name>.css?raw' and any '?raw' import is the file's text.
  * - 'virtual:knowledge' is the skill's references, the showcase entries, the components and the
  *   reference screens, read when this runs.
  */
@@ -53,15 +53,15 @@ const knowledge = async () => {
 };
 
 const continuum = {
-    name: 'continuum',
+    name: '@contui/ui',
     setup(b) {
-        b.onResolve({ filter: /^continuum$/ }, () => ({
+        b.onResolve({ filter: /^@contui\/ui$/ }, () => ({
             path: join(here, 'src/continuum-lib.ts'),
         }));
         b.onResolve({ filter: /\?raw$/ }, args => {
             const bare = args.path.replace(/\?raw$/, '');
-            const path = bare.startsWith('continuum/')
-                ? join(root, 'src/styles', bare.slice('continuum/'.length))
+            const path = bare.startsWith('@contui/ui/')
+                ? join(root, 'src/styles', bare.slice('@contui/ui/'.length))
                 : resolve(args.resolveDir, bare);
             return { path, namespace: 'raw' };
         });

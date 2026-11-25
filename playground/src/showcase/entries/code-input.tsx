@@ -1,4 +1,4 @@
-import { Button, Card, CodeInput, Field, FieldHelper, FieldLabel, SidebarLogo } from 'continuum';
+import { Button, Card, CodeInput, Field, FieldHelper, FieldLabel, SidebarLogo } from '@contui/ui';
 import { ArrowLeft, Boxes } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { AppWindow, type Entry, type InUse, icon, type Knob, o, type PreviewProps } from '../kit';

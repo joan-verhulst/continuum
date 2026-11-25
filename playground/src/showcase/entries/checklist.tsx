@@ -1,4 +1,4 @@
-import { Button, Checklist, ChecklistItem } from 'continuum';
+import { Button, Checklist, ChecklistItem } from '@contui/ui';
 import { useEffect, useState } from 'react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../kit';
 

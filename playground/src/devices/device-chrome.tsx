@@ -1,4 +1,4 @@
-import { cn } from 'continuum';
+import { cn } from '@contui/ui';
 import type { CSSProperties, ReactNode } from 'react';
 import type { Device } from '../layout';
 import macbookBack from './macbook-back.svg';

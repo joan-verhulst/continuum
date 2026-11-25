@@ -1,8 +1,8 @@
 'use client';
 
+import { Theme, type ThemeOptions } from '@contui/ui';
 import { FooterSlotProvider } from '@playground/layout';
 import { ProjectFlow } from '@playground/theme-editor/flow';
-import { Theme, type ThemeOptions } from 'continuum';
 import { useLayoutEffect, useState } from 'react';
 import { CustomersScreen } from './customers-screen';
 

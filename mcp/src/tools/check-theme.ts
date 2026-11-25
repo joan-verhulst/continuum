@@ -1,4 +1,4 @@
-import { oklchToHex, type ThemeMode } from 'continuum';
+import { oklchToHex, type ThemeMode } from '@contui/ui';
 import { z } from 'zod';
 import {
     cut,

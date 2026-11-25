@@ -12,7 +12,7 @@ import {
     TableRow,
     Toolbar,
     ToolbarButton,
-} from 'continuum';
+} from '@contui/ui';
 import { Archive, Download, Mail, Plus, Upload, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { customers, formatEuro, statusTone } from '../../screens/workspace';

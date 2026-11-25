@@ -2,17 +2,14 @@
  * Words the AI pages share: where the server is, and a tool's description cut for a person.
  */
 
-/**
- * Where the server is, for a config that needs it spelt out. A placeholder: every clone is
- * somewhere else, and pnpm install:skill prints the real line for the one it runs in.
- */
-export const serverPath = '/path/to/continuum/mcp/dist/server.mjs';
+/** Where the server is in a project: inside the installed @contui/ui, so it is that version's. */
+export const serverPath = 'node_modules/@contui/ui/mcp/server.mjs';
 
-/** The same path for a command run in the clone's folder: bash and PowerShell both read $PWD. */
-export const serverFromClone = '"$PWD/mcp/dist/server.mjs"';
+/** The same path for an editor's config, which fills in the project's folder itself. */
+export const serverInWorkspace = `\${workspaceFolder}/${serverPath}`;
 
-/** The one line that registers the server with Claude Code, for every project. */
-export const claudeMcpAdd = `claude mcp add --scope user continuum -- node ${serverFromClone}`;
+/** The line `npx contui init` writes into .mcp.json, as one command. */
+export const claudeMcpAdd = `claude mcp add --scope project continuum -- node ${serverPath}`;
 
 /**
  * What a tool does, for a person: its description (written for an agent) up to the first sentence

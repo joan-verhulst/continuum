@@ -9,6 +9,9 @@ reference
 .claude/skills/continuum-taste/references/screens
 .claude/skills/continuum-fix-padding/scripts/spacing.ts
 
+# The npm packages, built by `pnpm build:package`.
+pack
+
 # Plans for agents to work from: kept locally, never committed.
 PLAN.md
 PLAN-*.md

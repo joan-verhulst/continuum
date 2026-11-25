@@ -1,4 +1,4 @@
-import type { ThemeOptions } from 'continuum';
+import type { ThemeOptions } from '@contui/ui';
 import { useSyncExternalStore } from 'react';
 
 /*

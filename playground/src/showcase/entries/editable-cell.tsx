@@ -8,7 +8,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Eye, Plus, Send } from 'lucide-react';
 import { useState } from 'react';
 import { useStageContainer } from '../../layout';

@@ -10,7 +10,7 @@ carry it into other projects. For any UI work here, the system is described in
 | Path                                  | What it is                                                                 |
 | ------------------------------------- | -------------------------------------------------------------------------- |
 | `src/components`, `src/lib`           | The library and its helpers (theme builder maths, the spacing formula). The source of truth. |
-| `src/charts`                          | The chart kit, a separate entry (`continuum/charts`).                      |
+| `src/charts`                          | The chart kit, a separate entry (`@contui/ui/charts`).                      |
 | `src/styles`                          | `tokens.css` (the default theme), `theme.css` (the Tailwind entry).        |
 | `dist/styles.css`                     | The prebuilt, scoped stylesheet. Built, but tracked: git installs need it. |
 | `playground/src/showcase`             | The Components view: `kit.tsx` is shared, `entries/<id>.tsx` is one component's preview, knobs and in-use piece. |
@@ -20,6 +20,8 @@ carry it into other projects. For any UI work here, the system is described in
 | `.claude/skills/continuum-taste`      | The skill. `SKILL.md` and `references/*.md` are written by hand; `assets/` and `references/screens/` are built. |
 | `.claude/skills/continuum-fix-padding` | The spacing skill. `scripts/spacing.ts` is built from `src/lib/spacing.ts`. |
 | `mcp/`                                | The MCP server: the skill's references, values and maths, and an audit for any stack (readers → facts → one rule set). `dist/server.mjs` and `manifest.json` are built by `pnpm build:mcp`, but tracked: a clone runs them without building. |
+| `cli/contui.mjs`                      | The `contui` CLI: `init` installs `@contui/ui` in a project and wires in its skills and MCP server, `sync` refreshes the skills from the installed version, `mcp` runs its server. |
+| `scripts/pack.mjs`                    | `pnpm build:package`: the two npm packages, `@contui/ui` (library, skills, server, CLI) and `contui` (the CLI alone), into `pack/` (not tracked). |
 | `playground/src/install`              | The Skills and MCP server pages, listed from each `SKILL.md` and `mcp/manifest.json`. |
 | `web/`                                | The public site (contui.dev): Next.js, every page generated at build time from the sources above (the references, the showcase entries, the screens, `mcp/manifest.json`, the README), never written twice. The app (the playground) is served at `/app` on it. `pnpm dev` starts both: open localhost:3100. |
 

@@ -12,7 +12,7 @@ import {
     Toolbar,
     ToolbarButton,
     ToolbarChip,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Archive,
     Bold,

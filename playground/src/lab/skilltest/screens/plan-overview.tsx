@@ -36,8 +36,8 @@ import {
     SidebarLogo,
     SidebarToggle,
     StatCard,
-} from 'continuum';
-import { ChartCard } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard } from '@contui/ui/charts';
 import {
     Download,
     FileText,

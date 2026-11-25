@@ -10,7 +10,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowRight, ListChecks } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { PageHead } from '../../screens/workspace';

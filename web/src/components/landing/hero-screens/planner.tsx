@@ -30,7 +30,7 @@ import {
     SidebarToggle,
     StatusDot,
     type StatusDotTone,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Aperture,
     Bell,

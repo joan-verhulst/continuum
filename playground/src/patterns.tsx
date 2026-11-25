@@ -1,4 +1,4 @@
-import { Badge, Dock, DockItem } from 'continuum';
+import { Badge, Dock, DockItem } from '@contui/ui';
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
 import { exampleSections } from './examples';
 import {

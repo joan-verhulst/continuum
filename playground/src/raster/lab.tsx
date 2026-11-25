@@ -15,7 +15,7 @@ import {
     Theme,
     type ThemeMode,
     useTheme,
-} from 'continuum';
+} from '@contui/ui';
 import { ExternalLink, Grid3x3, Ruler, SlidersHorizontal, X } from 'lucide-react';
 import { type ComponentType, type ReactNode, useEffect, useId, useRef, useState } from 'react';
 import {

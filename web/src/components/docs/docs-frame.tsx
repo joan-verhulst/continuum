@@ -14,7 +14,7 @@ import {
     SidebarItem,
     SidebarLevel,
     SidebarLevelHead,
-} from 'continuum';
+} from '@contui/ui';
 import {
     BookOpen,
     ChartLine,

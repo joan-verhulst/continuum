@@ -20,7 +20,7 @@ import {
     TableHeader,
     TableRow,
     toggleFilter,
-} from 'continuum';
+} from '@contui/ui';
 import { CircleCheck, Plus, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import {

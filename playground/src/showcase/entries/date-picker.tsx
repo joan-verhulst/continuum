@@ -17,7 +17,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { History, Plus } from 'lucide-react';
 import {
     AppScene,

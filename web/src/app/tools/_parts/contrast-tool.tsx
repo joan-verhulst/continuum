@@ -11,7 +11,7 @@ import {
     type ThemeMode,
     type ThemeOptions,
     wcagContrast,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowLeftRight, Check, X } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { useShareAccent } from './builder-link';

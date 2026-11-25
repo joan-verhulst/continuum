@@ -1,4 +1,4 @@
-import { cn, PageContent, SegmentedControl, SegmentedControlItem, Switch } from 'continuum';
+import { cn, PageContent, SegmentedControl, SegmentedControlItem, Switch } from '@contui/ui';
 import {
     type CSSProperties,
     Fragment,

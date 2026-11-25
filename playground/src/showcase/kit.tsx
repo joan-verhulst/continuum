@@ -28,7 +28,7 @@ import {
     TopNavBrand,
     TopNavLink,
     TopNavLinks,
-} from 'continuum';
+} from '@contui/ui';
 import { Boxes, Settings } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { Stage, useStageContainer } from '../layout';

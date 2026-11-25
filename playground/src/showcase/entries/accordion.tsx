@@ -5,7 +5,7 @@ import {
     AccordionTrigger,
     type AccordionVariant,
     Button,
-} from 'continuum';
+} from '@contui/ui';
 import { Mail } from 'lucide-react';
 import {
     AppWindow,

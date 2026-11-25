@@ -1,4 +1,4 @@
-import { themeFontFamilies } from 'continuum';
+import { themeFontFamilies } from '@contui/ui';
 import { z } from 'zod';
 import { presets } from '../../../playground/src/presets';
 import { designBrief, exportTheme, tailwindEntry } from '../../../playground/src/theme-export';

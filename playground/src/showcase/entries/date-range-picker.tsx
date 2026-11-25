@@ -7,7 +7,7 @@ import {
     Field,
     FieldLabel,
     StatCard,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowLeftRight, Download } from 'lucide-react';
 import {
     AppWindow,

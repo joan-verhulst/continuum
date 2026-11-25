@@ -1,4 +1,4 @@
-import { ChartFrame, ChartKey, RoseChart } from 'continuum/charts';
+import { ChartFrame, ChartKey, RoseChart } from '@contui/ui/charts';
 import { CalendarDays, Clock } from 'lucide-react';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';
 

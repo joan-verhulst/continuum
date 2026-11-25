@@ -13,8 +13,8 @@ import {
     SelectTrigger,
     SelectValue,
     StatCard,
-} from 'continuum';
-import { ChartCard } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard } from '@contui/ui/charts';
 import { CircleAlert, Euro, Sparkles, UserPlus, UserRoundX } from 'lucide-react';
 import { useState } from 'react';
 import { allCustomers, formatEuro, PageHead, plans, Workspace } from './workspace';

@@ -1,4 +1,4 @@
-import { Accordion, AccordionItem, AccordionPanel, AccordionTrigger, cn } from 'continuum';
+import { Accordion, AccordionItem, AccordionPanel, AccordionTrigger, cn } from '@contui/ui';
 import type { ReactNode } from 'react';
 import { type Faq, faqPageLd, JsonLd } from '@/lib/seo';
 import { column } from './article';

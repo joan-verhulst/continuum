@@ -25,7 +25,7 @@ import {
     SidebarItem,
     SidebarLogo,
     SidebarToggle,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Bell,
     Boxes,

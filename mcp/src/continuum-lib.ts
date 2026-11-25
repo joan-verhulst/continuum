@@ -1,6 +1,6 @@
 /*
  * The library's maths without its components: what the server and the playground's theme export
- * import as 'continuum'. The build and tsconfig point that name here, so the bundle carries no React.
+ * import as '@contui/ui'. The build and tsconfig point that name here, so the bundle carries no React.
  */
 
 export type { ThemeMode } from '../../src/components/theme';

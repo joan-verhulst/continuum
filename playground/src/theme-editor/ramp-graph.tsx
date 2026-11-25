@@ -13,7 +13,7 @@ import {
     rampSteps,
     StatusDot,
     toCss,
-} from 'continuum';
+} from '@contui/ui';
 import { Moon } from 'lucide-react';
 import {
     type KeyboardEvent,

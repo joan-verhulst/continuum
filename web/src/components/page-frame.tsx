@@ -7,7 +7,7 @@ import {
     BreadcrumbPage,
     BreadcrumbSeparator,
     cn,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowLeft, ArrowRight, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { Fragment, isValidElement, type ReactElement, type ReactNode } from 'react';

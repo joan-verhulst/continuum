@@ -1,5 +1,5 @@
-import { SegmentedControl, SegmentedControlItem, StatCard } from 'continuum';
-import { ChartCard, formatCompact } from 'continuum/charts';
+import { SegmentedControl, SegmentedControlItem, StatCard } from '@contui/ui';
+import { ChartCard, formatCompact } from '@contui/ui/charts';
 import { Rocket, Users } from 'lucide-react';
 import { formatWeekday, reportWeek } from '../../../screens/shared';
 import { AppWindow, type Entry, type InUse, type Knob, o, type PreviewProps } from '../../kit';

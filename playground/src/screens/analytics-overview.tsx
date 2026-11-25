@@ -24,8 +24,8 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
-import { ChartCard, type ChartColor, ChartFrame, ChartLegend, DonutChart } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard, type ChartColor, ChartFrame, ChartLegend, DonutChart } from '@contui/ui/charts';
 import {
     Calendar,
     ChartLine,

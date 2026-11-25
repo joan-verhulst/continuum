@@ -1,4 +1,4 @@
-import { cn, focusRing } from 'continuum';
+import { cn, focusRing } from '@contui/ui';
 import {
     ArrowRight,
     ChartLine,

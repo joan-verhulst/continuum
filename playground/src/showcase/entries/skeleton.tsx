@@ -10,7 +10,7 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from 'continuum';
+} from '@contui/ui';
 import { Plus } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { customers, formatEuro, statusTone } from '../../screens/workspace';

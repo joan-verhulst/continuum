@@ -26,7 +26,7 @@ import {
     StatCard,
     type ThemeOptions,
     useTheme,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Bell,
     Boxes,

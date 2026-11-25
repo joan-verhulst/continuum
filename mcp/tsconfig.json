@@ -13,7 +13,7 @@
         "noEmit": true,
         "types": ["node"],
         "paths": {
-            "continuum": ["./src/continuum-lib.ts"]
+            "@contui/ui": ["./src/continuum-lib.ts"]
         }
     },
     "include": ["src"]

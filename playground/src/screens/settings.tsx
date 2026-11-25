@@ -20,7 +20,7 @@ import {
     SettingRow,
     Switch,
     useNotice,
-} from 'continuum';
+} from '@contui/ui';
 import { type FormEvent, useState } from 'react';
 import { owners, PageHead, Workspace } from './workspace';
 

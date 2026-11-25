@@ -6,14 +6,11 @@
 
 import manifestJson from '../../../mcp/manifest.json';
 
-/**
- * Where the server is, for a config that needs it spelt out. A placeholder: every clone is
- * somewhere else, and pnpm install:skill prints the real line for the one it runs in.
- */
-export const serverPath = '/path/to/continuum/mcp/dist/server.mjs';
+/** Where the server is in a project: inside the installed @contui/ui, so it is that version's. */
+export const serverPath = 'node_modules/@contui/ui/mcp/server.mjs';
 
-/** The same path for a command run in the clone's folder: bash and PowerShell both read $PWD. */
-export const serverFromClone = '"$PWD/mcp/dist/server.mjs"';
+/** The same path for an editor's config, which fills in the project's folder itself. */
+export const serverInWorkspace = `\${workspaceFolder}/${serverPath}`;
 
 /* ---------- Skills ---------- */
 

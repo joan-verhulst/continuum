@@ -17,7 +17,7 @@ import {
     type ThemeMode,
     type ThemeOptions,
     themeFontFamilies,
-} from 'continuum';
+} from '@contui/ui';
 import { ArrowRight, FileUp } from 'lucide-react';
 import { type ReactNode, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { PageFooter } from '../layout';

@@ -52,7 +52,7 @@ import {
     TabsList,
     TabsTrigger,
     useToast,
-} from 'continuum';
+} from '@contui/ui';
 import {
     Archive,
     Bird,

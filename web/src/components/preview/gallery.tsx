@@ -1,9 +1,9 @@
 'use client';
 
+import { cn, focusRing } from '@contui/ui';
 import { Stage } from '@playground/layout';
 import { entries } from '@playground/showcase/entries';
 import { type Entry, knobDefaults } from '@playground/showcase/kit';
-import { cn, focusRing } from 'continuum';
 import { ArrowRight } from 'lucide-react';
 import { useInView } from 'motion/react';
 import Link from 'next/link';

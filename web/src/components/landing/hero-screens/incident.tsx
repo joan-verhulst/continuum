@@ -42,8 +42,8 @@ import {
     TableSearch,
     TableToolbar,
     TableToolbarEnd,
-} from 'continuum';
-import { ChartCard, useChart } from 'continuum/charts';
+} from '@contui/ui';
+import { ChartCard, useChart } from '@contui/ui/charts';
 import {
     Activity,
     BellRing,

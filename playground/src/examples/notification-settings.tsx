@@ -8,7 +8,7 @@ import {
     SettingGroup,
     SettingRow,
     Switch,
-} from 'continuum';
+} from '@contui/ui';
 import { useState } from 'react';
 
 type Sensitivity = 'low' | 'medium' | 'high';

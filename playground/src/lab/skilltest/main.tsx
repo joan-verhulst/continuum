@@ -1,4 +1,4 @@
-import { Theme, ToastProvider } from 'continuum';
+import { Theme, ToastProvider } from '@contui/ui';
 import type { ComponentType } from 'react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

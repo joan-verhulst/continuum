@@ -1,4 +1,4 @@
-import { type Oklch, oklchToHex, parseCssColor } from 'continuum';
+import { type Oklch, oklchToHex, parseCssColor } from '@contui/ui';
 
 /*
  * Colours as the tools take them: any CSS colour a reader types or pastes (hex, rgb(), hsl(),

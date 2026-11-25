@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, cn, Slider } from 'continuum';
+import { Button, cn, Slider } from '@contui/ui';
 import { Check, Copy, ImageDown, RotateCcw } from 'lucide-react';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';

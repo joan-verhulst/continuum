@@ -9,9 +9,9 @@ The values live in `src/app.css`; this file is how to use them. Write the utilit
 ## Setup
 
 - `src/app.css` is the Tailwind entry and the whole theme, in Tailwind's own names: the colour ramps and roles, the font, the type scale, the radii, the shadows, the 4px spacing grid, the content widths and the fixed widths of panels and popups. It puts these in place of Tailwind's palette, type, radii and shadows, so Tailwind's defaults (`bg-gray-100`, `rounded-lg`) do not exist here.
-- The components live in `src/components/continuum/`, copied from the skill's `assets/continuum/` with its folders as they are. They read the names `app.css` sets, so leave out the copied `styles/` folder: `app.css` takes its place. Import components from its `index.ts` and charts from `charts/index.ts`. In a new project, scaffold Vite, React 19, TypeScript and Tailwind v4 first.
+- The components come from the `@contui/ui` package, a dependency in `package.json`. When it is not there yet, run `npx contui init` before building anything (it installs the package and keeps the skill and the MCP server on its version), and never draw a part by hand that the library has. They read the names `app.css` sets, so `app.css` stands in for the package's own `theme.css` and `styles.css`. Import components from `@contui/ui` and charts from `@contui/ui/charts`. In a new project, scaffold Vite, React 19, TypeScript and Tailwind v4 first.
 - The app sits inside `<Theme mode="dark">`. Dark mode is `mode="dark"`: the same theme with every ramp reversed, from the `[data-mode="dark"]` block in `app.css`. Everything styled sits inside the `Theme`; portalled parts open it again on their own.
-- Dependencies: `@base-ui/react class-variance-authority clsx tailwind-merge lucide-react react-day-picker`, and `@fontsource-variable/geist`, imported in the entry script. The charts need nothing more.
+- Dependencies: the package brings its own; add `lucide-react` for the icons a screen places, and `@fontsource-variable/geist`, imported in the entry script. The charts need nothing more.
 
 ## The theme
 
